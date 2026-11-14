@@ -140,6 +140,31 @@ fields or re-opening resources:
 \end{description}
 
 
+\subsectionAndLabel{Resource Leak Checker annotations for collections}{resource-leak-annotations-collections}
+
+The Resource Leak Checker also supports collections of resources. The following annotations express ownership of resource collections.
+
+\begin{description}
+\item[\refqualclass{checker/collectionownership/qual}{OwningCollection}]
+\item[\refqualclass{checker/collectionownership/qual}{NotOwningCollection}]
+  express ownership of resource collections. Resource collection formal parameters default to \<@NotOwningCollection>, whereas resource collection fields and return types default to \<@OwningCollection>.
+  For more details, see Section~\ref{resource-leak-collections}.
+\item[\refqualclass{checker/collectionownership/qual}{PolyOwningCollection}]
+  is the polymorphic qualifier for collection ownership. For example, \<Iterable.iterator()> returns an iterator with the same ownership as the collection.
+\end{description}
+
+The following annotations are written on methods.
+
+\begin{description}
+\item[\refqualclasswithparams{checker/collectionownership/qual}{CollectionFieldDestructor}{String[] value}]
+  expresses that the annotated method fulfills the obligations of the given resource collection fields.
+  For more details, see Section~\ref{resource-leak-collections-fields}.
+\item[\refqualclass{checker/collectionownership/qual}{CreatesCollectionObligation}]
+  expresses that the annotated method might insert an element into its receiver collection, as \<Collection.add> does.
+  For more details, see Section~\ref{resource-leak-collections-defaults}.
+\end{description}
+
+
 \sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
 
 Consider the following example of safe use of a \<Socket>, in which the comments indicate the
@@ -627,47 +652,339 @@ feature that it is unable to reason about.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
-The Resource Leak Checker cannot verify code that stores a collection of
-resources in a generic collection (e.g., \<java.util.List>) and then
-resolves the obligations of each element of the collection at once (e.g.,
-by iterating over the \<List>).  In the future, the checker will support
-this.  The remainder of this section explains the implementation issues;
-most users can skip it.
+The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
+has the same must-call and called-methods properties. Instances of \<java.lang.Iterable> are supported;
+this section calls those ``collections''. Iterators over collections are also supported (Section~\ref{resource-leak-collections-iterators}).
 
-The first implementation issue is that \<@Owning> and \<@NotOwning> are
-declaration annotations rather than type qualifiers, so they cannot be
-written on type arguments. It is possible under the current design to have
-an \code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
-It would be better to make \<@Owning> a type annotation, but this is a
-challenging design problem.
+The checker ensures that some loop calls the required methods on all
+elements of the collection; see
+Section~\ref{resource-leak-collections-fulfillment}.
 
-The second implementation issue is the defaulting rule for \<@MustCall> on
-type variable upper bounds.  Currently, this default is \<@MustCall(\{\})>,
-which prevents many false positives in code with type variables that makes
-no use of resources --- an important design principle.
-However, this defaulting rule does have an unfortunate consequence: it is
-an error to write \code{List<Socket>} or any other type with a concrete
-type argument where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
-needs to write such a type while using the Resource Leak Checker has a few
-choices, all of which have some downsides:
+The Resource Leak Checker tracks every allocated resource collection in two ways.
 
 \begin{itemize}
-\item Write \code{List<? extends Socket>}. This rejects calls to \<add()>
-or other methods that require an instance of the type variable, but it
-preserves some of the behavior (e.g., calls to \<remove()> are permitted).
-This is the best choice most of the time if the \<List> is not intended to
-be owning.
-\item Write \code{List<@MustCall Socket>}. This makes it an error to
-add a Socket to the list, since the type of the Socket is
-\<@MustCall("close")> but the list requires \<@MustCall(\{\})>.
-\item Suppress one or more warnings.
+  \item An ownership type system ensures that at most one \emph{owning}
+    reference exists for each resource collection. This owning reference is
+    permitted to mutate the collection arbitrarily. All non-owning references
+    are restricted --- for example, they cannot add elements that might be
+    owning, nor can they discard elements from the collection.
+  \item A dataflow analysis tracks an obligation for each allocated resource
+    collection. Like ownership, the obligation can be passed on to method
+    parameters, fields, or return values. Whereas the type system permits at
+    most one owner per resource collection, the dataflow analysis tracks at
+    least one obligation per resource collection, which ensures that the
+    obligation is definitely fulfilled.
 \end{itemize}
 
-The recommended way to use the Resource Leak Checker in this situation is
-to rewrite the code to avoid a \<List> of owning resources. If rewriting is
-not possible, the programmer will probably need to suppress a warning and
-then verify the code using a method other than the Resource Leak Checker.
+A Java expression is a \textit{resource collection} if:
 
+\begin{enumerate}
+  \item its type is \<java.lang.Iterable> or a subtype of it (which includes every \<java.util.Collection>) with exactly one type argument, and
+  \item the upper bound of that type argument has a non-empty or unknown (\<@MustCallUnknown>) \<MustCall> type.
+\end{enumerate}
+
+For example, expressions of type \mathid{List<Socket>} or \mathid{Iterable<?\ extends @MustCallUnknown Object>} are resource collections, but expressions of type \mathid{Set<String>} or \mathid{Map<String, Socket>} are not.
+
+\subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
+
+The type hierarchy of the ownership type system is:
+
+\begin{verbatim}
+                 @NotOwningCollection
+                          |
+                   @OwningCollection
+                          |
+           @OwningCollectionWithoutObligation
+                          |
+               @OwningCollectionBottom
+\end{verbatim}
+
+\begin{description}
+  \item[\refqualclass{checker/collectionownership/qual}{NotOwningCollection}]
+    is the type of resource collection references that might not own the
+    underlying resource collection.
+
+  \item[\refqualclass{checker/collectionownership/qual}{OwningCollection}]
+    is the type of resource collection references that definitely own the
+    underlying collection and that might have unfulfilled obligations for
+    their elements.
+
+  \item[\refqualclass{checker/collectionownership/qual}{OwningCollectionWithoutObligation}]
+    is the type of resource collection references that definitely own the
+    underlying collection and that definitely have no unfulfilled obligations
+    for their elements. For example, this is the type of a freshly allocated
+    resource collection that doesn't yet contain any resources.
+
+  \item[\refqualclass{checker/collectionownership/qual}{OwningCollectionBottom}]
+    is the type of expressions that are not resource collections. Most
+    expressions have this type, because most expressions are not collections
+    of resources.
+\end{description}
+
+A \<@NotOwningCollection> reference can perform only certain ``safe''
+operations on the collection. It can insert only elements that are definitely
+not owning, such as the result of a method whose return type is
+\<@NotOwning>. It cannot clear the collection or discard or overwrite
+elements, for example with \<clear()>, \<remove(Object)>, or \<set()>. Some
+methods that remove and return an element, such as \<Queue.poll()>, are
+permitted; the caller then owns the returned element and must dispose of it.
+In exchange for these restrictions, a \<@NotOwningCollection> reference has no
+obligation for the elements of the collection.
+
+Of the qualifiers in this hierarchy, only \<@OwningCollection>, \<@NotOwningCollection>, and the polymorphic qualifier \<@PolyOwningCollection> can be written by programmers. The other two are used only internally.
+
+\subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
+
+The obligation of a resource collection can be passed on, but eventually some code must fulfill it by calling the required methods on the collection's elements. Enhanced \<for> loops are recommended, but indexed \<for> loops are also supported with some syntactic restrictions.
+
+Here is an example of such a loop:
+
+\begin{verbatim}
+// The type of `socketList` is @OwningCollection: its elements, which are
+// @MustCall("close"), have an obligation.
+for (Socket s : socketList) {
+  try {
+    s.close();
+  } catch (Exception e) {
+    e.printStackTrace();
+  }
+}
+// The type of `socketList` is now @OwningCollectionWithoutObligation: the loop
+// called close() on each element.
+\end{verbatim}
+
+Such a loop removes the obligations for the methods that it calls on every element. If the loop calls all the required methods --- which is almost always the case, since a class usually has at most one \<MustCall> method --- the checker also refines the type of the collection to \<@OwningCollectionWithoutObligation>.
+
+To determine which methods such a loop calls, the checker does the following:
+
+\begin{itemize}
+  \item It checks that the loop does not terminate early.
+  \item It uses the Called Methods analysis to determine the methods that are definitely called on the loop variable. Therefore, the checker supports anything that changes the \<@CalledMethods> type of the loop variable, such as passing it as an argument to a method annotated with \<@EnsuresCalledMethods(value = "\#1", methods = "m")>.
+  \item It permits the loop to skip null elements:  it suffices to fulfill the obligation for every non-null element of the collection. The checker recognizes a null check syntactically rather than by performing a full nullness analysis, so it might fail to verify a loop that checks for null in an unusual way.
+\end{itemize}
+
+An enhanced \<for> loop must not assign to the variable that holds the collection.
+
+If an indexed \<for> loop is used, the checker must additionally check that the loop does in fact iterate over all elements of the collection. The checks are the following, where \<collection> is the collection and \<i> is the index variable:
+
+\begin{itemize}
+  \item Loop header:
+    \begin{itemize}
+      \item The loop has exactly one initializer, of the form \<int i = 0>.
+      \item The loop condition is \<i < collection.size()>.
+      \item The loop has exactly one update expression, which is a pre- or post-increment of \<i>.
+    \end{itemize}
+  \item Loop body:
+    \begin{itemize}
+      \item The body accesses the collection element using \<collection.get(i)>.
+      \item The body does not assign to, increment, or decrement \<i>.
+      \item The body does not assign to the collection variable.
+      \item The body does not call a method that might modify the collection, such as
+        \<collection.remove(i)>.  Specifically, every method that is invoked on
+        \<collection> or that is passed \<collection> as an argument, other than
+        \<get> and \<size>, must be side-effect-free (Section~\ref{type-refinement-purity}).
+    \end{itemize}
+\end{itemize}
+
+Here is an example using an indexed \<for> loop.
+
+\begin{verbatim}
+for (int i = 0; i < socketList.size(); i++) {
+  try {
+    socketList.get(i).close();
+  } catch (Exception e) {}
+}
+\end{verbatim}
+
+
+\subsectionAndLabel{Defaults and flow-sensitive refinement}{resource-leak-collections-defaults}
+
+The type of a freshly allocated resource collection is \<@OwningCollectionWithoutObligation>.
+
+\begin{Verbatim}
+List<Socket> sockets = new ArrayList<>();
+// `sockets` is now @OwningCollectionWithoutObligation
+\end{Verbatim}
+
+When code adds an element to the collection, the type of the collection becomes \<@OwningCollection>.
+
+\begin{Verbatim}
+List<Socket> sockets = new ArrayList<>();
+// `sockets` is @OwningCollectionWithoutObligation
+for (int i = 0; i < n; i++) {
+  sockets.add(new Socket(myHost, myPort + i));
+  // `sockets` is @OwningCollection
+}
+// `sockets` is @OwningCollection
+\end{Verbatim}
+
+More generally, a method that might add an element with an obligation to its
+receiver collection, such as \<Collection.add>, is annotated with
+\<@CreatesCollectionObligation>.  At a call to such a method, the Resource Leak
+Checker changes the type of the receiver collection to \<@OwningCollection> and
+creates a tracked obligation for the collection in the dataflow analysis.
+
+The default type of a resource collection parameter is
+\<@NotOwningCollection>.
+
+\begin{Verbatim}
+void m(Iterable<Socket> sockets) {
+  // `sockets` is @NotOwningCollection
+  ...
+}
+\end{Verbatim}
+
+\subsectionAndLabel{Ownership transfer}{resource-leak-collections-ownership-transfer}
+
+\subsubsectionAndLabel{Ownership transfer through assignments}{resource-leak-collections-ownership-transfer-assignments}
+
+Ownership is transferred through assignments. If the right-hand side of an
+assignment has type \<@OwningCollection> or
+\<@OwningCollectionWithoutObligation>, then ownership is transferred to the
+left-hand side, and the type of the right-hand side becomes
+\<@NotOwningCollection>.  This maintains the invariant that each resource
+collection has at most one owning reference.
+
+\begin{verbatim}
+// `r` is @OwningCollection
+l = r;
+// `l` is now @OwningCollection, `r` is @NotOwningCollection
+\end{verbatim}
+
+The obligation is transferred to the left-hand side along with the ownership.
+If the left-hand side is declared \<@NotOwningCollection>, neither ownership
+nor obligation is transferred, and the right-hand side remains the owner.
+
+\subsubsectionAndLabel{Ownership transfer through method calls}{resource-leak-collections-ownership-transfer-method-calls}
+
+The type of an unannotated resource collection parameter defaults to
+\<@NotOwningCollection>, so by the usual subtyping rules, the parameter accepts
+both owning and non-owning collection references. If an \<@OwningCollection>
+reference is passed to an unannotated parameter, the obligation stays at the
+call site.
+
+If the parameter is annotated with \<@OwningCollection>, then ownership is
+transferred from the call-site argument to the method parameter. The Resource
+Leak Checker changes the type of the argument at the call site to
+\<@NotOwningCollection>, in order to maintain the invariant that there is at
+most one owning reference for each resource collection.  The parameter takes on
+the responsibility of disposing of the collection.
+
+Resource collection return types default to \<@OwningCollection>. Returning a
+resource collection from a method with that return type discharges the method's
+responsibility for the collection's obligation:  the obligation and ownership
+are both transferred to the method invocation expression at the call site.
+
+\begin{verbatim}
+List<Socket> returnSocketList() {
+  List<Socket> socketList = new ArrayList<>();
+  // `socketList` is @OwningCollectionWithoutObligation
+  socketList.add(new Socket(myHost, myPort));
+  // `socketList` is @OwningCollection
+  return socketList;
+  // The return transfers obligation and ownership to the call site.
+}
+\end{verbatim}
+
+Writing \<@NotOwningCollection> on the return type overrides this default. In
+this case, ownership and obligation are not transferred to the call site, and
+the method must fulfill or pass on the obligation before it returns.
+
+\subsectionAndLabel{Resource collection fields}{resource-leak-collections-fields}
+
+By default, a resource collection field is owned by its enclosing class.
+Static resource collection fields are not supported:  the checker reports an
+error at the declaration of a static resource collection field.  Consider the
+following example:
+
+\begin{verbatim}
+class Aggregator implements Closeable {
+  List<Socket> socketList = new ArrayList<>();
+
+  public Aggregator() {}
+
+  public Aggregator(@OwningCollection List<Socket> l) {
+    // `this.socketList` is @OwningCollectionWithoutObligation
+    this.socketList = l;
+    // `this.socketList` is @OwningCollection
+    // The obligation of `l` has been resolved.
+  }
+
+  @CreatesMustCallFor("this")
+  public void add(@Owning Socket s) {
+    // This call creates an obligation for the field, so
+    // the enclosing method must be annotated with @CreatesMustCallFor("this").
+    socketList.add(s);
+  }
+
+  @Override
+  @CollectionFieldDestructor("socketList")
+  public void close() {
+    for (Socket s : socketList) {
+      try {
+        s.close();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+}
+\end{verbatim}
+
+To verify a resource collection field \<field>, the checker requires the following:
+\begin{enumerate}
+  \item The enclosing class has a \<@MustCall> type. In the example, the class has type \<@MustCall("close")> because it implements \<Closeable>.
+  \item One of the methods in the \<@MustCall> type of the enclosing class (usually there's just one) is annotated with \<@CollectionFieldDestructor("field")>. This postcondition annotation asserts that \<field> has type \<@OwningCollectionWithoutObligation> when the method exits, and the checker verifies that assertion.
+  \item Every method that calls a method that creates an obligation for the resource collection field, such as \<socketList.add(Socket)> in the example, is annotated with \<@CreatesMustCallFor("this")>.
+\end{enumerate}
+
+As a result, each client of the \<Aggregator> class is responsible for calling \<close()> on each instance before the instance goes out of scope.
+
+If a resource collection field is final, the checker doesn't have to verify assignments to it. If it is not final, the checker verifies assignments to it as follows:
+\begin{itemize}
+  \item The checker analyzes the field's initializer and the initializer blocks starting with the field unassigned (\<@OwningCollectionBottom>), and it analyzes each constructor starting with the field in the resulting state. Therefore, the first assignment to the field is permitted, whether it is in the field's initializer, an initializer block, or a constructor.
+  \item A field inherited from a superclass is \<@OwningCollection> at the beginning of a constructor, because the superclass constructor might already have added elements to it. At the beginning of a method that is not a constructor, the field is \<@OwningCollection>.
+  \item Any later assignment is permitted only if the field is \<@OwningCollectionWithoutObligation> immediately before the assignment, for example after a call to the method annotated with \<@CollectionFieldDestructor>.
+  \item Outside constructors and initializers, a method that assigns a collection with an obligation to the field must be annotated with \<@CreatesMustCallFor("this")>.
+  \item In a constructor, the field takes ownership of the right-hand side only if the constructor returns normally, because if the constructor throws an exception, nothing can dispose of the field.
+\end{itemize}
+A legal assignment to an owning resource collection field resolves the obligation of the right-hand side.
+
+The checker doesn't allow ownership to be transferred away from a resource collection field that is owned by its enclosing class. In particular:
+
+\begin{itemize}
+  \item The field cannot be passed as an argument to an \<@OwningCollection> parameter.
+  \item The field cannot be returned from a method whose return type is \<@OwningCollection>.
+  \item If the field is on the right-hand side of an assignment, the left-hand side has type \<@NotOwningCollection> after the assignment, to maintain the invariant that each resource collection has at most one owner.
+  \item The field can be accessed only through \<this> or \<super>. Accessing it through any other receiver, even another instance of the same class, is not permitted.
+\end{itemize}
+
+If, for example, a method could transfer the ownership of the field to a parameter of another method, then the checker would have to track that the field is no longer the owner and treat the field as \<@NotOwningCollection> in later invocations of methods on the same object. For simplicity, the checker doesn't track this.
+
+If the enclosing class should not take responsibility for the resource collection field, annotate the field with \<@NotOwningCollection>. Then the field behaves like any other resource collection reference, except that it still cannot be static. In particular:
+
+\begin{itemize}
+  \item Assigning to such a field does not resolve the obligation of the right-hand side.
+  \item The enclosing class does not have to fulfill any obligations for the field.
+\end{itemize}
+
+\subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
+
+An iterator has the same collection ownership type as the collection it iterates
+over.  (This is implemented by annotating \<Iterable.iterator()> as
+\<@PolyOwningCollection>.) An iterator never has an obligation of its own: the
+collection keeps the obligation.
+
+\<Iterator.next()> returns a \<@NotOwning> element. \<Iterator.remove()> is
+permitted only if the collection has no obligation
+(\<@OwningCollectionWithoutObligation>), because the checker does not track
+whether the removed element was disposed of.
+
+An implementation of \<Iterator> whose elements are resources must annotate the
+return type of its \<next()> method with \<@NotOwning>, to match
+\<Iterator.next()>.
+
+% TODO: Add a subsection with a table of JDK collection methods and their collection ownership annotations.
 
 \sectionAndLabel{Further reading}{resource-leak-checker-references}
 
@@ -681,6 +998,8 @@ when whole-program inference (WPI, Section~\ref{whole-program-inference})
 is enabled.  The algorithm is described in the paper ``Inference of
 Resource Management Specifications''~\cite{ShadabGTEKLLS2023} (OOPSLA 2023,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-inference-oopsla2023-abstract.html}).
+
+% TODO: Add RLCC paper.
 
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
