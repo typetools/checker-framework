@@ -827,10 +827,12 @@ public final class ElementUtils {
       EnumSet.of(
           ElementKind.LOCAL_VARIABLE,
           ElementKind.RESOURCE_VARIABLE,
-          ElementKind.EXCEPTION_PARAMETER);
+          ElementKind.EXCEPTION_PARAMETER,
+          ElementKind.BINDING_VARIABLE);
 
   /**
-   * Returns true if the element is a local variable.
+   * Returns true if the element is a local variable. Resource variables, exception parameters, and
+   * binding variables are local variables.
    *
    * @param elt the element to test
    * @return true if the argument is a local variable

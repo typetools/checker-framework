@@ -3807,11 +3807,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         VariableTree variableTree = bindingPatternTree.getVariable();
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
-          AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-          AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-          if (!isTypeCastSafe(variableType, expType)) {
-            checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
-          }
+          checkInstanceOfPattern(tree, variableTree);
         }
       } else {
         // TODO: implement deconstructed patterns.
@@ -3830,6 +3826,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     return super.visitInstanceOf(tree, p);
+  }
+
+  /**
+   * Reports an {@code instanceof.pattern.unsafe} warning if the given binding variable's type is
+   * not a safe downcast from the type of the given instanceof expression's left operand, as
+   * adjusted by {@link #instanceOfPatternMatchedType}.
+   *
+   * @param tree an instanceof expression whose pattern is a binding pattern
+   * @param variableTree the binding variable of the pattern of {@code tree}
+   */
+  protected void checkInstanceOfPattern(InstanceOfTree tree, VariableTree variableTree) {
+    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+    AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
+    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(expType))) {
+      checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
+    }
+  }
+
+  /**
+   * Returns the type that {@link #checkInstanceOfPattern} uses for the left operand of an
+   * instanceof expression, given the operand's type. Returns {@code expType} itself. A subclass
+   * overrides this method if a pattern matches only some values of {@code expType}; for example, an
+   * instanceof expression is false when its left operand is null.
+   *
+   * @param expType the type of an instanceof expression's left operand
+   * @return the type that {@link #checkInstanceOfPattern} uses for the left operand
+   */
+  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+    return expType;
   }
 
   /**
