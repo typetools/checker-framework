@@ -30,4 +30,79 @@ public class TypeVarPrimitivesNullness {
     // :: error: [unboxing.of.nullable]
     long l = tLong;
   }
+
+  <T extends @Nullable Integer> void add(T t) {
+    // :: error: [unboxing.of.nullable]
+    int result = t + 1;
+    // Make sure CFG construction was sufficient to capture that t must be non-null at this point,
+    // since the unboxing must have succeeded
+    t.toString();
+  }
+
+  <T extends @Nullable Integer> void assign(T t) {
+    // :: error: [unboxing.of.nullable]
+    int result = t;
+    t.toString();
+  }
+
+  void takeLong(long l) {}
+
+  <T extends @Nullable Integer> void invoke(T t) {
+    // :: error: [unboxing.of.nullable]
+    takeLong(t);
+    t.toString();
+  }
+
+  <T extends @Nullable Integer> void equality(T t) {
+    // :: error: [unboxing.of.nullable]
+    boolean result = t == 1;
+    t.toString();
+  }
+
+  // A reference comparison does not unbox either operand, so neither operand becomes non-null.
+  <T extends @Nullable Integer> void referenceEquality(T t1, T t2) {
+    boolean result = t1 == t2;
+    // :: error: [dereference.of.nullable]
+    t1.toString();
+    // :: error: [dereference.of.nullable]
+    t2.toString();
+  }
+
+  <T extends @Nullable Boolean> void referenceEqualityBoolean(T t1, T t2) {
+    boolean result = t1 != t2;
+    // :: error: [dereference.of.nullable]
+    t1.toString();
+    // :: error: [dereference.of.nullable]
+    t2.toString();
+  }
+
+  <T extends @Nullable Integer> void conditional(boolean b, T t) {
+    // :: error: [unboxing.of.nullable]
+    int result = b ? t : 0;
+    // `t` was unboxed only if `b` is true.
+    // :: error: [dereference.of.nullable]
+    t.toString();
+  }
+
+  <T extends @Nullable Integer> int conditionalNullCheck(T t) {
+    return t != null ? t : 0;
+  }
+
+  <T extends @Nullable Integer> void bitwise(T t) {
+    // :: error: [unboxing.of.nullable]
+    long result = t & 1L;
+    t.toString();
+  }
+
+  <T extends @Nullable Integer> void prefixIncrement(T t) {
+    // :: error: [unboxing.of.nullable]
+    ++t;
+    t.toString();
+  }
+
+  <T extends Short> T prefixIncrementDecrement(T t) {
+    ++t;
+    --t;
+    return t;
+  }
 }
