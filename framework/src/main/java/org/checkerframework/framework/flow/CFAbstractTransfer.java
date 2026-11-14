@@ -1344,6 +1344,7 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
+    boolean alwaysMatches = n.alwaysMatches();
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1352,9 +1353,15 @@ public abstract class CFAbstractTransfer<
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
+      // If the case expressions always match, there is no else store.
       TransferResult<V, S> result =
-          new ConditionalTransferResult<>(
-              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
+          alwaysMatches
+              ? new RegularTransferResult<>(finishValue(null, store), store.copy(), false)
+              : new ConditionalTransferResult<>(
+                  finishValue(null, store),
+                  in.getThenStore().copy(),
+                  in.getElseStore().copy(),
+                  false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
@@ -1371,11 +1378,21 @@ public abstract class CFAbstractTransfer<
         lubResult = result;
       } else {
         S thenStore = lubResult.getThenStore().leastUpperBound(result.getThenStore());
-        S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
-        lubResult =
-            new ConditionalTransferResult<>(
-                null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
+        boolean storeChanged = lubResult.storeChanged() || result.storeChanged();
+        if (alwaysMatches) {
+          lubResult = new RegularTransferResult<>(null, thenStore, storeChanged);
+        } else {
+          S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
+          lubResult = new ConditionalTransferResult<>(null, thenStore, elseStore, storeChanged);
+        }
       }
+    }
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (alwaysMatches) {
+      // The case expressions are not tested, so the facts that hold when they match hold after
+      // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
+      return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
     }
     return lubResult;
   }
@@ -1423,7 +1440,9 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
-    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    // The binding variable is declared before the CaseNode, and visitCase refines the selector by
+    // the binding variable, not the binding variable by the selector.  Refine it here, so that the
+    // guard and the body see the refinement.
     ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
     if (selector != null) {
       refineCaseLabelBindingVariable(store, n.getTree(), selector);

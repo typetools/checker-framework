@@ -9,6 +9,11 @@
 
 ### Changes for type system implementers
 
+The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
+method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
+does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
+store.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

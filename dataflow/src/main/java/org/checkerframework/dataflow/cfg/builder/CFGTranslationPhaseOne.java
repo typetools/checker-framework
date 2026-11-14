@@ -2324,11 +2324,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement from the
-      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the
-      // future, that can be performed, but it requires addition of InfeasibleExitBlock, a new
-      // SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
@@ -2343,8 +2338,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
-        if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+        // If true, the labels are not tested.
+        boolean alwaysMatches = isLastCaseOfExhaustive;
+        extendWithNode(
+            new CaseNode(
+                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+        if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
