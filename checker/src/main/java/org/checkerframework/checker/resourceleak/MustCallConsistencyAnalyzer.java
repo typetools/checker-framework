@@ -184,6 +184,21 @@ public class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
+  /**
+   * The invocations whose result has been counted for -AcountMustCall. The analysis processes an
+   * invocation once per outgoing CFG edge and once per set of Obligations that reaches it, but
+   * counts the invocation's result only once.
+   */
+  private final Set<Node> countedInvocationResults =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
+   * The invocations of {@code @CreatesMustCallFor} methods that have been counted for
+   * -AcountMustCall. See {@link #countedInvocationResults}.
+   */
+  private final Set<Node> countedCreatesMustCallForInvocations =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
   /** A description for how a method might exit. */
   public enum MethodExitKind {
 
@@ -624,7 +639,7 @@ public class MustCallConsistencyAnalyzer {
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
-      incrementNumMustCall(node);
+      incrementNumMustCall(node, countedCreatesMustCallForInvocations);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
@@ -636,7 +651,7 @@ public class MustCallConsistencyAnalyzer {
       // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the
       // return value of the method (which can't be the target of the annotation, because our
       // syntax doesn't support that).
-      incrementNumMustCall(node);
+      incrementNumMustCall(node, countedInvocationResults);
     }
     updateObligationsWithInvocationResult(obligations, node);
   }
@@ -2419,12 +2434,14 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Increments the -AcountMustCall counter.
+   * Increments the -AcountMustCall counter, unless {@code counted} already contains {@code node}.
+   * Adds {@code node} to {@code counted}.
    *
    * @param node the node being counted, to extract the type
+   * @param counted the nodes that have already been counted
    */
-  private void incrementNumMustCall(Node node) {
-    if (countMustCall) {
+  private void incrementNumMustCall(Node node, Set<Node> counted) {
+    if (countMustCall && counted.add(node)) {
       TypeMirror type = node.getType();
       incrementMustCallImpl(type);
     }
@@ -2448,8 +2465,10 @@ public class MustCallConsistencyAnalyzer {
    * @param type the type of the object that has a must-call obligation
    */
   private void incrementMustCallImpl(TypeMirror type) {
-    // only count uses of JDK classes, since that's what the paper reported
-    if (!isJdkClass(TypesUtils.getTypeElement(type).getQualifiedName().toString())) {
+    // Only count uses of JDK classes, since that's what the paper reported.  The erasure of a
+    // type variable is the erasure of its upper bound.
+    TypeElement typeElement = TypesUtils.getTypeElement(checker.getTypeUtils().erasure(type));
+    if (typeElement == null || !isJdkClass(typeElement.getQualifiedName().toString())) {
       return;
     }
     checker.numMustCall++;
