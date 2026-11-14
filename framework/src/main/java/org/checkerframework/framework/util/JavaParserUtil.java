@@ -1150,14 +1150,18 @@ public final class JavaParserUtil {
    * that must distinguish a type variable from its bound should call {@link
    * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
    *
-   * <p>The result is not erased. Only a type variable that is the whole type, or the component type
-   * of an array type, is replaced. Like the result of {@link #typeToTypeMirror(Elements, Types,
-   * Type, Map)}, the result for a class or interface type is the type of its declaration, which can
-   * contain the declaration's own type variables, as in {@code java.lang.Comparable<T>} for the
-   * bound of {@code <U extends Comparable<U>>}. When a type variable's upper bound is an
-   * intersection type, which {@code Types} cannot create, this yields the intersection type's
-   * erasure -- that is, its leftmost bound. A caller that compares the result to another type
-   * should therefore erase it first.
+   * <p>The result is not erased, but it does not preserve type arguments either. Only a type
+   * variable that is the whole type, or the component type of an array type, is replaced. Like the
+   * result of {@link #typeToTypeMirror(Elements, Types, Type, Map)}, the result for a class or
+   * interface type is the type of its declaration, which contains the declaration's own type
+   * variables in place of any type arguments: for {@code <U extends Comparable<String>>}, the
+   * result for {@code U} is {@code java.lang.Comparable<T>}, where {@code T} is the type parameter
+   * of {@code Comparable}. When a type variable's upper bound is an intersection type, this uses
+   * the intersection type's leftmost bound in its place, because {@code types} has no method that
+   * creates an intersection type: for {@code <U extends Comparable<String> & Serializable>}, the
+   * result for {@code U} is also {@code java.lang.Comparable<T>}. Erasing the result yields the
+   * erasure of {@code type}. A caller that compares the result to another type should therefore
+   * erase it first.
    *
    * <p>Returns null if the TypeMirror cannot be determined: for the types for which {@link
    * #typeToTypeMirror(Elements, Types, Type, Map)} returns null, other than a use of a type
@@ -1226,19 +1230,19 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the TypeMirror for the upper bound of the given type variable declaration, or null if
-   * the upper bound cannot be determined.
+   * Returns a TypeMirror whose erasure is the erasure of the upper bound of the given type variable
+   * declaration, or null if the upper bound cannot be determined.
    *
-   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
-   * returns the intersection type's erasure -- that is, its leftmost bound.
+   * <p>See {@link #typeToTypeMirrorUsingTypeVariableBounds(Elements, Types, Type, Map)} for which
+   * TypeMirror this returns, including when the upper bound is an intersection type.
    *
    * @param elements used for looking up names
    * @param types used for creating types
    * @param typeParameter the declaration of a type variable
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
-   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
-   *     intersection type, or null
+   * @return a TypeMirror whose erasure is the erasure of the upper bound of {@code typeParameter},
+   *     or null
    */
   private static @Nullable TypeMirror typeVariableUpperBound(
       Elements elements,
@@ -1251,9 +1255,10 @@ public final class JavaParserUtil {
       TypeElement objectElt = getTypeElement(elements, "java.lang.Object", cache);
       return objectElt == null ? null : objectElt.asType();
     }
-    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
-    // create.  Use its leftmost bound, which is its erasure; that is sufficient for the clients of
-    // this method, which erase the type anyway.
+    // If there are multiple bounds, the upper bound is an intersection type, but `types` has no
+    // method that creates an intersection type.  Use its leftmost bound, whose erasure is the
+    // intersection type's erasure; that is sufficient for the clients of this method, which erase
+    // the type anyway.
     // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
     // recursion terminates because Java forbids a cycle among type variable bounds.
     return typeToTypeMirror(elements, types, bounds.get(0), true, cache);
