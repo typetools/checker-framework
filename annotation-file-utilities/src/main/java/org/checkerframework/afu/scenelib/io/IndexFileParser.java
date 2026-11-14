@@ -67,7 +67,7 @@ import org.plumelib.util.FileIOException;
 /**
  * IndexFileParser provides static methods {@link #parse(LineNumberReader, String, AScene)}, {@link
  * #parseFile(String, AScene)}, and {@link #parseString(String, String, AScene)}. Each of these
- * parses an index file into a {@link AScene}.
+ * parses an index file into an {@link AScene}.
  *
  * <p>If there are any problems, it throws a ParseException internally, or a FileIOException
  * externally.
@@ -115,19 +115,33 @@ public final class IndexFileParser {
     }
   }
 
-  /** True if the next thing from st is the given character. */
+  /**
+   * Returns true if the next thing from st is the given character.
+   *
+   * @param c the character to look for
+   * @return true if the next thing from st is {@code c}
+   */
   private boolean checkChar(char c) {
     return st.ttype == c;
   }
 
-  /** True if the next thing from st is the given string token. */
+  /**
+   * Returns true if the next thing from st is the given string token.
+   *
+   * @param s the keyword to look for
+   * @return true if the next thing from st is the word {@code s}
+   */
   private boolean checkKeyword(String s) {
-    return st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(s);
+    return st.ttype == StreamTokenizer.TT_WORD && s.equals(st.sval);
   }
 
   /**
-   * Returns true if the next thing to be read from st is the given string. In that case, also read
-   * past the given string. If the result is false, reads nothing from st.
+   * Returns true if the next thing to be read from st is the given character. In that case, also
+   * reads past the given character. If the result is false, reads nothing from st.
+   *
+   * @param c the character to look for
+   * @return true if the next thing to be read from st is {@code c}
+   * @throws IOException if there is a problem reading from st
    */
   private boolean matchChar(char c) throws IOException {
     if (checkChar(c)) {
@@ -139,7 +153,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Returns true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also reads
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchKeyword(String s) throws IOException {
@@ -282,7 +296,7 @@ public final class IndexFileParser {
    * @return the next token, so long as it is an identifier; otherwise, returns null
    * @throws IOException if there is trouble reading the index file
    */
-  private @Identifier String matchIdentifier() throws IOException {
+  private @Identifier @Nullable String matchIdentifier() throws IOException {
     String x = checkIdentifier();
     if (x != null) {
       st.nextToken();
@@ -381,7 +395,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Expect the class name in the format that Class.forName accepts. Examples:
+   * Expects the class name in the format that Class.forName accepts. Examples:
    *
    * <pre>{@code
    * "[[I"            for int[][].class
@@ -389,7 +403,7 @@ public final class IndexFileParser {
    * "java.util.Map"  for Map.class
    * }</pre>
    *
-   * These use fully-qualified names, i.e. "Object" alone won't work.
+   * These use fully-qualified names; for example, "Object" alone won't work.
    *
    * @return the class name that was read, in Class.forName format
    * @throws IOException if there is trouble reading
@@ -427,7 +441,14 @@ public final class IndexFileParser {
     return result;
   }
 
-  /** Parse scalar annotation value. */
+  /**
+   * Parses a scalar annotation value.
+   *
+   * @param aft the type of the scalar annotation value
+   * @return the parsed value
+   * @throws IOException if there is a problem reading from st
+   * @throws ParseException if the input is not a valid value of the given type
+   */
   // HMMM can a (readonly) Integer be casted to a writable Object?
   private Object parseScalarAFV(ScalarAFT aft) throws IOException, ParseException {
     if (aft instanceof BasicAFT baft) {
@@ -687,10 +708,13 @@ public final class IndexFileParser {
   }
 
   /**
-   * Returns the {@link ScalarAFT} for the annotation currenttly being parsed.
+   * Returns the {@link ScalarAFT} for the annotation currently being parsed.
    *
-   * @param annotationFullyQualifiedName the fully-qualified name of current parsing annotation
-   * @return the {@link ScalarAFT} of current parsing annotation
+   * @param annotationFullyQualifiedName the fully-qualified name of the annotation currently being
+   *     parsed
+   * @return the {@link ScalarAFT} of the annotation currently being parsed
+   * @throws IOException if there is a problem reading from st
+   * @throws ParseException if the input is not a valid annotation field type
    */
   private ScalarAFT parseScalarAFT(String annotationFullyQualifiedName)
       throws IOException, ParseException {
@@ -733,10 +757,10 @@ public final class IndexFileParser {
   }
 
   /**
-   * Parse {@link AnnotationFieldType} of current parsing annotation.
+   * Parses the {@link AnnotationFieldType} of the annotation currently being parsed.
    *
    * @param annotationFullyQualifiedName the fully-qualified name of the annotation
-   * @return {@link AnnotationFieldType} of current parsing annotation
+   * @return the {@link AnnotationFieldType} of the annotation currently being parsed
    * @throws IOException if any IOException happened
    * @throws ParseException if any ParseException happened
    */
@@ -1895,7 +1919,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Parse the given text into a {@link Type}.
+   * Parses the given text into a {@link Type}.
    *
    * @param text the text to parse
    * @param filename the filename for the IndexFileParser

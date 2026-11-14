@@ -229,12 +229,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
   }
 
   /**
-   * Checks that argument are consistent with their corresponding parameter types. Common code used
+   * Checks that arguments are consistent with their corresponding parameter types. Common code used
    * by {@link #checkMethodArguments} and {@link #checkNewClassArguments}.
    *
    * @param parameters formal parameters
    * @param arguments actual arguments
-   * @return true if argument are consistent with their corresponding parameter types
+   * @return true if arguments are consistent with their corresponding parameter types
    */
   private boolean checkArguments(
       List<? extends VariableElement> parameters, List<? extends ExpressionTree> arguments) {
@@ -605,15 +605,15 @@ public class DefaultReflectionResolver implements ReflectionResolver {
   }
 
   /**
-   * Build lub of the two types (represented by sets {@code set1} and {@code set2}) using the
+   * Builds the lub of the two types (represented by sets {@code set1} and {@code set2}) using the
    * provided AnnotatedTypeFactory.
    *
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
    *
    * @param set1 the first type
-   * @param tm1 the type that is annotated by qualifier1
+   * @param tm1 the type that is annotated by {@code set1}
    * @param set2 the second type
-   * @param tm2 the type that is annotated by qualifier2
+   * @param tm2 the type that is annotated by {@code set2}
    * @param atypeFactory the type factory
    * @return the lub of the two types
    */
@@ -631,15 +631,15 @@ public class DefaultReflectionResolver implements ReflectionResolver {
   }
 
   /**
-   * Build glb of the two types (represented by sets {@code set1} and {@code set2}) using the
+   * Builds the glb of the two types (represented by sets {@code set1} and {@code set2}) using the
    * provided AnnotatedTypeFactory.
    *
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
    *
    * @param set1 the first type
-   * @param tm1 the type that is annotated by qualifier1
+   * @param tm1 the type that is annotated by {@code set1}
    * @param set2 the second type
-   * @param tm2 the type that is annotated by qualifier2
+   * @param tm2 the type that is annotated by {@code set2}
    * @param atypeFactory the type factory
    * @return the glb of the two types
    */

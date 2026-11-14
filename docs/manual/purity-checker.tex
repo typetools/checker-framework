@@ -1,13 +1,13 @@
 \chapterAndLabel{Purity Checker}{purity-checker}
 
-A \emph{side-effect-free} method is one that has no externally-visible side
+A \emph{side-effect-free} method is one that has no externally visible side
 effects:  it changes no object that exists when it is called, except in ways
 that no caller can observe, such as updating a private cache.
 A \emph{deterministic} method returns the same value each time it is called
 on the same arguments; equality is with respect to \<==>, not \<.equals()>.
 A \emph{pure} method is both side-effect-free and deterministic.
 The Purity Checker can check and infer all three types of methods,
-and ``purity'' refers to all concepts.
+and ``purity'' refers to all three concepts.
 
 All checkers utilize purity annotations to aid type refinement
 (Section~\ref{type-refinement}).  By default, purity annotations are
@@ -36,11 +36,11 @@ whole-program inference.
 \begin{description}
 
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
-  indicates that the method has no externally-visible side effects.
+  indicates that the method has no externally visible side effects.
 
 \iffalse
 \item[\refqualclass{dataflow/qual}{SideEffectsOnly}]
-  indicates that the method has limited externally-visible side effects.
+  indicates that the method has limited externally visible side effects.
 \fi
 
 \item[\refqualclass{dataflow/qual}{Deterministic}]
@@ -58,7 +58,7 @@ whole-program inference.
 
 Creating a lambda, or declaring a local or anonymous class, is not itself a
 side effect.  A lambda expression evaluates to an object but does not run the code
-in the lambda's body.  A side-effect-free method may therefore create a lambda
+in the lambda's body.  A side-effect-free method can therefore create a lambda
 whose body has side effects:
 
 \begin{Verbatim}
@@ -127,7 +127,7 @@ method.
 
 \subsectionAndLabel{Functional-interface parameters of methods with purity annotations}{purity-functional-interface-parameters}
 
-A method annotated with a purity annotation may call the functional methods
+A method annotated with a purity annotation can call the functional methods
 of its own functional-interface parameters.  A functional-interface parameter
 is one whose type, or the interface that declares the type's functional method,
 is annotated with \<@FunctionalInterface>, as \<Function>, \<Runnable>, and
@@ -149,7 +149,7 @@ parameter is treated as having the purity that the method promises:
 \iffalse
 \item
   In a \refqualclass{dataflow/qual}{SideEffectsOnly} method, the call is
-  treated as side-effect-free.  The method itself may modify the expressions
+  treated as side-effect-free.  The method itself can modify the expressions
   listed in its annotation, but each argument passed to one of its
   functional-interface parameters is required to be side-effect-free.
 \fi
@@ -176,9 +176,9 @@ method of the parameter's type other than its functional method, such as
   }
 \end{Verbatim}
 
-A call may reach the method through any method that it overrides, and such a
+A call can reach the method through any method that it overrides, and such a
 call checks its arguments only against the overridden method's promise.  So
-the method may assume only the purity that it and every method it overrides
+the method can assume only the purity that it and every method it overrides
 promise for that parameter.  An overridden method that makes no promise, or
 whose parameter at that position is not a functional interface (for example,
 its type is a type variable), guarantees nothing, and the assumption does not
@@ -189,7 +189,7 @@ parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  The requirement is the same for every
 functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
-type is a functional interface is checked:  the method may assume nothing about an
+type is a functional interface is checked:  the method can assume nothing about an
 argument to a parameter whose type is a type variable, nor about the elements
 of a varargs array.  How the argument is checked depends on its form:
 
@@ -216,7 +216,7 @@ of a varargs array.  How the argument is checked depends on its form:
 
 If the functional method returns \<void>, a \<@Pure> method requires only
 that the argument be side-effect-free, because a side-effect-free call that
-returns no value is deterministic.  Otherwise a \<@Pure> method requires the
+returns no value is deterministic.  Otherwise, a \<@Pure> method requires the
 argument to be deterministic too, even if the method calls it only on an
 error path.  For example, \<Objects.requireNonNull(T, Supplier<String>)> is
 \<@Pure>, so the following is an error, because \<String.format> is not
@@ -291,7 +291,7 @@ will default to checking purity annotations.
 A purity annotation is inherited:  if a method in a superclass or
 superinterface has a purity annotation, then every overriding definition has
 that annotation too, even if the annotation is not written on the overriding
-definition.  An overriding definition may strengthen the specification by
+definition.  An overriding definition can strengthen the specification by
 writing a stronger annotation, but it cannot weaken it.
 
 For example, the \<Object> class is annotated as:
@@ -319,7 +319,7 @@ MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in 
 \end{mysmall}
 
 \noindent
-You can fix the definition by making its body pure.  Alternately, you can
+You can fix the definition by making its body pure.  Alternatively, you can
 suppress the warning; see \chapterpageref{suppressing-warnings}.
 
 \iffalse

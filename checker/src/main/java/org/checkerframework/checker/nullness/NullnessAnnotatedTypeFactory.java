@@ -79,7 +79,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The annotated type factory for the nullness type-system. */
+/** The annotated type factory for the nullness type system. */
 public class NullnessAnnotatedTypeFactory
     extends InitializationAnnotatedTypeFactory<
         NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
@@ -444,7 +444,7 @@ public class NullnessAnnotatedTypeFactory
   /**
    * For types of left-hand side of an assignment, this method replaces {@link PolyNull} with {@link
    * Nullable} (or with {@link NonNull} if the org.checkerframework.dataflow analysis has determined
-   * that this is allowed soundly. For example:
+   * that this is allowed soundly). For example:
    *
    * <pre> @PolyNull String foo(@PolyNull String param) {
    *    if (param == null) {
@@ -456,7 +456,7 @@ public class NullnessAnnotatedTypeFactory
    * }
    * </pre>
    *
-   * @param lhsType type to replace whose polymorphic qualifier will be replaced
+   * @param lhsType type whose polymorphic qualifier will be replaced
    * @param context tree used to get dataflow value
    */
   protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
@@ -775,7 +775,7 @@ public class NullnessAnnotatedTypeFactory
    *
    * <p>In other words, is the lower bound @NonNull?
    *
-   * @param type of field that might have invariant annotation
+   * @param type the type of a field that might have the invariant annotation
    * @return true if type has the invariant annotation
    */
   @Override
@@ -798,7 +798,7 @@ public class NullnessAnnotatedTypeFactory
     /** Qualifier kind for the @{@link Nullable} annotation. */
     private final QualifierKind NULLABLE;
 
-    /** Creates NullnessQualifierHierarchy. */
+    /** Creates a NullnessQualifierHierarchy. */
     public NullnessQualifierHierarchy() {
       super();
       NULLABLE = getQualifierKind(NullnessAnnotatedTypeFactory.this.NULLABLE);
@@ -853,7 +853,7 @@ public class NullnessAnnotatedTypeFactory
    * annotation such as @NonNull, @Nullable, @MonotonicNonNull, etc.
    *
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
-   * because they may apply to inner types.
+   * because they might apply to inner types.
    *
    * <p>This method is used only for issuing an error when a nullness annotation is written in a
    * place it should not be.
@@ -876,7 +876,7 @@ public class NullnessAnnotatedTypeFactory
    * as @NonNull, @Nullable, @MonotonicNonNull, etc.
    *
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
-   * because they may apply to inner types.
+   * because they might apply to inner types.
    *
    * <p>This method is used only for issuing an error when a nullness annotation is written in a
    * place it should not be. Clients that are processing a field or variable definition, or a method
@@ -1047,10 +1047,10 @@ public class NullnessAnnotatedTypeFactory
   }
 
   /**
-   * Returns a {@code EnsuresNonNull("...")} annotation for the given expression.
+   * Returns an {@code EnsuresNonNull("...")} annotation for the given expression.
    *
    * @param expression an expression
-   * @return a {@code EnsuresNonNull("...")} annotation for the given expression
+   * @return an {@code EnsuresNonNull("...")} annotation for the given expression
    */
   private AnnotationMirror ensuresNonNullAnno(String expression) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);

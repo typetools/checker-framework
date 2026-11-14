@@ -95,7 +95,7 @@ public final class JVMNames {
   }
 
   /**
-   * Create a JVML string for a type.
+   * Creates a JVML string for a type.
    *
    * @param type the Type to convert to JVML
    * @return the JVML representation of type
@@ -115,7 +115,7 @@ public final class JVMNames {
   }
 
   /**
-   * Create a JVML string for an AST node representing a type.
+   * Creates a JVML string for an AST node representing a type.
    *
    * @param typeTree a Tree representing a type
    * @return the JVML representation of type
@@ -127,7 +127,7 @@ public final class JVMNames {
   }
 
   /**
-   * Append, to {@code builder}, the JVML string for {@code typeTree}.
+   * Appends, to {@code builder}, the JVML string for {@code typeTree}.
    *
    * @param typeTree a type
    * @param builder where to output the type

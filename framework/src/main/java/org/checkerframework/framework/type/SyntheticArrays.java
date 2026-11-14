@@ -9,7 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 /**
  * SyntheticArrays exists solely to fix AnnotatedTypeMirrors that need to be adapted from Array type
  * to a specific kind of array. There are no classes for arrays. Instead, for each type of array
- * (e.g. String[]) the compiler/JVM creates a synthetic type for them.
+ * (e.g., String[]), the compiler/JVM creates a synthetic type for it.
  */
 public final class SyntheticArrays {
 

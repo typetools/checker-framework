@@ -63,7 +63,7 @@ String Checker (\chapterpageref{i18n-formatter-checker}).
 
 \sectionAndLabel{Formatting terminology}{formatter-terminology}
 
-Printf-style formatting takes as an argument a \emph{format string} and a
+Printf-style formatting takes as arguments a \emph{format string} and a
 list of arguments.  It produces a new string in which each \emph{format
   specifier} has been replaced by the corresponding argument.
 The format specifier determines how the format argument is converted to a
@@ -76,7 +76,7 @@ string.
 A format specifier is introduced by a \code{\%} character. For example,
 \code{String.format("The \%s is \%d.","answer",42)} yields
 \code{"The answer is 42."}.  \code{"The \%s is \%d."} is
-the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
+the format string; \code{"\%s"} and \code{"\%d"} are the format specifiers;
 \code{"answer"} and \code{42} are format arguments.
 
 
@@ -86,7 +86,7 @@ The \refqualclass{checker/formatter/qual}{Format} qualifier on a string type
 indicates a
 \sunjavadoc{java.base/java/util/Formatter.html\#syntax}{\textrm{valid format string}}.
 A programmer rarely writes the \<@Format> annotation, as it is inferred for
-string literals.  A programmer may need to write it on fields and on method
+string literals.  A programmer might need to write it on fields and on method
 signatures.
 
 %% This is premature; it is not discussed here, and it was already
@@ -131,7 +131,7 @@ String>, expresses that contract.
 \end{figure}
 
 Figure~\ref{fig-formatter-hierarchy} shows all the type qualifiers.
-The annotations other than \<@Format> are only used
+The annotations other than \<@Format> are used only
 internally and cannot be written in your code.
 \refqualclass{checker/formatter/qual}{InvalidFormat} indicates an invalid format
 string --- that is, a string that cannot be used as a format string.  For
@@ -181,7 +181,7 @@ category \refenum{checker/formatter/qual}{ConversionCategory}{INT}{}\@.  The fol
 
 \item[\refenum{checker/formatter/qual}{ConversionCategory}{INT}{}] requires that a format argument represents an integral type. Specifically,
     \code{byte}, \code{Byte}, \code{short}, \code{Short},
-    \code{int} and \code{Integer}, \code{long},
+    \code{int}, \code{Integer}, \code{long},
     \code{Long}, and \code{BigInteger} are allowed. Applicable for
     conversions d, o, x, X.
 
@@ -196,7 +196,7 @@ category \refenum{checker/formatter/qual}{ConversionCategory}{INT}{}\@.  The fol
     \code{Date} are allowed.  Applicable for conversions t, T.
 
 \item[\refenum{checker/formatter/qual}{ConversionCategory}{UNUSED}{}] imposes no restrictions on a format argument. This is the case if a
-    format argument is not used as replacement for any format specifier.
+    format argument is not used as a replacement for any format specifier.
     \code{"\%2\$s"}, for example, ignores the first format argument.
     % This conversion category is similar to GENERAL, but does allow objects that
     % throw exceptions in \code{toString} and \code{formatTo}.
@@ -207,7 +207,7 @@ Furthermore, \<null> is always a legal argument array, because it is treated
 as supplying \<null> to each format specifier.  For example,
 \<String.format("\%d \%f \%s", (Object[]) null)> evaluates to \<"null null null">.
 
-The same format argument may serve as a replacement for multiple format specifiers.
+The same format argument can serve as a replacement for multiple format specifiers.
 Until now, we have assumed that the format specifiers simply consume format arguments left to right.
 But there are two other ways for a format specifier to select a format argument:
 
@@ -233,11 +233,11 @@ categories, and can therefore be neither a \code{Character} nor a \code{long}.
 \end{Verbatim}
 
 Only three additional conversion categories are needed to represent all possible
-intersections of previously-mentioned conversion categories:
+intersections of previously mentioned conversion categories:
 
 \begin{description}
 \item[\refenum{checker/formatter/qual}{ConversionCategory}{NULL}{}] is used if no object of any type can be
-    passed as parameter. In this case, the only legal value is \code{null}.
+    passed as an argument. In this case, the only legal value is \code{null}.
     For example, the format string \code{"\%1\$f \%1\$c"} requires that the first
     format argument be \code{null}.  Passing either \code{4} or
     \code{4.2} would lead to an exception.
@@ -342,10 +342,10 @@ a warning is issued by the Format String Checker.
 
 \subsectionAndLabel{Possible false alarms}{formatter-false-alarms}
 
-There are three cases in which the Format String Checker may issue a
+There are three cases in which the Format String Checker might issue a
 warning or error, even though the code cannot fail at run time.
 (These are in addition to the general conservatism of a type system:  code
-may be correct because of application invariants that are not captured by
+might be correct because of application invariants that are not captured by
 the type system.)
 In each of these cases, you can rewrite the code, or you can manually check
 it and write a \code{@SuppressWarnings} annotation if you can reason that
@@ -518,7 +518,7 @@ conversion categories to any String literal that is a valid format string.
 
 \sectionAndLabel{@FormatMethod}{formatter-FormatMethod}
 
-Your project may contain methods that forward their arguments to a format method.
+Your project might contain methods that forward their arguments to a format method.
 Consider for example the following \code{log} method:
 
 \begin{Verbatim}
@@ -553,7 +553,7 @@ specifiers match certain conversion categories.
 If this is not the case, \<asFormat> raises an exception.  Your code should
 catch this exception and handle it gracefully.
 
-The following code examples may fail at run time, and therefore they do not
+The following code examples might fail at run time, and therefore they do not
 type-check.  The type-checking errors are indicated by comments.
 
 \begin{Verbatim}
