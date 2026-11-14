@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -1349,7 +1351,6 @@ public abstract class CFAbstractTransfer<
   @SuppressWarnings("nullness:argument") // strengthenAnnotationOfEqualTo permits null values
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    boolean alwaysMatches = n.alwaysMatches();
     // The case labels are tested against the value of the selector expression that was saved
     // before the switch.  If the selector expression may have changed since then, do not refine it.
     boolean canRefineSelector = canRefineSwitchSelector(n);
@@ -1361,15 +1362,9 @@ public abstract class CFAbstractTransfer<
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
-      // If the case expressions always match, there is no else store.
       TransferResult<V, S> result =
-          alwaysMatches
-              ? new RegularTransferResult<>(finishValue(null, store), store.copy(), false)
-              : new ConditionalTransferResult<>(
-                  finishValue(null, store),
-                  in.getThenStore().copy(),
-                  in.getElseStore().copy(),
-                  false);
+          new ConditionalTransferResult<>(
+              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
@@ -1388,31 +1383,43 @@ public abstract class CFAbstractTransfer<
         lubResult = result;
       } else {
         S thenStore = lubResult.getThenStore().leastUpperBound(result.getThenStore());
-        boolean storeChanged = lubResult.storeChanged() || result.storeChanged();
-        if (alwaysMatches) {
-          lubResult = new RegularTransferResult<>(null, thenStore, storeChanged);
-        } else {
-          S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
-          lubResult = new ConditionalTransferResult<>(null, thenStore, elseStore, storeChanged);
-        }
+        S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
+        lubResult =
+            new ConditionalTransferResult<>(
+                null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
       }
     }
     assert lubResult != null
         : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    // Non-null if a record accessor might have changed the selector expression and the case node
+    // has exceptional successors (for a MatchException when no case matches).  These stores
+    // contain the effect of the accessor calls but not the facts implied by a successful match.
+    Map<TypeMirror, S> exceptionalStores = null;
     if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
       // A record accessor that a record pattern of this case invokes might have changed the
       // selector expression.  The CFG does not represent the accessor calls, so their effect on
       // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
       JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
       lubResult.getThenStore().clearValue(selector);
-      if (!alwaysMatches) {
-        lubResult.getElseStore().clearValue(selector);
+      lubResult.getElseStore().clearValue(selector);
+      if (n.getBlock() instanceof ExceptionBlock block
+          && !block.getExceptionalSuccessors().isEmpty()) {
+        exceptionalStores = new LinkedHashMap<>();
+        for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
+          S exceptionalStore = store.copy();
+          exceptionalStore.clearValue(selector);
+          exceptionalStores.put(exceptionType, exceptionalStore);
+        }
       }
     }
-    if (alwaysMatches) {
-      // The case expressions are not tested, so the facts that hold when they match hold after
-      // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
-      return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
+    if (n.labelsUntested()) {
+      // The CFG does not test the case expressions, so the facts that hold when they match hold
+      // after this node.
+      return new RegularTransferResult<>(
+          null, lubResult.getThenStore(), exceptionalStores, lubResult.storeChanged());
+    }
+    if (exceptionalStores != null) {
+      return lubResult.withExceptionalStores(exceptionalStores);
     }
     return lubResult;
   }

@@ -1,6 +1,7 @@
 // @below-java17-jdk-skip-test
 
-// Test that the label of the last case of an exhaustive switch refines the selector in the body.
+// Test that the label of the last case of an exhaustive switch expression refines the selector in
+// the body.  EnumSwitchStatementLastCase.java tests a switch statement.
 
 import org.checkerframework.common.value.qual.EnumVal;
 
@@ -19,14 +20,5 @@ public class EnumSwitchLastCase {
         yield 2;
       }
     };
-  }
-
-  void switchStatement(E e) {
-    switch (e) {
-      case A -> {}
-      case B -> {
-        @EnumVal("B") E x = e;
-      }
-    }
   }
 }
