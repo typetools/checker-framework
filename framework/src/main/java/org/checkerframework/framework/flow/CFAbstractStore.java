@@ -1368,9 +1368,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
-    TypeMirror tb = b.getType();
-    TypeMirror ta = a.getType();
     Types types = analysis.getTypes();
+    // Erasure makes the test conservative for type variables, wildcards, and type arguments.  For
+    // example, values of types `T` and `U` that are both bounded by `D` might be the same object,
+    // and so might values of types `Box<? extends Number>` and `Box<? super Integer>`, even though
+    // neither type is a subtype of the other.
+    TypeMirror ta = types.erasure(a.getType());
+    TypeMirror tb = types.erasure(b.getType());
     return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
   }
 
