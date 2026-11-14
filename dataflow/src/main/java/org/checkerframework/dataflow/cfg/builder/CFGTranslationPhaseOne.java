@@ -70,6 +70,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -845,8 +846,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
-  /** The UID for the next unique name. */
-  protected long uid = 0;
+  /**
+   * The UID for the next unique name.
+   *
+   * <p>This is static so that names are unique across all CFGs, not just within one CFG. Therefore,
+   * a client can use the name of a temporary variable to identify it, even in a data structure that
+   * holds the temporary variables of more than one method.
+   */
+  protected static final AtomicLong uid = new AtomicLong();
 
   /**
    * Returns a unique name starting with {@code prefix}.
@@ -855,7 +862,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a unique name starting with {@code prefix}
    */
   protected String uniqueName(String prefix) {
-    return prefix + "#num" + uid++;
+    return prefix + "#num" + uid.getAndIncrement();
   }
 
   /**
@@ -1803,7 +1810,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
       iteratorCallNode.setInSource(false);
-      extendWithSyntheticMethodInvocationNode(iteratorCallNode);
+      extendWithMethodInvocationNode(iteratorCallNode);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1832,7 +1839,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
       hasNextCallNode.setInSource(false);
-      extendWithSyntheticMethodInvocationNode(hasNextCallNode);
+      extendWithMethodInvocationNode(hasNextCallNode);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1865,14 +1872,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
-      extendWithSyntheticMethodInvocationNode(nextCallNode);
+      extendWithMethodInvocationNode(nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
       assert statement != null;
       scan(statement, p);
@@ -2828,7 +2830,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MethodInvocationNode(
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
+    extendWithMethodInvocationNode(closeCallNode);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -3453,21 +3455,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    extendWithMethodInvocationNode(method, node);
+    extendWithMethodInvocationNode(node);
     return node;
   }
 
   /**
-   * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
-   * invocation. If the method is annotated {@link TerminatesExecution}, the invocation terminates
-   * execution.
+   * Extends the CFG with the given MethodInvocationNode, accounting for potential exceptions thrown
+   * by the invocation. If the method is annotated {@link TerminatesExecution}, the invocation
+   * terminates execution.
    *
-   * @param method the invoked method
-   * @param node the invocation
-   * @return an ExtendedNode representing the invocation and its possible thrown exceptions
+   * @param node an invocation
    */
-  private ExtendedNode extendWithMethodInvocationNode(
-      ExecutableElement method, MethodInvocationNode node) {
+  private void extendWithMethodInvocationNode(MethodInvocationNode node) {
+    ExecutableElement method = node.getTarget().getMethod();
     List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
     Set<TypeMirror> thrownSet =
         new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -3480,26 +3480,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
       extendedNode.setTerminatesExecution(true);
     }
-    return extendedNode;
-  }
-
-  /**
-   * Extends the CFG with a MethodInvocationNode for a call that the CFG builder synthesizes, such
-   * as the calls to {@code iterator()}, {@code hasNext()}, and {@code next()} in an enhanced for
-   * loop. Unlike {@link #extendWithMethodInvocationNode}, does not add exceptional edges. If the
-   * method is annotated {@link TerminatesExecution}, the invocation terminates execution.
-   *
-   * @param node the invocation
-   */
-  private void extendWithSyntheticMethodInvocationNode(MethodInvocationNode node) {
-    addToLookupMap(node);
-    NodeHolder holder = new NodeHolder(node);
-    if (annotationProvider.getDeclAnnotation(
-            node.getTarget().getMethod(), TerminatesExecution.class)
-        != null) {
-      holder.setTerminatesExecution(true);
-    }
-    extendWithExtendedNode(holder);
   }
 
   @Override
