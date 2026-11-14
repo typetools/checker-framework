@@ -110,6 +110,45 @@ public class CaseGuardElseStore {
     }
   }
 
+  void guardPostconditionPatternAlwaysMatches(String sel) {
+    switch (sel) {
+      case CharSequence s when init() -> {}
+      default -> {
+        f.hashCode();
+      }
+    }
+  }
+
+  void guardFalsePatternAlwaysMatches(String sel, @Nullable Object o) {
+    switch (sel) {
+      case String s when isNull(o) -> {}
+      default -> {
+        o.hashCode();
+      }
+    }
+  }
+
+  // The `case null` matches null, so the pattern matches every value that is tested against it.
+  void guardFalsePatternAlwaysMatchesAfterCaseNull(@Nullable String sel, @Nullable Object o) {
+    switch (sel) {
+      case null -> {}
+      case String s when isNull(o) -> {}
+      default -> {
+        o.hashCode();
+      }
+    }
+  }
+
+  void guardFalsePatternAlwaysMatchesCaseNull(@Nullable String sel, @Nullable Object o) {
+    switch (sel) {
+      case String s when isNull(o) -> {}
+      case null, default -> {
+        // :: error: [dereference.of.nullable]
+        o.hashCode();
+      }
+    }
+  }
+
   int switchExpression(Object sel, @Nullable Object o) {
     return switch (sel) {
       case String s when isNN(o) -> o.hashCode();
@@ -159,6 +198,123 @@ public class CaseGuardElseStore {
       case R(Circle c) -> {}
       case R(Square q) -> {}
       case R(Shape s) when clear() -> {
+        // :: error: [dereference.of.nullable]
+        f.hashCode();
+      }
+    }
+  }
+
+  // The refinement of the selector comes from the label, not from the guard.
+  void patternAlwaysMatchesRefinesSelector(@Nullable String sel, boolean b) {
+    // :: error: [switching.nullable]
+    switch (sel) {
+      case String s when b -> {
+        sel.hashCode();
+      }
+      default -> {}
+    }
+  }
+
+  // If the guard of the last case is false, the switch throws MatchException.
+  void lastCaseOfExhaustiveGuardFalse(R r, boolean b) {
+    @Nullable Object x = null;
+    switch (r) {
+      case R(Circle c) -> x = "";
+      case R(Square q) -> x = "";
+      case R(Shape s) when b -> x = "";
+    }
+    x.hashCode();
+  }
+
+  String lastCaseOfExhaustiveGuardFalseSwitchExpression(R r, boolean b) {
+    String x =
+        switch (r) {
+          case R(Circle c) -> "a";
+          case R(Square q) -> "b";
+          case R(Shape s) when b -> "c";
+        };
+    return x;
+  }
+
+  void lastCaseOfExhaustiveGuardFalseCatch(R r, boolean b) {
+    @Nullable Object x = "";
+    try {
+      x = null;
+      switch (r) {
+        case R(Circle c) -> x = "";
+        case R(Square q) -> x = "";
+        case R(Shape s) when b -> x = "";
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      x.hashCode();
+    }
+  }
+
+  // The catch block receives the effects of evaluating the guard, which sets f to null.
+  void lastCaseOfExhaustiveGuardFalseEffectsCatch(R r, boolean b) {
+    f = "";
+    try {
+      switch (r) {
+        case R(Circle c) -> {}
+        case R(Square q) -> {}
+        case R(Shape s) when clear() && b -> {}
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      f.hashCode();
+    }
+  }
+
+  void recordPatternAlwaysMatches(R r) {
+    switch (r) {
+      case R(Shape s) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  void recordPatternVarAlwaysMatches(R r) {
+    switch (r) {
+      case R(var s) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  void recordPatternNarrowerComponent(R r) {
+    switch (r) {
+      case R(Circle c) when init() -> {}
+      default -> {
+        // :: error: [dereference.of.nullable]
+        f.hashCode();
+      }
+    }
+  }
+
+  record Box<T>(T t) {}
+
+  void genericRecordPatternAlwaysMatches(Box<String> b) {
+    switch (b) {
+      case Box<String>(String s) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  record P(int x) {}
+
+  void primitiveComponentAlwaysMatches(P p) {
+    switch (p) {
+      case P(int x) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  record RR(R r) {}
+
+  // RR(null) does not match RR(R(Shape s)).
+  void nestedRecordPatternDoesNotAlwaysMatch(RR rr) {
+    switch (rr) {
+      case RR(R(Shape s)) when init() -> {}
+      default -> {
         // :: error: [dereference.of.nullable]
         f.hashCode();
       }
