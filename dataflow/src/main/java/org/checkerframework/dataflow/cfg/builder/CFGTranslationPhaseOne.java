@@ -2127,6 +2127,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private final ExpressionTree selectorExprTree;
 
+    /**
+     * True if the CFG built so far evaluates code other than the selector expression: the guard of
+     * some case of {@link #switchTree}, or a record accessor that a record pattern invokes.
+     */
+    private boolean otherCodeEvaluated = false;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2324,11 +2330,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement from the
-      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the
-      // future, that can be performed, but it requires addition of InfeasibleExitBlock, a new
-      // SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
@@ -2341,10 +2342,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
+          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+            // Matching a record pattern invokes record accessors, which might have side effects,
+            // even if the match fails.  (Nested record patterns occur only within a record
+            // pattern.)
+            otherCodeEvaluated = true;
+          }
         }
 
-        if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+        // If true, the labels are not tested.
+        boolean alwaysMatches = isLastCaseOfExhaustive;
+        extendWithNode(
+            new CaseNode(
+                caseTree,
+                selectorExprAssignment,
+                exprs,
+                alwaysMatches,
+                otherCodeEvaluated,
+                env.getTypeUtils()));
+        if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
@@ -2354,6 +2370,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          otherCodeEvaluated = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {

@@ -36,20 +36,46 @@ public class CaseNode extends Node {
   protected final List<Node> caseExprs;
 
   /**
+   * True if the CFG does not test the case expressions. This is so if they match every value of the
+   * switch selector expression that is tested against them, or if this is the last case of an
+   * exhaustive switch.
+   */
+  protected final boolean alwaysMatches;
+
+  /**
+   * True if code other than the switch selector expression, such as the guard of an earlier case,
+   * is evaluated after the switch selector expression and before this case's labels are tested. See
+   * {@link #isPrecededByOtherCode()}.
+   */
+  protected final boolean precededByOtherCode;
+
+  /**
    * Creates a new CaseNode.
    *
    * @param tree the tree for this node
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
+   * @param alwaysMatches true if the CFG does not test the case expressions; see {@link
+   *     #alwaysMatches()}
+   * @param precededByOtherCode true if code other than the switch selector expression, such as the
+   *     guard of an earlier case, is evaluated before this case's labels are tested; see {@link
+   *     #isPrecededByOtherCode()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
-      CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
+      CaseTree tree,
+      AssignmentNode selectorExprAssignment,
+      List<Node> caseExprs,
+      boolean alwaysMatches,
+      boolean precededByOtherCode,
+      Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
+    this.alwaysMatches = alwaysMatches;
+    this.precededByOtherCode = precededByOtherCode;
   }
 
   /**
@@ -70,6 +96,36 @@ public class CaseNode extends Node {
    */
   public List<Node> getCaseOperands() {
     return caseExprs;
+  }
+
+  /**
+   * Returns true if the CFG does not test the case expressions. This is so if they match every
+   * value of the switch selector expression that is tested against them, or if this is the last
+   * case of an exhaustive switch.
+   *
+   * @return true if the CFG does not test the case expressions
+   */
+  public boolean alwaysMatches() {
+    return alwaysMatches;
+  }
+
+  /**
+   * Returns true if code other than the switch selector expression is evaluated after the switch
+   * selector expression and before this case's labels are tested, or while they are tested. Such
+   * code is the guard of an earlier case, or a record accessor that a record pattern of this case
+   * or an earlier case invokes. (The CFG does not represent the record accessor calls.)
+   *
+   * <p>If so, that code might have changed the value of the switch selector expression (the
+   * expression of {@link #getSwitchOperand()}). For example, it might assign a field that is the
+   * selector expression, or might mutate the object that the selector expression evaluates to.
+   * Then, a fact about the value that was tested against the case expressions need not hold for the
+   * selector expression. It does hold for the synthetic variable to which that value is assigned.
+   *
+   * @return true if code other than the switch selector expression is evaluated before this case's
+   *     labels are tested, or while they are tested
+   */
+  public boolean isPrecededByOtherCode() {
+    return precededByOtherCode;
   }
 
   @Override
@@ -93,12 +149,14 @@ public class CaseNode extends Node {
       return false;
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
-        && getCaseOperands().equals(other.getCaseOperands());
+        && getCaseOperands().equals(other.getCaseOperands())
+        && alwaysMatches == other.alwaysMatches
+        && precededByOtherCode == other.precededByOtherCode;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands());
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches, precededByOtherCode);
   }
 
   @Override
