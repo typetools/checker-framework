@@ -36,6 +36,27 @@ public class ResourceLeakCountMustCallTest {
     Assert.assertEquals("Messages: " + messages, found - 1, verified);
   }
 
+  /** A resource whose type is a type variable is counted by the erasure of the type variable. */
+  @Test
+  public void typeVariableIsCounted() {
+    String testDir = "tests/resourceleak-countmustcall";
+    TestConfiguration config =
+        TestConfigurationBuilder.buildDefaultConfiguration(
+            testDir,
+            new File(testDir, "TypeVariable.java"),
+            ResourceLeakChecker.class,
+            List.of("-AcountMustCall"),
+            TestUtilities.getShouldEmitDebugInfo());
+    CompilationResult result = new TypecheckExecutor().compile(config);
+    List<String> messages =
+        result.getDiagnostics().stream().map(d -> d.getMessage(Locale.ROOT)).toList();
+    Assert.assertTrue("Messages: " + messages, result.compiledWithoutError());
+    int found = countFromMessage(messages, "Found (\\d+) must call obligation");
+    int verified = countFromMessage(messages, "Successfully verified (\\d+) must call obligation");
+    Assert.assertTrue("Messages: " + messages, found > 0);
+    Assert.assertEquals("Messages: " + messages, found, verified);
+  }
+
   /**
    * Returns the number in the first message that the given regular expression matches.
    *

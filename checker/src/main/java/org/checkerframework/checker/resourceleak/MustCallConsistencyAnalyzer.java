@@ -2465,8 +2465,10 @@ public class MustCallConsistencyAnalyzer {
    * @param type the type of the object that has a must-call obligation
    */
   private void incrementMustCallImpl(TypeMirror type) {
-    // only count uses of JDK classes, since that's what the paper reported
-    if (!isJdkClass(TypesUtils.getTypeElement(type).getQualifiedName().toString())) {
+    // Only count uses of JDK classes, since that's what the paper reported.  The erasure of a
+    // type variable is the erasure of its upper bound.
+    TypeElement typeElement = TypesUtils.getTypeElement(checker.getTypeUtils().erasure(type));
+    if (typeElement == null || !isJdkClass(typeElement.getQualifiedName().toString())) {
       return;
     }
     checker.numMustCall++;
