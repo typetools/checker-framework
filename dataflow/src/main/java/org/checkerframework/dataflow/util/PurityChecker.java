@@ -285,10 +285,70 @@ public final class PurityChecker {
     if (parameterFunction == null) {
       return EnumSet.noneOf(PurityKind.class);
     }
+    return functionalParameterPurity(annoProvider, method, index, parameterFunction, env);
+  }
+
+  /**
+   * Returns the purity that the argument passed to {@code method}'s parameter at {@code index} is
+   * known to have, beyond the annotations on {@code parameterFunction}. See {@link
+   * #functionalParameterPurity(AnnotationProvider, ExecutableElement, int, ProcessingEnvironment)},
+   * which computes {@code parameterFunction}.
+   *
+   * @param annoProvider the annotation provider
+   * @param method a method or constructor
+   * @param index the index of one of {@code method}'s formal parameters
+   * @param parameterFunction the functional method of the type of the parameter at {@code index}
+   * @param env the processing environment
+   * @return the purity that the argument at {@code index} is known to have
+   */
+  public static EnumSet<PurityKind> functionalParameterPurity(
+      AnnotationProvider annoProvider,
+      ExecutableElement method,
+      int index,
+      ExecutableElement parameterFunction,
+      ProcessingEnvironment env) {
     EnumSet<PurityKind> result = functionalParameterKinds(annoProvider, method, env);
     PurityUtils.addDeterminismOfVoidCall(result, parameterFunction.getReturnType());
     for (ExecutableElement overridden :
         ElementUtils.getOverriddenMethods(method, env.getTypeUtils())) {
+      if (result.isEmpty()) {
+        break;
+      }
+      result.retainAll(
+          guaranteedFunctionalArgumentPurity(
+              annoProvider, overridden, index, parameterFunction, env));
+    }
+    return result;
+  }
+
+  /**
+   * Returns the purity that every call through {@code declaration}, or through a method that {@code
+   * declaration} overrides, guarantees of the code that it passes to the parameter at {@code
+   * index}, for an implementation whose parameter at that index has the functional method {@code
+   * parameterFunction}. Each call checks its arguments against the declaration that it invokes, so
+   * the result is the purity that {@link #guaranteedFunctionalArgumentPurity} computes for every
+   * one of those declarations.
+   *
+   * @param annoProvider the annotation provider
+   * @param declaration a method through which a call might reach an implementation
+   * @param index the index of a formal parameter of {@code declaration}
+   * @param parameterFunction the functional method of the implementation's parameter at {@code
+   *     index}
+   * @param env the processing environment
+   * @return the purity that every call through {@code declaration} or a method that it overrides
+   *     guarantees of the argument
+   */
+  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurityWithOverridden(
+      AnnotationProvider annoProvider,
+      ExecutableElement declaration,
+      int index,
+      ExecutableElement parameterFunction,
+      ProcessingEnvironment env) {
+    EnumSet<PurityKind> result =
+        guaranteedFunctionalArgumentPurity(
+            annoProvider, declaration, index, parameterFunction, env);
+    for (ExecutableElement overridden :
+        ElementUtils.getOverriddenMethods(declaration, env.getTypeUtils())) {
       if (result.isEmpty()) {
         break;
       }
@@ -325,7 +385,7 @@ public final class PurityChecker {
    * @param env the processing environment
    * @return the purity that a call through {@code declaration} guarantees of the argument
    */
-  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
+  private static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
       AnnotationProvider annoProvider,
       ExecutableElement declaration,
       int index,

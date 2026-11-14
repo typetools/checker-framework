@@ -184,12 +184,6 @@ whose parameter at that position is not a functional interface (for example,
 its type is a type variable), guarantees nothing, and the assumption does not
 apply.
 
-A method reference does not override the functional method that it
-implements, but it is checked against the same rule.  A method reference to a
-method that relies on its functional-interface argument being pure is an error
-if the functional method that the reference implements does not guarantee that
-purity (\<purity.methodref.functional.parameter>).
-
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  The requirement is the same for every
@@ -231,6 +225,19 @@ deterministic:
 \begin{Verbatim}
   Objects.requireNonNull(x, () -> String.format("bad %s", y));  // error: [purity.call]
 \end{Verbatim}
+
+A method reference does not override the functional method that it
+implements, but a call through that functional method, or through any method
+that the functional method overrides, can run the referenced method.  Each
+such call checks its arguments only against the method that it invokes.  So a
+method reference is an error (\<purity.methodref.functional.parameter>) if
+the referenced method assumes a purity of a functional-interface argument that
+one of those methods does not promise.  A purity that a command-line option
+such as \<-AassumeSideEffectFree> grants to every call is not required.  There
+is no error if the referenced method cannot be overridden (for example, it is
+static, private, or final) and its body does not rely on the assumption:  the
+body uses the parameter only to store it, return it, compare it, or call a
+method other than the functional method on it.
 
 The assumption affects purity checking, and the dataflow analysis of a lambda
 in the method body, but not the dataflow analysis of the body itself.  A
