@@ -9,6 +9,15 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator, because the conversions of a
+binary operation's operands depend on the operator.
+
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -48,6 +57,28 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
+and else-store:  the result's then-store and else-store are both their least
+upper bound.  Use it when the input's then-store and else-store describe an
+earlier node, such as an operand.  New method
+`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
+then-store and else-store; use it when they describe the current node, as for a
+cast.
+
+These methods of `CFAbstractTransfer` no longer call `visitNode()`:
+`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
+`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
+`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call,
+when the input has a then-store and an else-store); for boolean operands,
+`visitBitwiseAnd()`, `visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`,
+and `visitNotEqual()`; and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+
+`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
+function of the lambda's result node; it uses the value that the result node
+already computed.
 
 Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 

@@ -1,9 +1,11 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -24,6 +26,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -40,13 +43,22 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
+import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
@@ -54,6 +66,8 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MarkerNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -64,6 +78,8 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
+import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -96,6 +112,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -648,31 +665,90 @@ public abstract class CFAbstractTransfer<
    */
   @Override
   public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
-    V value = null;
-
-    // TODO: handle implicit/explicit this and go to correct factory method
-    Tree tree = n.getTree();
-    if (tree != null) {
-      if (TreeUtils.canHaveTypeAnnotation(tree)) {
-        value = getValueFromFactory(tree, n);
-      }
-    }
-
-    return createTransferResult(value, in);
+    return createTransferResult(getValueFromFactory(n), in);
   }
 
   /**
-   * Creates a TransferResult.
+   * Returns the abstract value of the given node according to the type factory, or null if its tree
+   * cannot have a type annotation.
    *
-   * <p>This default implementation returns the input information unchanged, or in the case of
-   * conditional input information, merged.
+   * @param n a node
+   * @return the abstract value of the node according to the type factory, or null
+   */
+  private @Nullable V getValueFromFactory(Node n) {
+    // TODO: handle implicit/explicit this and go to correct factory method
+    Tree tree = n.getTree();
+    if (tree != null && TreeUtils.canHaveTypeAnnotation(tree)) {
+      return getValueFromFactory(tree, n);
+    }
+    return null;
+  }
+
+  /**
+   * Creates a TransferResult with the given value and the stores of the given input, merging the
+   * input's then-store and else-store if it has them.
    *
-   * @param value the value; possibly null
+   * <p>If the input has a regular store, the result has that store. If the input has a then-store
+   * and an else-store, the result also has a then-store and an else-store, but each is the least
+   * upper bound of the input's two stores. The result's then-store and else-store are distinct
+   * objects, so a caller can refine either one in place.
+   *
+   * <p>There are two situations when creating a transfer result, depending on what the then-store
+   * and else-store of the input describe:
+   *
+   * <ul>
+   *   <li>The input stores describe a node evaluated earlier, such as an operand. The facts in
+   *       their then-store and else-store need not be true when this node is true or false,
+   *       respectively. For example, the then-store of {@code isNonNull(x)} does not hold when
+   *       {@code Boolean.logicalXor(true, isNonNull(x))} is true. In that case, use this method,
+   *       which merges the input stores.
+   *   <li>The input stores describe this node, as for a cast, or this node passes them along
+   *       unchanged for a later node to use, as for a boolean literal that is the right operand of
+   *       {@code ==}. In that case, use {@link #createTransferResultKeepingStores}, which keeps the
+   *       input stores.
+   * </ul>
+   *
+   * @param value the abstract value of the result; possibly null
    * @param in the transfer input
-   * @return the input information, as a TransferResult
+   * @return a TransferResult with the given value, as modified by {@link #finishValue}, and the
+   *     merged stores of {@code in}
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
+    if (in.containsTwoStores()) {
+      // This computes the least upper bound even when the two stores are equal, because the
+      // `equals` method of some stores ignores some facts. For example, InitializationStore ignores
+      // the values of invariant fields.
+      S thenStore = in.getThenStore().leastUpperBound(in.getElseStore());
+      S elseStore = thenStore.copy();
+      return new ConditionalTransferResult<>(
+          finishValue(value, thenStore, elseStore), thenStore, elseStore);
+    } else {
+      S store = in.getRegularStore();
+      return new RegularTransferResult<>(finishValue(value, store), store);
+    }
+  }
+
+  /**
+   * Creates a TransferResult with the given value and the stores of the given input, keeping the
+   * input's then-store and else-store if it has them.
+   *
+   * <p>For example, the input of {@code a && b} merges the stores of the short-circuit edge from
+   * {@code a} and the stores of {@code b}, so its then-store and else-store describe {@code a &&
+   * b}.
+   *
+   * <p>Use this method when the input's then-store and else-store describe the current node, or
+   * when the current node passes them along unchanged for a later node to use. Otherwise, use
+   * {@link #createTransferResult(CFAbstractValue, TransferInput)}, which explains the difference.
+   *
+   * @param value the abstract value of the result; possibly null
+   * @param in the transfer input
+   * @return a TransferResult with the given value, as modified by {@link #finishValue}, and the
+   *     stores of {@code in}
+   */
+  @SideEffectFree
+  protected TransferResult<V, S> createTransferResultKeepingStores(
+      @Nullable V value, TransferInput<V, S> in) {
     if (in.containsTwoStores()) {
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
@@ -685,16 +761,15 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Creates a TransferResult just like the given one, but with the given annotation as its value.
-   *
-   * <p>This default implementation returns the input information unchanged, or in the case of
-   * conditional input information, merged.
+   * Creates a TransferResult whose value has the given annotation and type, and whose stores are
+   * those of the given input, merged as by {@link #createTransferResult(CFAbstractValue,
+   * TransferInput)}.
    *
    * @param anno the annotation for the result value
    * @param tm the type for the result value
    * @param in the transfer input
-   * @return the input information, as a TransferResult
-   * @see #createTransferResult(CFAbstractValue, TransferInput)
+   * @return a TransferResult with a value built from {@code anno} and {@code tm}, as modified by
+   *     {@link #finishValue}, and the merged stores of {@code in}
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(
@@ -739,6 +814,145 @@ public abstract class CFAbstractTransfer<
       AnnotationMirror anno, TransferResult<V, S> in) {
     return recreateTransferResult(
         analysis.createSingleAnnotationValue(anno, in.getResultValue().getUnderlyingType()), in);
+  }
+
+  /**
+   * A literal usually merges the then-store and else-store of its input, as most nodes do; see
+   * {@link #createTransferResult}.
+   *
+   * <p>The exception is a boolean literal that is the right operand of a boolean operator such as
+   * {@code ==} or {@code &}, possibly within {@code !} operators, casts, and explicit calls to
+   * {@code booleanValue()}. The then-store and else-store of its input describe the operator's left
+   * operand, so the literal passes them along for the operator to use; see {@link
+   * #createTransferResultOfBooleanOperator}.
+   */
+  @Override
+  public TransferResult<V, S> visitValueLiteral(ValueLiteralNode n, TransferInput<V, S> in) {
+    if (n instanceof BooleanLiteralNode
+        && in.containsTwoStores()
+        && isRightOperandOfBooleanOperator(n.getTree())) {
+      return createTransferResultKeepingStores(getValueFromFactory(n), in);
+    }
+    return super.visitValueLiteral(n, in);
+  }
+
+  /**
+   * Returns true if the given tree is the right operand of {@code ==}, {@code !=}, {@code &},
+   * {@code |}, or {@code ^}, possibly within parentheses, {@code !} operators, casts, and explicit
+   * calls to {@code Boolean.booleanValue()}.
+   *
+   * @param tree a tree
+   * @return true if the tree is the right operand of a boolean operator
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of trees
+  private boolean isRightOperandOfBooleanOperator(Tree tree) {
+    TreePath path = analysis.atypeFactory.getPath(tree);
+    if (path == null) {
+      return false;
+    }
+    Tree operand = tree;
+    for (TreePath parentPath = path.getParentPath();
+        parentPath != null;
+        parentPath = parentPath.getParentPath()) {
+      Tree parent = parentPath.getLeaf();
+      switch (parent.getKind()) {
+        case PARENTHESIZED, TYPE_CAST, LOGICAL_COMPLEMENT -> operand = parent;
+        case MEMBER_SELECT -> {
+          // An explicit unboxing call, such as `((Boolean) true).booleanValue()`, has no side
+          // effects and equals its receiver.  Skip over both the method access and the call.
+          TreePath invocationPath = parentPath.getParentPath();
+          if (invocationPath == null
+              || !(invocationPath.getLeaf() instanceof MethodInvocationTree invocation)
+              || invocation.getMethodSelect() != parent
+              || !isBooleanValueMethod(TreeUtils.elementFromUse((MemberSelectTree) parent))) {
+            return false;
+          }
+          operand = invocation;
+          parentPath = invocationPath;
+        }
+        case EQUAL_TO, NOT_EQUAL_TO, AND, OR, XOR -> {
+          return ((BinaryTree) parent).getRightOperand() == operand;
+        }
+        default -> {
+          return false;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the given element is the method {@code Boolean.booleanValue()}.
+   *
+   * @param elt an element
+   * @return true if the element is {@code Boolean.booleanValue()}
+   */
+  private static boolean isBooleanValueMethod(Element elt) {
+    return elt instanceof ExecutableElement method
+        && !ElementUtils.isStatic(method)
+        && method.getParameters().isEmpty()
+        && method.getSimpleName().contentEquals("booleanValue")
+        && ElementUtils.enclosingTypeElement(method)
+            .getQualifiedName()
+            .contentEquals("java.lang.Boolean");
+  }
+
+  /**
+   * A method access merges the then-store and else-store of its input, as most nodes do; see {@link
+   * #createTransferResult}.
+   *
+   * <p>The exception is the target of an unboxing call, such as {@code isNonNull(x).booleanValue}.
+   * The then-store and else-store of its input describe its receiver, so the method access passes
+   * them along for the unboxing call to use; see {@link #visitUnboxingCall}.
+   */
+  @Override
+  public TransferResult<V, S> visitMethodAccess(MethodAccessNode n, TransferInput<V, S> in) {
+    if (in.containsTwoStores() && isTargetOfUnboxingCall(n)) {
+      return createTransferResultKeepingStores(getValueFromFactory(n), in);
+    }
+    return super.visitMethodAccess(n, in);
+  }
+
+  /**
+   * Returns true if the given method access is the target of an unboxing call.
+   *
+   * @param n a method access
+   * @return true if the method access is the target of an unboxing call
+   */
+  @SuppressWarnings("interning:not.interned") // CFG node identity
+  private boolean isTargetOfUnboxingCall(MethodAccessNode n) {
+    // Cheap filter: unboxing conversion applies to the receiver of an unboxing call.  The receiver
+    // is a boxed primitive, or a type variable or intersection type whose erasure is one.  This
+    // avoids scanning the block for most method accesses.
+    if (!TypesUtils.isUnboxable(n.getReceiver().getType(), analysis.getTypes())) {
+      return false;
+    }
+    Block block = n.getBlock();
+    if (block == null) {
+      return false;
+    }
+    // The call follows n in its block or, because a method access can throw an exception, begins
+    // the block that succeeds it.
+    List<Node> nodes = block.getNodes();
+    int i = 0;
+    while (i < nodes.size() && nodes.get(i) != n) {
+      i++;
+    }
+    i++;
+    if (i >= nodes.size()) {
+      if (!(block instanceof SingleSuccessorBlock ssb)) {
+        return false;
+      }
+      block = ssb.getSuccessor();
+      if (block == null || block.getNodes().isEmpty()) {
+        return false;
+      }
+      nodes = block.getNodes();
+      i = 0;
+    }
+    return nodes.get(i) instanceof MethodInvocationNode call
+        && call.getIsUnboxing()
+        && call.getTarget() == n;
   }
 
   @Override
@@ -817,9 +1031,10 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitTernaryExpression(
       TernaryExpressionNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitTernaryExpression(n, p);
-    S thenStore = result.getThenStore();
-    S elseStore = result.getElseStore();
+    // Each branch ends by assigning the value of the expression, and the input merges the stores
+    // at the ends of the branches. So, the input's then-store and else-store describe this node.
+    S thenStore = p.getThenStore();
+    S elseStore = p.getElseStore();
 
     V thenValue = p.getValueOfSubNode(n.getThenOperand());
     V elseValue = p.getValueOfSubNode(n.getElseOperand());
@@ -843,31 +1058,202 @@ public abstract class CFAbstractTransfer<
     return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
   }
 
-  /** Reverses the roles of the 'thenStore' and 'elseStore'. */
+  /**
+   * Reverses the roles of the 'thenStore' and 'elseStore', unless the operand is a constant. The
+   * then-store and else-store of a constant describe an earlier node; see {@link
+   * #visitValueLiteral}.
+   */
   @Override
-  public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitConditionalNot(n, p);
-    S thenStore = result.getThenStore();
-    S elseStore = result.getElseStore();
-    return new ConditionalTransferResult<>(result.getResultValue(), elseStore, thenStore);
+  public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> in) {
+    TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), in);
+    if (!result.containsTwoStores() || NodeUtils.isConstantBoolean(n.getOperand())) {
+      return result;
+    }
+    return new ConditionalTransferResult<>(
+        result.getResultValue(), result.getElseStore(), result.getThenStore());
+  }
+
+  /**
+   * The input's then-store is that of {@code b}, and its else-store merges those of {@code a} and
+   * {@code b}, so they describe {@code a && b}.
+   */
+  @Override
+  public TransferResult<V, S> visitConditionalAnd(ConditionalAndNode n, TransferInput<V, S> in) {
+    return createTransferResultKeepingStores(getValueFromFactory(n), in);
+  }
+
+  /**
+   * The input's then-store merges those of {@code a} and {@code b}, and its else-store is that of
+   * {@code b}, so they describe {@code a || b}.
+   */
+  @Override
+  public TransferResult<V, S> visitConditionalOr(ConditionalOrNode n, TransferInput<V, S> in) {
+    return createTransferResultKeepingStores(getValueFromFactory(n), in);
+  }
+
+  /** A cast has the value of its operand, which is evaluated just before it. */
+  @Override
+  public TransferResult<V, S> visitTypeCast(TypeCastNode n, TransferInput<V, S> in) {
+    return createTransferResultKeepingStores(getValueFromFactory(n), in);
+  }
+
+  /** A marker evaluates nothing, so it does not change which node the input's stores describe. */
+  @Override
+  public TransferResult<V, S> visitMarker(MarkerNode n, TransferInput<V, S> in) {
+    return createTransferResultKeepingStores(getValueFromFactory(n), in);
+  }
+
+  @Override
+  public TransferResult<V, S> visitBitwiseAnd(BitwiseAndNode n, TransferInput<V, S> in) {
+    TransferResult<V, S> result = createTransferResultOfBooleanOperator(n, in, (l, r) -> l && r);
+    return result != null ? result : super.visitBitwiseAnd(n, in);
+  }
+
+  @Override
+  public TransferResult<V, S> visitBitwiseOr(BitwiseOrNode n, TransferInput<V, S> in) {
+    TransferResult<V, S> result = createTransferResultOfBooleanOperator(n, in, (l, r) -> l || r);
+    return result != null ? result : super.visitBitwiseOr(n, in);
+  }
+
+  @Override
+  public TransferResult<V, S> visitBitwiseXor(BitwiseXorNode n, TransferInput<V, S> in) {
+    TransferResult<V, S> result = createTransferResultOfBooleanOperator(n, in, (l, r) -> l ^ r);
+    return result != null ? result : super.visitBitwiseXor(n, in);
+  }
+
+  /** The truth table of a binary boolean operator. */
+  @FunctionalInterface
+  private interface BooleanOperator {
+    /**
+     * Returns the value of the operator for the given operands.
+     *
+     * @param left the left operand
+     * @param right the right operand
+     * @return the value of the operator
+     */
+    boolean apply(boolean left, boolean right);
+  }
+
+  /**
+   * Returns a TransferResult for the given boolean operator, whose then-store and else-store are
+   * derived from those of {@code in}. Returns null if {@code operatorNode} does not have boolean
+   * operands, or if it is {@code ==} or {@code !=} with two boxed operands, which Java compares by
+   * reference.
+   *
+   * <p>The then-store and else-store of {@code in} describe one of the operands, called the
+   * described operand: the right operand, which is evaluated last, or the left operand if the right
+   * operand is a constant (see {@link #visitValueLiteral}).
+   *
+   * <p>The result's then-store is the least upper bound of whichever of the described operand's
+   * stores can hold when the operator is true. The described operand's then-store is included if
+   * the described operand can be true when the operator is true, and is omitted otherwise.
+   * Likewise, the described operand's else-store is included if the described operand can be false
+   * when the operator is true, and is omitted otherwise. In determining this, the other operand can
+   * be either true or false, unless it is a constant. The result's else-store is defined likewise,
+   * for when the operator is false. For example, the then-store of {@code a & b} is the then-store
+   * of {@code b}, and the then-store of {@code a == false} is the else-store of {@code a}.
+   *
+   * <p>If the operator cannot be true, as for {@code a & false}, then neither store is included,
+   * and the result's then-store is the described operand's then-store. Any store is sound there,
+   * because the operator is never true. Likewise, if the operator cannot be false, the result's
+   * else-store is the described operand's else-store.
+   *
+   * @param operatorNode a node for a binary operator
+   * @param in the input to the transfer function for {@code operatorNode}
+   * @param truthTable the truth table of the operator
+   * @return a TransferResult for {@code operatorNode}, or null if its operands are not boolean
+   *     values
+   */
+  private @Nullable TransferResult<V, S> createTransferResultOfBooleanOperator(
+      BinaryOperationNode operatorNode, TransferInput<V, S> in, BooleanOperator truthTable) {
+    Node leftN = operatorNode.getLeftOperand();
+    Node rightN = operatorNode.getRightOperand();
+    if (!TypesUtils.isBooleanType(leftN.getType())
+        || !TypesUtils.isBooleanType(rightN.getType())
+        // The CFG does not unbox two boxed operands of == or !=, which Java compares by reference.
+        // Their references can differ even when their values are equal.
+        || ((operatorNode instanceof EqualToNode || operatorNode instanceof NotEqualNode)
+            && leftN.getType().getKind() != TypeKind.BOOLEAN
+            && rightN.getType().getKind() != TypeKind.BOOLEAN)) {
+      return null;
+    }
+    V value = getValueFromFactory(operatorNode);
+    if (!in.containsTwoStores()) {
+      return createTransferResult(value, in);
+    }
+    boolean describedIsLeft = NodeUtils.isConstantBoolean(rightN);
+    Node otherOperand = describedIsLeft ? rightN : leftN;
+    boolean[] otherValues =
+        NodeUtils.isConstantBoolean(otherOperand)
+            ? new boolean[] {NodeUtils.isConstantBoolean(otherOperand, true)}
+            : new boolean[] {true, false};
+    // Which of the described operand's stores the result's then-store and else-store include.
+    boolean thenIncludesThen = false;
+    boolean thenIncludesElse = false;
+    boolean elseIncludesThen = false;
+    boolean elseIncludesElse = false;
+    for (boolean otherValue : otherValues) {
+      if (describedIsLeft
+          ? truthTable.apply(true, otherValue)
+          : truthTable.apply(otherValue, true)) {
+        thenIncludesThen = true;
+      } else {
+        elseIncludesThen = true;
+      }
+      if (describedIsLeft
+          ? truthTable.apply(false, otherValue)
+          : truthTable.apply(otherValue, false)) {
+        thenIncludesElse = true;
+      } else {
+        elseIncludesElse = true;
+      }
+    }
+    // If the operator is never true, any then-store is sound, so use the described operand's
+    // then-store, which is the most precise one at hand; likewise if the operator is never false.
+    S thenStore = lubOfIncludedStores(thenIncludesThen, thenIncludesElse, in, in.getThenStore());
+    S elseStore =
+        (thenIncludesThen && thenIncludesElse && elseIncludesThen && elseIncludesElse)
+            // The two least upper bounds are the same; compute it once.
+            ? thenStore.copy()
+            : lubOfIncludedStores(elseIncludesThen, elseIncludesElse, in, in.getElseStore());
+    return new ConditionalTransferResult<>(
+        finishValue(value, thenStore, elseStore), thenStore, elseStore);
+  }
+
+  /**
+   * Returns the least upper bound of the included stores among the then-store and else-store of
+   * {@code in}, or {@code noneIncluded} if neither is included.
+   *
+   * @param includesThen true if the then-store of {@code in} is included
+   * @param includesElse true if the else-store of {@code in} is included
+   * @param in a transfer input that has a then-store and an else-store
+   * @param noneIncluded the store to return if neither store is included
+   * @return the least upper bound of the included stores, or {@code noneIncluded}
+   */
+  private S lubOfIncludedStores(
+      boolean includesThen, boolean includesElse, TransferInput<V, S> in, S noneIncluded) {
+    if (includesThen && includesElse) {
+      return in.getThenStore().leastUpperBound(in.getElseStore());
+    } else if (includesThen) {
+      return in.getThenStore();
+    } else if (includesElse) {
+      return in.getElseStore();
+    } else {
+      return noneIncluded;
+    }
   }
 
   @Override
   public TransferResult<V, S> visitEqualTo(EqualToNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> res = super.visitEqualTo(n, p);
+    TransferResult<V, S> res = createTransferResultOfBooleanOperator(n, p, (l, r) -> l == r);
+    if (res == null) {
+      res = super.visitEqualTo(n, p);
+    }
 
     Node leftN = n.getLeftOperand();
     Node rightN = n.getRightOperand();
     V leftV = p.getValueOfSubNode(leftN);
     V rightV = p.getValueOfSubNode(rightN);
-
-    if (res.containsTwoStores()
-        && (NodeUtils.isConstantBoolean(leftN, false)
-            || NodeUtils.isConstantBoolean(rightN, false))) {
-      S thenStore = res.getElseStore();
-      S elseStore = res.getThenStore();
-      res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
-    }
 
     // if annotations differ, use the one that is more precise for both
     // sides (and add it to the store if possible)
@@ -878,20 +1264,15 @@ public abstract class CFAbstractTransfer<
 
   @Override
   public TransferResult<V, S> visitNotEqual(NotEqualNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> res = super.visitNotEqual(n, p);
+    TransferResult<V, S> res = createTransferResultOfBooleanOperator(n, p, (l, r) -> l != r);
+    if (res == null) {
+      res = super.visitNotEqual(n, p);
+    }
 
     Node leftN = n.getLeftOperand();
     Node rightN = n.getRightOperand();
     V leftV = p.getValueOfSubNode(leftN);
     V rightV = p.getValueOfSubNode(rightN);
-
-    if (res.containsTwoStores()
-        && (NodeUtils.isConstantBoolean(leftN, true)
-            || NodeUtils.isConstantBoolean(rightN, true))) {
-      S thenStore = res.getElseStore();
-      S elseStore = res.getThenStore();
-      res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
-    }
 
     // if annotations differ, use the one that is more precise for both
     // sides (and add it to the store if possible)
@@ -1019,7 +1400,9 @@ public abstract class CFAbstractTransfer<
 
   @Override
   public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitReturn(n, p);
+    // The then-store and else-store describe the returned expression. They are used to check
+    // conditional postconditions.
+    TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), p);
 
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Retrieves class containing the method
@@ -1051,7 +1434,8 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitLambdaResultExpression(
       LambdaResultExpressionNode n, TransferInput<V, S> in) {
-    return n.getResult().accept(this, in);
+    // The result is evaluated just before this node, so the input already describes it.
+    return createTransferResultKeepingStores(in.getValueOfSubNode(n.getResult()), in);
   }
 
   /**
@@ -1097,6 +1481,10 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
+    if (n.getIsUnboxing()) {
+      return visitUnboxingCall(n, in);
+    }
+
     S store = in.getRegularStore();
 
     ExecutableElement method = n.getTarget().getMethod();
@@ -1126,6 +1514,53 @@ public abstract class CFAbstractTransfer<
 
     // add new information based on conditional postcondition
     processConditionalPostconditions(n, method, invocationTree, thenStore, elseStore);
+
+    return new ConditionalTransferResult<>(
+        finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+  }
+
+  /**
+   * The transfer function for an unboxing call, such as {@code booleanValue()}, that the CFG
+   * inserts or that is written explicitly. Such a call has no side effects, and its result equals
+   * its receiver. Therefore, the call keeps its receiver's stores, including any separate
+   * then-store and else-store. For a {@code Boolean} receiver, those hold the facts that are true
+   * when the receiver is true or false, respectively.
+   *
+   * <p>There is no whole-program inference, because the unboxing method is a JDK method of a boxed
+   * primitive type.
+   *
+   * @param n an unboxing call
+   * @param in the transfer input
+   * @return the transfer result for {@code n}
+   */
+  private TransferResult<V, S> visitUnboxingCall(MethodInvocationNode n, TransferInput<V, S> in) {
+    ExecutableElement method = n.getTarget().getMethod();
+    // The CFG builds a tree for each unboxing call, but a custom CFG might not.  Handle a missing
+    // tree as visitMethodInvocation does.
+    ExpressionTree unboxingTree = n.getTree();
+
+    S thenStore = in.getThenStore();
+    S elseStore = in.getElseStore();
+
+    // Determine the abstract value for the method call.
+    V factoryValue = (unboxingTree == null) ? null : getValueFromFactory(unboxingTree, n);
+    // look up the call's value in the stores (if possible)
+    V thenStoreValue = thenStore.getValue(n);
+    V elseStoreValue = elseStore.getValue(n);
+    V storeValue =
+        (thenStoreValue == null || elseStoreValue == null)
+            ? null
+            : thenStoreValue.leastUpperBound(elseStoreValue);
+    V resValue = moreSpecificValue(factoryValue, storeValue);
+
+    JavaExpression unboxingCall = JavaExpression.fromNode(n);
+    thenStore.replaceValue(unboxingCall, resValue);
+    elseStore.replaceValue(unboxingCall, resValue);
+
+    // add new information based on postcondition and conditional postcondition
+    processPostconditions(n, thenStore, method, unboxingTree);
+    processPostconditions(n, elseStore, method, unboxingTree);
+    processConditionalPostconditions(n, method, unboxingTree, thenStore, elseStore);
 
     return new ConditionalTransferResult<>(
         finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
@@ -1380,36 +1815,18 @@ public abstract class CFAbstractTransfer<
     return lubResult;
   }
 
-  // /**
-  //  * In a cast {@code (@A C) e} of some expression {@code e} to a new type {@code @A C}, we
-  // usually
-  //  * take the annotation of the type {@code C} (here {@code @A}). However, if the inferred
-  //  * annotation of {@code e} is more precise, we keep that one.
-  //  */
-  // @Override
-  // public TransferResult<V, S> visitTypeCast(TypeCastNode n,
-  // TransferInput<V, S> p) {
-  // TransferResult<V, S> result = super.visitTypeCast(n, p);
-  // V value = result.getResultValue();
-  // V operandValue = p.getValueOfSubNode(n.getOperand());
-  // // Normally we take the value of the type cast node. However, if the old
-  // // flow-refined value was more precise, we keep that value.
-  // V resultValue = moreSpecificValue(value, operandValue);
-  // result.setResultValue(resultValue);
-  // return result;
-  // }
-
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned.
+   * incomparable, then {@code value1} is returned. If one of them is null, then the other is
+   * returned.
    *
-   * @param value1 an abstract value
-   * @param value2 another abstract value
+   * @param value1 an abstract value, or null
+   * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
    *     value1}
    */
   @Pure
-  public V moreSpecificValue(V value1, V value2) {
+  public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
     if (value1 == null) {
       return value2;
     }

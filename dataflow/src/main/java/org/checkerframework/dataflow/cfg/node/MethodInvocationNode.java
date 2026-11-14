@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsP;
@@ -59,6 +60,16 @@ public class MethodInvocationNode extends Node {
    * <p>Is set by {@link #setEnhancedForLoop}.
    */
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
+
+  /**
+   * True if this node is an unboxing call: a call to the method that unboxes a value of a boxed
+   * primitive type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()}. The CFG
+   * inserts such a call wherever Java unboxes a value implicitly, and the source code can contain
+   * one explicitly, as in {@code b.booleanValue()}.
+   *
+   * <p>Is set by {@link #setIsUnboxing}.
+   */
+  protected boolean isUnboxing = false;
 
   /**
    * Creates a MethodInvocationNode.
@@ -142,6 +153,29 @@ public class MethodInvocationNode extends Node {
    */
   public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
     this.enhancedForLoop = enhancedForLoop;
+  }
+
+  /**
+   * Returns true if this node is a call to the method that unboxes a value of a boxed primitive
+   * type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()} (but not {@code
+   * Integer.longValue()}). Such a call is either inserted by the CFG or written explicitly in the
+   * source code.
+   *
+   * @return true if this node is an unboxing call
+   */
+  @Pure
+  public boolean getIsUnboxing() {
+    return isUnboxing;
+  }
+
+  /**
+   * Marks this node as an unboxing call.
+   *
+   * @param isUnboxing true if this node is an unboxing call
+   * @see #getIsUnboxing()
+   */
+  public void setIsUnboxing(boolean isUnboxing) {
+    this.isUnboxing = isUnboxing;
   }
 
   @Override
