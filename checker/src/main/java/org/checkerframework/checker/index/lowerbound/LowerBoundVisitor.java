@@ -37,8 +37,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
     ExpressionTree index = tree.getIndex();
     String arrName = tree.getExpression().toString();
     AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
-    if (!(indexType.hasPrimaryAnnotation(NonNegative.class)
-        || indexType.hasPrimaryAnnotation(Positive.class))) {
+    if (!(indexType.hasAnnotation(NonNegative.class) || indexType.hasAnnotation(Positive.class))) {
       checker.reportError(index, LOWER_BOUND, indexType.toString(), arrName);
     }
 
@@ -50,8 +49,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
     if (!tree.getDimensions().isEmpty()) {
       for (ExpressionTree dim : tree.getDimensions()) {
         AnnotatedTypeMirror dimType = atypeFactory.getAnnotatedType(dim);
-        if (!(dimType.hasPrimaryAnnotation(NonNegative.class)
-            || dimType.hasPrimaryAnnotation(Positive.class))) {
+        if (!(dimType.hasAnnotation(NonNegative.class) || dimType.hasAnnotation(Positive.class))) {
           checker.reportError(dim, NEGATIVE_ARRAY, dimType.toString());
         }
       }
