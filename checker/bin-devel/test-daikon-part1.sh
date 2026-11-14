@@ -18,10 +18,6 @@ gradle_retry assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Do
 cd ../daikon
 git log | head -n 5
 
-# Daikon type-checks using the Checker Framework built above, so it must also use the
-# matching checker-qual.jar, which defines any qualifiers that are newer than Daikon's copy.
-cp -f "$CHECKERFRAMEWORK"/checker/dist/checker-qual.jar java/lib/checker-qual.jar
-
 # Under CI, there are two CPUs, but limit to 1 to avoid out-of-memory error.
 if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
   num_jobs=1
