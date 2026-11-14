@@ -288,7 +288,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <ul>
    *   <li>boolean expressions are not given Unsigned or Signed annotations by {@link
    *       PropagationTreeAnnotator},
-   *   <li>shift results take on the type of their left operand,
+   *   <li>shift results take on the type of their left operand, after unary numeric promotion,
+   *       except that a left shift of a char is @Unsigned,
    *   <li>the types of identifiers are refined based on the results of the Value Checker, and
    *   <li>casts take types related to widening.
    * </ul>
@@ -309,8 +310,19 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                   || SignednessShifts.isCastedShiftEitherSignedness(tree, path))) {
             type.replaceAnnotation(SIGNED_POSITIVE);
           } else {
-            AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
-            type.replaceAnnotations(lht.getPrimaryAnnotations());
+            ExpressionTree left = tree.getLeftOperand();
+            if (tree.getKind() == Tree.Kind.LEFT_SHIFT
+                && TypesUtils.isCharOrCharacter(TreeUtils.typeOf(left))) {
+              // Unary numeric promotion widens a char to an @SignedPositive int.  A right shift
+              // preserves that, but a left shift can set the sign bit:  (char) 0x8000 << 16 is
+              // Integer.MIN_VALUE.  The test examines the Java type of the operand because its
+              // annotated type might already be promoted:  dataflow maps a primitive char
+              // operand to the CFG node that widens it.
+              type.replaceAnnotation(UNSIGNED);
+            } else {
+              AnnotatedTypeMirror lht = unaryNumericPromotion(getAnnotatedType(left));
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
+            }
           }
         }
         default -> {} // Do nothing
