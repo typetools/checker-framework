@@ -1986,16 +1986,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Sets the iterable expression and the enhanced for loop of each unboxing call that assignment
-   * conversion applied to the given element, so that the value of each call has the qualifiers of
-   * the element type of the iterable expression. Assignment conversion unboxes the element in, for
-   * example, {@code for (int x : listOfInteger)} and {@code for (long x : arrayOfInteger)}.
+   * conversion applied to the given element, so that the result of each such unboxing call (such as
+   * {@code intValue()}) has the qualifiers of the element type of the iterable expression.
+   * Assignment conversion unboxes the element in, for example, {@code for (int x : listOfInteger)}
+   * and {@code for (long x : arrayOfInteger)}.
    *
-   * <p>A boxing call, as in {@code for (Integer x : arrayOfInt)}, is not changed: boxing can change
-   * qualifiers, as when a primitive is interned but its boxed value is not.
+   * <p>This method ignores a boxing call, as in {@code for (Integer x : arrayOfInt)}, because the
+   * boxed value need not have the qualifiers of the element type. For example, a primitive is
+   * interned but its boxed value is not.
    *
-   * @param element a node for an element of an enhanced for loop, before assignment conversion
+   * @param element the node that reads an element in the enhanced for loop, before assignment
+   *     conversion: a call to {@code next()} for an {@code Iterable}, or an array access for an
+   *     array
    * @param expression the iterable expression of the enhanced for loop
-   * @param tree the enhanced for loop
+   * @param tree an enhanced for loop
    */
   private void setIterableExpressionOnUnboxingCalls(
       Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
@@ -2014,7 +2018,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Returns the declaration of a new, uniquely named variable that holds the iterator of the given
-   * enhanced for loop over an {@code Iterable}.
+   * enhanced for a loop over an {@code Iterable}.
    *
    * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
    * @param variableElement the loop variable of the enhanced for loop; the new variable has the
