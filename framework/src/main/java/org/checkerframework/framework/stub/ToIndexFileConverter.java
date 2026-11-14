@@ -89,7 +89,7 @@ import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
+ * Converts a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
  * files will not include annotation definitions, for which stubfiles do not generally provide
  * complete information.
  *
@@ -153,7 +153,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private final List<String> onDemandImports;
 
-  /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
+  /**
+   * A scene that is read from the input JAIF file and that will be written to the output JAIF file.
+   */
   private final AScene scene;
 
   /**
@@ -173,21 +175,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * A cache for {@link #getTargets}. Maps the binary name of an annotation interface to the element
    * types in its {@code @Target} meta-annotation, or to null if they cannot be determined.
    */
-  private final Map<String, @Nullable List<ElementType>> targetsCache = new HashMap<>();
+  private final Map<String, @Nullable List<ElementType>> getTargetsCache = new HashMap<>();
 
   /**
-   * A cache for {@link #resolve}. Maps a class name, as written in the stub file, to the fully
-   * qualified name that it identifies, or to null if resolution fails.
+   * A cache for {@link #resolve}. Maps a class name, as written in the stub file, to the binary
+   * name that it identifies, or to null if resolution fails.
    */
   private final Map<String, @Nullable @BinaryName String> resolveCache = new HashMap<>();
 
   /**
-   * A cache for {@link #memberTypeDeclaration}. Maps a type declaration of the stub file to its
-   * member types, keyed by simple name. It is an identity map because a JavaParser node's {@code
-   * equals} and {@code hashCode} compare its whole subtree.
+   * A cache for {@link #memberTypeDeclaration}. Maps a the simple name of a simple name type
+   * declaration of the stub file to its member types. It is an identity map because a JavaParser
+   * node's {@code equals} and {@code hashCode} compare its whole subtree.
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<String, TypeDeclaration<?>>>
-      memberTypesCache = new IdentityHashMap<>();
+      memberTypeDeclarationCache = new IdentityHashMap<>();
 
   /**
    * The type declarations of the stub file whose inherited member types are being sought by {@link
@@ -207,7 +209,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Creates a new ToIndexFileConverter.
    *
-   * @param pkgDecl the AST node for package declaration
+   * @param pkgDecl the AST node for the package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    * @param annotationDefs the annotation definitions in the input JAIF file, keyed by binary name
@@ -258,7 +260,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Parse stub files and write out equivalent JAIFs. Note that the results do not include
+   * Parses stub files and writes out equivalent JAIFs. Note that the results do not include
    * annotation definitions, for which stubfiles do not generally provide complete information.
    *
    * @param args name of JAIF with annotation definition, followed by names of stub files to be
@@ -296,8 +298,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Augment given scene with information from stubfile, reading stubs from input stream and writing
-   * JAIF to output stream.
+   * Augments the given scene with information from a stub file, reading stubs from an input stream
+   * and writing a JAIF to an output stream.
    *
    * @param scene the initial scene
    * @param annotationDefs the annotation definitions in the JAIF file that {@code scene} was read
@@ -362,8 +364,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Builds simplified annotation from its declaration. Only the name is included, because stubfiles
-   * do not generally have access to the full definitions of annotations.
+   * Builds a simplified annotation from its declaration. Only the name is included, because
+   * stubfiles do not generally have access to the full definitions of annotations.
+   *
+   * @param expr an annotation expression, such as {@code @Nullable}
+   * @return a simplified annotation with only the name, or null if the annotation is synthetic
    */
   private static @Nullable Annotation extractAnnotation(AnnotationExpr expr) {
     String exprName = expr.toString().substring(1); // leave off leading '@'
@@ -737,8 +742,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // A type parameter is not an annotation interface.
       return null;
     }
-    String qualifiedName = classBinaryName(expr, declaration, name, identifiers);
-    if (qualifiedName == null) {
+    String binaryName = classBinaryName(expr, declaration, name, identifiers);
+    if (binaryName == null) {
       if (isBoundBySingleImport(name)) {
         // The import determines what `name` denotes, even if the input JAIF file does not define
         // it. A single-static-import might import only members that are not types, but an
@@ -748,17 +753,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // `name` might be a simple name that only one definition has.
       return getTargetsFromDefinition(annotationDefs.get(name));
     }
-    if (targetsCache.containsKey(qualifiedName)) {
-      return targetsCache.get(qualifiedName);
+    if (getTargetsCache.containsKey(binaryName)) {
+      return getTargetsCache.get(binaryName);
     }
-    List<ElementType> result = getTargetsFromDefinition(annotationDefs.get(qualifiedName));
+    List<ElementType> result = getTargetsFromDefinition(annotationDefs.get(binaryName));
     if (result == null) {
       @SuppressWarnings("signature") // a binary name of a class
-      Class<?> annoClass = loadClass(qualifiedName);
+      Class<?> annoClass = loadClass(binaryName);
       Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
       result = target == null ? null : Arrays.asList(target.value());
     }
-    targetsCache.put(qualifiedName, result);
+    getTargetsCache.put(binaryName, result);
     return result;
   }
 
@@ -1004,7 +1009,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param declaration the type that the first element of {@code identifiers} denotes, as {@link
    *     #enclosingDeclaration} returns it, or null if it denotes no type in scope; not a type
    *     parameter
-   * @param name a type name, in which a {@code .} separates a nested class from its enclosing class
+   * @param name a type name as written in Java source, not necessarily fully qualified, such as
+   *     {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
    * @param identifiers {@code name}, split at its {@code .} separators
    * @return the binary name of the class that {@code name} denotes, or null if it cannot be
    *     determined
@@ -1162,15 +1168,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * If {@code typeName} is qualified by the stub file's package, and the identifier that follows
-   * the package names a top-level type of the stub file, returns the binary name of the type that
-   * {@code typeName} names. Otherwise returns null. As for an unqualified name, a member type that
-   * the stub file does not declare is assumed to be a member of the innermost type found, so {@code
-   * p.B.Missing} and {@code B.Missing} have the same binary name.
+   * If {@code typeName} starts with the stub file's package name followed by {@code .}, and the
+   * identifier that follows names a top-level type of the stub file, returns the binary name of the
+   * type that {@code typeName} names. Otherwise returns null. As for an unqualified name, {@link
+   * #memberBinaryName} resolves the identifiers after the top-level type, so {@code p.B.Missing}
+   * and {@code B.Missing} have the same binary name.
    *
    * @param node a node in the stub file's AST
-   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
-   *     class
+   * @param typeName a type name as written in Java source, not necessarily fully qualified, such as
+   *     {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
    * @return the binary name of {@code typeName}, or null
    */
   private @Nullable String packageQualifiedStubBinaryName(Node node, String typeName) {
@@ -1226,6 +1232,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param n a node in the stub file's AST
    * @return true if {@code child} is an annotation among the modifiers of {@code n}
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private static boolean isModifierAnnotation(@Nullable Node child, Node n) {
     if (!(child instanceof AnnotationExpr) || !(n instanceof NodeWithAnnotations<?> annotated)) {
       return false;
@@ -1295,7 +1302,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable TypeDeclaration<?> memberTypeDeclaration(
       TypeDeclaration<?> declaration, String identifier) {
-    return memberTypesCache
+    return memberTypeDeclarationCache
         .computeIfAbsent(
             declaration,
             d -> {
@@ -1331,10 +1338,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the fully qualified name of the class with the given name.
+   * Returns the binary name of the class with the given name.
    *
-   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
-   *     separates a nested class from its enclosing class
+   * @param className a type name as written in Java source, not necessarily fully qualified, such
+   *     as {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
    * @param cu the stub file's compilation unit, or null not to consider the types that the stub
    *     file declares
    * @return binary name of class that {@code className} identifies in the current context, or null
@@ -1355,10 +1362,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the fully qualified name of the class with the given name, without consulting the cache.
+   * Returns the binary name of the class with the given name, without consulting the cache.
    *
-   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
-   *     separates a nested class from its enclosing class
+   * @param className a type name as written in Java source, not necessarily fully qualified, such
+   *     as {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
    * @param cu the stub file's compilation unit, or null not to consider the types that the stub
    *     file declares
    * @return binary name of class that {@code className} identifies in the current context, or null
@@ -1487,8 +1494,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Returns the binary name of the type that {@code identifiers} names, where {@code declaration}
    * is the type that the elements of {@code identifiers} before index {@code start} name. Each
    * remaining identifier names a member type that the stub file declares, or that a type inherits
-   * from a supertype. If a member type cannot be found, the result is formed from the binary name
-   * of the innermost type found.
+   * from a supertype. If an identifier names no member type of the type that the preceding
+   * identifiers name, the result is that type's binary name followed by the identifier and the ones
+   * after it, each preceded by {@code $}. For example, if the stub file declares a class {@code B}
+   * in package {@code p}, and {@code B} has no member type {@code Missing}, then the result for
+   * {@code B.Missing.X} is {@code p.B$Missing$X}.
    *
    * @param declaration a type declaration in the stub file
    * @param identifiers a type name that has been split at its {@code .} separators

@@ -22,11 +22,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * Constraints are between either an expression and a type, two types, or an expression and a thrown
  * type. Defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.2">JLS section
- * 18.1.2</a>
+ * 18.1.2</a>.
  */
 public abstract class TypeConstraint implements Constraint {
 
-  /** T, the type on the right-hand side of the constraint; may contain inference variables. */
+  /** T, the type on the right-hand side of the constraint; might contain inference variables. */
   protected AbstractType T;
 
   /**
@@ -130,9 +130,9 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Returns T which is the type on the right-hand side of the constraint.
+   * Returns T, which is the type on the right-hand side of the constraint.
    *
-   * @return t, that is the type on the right-hand side of the constraint
+   * @return T, that is, the type on the right-hand side of the constraint
    */
   public AbstractType getT() {
     return T;
@@ -148,14 +148,14 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * For lambda and method references constraints, input variables are roughly the inference
+   * For lambda and method reference constraints, input variables are roughly the inference
    * variables mentioned by the function type's parameter types and return types. For conditional
    * expression constraints and switch expression constraints, input variables are the union of the
    * input variables of its subexpressions. For all other constraints, no input variables exist.
    *
    * <p>Defined in <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
-   * 18.5.2.2</a>
+   * 18.5.2.2</a>.
    *
    * @return input variables for this constraint
    */
@@ -167,14 +167,14 @@ public abstract class TypeConstraint implements Constraint {
    *
    * <p>As defined in <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
-   * 18.5.2.2</a>
+   * 18.5.2.2</a>.
    *
    * @return output variables for this constraint
    */
   public abstract List<Variable> getOutputVariables();
 
   /**
-   * Implementation of {@link #getInputVariables()} that is used both by expressions constraints and
+   * Implementation of {@link #getInputVariables()} that is used both by expression constraints and
    * checked exception constraints. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.
@@ -272,8 +272,8 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Apply the given instantiations to any type mentioned in this constraint -- meaning replace any
-   * mention of a variable in {@code instantiations} with its proper type.
+   * Applies the given instantiations to any type mentioned in this constraint -- that is, replaces
+   * any mention of a variable in {@code instantiations} with its proper type.
    */
   public void applyInstantiations() {
     T = T.applyInstantiations();
