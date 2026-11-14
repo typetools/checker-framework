@@ -7,7 +7,16 @@
 
 ### User-visible changes
 
+The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
+addition to `.jar` archives and directories.  An archive is read only if it is
+named in the option; an archive within a directory that is named in the option
+is ignored.  Within a directory or archive, hidden files (whose names start with
+`.`), such as the `._Foo.astub` files that macOS creates, are ignored.
+
 ### Changes for type system implementers
+
+`AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
+`AnnotationFileResource` rather than a path.
 
 ### Closed issues
 

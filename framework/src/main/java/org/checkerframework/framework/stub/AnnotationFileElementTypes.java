@@ -259,19 +259,20 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parses the ajava file at {@code ajavaPath} assuming {@code root} represents the compilation
-   * unit of that file. Uses {@code root} to get information from javac on specific elements of
-   * {@code ajavaPath}, enabling storage of more detailed annotation information than with just the
-   * ajava file.
+   * Parses the ajava file {@code ajavaFile} assuming {@code root} represents the compilation unit
+   * of that file. Uses {@code root} to get information from javac on specific elements of {@code
+   * ajavaFile}, enabling storage of more detailed annotation information than with just the ajava
+   * file.
    *
-   * @param ajavaPath path to an ajava file
-   * @param root javac tree for the compilation unit stored in {@code ajavaPath}
+   * @param ajavaFile an ajava file, which may be in the file system or an entry in an archive
+   * @param root javac tree for the compilation unit stored in {@code ajavaFile}
    */
-  public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+  public void parseAjavaFileWithTree(AnnotationFileResource ajavaFile, CompilationUnitTree root) {
+    String ajavaPath = ajavaFile.getDescription();
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
+    try (InputStream in = ajavaFile.getInputStream()) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
@@ -333,8 +334,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.WARNING,
+                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
           }
         }
       } else {
