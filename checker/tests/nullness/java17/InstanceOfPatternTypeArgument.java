@@ -14,6 +14,16 @@ public class InstanceOfPatternTypeArgument {
     if (b instanceof Sub<@Nullable String> s) {}
   }
 
+  void instanceOfNoPattern(Box<String> b) {
+    // :: error: (type.argument)
+    if (b instanceof Sub<@Nullable String>) {}
+  }
+
+  void instanceOfValid(Box<String> b) {
+    if (b instanceof Sub<String> s) {}
+    if (b instanceof Sub<String>) {}
+  }
+
   void localVariable() {
     // :: error: (type.argument)
     Sub<@Nullable String> s = null;

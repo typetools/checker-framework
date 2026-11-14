@@ -432,9 +432,13 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
-    // Instead, just scan the expression and the pattern.
+    // Instead, validate the reference type and scan the expression and the pattern or type.
+    Tree patternTree = tree.getPattern();
+    if (patternTree == null) {
+      validateTypeOf(refTypeTree);
+    }
     super.scan(tree.getExpression(), p);
-    super.scan(tree.getPattern(), p);
+    super.scan(patternTree != null ? patternTree : refTypeTree, p);
     return null;
   }
 
