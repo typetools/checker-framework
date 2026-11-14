@@ -190,10 +190,22 @@ public class InferenceFactory {
    * @return target type for the expression for which type arguments are being inferred
    */
   public @Nullable ProperType getTargetType() {
+    return getTargetType(TreePathUtil.getContextForPolyExpression(context.getPathToExpression()));
+  }
+
+  /**
+   * Gets the target type for the expression for which type arguments are being inferred. If {@code
+   * contextTree} is null, the target type comes from {@link
+   * GenericAnnotatedTypeFactory#getDummyAssignedTo}; otherwise, it comes from {@code contextTree}.
+   *
+   * @param contextTree the context of the expression for which type arguments are being inferred,
+   *     as returned by {@link TreePathUtil#getContextForPolyExpression}
+   * @return target type for the expression for which type arguments are being inferred
+   */
+  public @Nullable ProperType getTargetType(@Nullable Tree contextTree) {
     GenericAnnotatedTypeFactory<?, ?, ?, ?> factory =
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) context.typeFactory;
     TreePath path = context.getPathToExpression();
-    Tree contextTree = TreePathUtil.getContextForPolyExpression(path);
     if (contextTree == null) {
       AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
       if (dummy == null || dummy.containsCapturedTypes()) {
