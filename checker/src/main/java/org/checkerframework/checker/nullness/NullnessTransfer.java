@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -20,6 +21,7 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
@@ -28,6 +30,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -135,15 +138,25 @@ public class NullnessTransfer
   }
 
   /**
-   * Sets a given {@link Node} to non-null in the given {@code store}. Calls to this method
-   * implement case 2.
+   * Sets a given {@link Node} to non-null in the given {@code store}. If the node is an assignment
+   * or a value-preserving cast, also sets to non-null the other expressions that {@link
+   * #nodesWithValueOf} returns for it, because they have the same value as the node. For example,
+   * after {@code (s = t).length()} both {@code s} and {@code t} are non-null, and after {@code
+   * ((String) o).length()} {@code o} is non-null. Calls to this method implement case 2.
    *
    * @param store the store to update
    * @param node the node that should be non-null
    */
   protected void makeNonNull(NullnessStore store, Node node) {
-    JavaExpression internalRepr = JavaExpression.fromNode(node);
-    store.insertValue(internalRepr, NONNULL);
+    // For a node that is neither an assignment nor a cast, the result of nodesWithValueOf contains
+    // at most the node itself.  Not calling nodesWithValueOf avoids its cost at every dereference.
+    List<Node> parts =
+        node instanceof AssignmentNode || node instanceof TypeCastNode
+            ? nodesWithValueOf(node)
+            : Collections.singletonList(node);
+    for (Node part : parts) {
+      store.insertValue(JavaExpression.fromNode(part), NONNULL);
+    }
   }
 
   /** Sets a given {@link Node} {@code node} to non-null in the given {@link TransferResult}. */
@@ -237,7 +250,7 @@ public class NullnessTransfer
       NullnessStore thenStore = res.getThenStore();
       NullnessStore elseStore = res.getElseStore();
 
-      List<Node> secondParts = splitAssignments(secondNode);
+      List<Node> secondParts = nodesWithValueOf(secondNode);
       for (Node secondPart : secondParts) {
         JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
         if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
