@@ -139,13 +139,30 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /** Single-type imports that appear in the stub file, such as {@code java.util.List}. */
   private final List<String> singleTypeImports;
 
-  /** Imports-on-demand that appear in the stub file, such as {@code java.util.*}. */
+  /**
+   * Single-static-imports that appear in the stub file, such as {@code java.util.Map.Entry} for
+   * {@code import static java.util.Map.Entry;}. Such an import makes available every static member
+   * with the given name, which might or might not include a member type.
+   */
+  private final List<String> singleStaticImports;
+
+  /**
+   * Imports-on-demand that appear in the stub file, such as {@code java.util.*}, including
+   * static-imports-on-demand, such as {@code java.util.Map.*} for {@code import static
+   * java.util.Map.*;}.
+   */
   private final List<String> onDemandImports;
 
   /**
    * A scene that is read from the input JAIF file and that will be written to the output JAIF file.
    */
   private final AScene scene;
+
+  /**
+   * The annotation definitions in the input JAIF file, keyed by binary name and, when it is
+   * unambiguous, by simple name.
+   */
+  private final Map<String, AnnotationDef> annotationDefs;
 
   /**
    * All the compilation units of the stub file, including the one that this converter converts. A
@@ -195,20 +212,35 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param pkgDecl the AST node for the package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
+   * @param annotationDefs the annotation definitions in the input JAIF file, keyed by binary name
+   *     and, when it is unambiguous, by simple name
    */
   @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
   public ToIndexFileConverter(
-      @Nullable PackageDeclaration pkgDecl, List<ImportDeclaration> importDecls, AScene scene) {
+      @Nullable PackageDeclaration pkgDecl,
+      List<ImportDeclaration> importDecls,
+      AScene scene,
+      Map<String, AnnotationDef> annotationDefs) {
     this.scene = scene;
+    this.annotationDefs = annotationDefs;
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
       singleTypeImports = Collections.emptyList();
+      singleStaticImports = Collections.emptyList();
       onDemandImports = Collections.emptyList();
     } else {
       ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> singleStatics = new ArrayList<>();
       ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
-        if (!decl.isStatic()) {
+        if (decl.isStatic()) {
+          // A static import can make a static member type available by its simple name.
+          if (decl.isAsterisk()) {
+            onDemands.add(decl.getNameAsString() + ".*");
+          } else {
+            singleStatics.add(decl.getNameAsString());
+          }
+        } else {
           Matcher m = importPattern.matcher(decl.toString());
           if (m.find()) {
             String s = m.group(1);
@@ -219,8 +251,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       }
       singles.trimToSize();
+      singleStatics.trimToSize();
       onDemands.trimToSize();
       singleTypeImports = Collections.unmodifiableList(singles);
+      singleStaticImports = Collections.unmodifiableList(singleStatics);
       onDemandImports = Collections.unmodifiableList(onDemands);
     }
   }
@@ -242,10 +276,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AScene scene = new AScene();
     try {
       // args[0] is a jaif file with needed annotation definitions
-      IndexFileParser.parseFile(args[0], scene);
+      Map<String, AnnotationDef> annotationDefs = IndexFileParser.parseFile(args[0], scene);
 
       if (args.length == 1) {
-        convert(scene, System.in, System.out);
+        convert(scene, annotationDefs, System.in, System.out);
         return;
       }
 
@@ -254,7 +288,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length() - 6) : f0) + ".jaif";
         try (InputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(f0)));
             OutputStream out = new BufferedOutputStream(new FileOutputStream(f1)); ) {
-          convert(new AScene(scene), in, out);
+          convert(new AScene(scene), annotationDefs, in, out);
         }
       }
     } catch (Throwable e) {
@@ -268,6 +302,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * and writing a JAIF to an output stream.
    *
    * @param scene the initial scene
+   * @param annotationDefs the annotation definitions in the JAIF file that {@code scene} was read
+   *     from, keyed by binary name and, when it is unambiguous, by simple name
    * @param in stubfile contents
    * @param out the output stream for the JAIF file that holds the augmented scene
    * @throws ParseException if the stub file cannot be parsed
@@ -275,7 +311,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @throws IOException if there is trouble with file reading or writing
    */
   // Not private, so that tests can call it.
-  static void convert(AScene scene, InputStream in, OutputStream out)
+  static void convert(
+      AScene scene, Map<String, AnnotationDef> annotationDefs, InputStream in, OutputStream out)
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
@@ -288,7 +325,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               + "Problem message with problems encountered: "
               + e.getMessage());
     }
-    extractScene(iu, scene);
+    extractScene(iu, scene, annotationDefs);
     try (Writer w = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
       IndexFileWriter.write(scene, w);
     }
@@ -300,14 +337,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * scene (it does not create a new scene).
    *
    * @param iu {@link StubUnit} representing stubfile
+   * @param scene the scene to augment
+   * @param annotationDefs the annotation definitions in the JAIF file that {@code scene} was read
+   *     from, keyed by binary name and, when it is unambiguous, by simple name
    */
-  private static void extractScene(StubUnit iu, AScene scene) {
+  private static void extractScene(
+      StubUnit iu, AScene scene, Map<String, AnnotationDef> annotationDefs) {
     for (CompilationUnit cu : iu.getCompilationUnits()) {
       NodeList<TypeDeclaration<?>> typeDecls = cu.getTypes();
       if (typeDecls != null && cu.getPackageDeclaration().isPresent()) {
         List<ImportDeclaration> impDecls = cu.getImports();
         PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
-        ToIndexFileConverter converter = new ToIndexFileConverter(pkgDecl, impDecls, scene);
+        ToIndexFileConverter converter =
+            new ToIndexFileConverter(pkgDecl, impDecls, scene, annotationDefs);
         converter.compilationUnits = iu.getCompilationUnits();
         String pkgName = converter.pkgName;
         for (TypeDeclaration<?> typeDecl : typeDecls) {
@@ -682,12 +724,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the element types in the {@code @Target} meta-annotation of the annotation interface
-   * that an annotation instantiates.
+   * that an annotation instantiates. The meta-annotation comes from the interface's definition in
+   * the input JAIF file if there is one, and otherwise from the interface itself, loaded
+   * reflectively.
    *
    * @param expr an annotation
    * @return the element types in the {@code @Target} meta-annotation of {@code expr}'s annotation
-   *     interface, or null if that interface cannot be loaded or has no {@code @Target}, or if
-   *     {@code expr}'s name denotes a type parameter
+   *     interface, or null if that interface has neither a definition with a {@code @Target} nor a
+   *     loadable class with a {@code @Target}, or if {@code expr}'s name denotes a type parameter
    */
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
@@ -700,17 +744,75 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     String binaryName = classBinaryName(expr, declaration, name, identifiers);
     if (binaryName == null) {
-      return null;
+      if (isBoundBySingleImport(name)) {
+        // The import determines what `name` denotes, even if the input JAIF file does not define
+        // it. A single-static-import might import only members that are not types, but an
+        // annotation interface with the same simple name as such a member is unlikely.
+        return null;
+      }
+      // `name` might be a simple name that only one definition has.
+      return getTargetsFromDefinition(annotationDefs.get(name));
     }
     if (getTargetsCache.containsKey(binaryName)) {
       return getTargetsCache.get(binaryName);
     }
-    @SuppressWarnings("signature") // a binary name of a class
-    Class<?> annoClass = loadClass(binaryName);
-    Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
-    List<ElementType> result = target == null ? null : Arrays.asList(target.value());
+    List<ElementType> result = getTargetsFromDefinition(annotationDefs.get(binaryName));
+    if (result == null) {
+      @SuppressWarnings("signature") // a binary name of a class
+      Class<?> annoClass = loadClass(binaryName);
+      Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
+      result = target == null ? null : Arrays.asList(target.value());
+    }
     getTargetsCache.put(binaryName, result);
     return result;
+  }
+
+  /**
+   * Returns the element types in the {@code @Target} meta-annotation of an annotation interface's
+   * definition in the input JAIF file.
+   *
+   * @param def an annotation interface's definition in the input JAIF file, or null
+   * @return the element types in the {@code @Target} meta-annotation of {@code def}, or null if
+   *     {@code def} is null or has no {@code @Target}
+   */
+  private static @Nullable List<ElementType> getTargetsFromDefinition(@Nullable AnnotationDef def) {
+    List<String> targetNames = def == null ? null : def.targets();
+    if (targetNames == null) {
+      return null;
+    }
+    List<ElementType> result = new ArrayList<>(targetNames.size());
+    for (String targetName : targetNames) {
+      // An element type may be written qualified, as in `ElementType.TYPE_USE`.
+      String simpleName = targetName.substring(targetName.lastIndexOf('.') + 1);
+      try {
+        result.add(ElementType.valueOf(simpleName));
+      } catch (IllegalArgumentException e) {
+        // An element type that this JDK does not define cannot be one that this class checks for.
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if a single-type import or a single-static-import of the stub file binds the first
+   * identifier of a name.
+   *
+   * @param name a possibly qualified name, as written in the stub file
+   * @return true if a single-type import or a single-static-import binds the first identifier of
+   *     {@code name}
+   */
+  private boolean isBoundBySingleImport(@FullyQualifiedName String name) {
+    for (String declName : singleTypeImports) {
+      if (mergeImport(declName, name) != null) {
+        return true;
+      }
+    }
+    for (String declName : singleStaticImports) {
+      if (mergeImport(declName, name) != null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1284,6 +1386,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return classBinaryName(qualifiedName, cu);
       }
     }
+    for (String declName : singleStaticImports) {
+      // A single-static-import shadows the same declarations that a single-type import does.  It
+      // binds `className` only if it imports a member type, so continue if there is none.
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        String binaryName = classBinaryName(qualifiedName, cu);
+        if (binaryName != null) {
+          return binaryName;
+        }
+      }
+    }
     if (pkgName != null) {
       // The first identifier of `className` names a type in the current package, not a
       // subpackage, so every later identifier names a member type.  Therefore, search only the
@@ -1295,7 +1408,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       @SuppressWarnings("signature") // a type in a package, followed by its member types
       @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
-      if (loadClass(binaryName) != null) {
+      if (classExists(binaryName)) {
         return binaryName;
       }
     }
@@ -1823,19 +1936,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the binary name of the class that a fully qualified name refers to, or null if no such
-   * class can be loaded. A fully qualified name does not indicate which of its dot-separated
-   * components are packages and which are enclosing classes, so this method tries each possibility,
-   * starting with the one that has the fewest enclosing classes.
+   * class can be loaded and the input JAIF file defines no such annotation interface. A fully
+   * qualified name does not indicate which of its dot-separated components are packages and which
+   * are enclosing classes, so this method tries each possibility, starting with the one that has
+   * the fewest enclosing classes.
    *
    * @param fqName a fully qualified class name
    * @return the binary name of the class that {@code fqName} refers to, or null
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String loadClassBinaryName(String fqName) {
+  private @Nullable @BinaryName String loadClassBinaryName(String fqName) {
     StringBuilder candidate = new StringBuilder(fqName);
     int dot = candidate.length();
     while (true) {
-      if (loadClass(candidate.toString()) != null) {
+      if (classExists(candidate.toString())) {
         return candidate.toString();
       }
       dot = candidate.lastIndexOf(".", dot - 1);
@@ -1844,6 +1958,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       candidate.setCharAt(dot, '$');
     }
+  }
+
+  /**
+   * Returns true if a class can be loaded or is an annotation interface that the input JAIF file
+   * defines.
+   *
+   * @param binaryName a class's binary name
+   * @return true if {@code binaryName} can be loaded or the input JAIF file defines it
+   */
+  private boolean classExists(@BinaryName String binaryName) {
+    AnnotationDef def = annotationDefs.get(binaryName);
+    // `annotationDefs` also maps an unambiguous simple name to its definition.
+    if (def != null && def.name.equals(binaryName)) {
+      return true;
+    }
+    return loadClass(binaryName) != null;
   }
 
   /**
