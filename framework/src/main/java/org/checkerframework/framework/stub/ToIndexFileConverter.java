@@ -987,6 +987,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param n a node in the stub file's AST
    * @return true if {@code child} is an annotation among the modifiers of {@code n}
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private static boolean isModifierAnnotation(@Nullable Node child, Node n) {
     if (!(child instanceof AnnotationExpr) || !(n instanceof NodeWithAnnotations<?> annotated)) {
       return false;
