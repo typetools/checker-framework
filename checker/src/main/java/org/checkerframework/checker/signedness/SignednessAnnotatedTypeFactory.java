@@ -319,7 +319,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
               // Integer.MIN_VALUE.  The test examines the Java type of the operand because its
               // annotated type might already be promoted:  dataflow maps a primitive char
               // operand to the CFG node that widens it.  The test unboxes the Java type, so it
-              // also handles Character and type variables bounded by Character.
+              // also handles a Character operand and a type variable bounded by Character.
               type.replaceAnnotation(UNSIGNED);
             } else {
               AnnotatedTypeMirror lht = unaryNumericPromotion(getAnnotatedType(left));
