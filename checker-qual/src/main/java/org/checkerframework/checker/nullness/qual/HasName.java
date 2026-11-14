@@ -14,15 +14,16 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * returns a non-null, non-empty path. For a {@link java.io.File}, this means that {@link
  * java.io.File#getName()} returns a non-empty string.
  *
- * <p>Roots (such as {@code /} and, on Windows, {@code C:\}, {@code C:}, and {@code
- * \\server\share\}) and the empty path {@code ""} are not {@code @HasName}. Every name element of a
- * {@code @HasName} path is non-empty, because only the empty path has an empty name element.
+ * <p>Roots (such as {@code /} and, on Windows, {@code C:\} and {@code C:}) and the empty path
+ * {@code ""} are not {@code @HasName}. On Windows, a UNC path such as {@code \\server\share\} is a
+ * root as a {@code Path}, so it is not {@code @HasName}, but as a {@code File} its name is {@code
+ * share}. Every name element of a {@code @HasName} path is non-empty, because only the empty path
+ * has an empty name element.
  *
  * <p>The property depends only on the characters of the path, not on the file system. Therefore,
  * once a path is known to be {@code @HasName}, it remains {@code @HasName}.
  *
  * @see HasParent
- * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

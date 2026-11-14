@@ -21,8 +21,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>The property depends only on the characters of the path, not on the file system. Therefore,
  * once a path is known to be {@code @HasParent}, it remains {@code @HasParent}.
- *
- * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

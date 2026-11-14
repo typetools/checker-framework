@@ -3,7 +3,9 @@ package org.checkerframework.checker.nullness;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.Assert;
@@ -16,7 +18,9 @@ import org.junit.Test;
  * the JDK source code: {@code sun.nio.fs.WindowsPathParser} and {@code sun.nio.fs.WindowsPath} for
  * {@code Path}, and {@code java.io.WinNTFileSystem} and {@code java.io.File} for {@code File}. The
  * expected results are checked against the running JDK: the Unix results when the tests run on
- * Unix, and the Windows results when the tests run on Windows.
+ * Unix, and the Windows results when the tests run on Windows. The expected Windows {@code File}
+ * result covers JDKs both before and after JDK 25, which differ, so it is checked to be no more
+ * specific than the running JDK's result.
  */
 public class PathShapeClassifierTest {
 
@@ -59,7 +63,49 @@ public class PathShapeClassifierTest {
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
     } else if (File.separatorChar == '\\') {
       Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
-      Assert.assertEquals("actual Windows File " + s, windowsFile, actualFileShape(s));
+      PathShape actualFile = actualFileShape(s);
+      // A JDK either strips a long-path prefix (JDK 25 and later) or does not.
+      PathShape beforeJdk25 = PathShapeClassifier.windowsFileShape(s);
+      PathShape sinceJdk25 =
+          PathShapeClassifier.windowsFileShape(PathShapeClassifier.stripLongPathPrefix(s));
+      Assert.assertTrue(
+          "actual Windows File " + s + " is " + actualFile,
+          actualFile == beforeJdk25 || actualFile == sinceJdk25);
+      Assert.assertEquals("sound Windows File " + s, windowsFile, windowsFile.lub(actualFile));
+    }
+  }
+
+  /**
+   * Checks the path shape of {@code Path.of(first, more...)}, under both the classifier and the
+   * running JDK.
+   *
+   * @param expected the expected result of {@link PathShapeClassifier#classifyPath(List)}
+   * @param first the first argument to {@code Path.of}
+   * @param more the remaining arguments to {@code Path.of}
+   */
+  private static void checkJoin(PathShape expected, String first, String... more) {
+    List<String> strings = new ArrayList<>();
+    strings.add(first);
+    strings.addAll(Arrays.asList(more));
+    String desc = strings.toString();
+    Assert.assertEquals(
+        "classifyPath " + desc, expected, PathShapeClassifier.classifyPath(strings));
+    @Nullable PathShape actual;
+    try {
+      actual = actualShape(Path.of(first, more));
+    } catch (InvalidPathException e) {
+      actual = null;
+    }
+    if (File.separatorChar == '/') {
+      Assert.assertEquals(
+          "actual Unix Path " + desc,
+          PathShapeClassifier.unixPath(PathShapeClassifier.join(strings, '/')),
+          actual);
+    } else if (File.separatorChar == '\\') {
+      Assert.assertEquals(
+          "actual Windows Path " + desc,
+          PathShapeClassifier.windowsPath(PathShapeClassifier.join(strings, '\\')),
+          actual);
     }
   }
 
@@ -70,14 +116,22 @@ public class PathShapeClassifierTest {
    * @return the shape of {@code Path.of(s)}, or null if {@code s} is not a valid path
    */
   private static @Nullable PathShape actualPathShape(String s) {
-    Path p;
     try {
-      p = Path.of(s);
+      return actualShape(Path.of(s));
     } catch (InvalidPathException e) {
       return null;
     }
+  }
+
+  /**
+   * Returns the shape of the given path.
+   *
+   * @param p a path
+   * @return the shape of {@code p}
+   */
+  private static PathShape actualShape(Path p) {
     Path fileName = p.getFileName();
-    return shape(fileName != null && !fileName.toString().isEmpty(), p.getParent() != null);
+    return PathShape.of(fileName != null && !fileName.toString().isEmpty(), p.getParent() != null);
   }
 
   /**
@@ -88,18 +142,7 @@ public class PathShapeClassifierTest {
    */
   private static PathShape actualFileShape(String s) {
     File f = new File(s);
-    return shape(!f.getPath().isEmpty() && !f.getName().isEmpty(), f.getParent() != null);
-  }
-
-  /**
-   * Returns the path shape with the given properties.
-   *
-   * @param hasName true if the path has a non-empty name
-   * @param hasParent true if the path has a parent
-   * @return the path shape with the given properties
-   */
-  private static PathShape shape(boolean hasName, boolean hasParent) {
-    return !hasName ? UNKNOWN : hasParent ? HAS_PARENT : HAS_NAME;
+    return PathShape.of(!f.getPath().isEmpty() && !f.getName().isEmpty(), f.getParent() != null);
   }
 
   @Test
@@ -160,19 +203,34 @@ public class PathShapeClassifierTest {
         HAS_PARENT,
         HAS_NAME,
         HAS_NAME);
-    // The long-path prefix requires an absolute path.
-    check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    // A Path requires an absolute path after the long-path prefix.  A File on JDK 25 or later
+    // strips the prefix, leaving the relative path "foo".
+    check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    // A File on JDK 25 or later strips the prefix, leaving a root.
+    check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
+    check("\\\\?\\C:", HAS_NAME, null, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("\\\\?\\UNC", HAS_NAME, null, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("\\\\?\\UNC\\", HAS_NAME, null, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("\\\\?\\\\", HAS_NAME, null, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
   }
 
   @Test
   public void testJoin() {
-    Assert.assertEquals(HAS_PARENT, PathShapeClassifier.classifyPath(Arrays.asList("a", "b")));
-    Assert.assertEquals(HAS_PARENT, PathShapeClassifier.classifyPath(Arrays.asList("a", "", "b")));
-    Assert.assertEquals(HAS_NAME, PathShapeClassifier.classifyPath(Arrays.asList("", "a")));
-    Assert.assertEquals(UNKNOWN, PathShapeClassifier.classifyPath(Arrays.asList("", "")));
+    checkJoin(HAS_NAME, "a");
+    checkJoin(HAS_PARENT, "a", "b");
+    checkJoin(HAS_PARENT, "a", "", "b");
+    checkJoin(HAS_NAME, "", "a");
+    checkJoin(UNKNOWN, "", "");
+    checkJoin(HAS_PARENT, "/", "a");
+    checkJoin(HAS_PARENT, "a/", "/b");
     // Windows joins the strings with a backslash, which forms the long-path prefix "\\?\", so
     // the result is the root "C:\".  On Unix, the result has two names.
-    Assert.assertEquals(UNKNOWN, PathShapeClassifier.classifyPath(Arrays.asList("\\\\?", "C:\\")));
+    checkJoin(UNKNOWN, "\\\\?", "C:\\");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testJoinEmpty() {
+    PathShapeClassifier.classifyPath(new ArrayList<>());
   }
 
   @Test
