@@ -532,9 +532,16 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // no caller can observe a modification of the iterator itself, such as advancing it.  A null
       // receiver denotes such an object.  Anything else that `hasNext()` or `next()` modifies is
       // still checked.
+      // javac's translation (JLS 14.14.2), like the CFG, calls `Iterator.hasNext()` and
+      // `Iterator.next()`.  This check instead uses the methods of the type that `iterator()`
+      // returns, which dispatch reaches at run time, because their specifications can reveal more
+      // side effects.  For example, `@SideEffectsOnly("this.backing")` on an override of `next()`
+      // reveals a modification of `this.backing`, which might be an object that existed before the
+      // loop.  `Iterator.next()`'s `@SideEffectsOnly("this")` hides that modification, because no
+      // caller can observe a modification of the new iterator.
       TypeMirror iteratorType =
-          ElementUtils.getReturnTypeAsMemberOf(
-              iterableType, iteratorMethod, checker.getProcessingEnvironment());
+          TypesUtils.substituteMethodReturnType(
+              iteratorMethod, iterableType, checker.getProcessingEnvironment());
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
         ExecutableElement iteratorElem =
             ElementUtils.resolveNoArgumentCall(

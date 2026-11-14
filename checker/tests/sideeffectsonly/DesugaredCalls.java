@@ -131,7 +131,7 @@ public class DesugaredCalls {
     for (String s : r) {}
   }
 
-  // The iterator of a `GenericIterable<I>` has type `I`.  The loop calls the `hasNext()` and
+  // The iterator of a `GenericIterable<I>` has type `I`.  The check uses the `hasNext()` and
   // `next()` methods of the type argument for `I`, not those of its bound.
   abstract static class LoggingIterator implements Iterator<String> {
     // `Iterator.next()` is `@SideEffectsOnly("this")`.

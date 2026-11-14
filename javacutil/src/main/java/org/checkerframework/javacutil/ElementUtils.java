@@ -1031,9 +1031,6 @@ public final class ElementUtils {
     Context ctx = InternalUtils.getJavacContext(env);
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
     Symbol.TypeSymbol origin = ((Type) upperBound).tsym;
-    // The receiver expression's type is captured, but its upper bound might not be, as for a type
-    // variable whose bound is `List<?>`.
-    Type site = javacTypes.capture((Type) upperBound);
     com.sun.tools.javac.util.Name name =
         com.sun.tools.javac.util.Names.instance(ctx).fromString(methodName);
     // Elements.getAllMembers would find the candidates, but in rare cases it crashes with a
@@ -1052,7 +1049,8 @@ public final class ElementUtils {
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
             && method.isInheritedIn(origin, javacTypes)
             && (result == null
-                || takesPrecedenceInMethodResolution(method, result, site, javacTypes))) {
+                || takesPrecedenceInMethodResolution(
+                    method, result, (Type) upperBound, javacTypes))) {
           result = method;
         }
       }
@@ -1061,9 +1059,9 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns true if a call on an expression of type {@code site}, which inherits both {@code m1}
-   * and {@code m2}, invokes {@code m1} rather than {@code m2}. The two methods have the same
-   * signature. These rules are those of javac's method resolution, applied in order:
+   * Returns true if javac's method resolution, for the receiver type {@code site}, chooses {@code
+   * m1} over {@code m2}. The two methods have the same signature. javac applies these rules in
+   * order:
    *
    * <ol>
    *   <li>A method of a subtype takes precedence over a method of its supertype, except that a
@@ -1083,7 +1081,8 @@ public final class ElementUtils {
    *
    * @param m1 a method
    * @param m2 a method with the same signature as {@code m1}
-   * @param site the captured type of the receiver of the call
+   * @param site the upper bound of the receiver type, which inherits {@code m1} and {@code m2}; it
+   *     might be uncaptured, as is {@code List<?>}
    * @param javacTypes the javac type utilities
    * @return true if {@code m1} takes precedence over {@code m2}
    */
@@ -1123,8 +1122,13 @@ public final class ElementUtils {
       // Two concrete methods, neither of which overrides the other, make the call ambiguous.
       return false;
     }
-    Type returnType1 = javacTypes.memberType(site, m1).getReturnType();
-    Type returnType2 = javacTypes.memberType(site, m2).getReturnType();
+    // The receiver expression's type is captured, but `site` might not be, as for a type variable
+    // whose bound is `List<?>`.  As a member of an uncaptured type, a method's return type
+    // might be a wildcard, which is not a type.  Capturing here, rather than in the caller, avoids
+    // creating capture variables in the common case that this comparison is not reached.
+    Type capturedSite = javacTypes.capture(site);
+    Type returnType1 = javacTypes.memberType(capturedSite, m1).getReturnType();
+    Type returnType2 = javacTypes.memberType(capturedSite, m2).getReturnType();
     return javacTypes.isSubtype(returnType1, returnType2)
         && !javacTypes.isSameType(returnType1, returnType2);
   }
@@ -1137,29 +1141,6 @@ public final class ElementUtils {
    */
   private static boolean isAbstract(MethodSymbol method) {
     return (method.flags() & Flags.ABSTRACT) != 0;
-  }
-
-  /**
-   * Returns the return type of a call {@code receiver.method(...)}, where {@code receiver} is an
-   * expression of type {@code receiverType}. The result is the return type of {@code method} as a
-   * member of {@code receiverType}. For example, if {@code method} is {@code Iterable.iterator()},
-   * whose declared return type is {@code Iterator<T>}, and {@code receiverType} is {@code
-   * List<String>}, then the result is {@code Iterator<String>}.
-   *
-   * @param receiverType the type of the receiver expression
-   * @param method a method that {@code receiverType} has as a member
-   * @param env the processing environment
-   * @return the return type of the call, which might contain captured type variables
-   */
-  public static TypeMirror getReturnTypeAsMemberOf(
-      TypeMirror receiverType, ExecutableElement method, ProcessingEnvironment env) {
-    com.sun.tools.javac.code.Types javacTypes =
-        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
-    // The receiver expression's type is captured, but its upper bound might not be, as for a type
-    // variable whose bound is `List<?>`.  As a member of an uncaptured type, a method's return
-    // type might be a wildcard, which is not a type.
-    Type site = javacTypes.capture((Type) TypesUtils.upperBound(receiverType));
-    return javacTypes.memberType(site, (Symbol) method).getReturnType();
   }
 
   /**

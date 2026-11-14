@@ -109,9 +109,11 @@ public class TreeBuilder {
     // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
     // List<T>.  It need not be a declared type:  it might be a type variable, as in
     // `class C<I extends Iterator<String>> implements Iterable<String> { I iterator(); }`.
-    // asSuper() handles a type variable by using its upper bound.
+    // asSuper() handles a type variable by using its upper bound.  As in javac's translation (JLS
+    // 14.14.2), the result has type Iterator, even if iterator() returns a subtype, so the loop's
+    // hasNext() and next() calls are Iterator's methods.
     Type iteratorReturnType =
-        (Type) ElementUtils.getReturnTypeAsMemberOf(exprType, iteratorMethod, env);
+        (Type) TypesUtils.substituteMethodReturnType(iteratorMethod, exprType, env);
     Type iteratorSuper = javacTypes.asSuper(iteratorReturnType, symtab.iteratorType.asElement());
     if (iteratorSuper == null) {
       throw new BugInCF(
