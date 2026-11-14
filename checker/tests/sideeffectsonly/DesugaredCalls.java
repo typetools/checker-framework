@@ -136,8 +136,8 @@ public class DesugaredCalls {
   abstract static class LoggingIterator implements Iterator<String> {
     // `Iterator.next()` is `@SideEffectsOnly("this")`.
     @Override
-    // :: error: (purity.sideeffectsonly.overriding)
     @SideEffectsOnly("DesugaredCalls.log")
+    // :: error: (purity.sideeffectsonly.overriding)
     public abstract String next();
   }
 
