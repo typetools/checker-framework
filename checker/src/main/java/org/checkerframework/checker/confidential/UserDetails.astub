@@ -1,0 +1,22 @@
+package org.springframework.security.core.userdetails;
+
+import java.io.Serializable;
+import java.util.Collection;
+import org.springframework.security.core.GrantedAuthority;
+import org.checkerframework.checker.confidential.qual.*;
+
+public interface UserDetails extends Serializable {
+    Collection<? extends GrantedAuthority> getAuthorities();
+
+    @Confidential String getPassword();
+
+    String getUsername();
+
+    boolean isAccountNonExpired();
+
+    boolean isAccountNonLocked();
+
+    boolean isCredentialsNonExpired();
+
+    boolean isEnabled();
+}
