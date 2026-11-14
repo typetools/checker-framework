@@ -9,6 +9,11 @@
 
 ### Changes for type system implementers
 
+New method `BaseTypeVisitor.checkInstanceOfSafety()` issues the
+`instanceof.unsafe` and `instanceof.pattern.unsafe` warnings.  A checker whose
+run-time `instanceof` test establishes its qualifiers can override it, rather
+than overriding `visitInstanceOf()`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
