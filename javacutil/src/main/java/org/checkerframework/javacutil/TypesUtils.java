@@ -1218,22 +1218,28 @@ public final class TypesUtils {
   // Substitutions
 
   /**
-   * Returns the return type of a method, given the receiver of the method call.
+   * Returns the return type of the given method as a member of the given receiver type, which is
+   * the type of a call's result. For example, if {@code methodElement} is {@code
+   * Iterable.iterator()}, whose declared return type is {@code Iterator<T>}, and {@code
+   * receiverType} is {@code List<String>}, then the result is {@code Iterator<String>}.
    *
-   * @param methodElement a method
-   * @param substitutedReceiverType the receiver type, after substitution
-   * @param env the environment
-   * @return the return type of the method
+   * @param methodElement the method, which is a member of {@code receiverType}
+   * @param receiverType the type of a receiver expression
+   * @param env the processing environment
+   * @return the return type of {@code methodElement} as a member of {@code receiverType}, which
+   *     might contain captured type variables
    */
   public static TypeMirror substituteMethodReturnType(
-      Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
+      Element methodElement, TypeMirror receiverType, ProcessingEnvironment env) {
 
     com.sun.tools.javac.code.Types types =
         com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
 
-    Type substitutedMethodType =
-        types.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
-    return substitutedMethodType.getReturnType();
+    // The receiver expression's type is captured, but its upper bound might not be, as for a type
+    // variable whose bound is `List<?>`.  As a member of an uncaptured type, a method's return
+    // type might be a wildcard, which is not a type.
+    Type site = types.capture((Type) upperBound(receiverType));
+    return types.memberType(site, (Symbol) methodElement).getReturnType();
   }
 
   /**

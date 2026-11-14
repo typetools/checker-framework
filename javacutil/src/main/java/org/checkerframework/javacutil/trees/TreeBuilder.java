@@ -96,25 +96,30 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(iterableExpr));
     assert exprType != null : "expression must be of declared type Iterable<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the iterator() method of the iterable type
-    Symbol.MethodSymbol iteratorMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("iterator")) {
-        iteratorMethod = (Symbol.MethodSymbol) method;
-      }
+    // Find the iterator() method that a call on the iterable expression invokes.  If the type
+    // inherits iterator() from several supertypes, javac's method resolution chooses among them.
+    Symbol.MethodSymbol iteratorMethod =
+        (Symbol.MethodSymbol) ElementUtils.resolveNoArgumentCall(exprType, "iterator", env);
+    if (iteratorMethod == null) {
+      throw new BugInCF("no iterator method for %s of type %s", iterableExpr, exprType);
     }
-
-    assert iteratorMethod != null
-        : "@AssumeAssertion(nullness): no iterator method declared for expression type";
 
     Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
-    DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
-    iteratorType =
-        (DeclaredType) javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
+    // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
+    // List<T>.  It need not be a declared type:  it might be a type variable, as in
+    // `class C<I extends Iterator<String>> implements Iterable<String> { I iterator(); }`.
+    // asSuper() handles a type variable by using its upper bound.  As in javac's translation (JLS
+    // 14.14.2), the result has type Iterator, even if iterator() returns a subtype, so the loop's
+    // hasNext() and next() calls are Iterator's methods.
+    Type iteratorReturnType =
+        (Type) TypesUtils.substituteMethodReturnType(iteratorMethod, exprType, env);
+    Type iteratorSuper = javacTypes.asSuper(iteratorReturnType, symtab.iteratorType.asElement());
+    if (iteratorSuper == null) {
+      throw new BugInCF(
+          "return type %s of %s is not an Iterator", iteratorReturnType, iteratorMethod);
+    }
+    DeclaredType iteratorType = (DeclaredType) iteratorSuper;
 
     int numIterTypeArgs = iteratorType.getTypeArguments().size();
     assert numIterTypeArgs <= 1 : "expected at most one type argument for Iterator";
@@ -174,20 +179,10 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TreeUtils.typeOf(iteratorExpr);
     assert exprType != null : "expression must be of declared type Iterator<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the hasNext() method of the iterator type
-    Symbol.MethodSymbol hasNextMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("hasNext")) {
-        hasNextMethod = (Symbol.MethodSymbol) method;
-        break;
-      }
-    }
-
+    Symbol.MethodSymbol hasNextMethod =
+        (Symbol.MethodSymbol) ElementUtils.resolveNoArgumentCall(exprType, "hasNext", env);
     if (hasNextMethod == null) {
-      throw new BugInCF("no hasNext method declared for " + exprElement);
+      throw new BugInCF("no hasNext method for %s of type %s", iteratorExpr, exprType);
     }
 
     JCTree.JCFieldAccess hasNextAccess = TreeUtils.Select(maker, iteratorExpr, hasNextMethod);
@@ -206,19 +201,11 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TreeUtils.typeOf(iteratorExpr);
     assert exprType != null : "expression must be of declared type Iterator<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the next() method of the iterator type
-    Symbol.MethodSymbol nextMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("next")) {
-        nextMethod = (Symbol.MethodSymbol) method;
-      }
+    Symbol.MethodSymbol nextMethod =
+        (Symbol.MethodSymbol) ElementUtils.resolveNoArgumentCall(exprType, "next", env);
+    if (nextMethod == null) {
+      throw new BugInCF("no next method for %s of type %s", iteratorExpr, exprType);
     }
-
-    assert nextMethod != null
-        : "@AssumeAssertion(nullness): no next method declared for expression type";
 
     Type.MethodType methodType = (Type.MethodType) nextMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();

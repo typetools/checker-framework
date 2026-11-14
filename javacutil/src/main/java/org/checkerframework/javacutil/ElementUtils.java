@@ -1008,6 +1008,10 @@ public final class ElementUtils {
    * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
    * there is no such method.
    *
+   * <p>This method considers only non-private methods that have no formal parameters. Therefore, it
+   * returns null for some legal calls: a call to a private method from within its class, and a call
+   * that invokes a variable-arity method such as {@code methodName(Object...)}.
+   *
    * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
    * result is the most specific declaration among {@code receiverType} and its supertypes, but at
    * run time the call might dispatch to an overriding method in a subtype of {@code receiverType}.
@@ -1044,7 +1048,9 @@ public final class ElementUtils {
             && method.getParameters().isEmpty()
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
             && method.isInheritedIn(origin, javacTypes)
-            && (result == null || takesPrecedence(method, result, origin, javacTypes))) {
+            && (result == null
+                || takesPrecedenceInMethodResolution(
+                    method, result, (Type) upperBound, javacTypes))) {
           result = method;
         }
       }
@@ -1053,30 +1059,88 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns true if a call on an expression of type {@code origin}, which inherits both {@code m1}
-   * and {@code m2}, invokes {@code m1} rather than {@code m2}. The two methods have the same
-   * signature. For an interface, a method of an interface takes precedence over a method of {@code
-   * Object}, the only class among its supertypes. For any other type, a method of a class takes
-   * precedence over a method of an interface. Otherwise, a method of a subtype takes precedence
-   * over a method of its supertype. These rules are those of javac's method resolution.
+   * Returns true if javac's method resolution, for the receiver type {@code site}, chooses {@code
+   * m1} over {@code m2}. The two methods have the same signature. javac applies these rules in
+   * order:
+   *
+   * <ol>
+   *   <li>A method of a subtype takes precedence over a method of its supertype, except that a
+   *       method of an interface does not take precedence over a method of {@code Object}.
+   *   <li>If {@code site} is an interface, a method of an interface takes precedence over a method
+   *       of {@code Object}, the only class among its supertypes.
+   *   <li>A concrete method of a class takes precedence over a method of an interface, which the
+   *       class does not inherit (JLS 8.4.8).
+   *   <li>A concrete method, which might be a default method, takes precedence over an abstract
+   *       method (JLS 15.12.2.5).
+   *   <li>Of two abstract methods, the one with the more specific return type (as a member of
+   *       {@code site}) takes precedence (JLS 15.12.2.5).
+   * </ol>
+   *
+   * If no rule applies, as for two abstract methods with the same return type, then neither method
+   * takes precedence over the other.
    *
    * @param m1 a method
    * @param m2 a method with the same signature as {@code m1}
-   * @param origin the type of the receiver of the call
+   * @param site the upper bound of the receiver type, which inherits {@code m1} and {@code m2}; it
+   *     might be uncaptured, as is {@code List<?>}
    * @param javacTypes the javac type utilities
    * @return true if {@code m1} takes precedence over {@code m2}
    */
-  private static boolean takesPrecedence(
-      MethodSymbol m1,
-      MethodSymbol m2,
-      Symbol.TypeSymbol origin,
-      com.sun.tools.javac.code.Types javacTypes) {
+  private static boolean takesPrecedenceInMethodResolution(
+      MethodSymbol m1, MethodSymbol m2, Type site, com.sun.tools.javac.code.Types javacTypes) {
     Symbol owner1 = m1.owner;
     Symbol owner2 = m2.owner;
-    if (owner1.isInterface() != owner2.isInterface()) {
-      return owner1.isInterface() == origin.isInterface();
+    if (owner1.equals(owner2)) {
+      return false;
     }
-    return !owner1.equals(owner2) && owner1.isSubClass(owner2, javacTypes);
+    boolean isInterface1 = owner1.isInterface();
+    boolean isInterface2 = owner2.isInterface();
+    if (isInterface1 == isInterface2) {
+      if (owner1.isSubClass(owner2, javacTypes)) {
+        return true;
+      }
+      if (owner2.isSubClass(owner1, javacTypes)) {
+        return false;
+      }
+    } else {
+      if (site.tsym.isInterface()) {
+        return isInterface1;
+      }
+      MethodSymbol classMethod = isInterface1 ? m2 : m1;
+      MethodSymbol interfaceMethod = isInterface1 ? m1 : m2;
+      if (!isAbstract(classMethod)
+          || classMethod.owner.isSubClass(interfaceMethod.owner, javacTypes)) {
+        return classMethod == m1;
+      }
+    }
+    boolean isAbstract1 = isAbstract(m1);
+    boolean isAbstract2 = isAbstract(m2);
+    if (isAbstract1 != isAbstract2) {
+      return isAbstract2;
+    }
+    if (!isAbstract1) {
+      // Two concrete methods, neither of which overrides the other, make the call ambiguous.
+      return false;
+    }
+    // The receiver expression's type is captured, but `site` might not be, as for a type variable
+    // whose bound is `List<?>`.  As a member of an uncaptured type, a method's return type
+    // might be a wildcard, which is not a type.  Capturing here, rather than in the caller, avoids
+    // creating capture variables in the common case that this comparison is not reached.
+    Type capturedSite = javacTypes.capture(site);
+    Type returnType1 = javacTypes.memberType(capturedSite, m1).getReturnType();
+    Type returnType2 = javacTypes.memberType(capturedSite, m2).getReturnType();
+    return javacTypes.isSubtype(returnType1, returnType2)
+        && !javacTypes.isSameType(returnType1, returnType2);
+  }
+
+  /**
+   * Returns true if the given method is abstract. A default method is not abstract.
+   *
+   * @param method a method
+   * @return true if {@code method} is abstract
+   */
+  private static boolean isAbstract(MethodSymbol method) {
+    return (method.flags() & Flags.ABSTRACT) != 0;
   }
 
   /**
