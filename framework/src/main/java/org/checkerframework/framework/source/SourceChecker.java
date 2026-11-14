@@ -1741,9 +1741,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Returns the localized long message corresponding to this key. If not found, tries suffixes of
-   * this key, stripping off dot-separated prefixes. If still not found, returns {@code
-   * defaultValue}.
+   * Returns the localized long message corresponding to this key. If this checker's messages do not
+   * define the key, uses the text that a subchecker defines for it (see {@link
+   * #subcheckerMessageOf}), because a checker can report a diagnostic whose message key only a
+   * subchecker's {@code messages.properties} file defines. If still not found, tries suffixes of
+   * this key in this checker's messages, stripping off dot-separated prefixes. If still not found,
+   * returns {@code defaultValue}.
    *
    * @param messageKey a message key
    * @param defaultValue a default value to use if {@code messageKey} is not a message key
@@ -1752,19 +1755,47 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected String fullMessageOf(String messageKey, String defaultValue) {
     String key = messageKey;
-
-    do {
-      String messageForKey = messagesProperties.getProperty(key);
-      if (messageForKey != null) {
-        return messageForKey;
-      }
-
+    String messageForKey = messagesProperties.getProperty(key);
+    if (messageForKey == null) {
+      messageForKey = subcheckerMessageOf(key);
+    }
+    // Suffixes are not looked up in subcheckers' messages.  A subchecker's short key, such as
+    // `return` in a BaseTypeChecker, would supply text for a key whose arguments differ.
+    while (messageForKey == null) {
       int dot = key.indexOf('.');
       if (dot < 0) {
         return defaultValue;
       }
       key = key.substring(dot + 1);
-    } while (true);
+      messageForKey = messagesProperties.getProperty(key);
+    }
+    return messageForKey;
+  }
+
+  /**
+   * Returns the text that a subchecker of this checker, or one of its subcheckers transitively,
+   * defines for the given message key. The search is depth-first, in the order of {@link
+   * #getImmediateSubcheckerClasses}; the first subchecker that defines the key supplies the text.
+   *
+   * @param messageKey a message key
+   * @return the text that a subchecker defines for {@code messageKey}, or null if no subchecker
+   *     defines it
+   */
+  private @Nullable String subcheckerMessageOf(String messageKey) {
+    List<SourceChecker> subcheckersToSearch = immediateSubcheckers;
+    if (subcheckersToSearch == null) {
+      return null;
+    }
+    for (SourceChecker subchecker : subcheckersToSearch) {
+      String result = subchecker.getMessagesProperties().getProperty(messageKey);
+      if (result == null) {
+        result = subchecker.subcheckerMessageOf(messageKey);
+      }
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
   }
 
   /**
