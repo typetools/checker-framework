@@ -7,6 +7,14 @@
 
 ### User-visible changes
 
+The Nullness Checker runs a new subchecker, the Path Shape Checker, that
+determines which paths have a name and which have a parent.  As a result, the
+Nullness Checker treats some calls on `Path` and `File` objects as non-null.
+For example, `p.getParent()` is non-null when `p` is known to have a parent,
+and `p.toAbsolutePath().getParent()` is non-null when `p` is known to have a
+name (that is, `p` is neither a root nor the empty path).  Command-line option
+`-AnoPathShape` disables the Path Shape Checker.
+
 ### Changes for type system implementers
 
 ### Closed issues
