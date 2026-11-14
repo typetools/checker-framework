@@ -269,11 +269,19 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns true if and only if {@code other} appears anywhere in this or an expression appears in
-   * this such that {@code other} might alias this expression, and that expression is modifiable.
+   * Returns true if assigning {@code other} might change the value of this expression: that is, if
+   * {@code other} might denote a location (a variable, field, or array element) that this
+   * expression or one of its subexpressions reads. For example, assigning {@code y.f} might change
+   * the value of {@code x.f.g} if {@code x} and {@code y} might be the same object, but assigning
+   * {@code y.h} does not change the value of {@code x.f.g}, nor of the local variable {@code x}.
    *
-   * <p>This is always true, except for cases where the Java type information prevents aliasing and
-   * none of the subexpressions can alias 'other'.
+   * <p>This implementation conservatively returns true if this expression equals {@code other} or
+   * if their values might be the same object. A subclass that reads no location, or that knows the
+   * locations it reads, overrides it.
+   *
+   * @param store the store, which determines whether two expressions might alias
+   * @param other a local variable, field access, or array access that is assigned
+   * @return true if assigning {@code other} might change the value of this expression
    */
   @Pure
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {

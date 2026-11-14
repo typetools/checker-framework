@@ -17,7 +17,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -1279,11 +1278,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
       ArrayAccess otherArrayAccess = entry.getKey();
       // case 1:
+      // TODO: When the arrays can be aliases, one could be less strict here, and only raise the
+      // abstract value of the other array access.
       if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
-        arrayValuesIterator.remove(); // remove information completely
-      } else if (canAlias(arrayAccess.getArray(), otherArrayAccess.getArray())) {
-        // TODO: one could be less strict here, and only raise the abstract
-        // value for all array expressions with potentially aliasing receivers.
         arrayValuesIterator.remove(); // remove information completely
       }
     }
@@ -1364,16 +1361,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
-   * answer (i.e., returns {@code true} if not enough information is available to determine
-   * aliasing).
+   * Returns true if the expressions {@code a} and {@code b} might evaluate to the same object.
+   * Returns a conservative answer (i.e., returns {@code true} if not enough information is
+   * available to determine aliasing).
+   *
+   * <p>This implementation judges by the types of {@code a} and {@code b} and does not depend on
+   * the contents of the store; see {@link CFAbstractAnalysis#canAlias}.
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
-    TypeMirror tb = b.getType();
-    TypeMirror ta = a.getType();
-    Types types = analysis.getTypes();
-    return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
+    return analysis.canAlias(a, b);
   }
 
   /* --------------------------------------------------------- */
