@@ -17,7 +17,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -1364,16 +1363,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
-   * answer (i.e., returns {@code true} if not enough information is available to determine
-   * aliasing).
+   * Returns true if the objects {@code a} and {@code b} can be aliases, judging by their types.
+   * This implementation does not depend on the contents of the store; see {@link
+   * CFAbstractAnalysis#canAlias}.
+   *
+   * <p>Contrary to the specification of {@link Store#canAlias}, the answer is not conservative when
+   * an interface type is involved. See https://github.com/typetools/checker-framework/issues/8558.
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
-    TypeMirror tb = b.getType();
-    TypeMirror ta = a.getType();
-    Types types = analysis.getTypes();
-    return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
+    return analysis.canAlias(a, b);
   }
 
   /* --------------------------------------------------------- */
