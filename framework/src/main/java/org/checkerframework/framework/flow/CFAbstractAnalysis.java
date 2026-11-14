@@ -1,7 +1,6 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -517,24 +516,13 @@ public abstract class CFAbstractAnalysis<
 
   /**
    * Returns true if the given expressions might evaluate to the same object, judging by their
-   * types: that is, true unless the types show that no object has both of them.
-   *
-   * <p>This compares the erasures of the types, because an object can have two parameterizations of
-   * a generic type. For example, a {@code Box<Integer>} is both a {@code Box<? extends Number>} and
-   * a {@code Box<? super Integer>}, and heap pollution can make a {@code Box<String>} also a {@code
-   * Box<Integer>}. Two erased types have no common object if a value of one cannot be cast to the
-   * other (JLS 5.5): for example, if both are classes and neither is a subclass of the other, or if
-   * one is a final class that does not implement the other. One object can have two unrelated
-   * interface types, such as {@code Runnable} and {@code Serializable}, or a class type and an
-   * unrelated interface type.
+   * types. See {@link TypesUtils#canAlias} for details.
    *
    * @param a an expression
    * @param b another expression
    * @return true if {@code a} and {@code b} might evaluate to the same object
    */
   public boolean canAlias(JavaExpression a, JavaExpression b) {
-    Type erasureA = (Type) types.erasure(a.getType());
-    Type erasureB = (Type) types.erasure(b.getType());
-    return javacTypes.isCastable(erasureA, erasureB);
+    return TypesUtils.canAlias(a.getType(), b.getType(), javacTypes);
   }
 }

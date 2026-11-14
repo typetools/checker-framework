@@ -967,6 +967,48 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if an expression of type {@code a} and an expression of type {@code b} might
+   * evaluate to the same object, judging by the types: that is, true unless the types show that no
+   * object has both of them.
+   *
+   * <p>This compares the erasures of the types, because an object can have two parameterizations of
+   * a generic type. For example, a {@code Box<Integer>} is both a {@code Box<? extends Number>} and
+   * a {@code Box<? super Integer>}, and heap pollution can make a {@code Box<String>} also a {@code
+   * Box<Integer>}. Two erased types have no common object if a value of one cannot be cast to the
+   * other (JLS 5.5): for example, if both are classes and neither is a subclass of the other, or if
+   * one is a final class that does not implement the other. One object can have two unrelated
+   * interface types, such as {@code Runnable} and {@code Serializable}, or a class type and an
+   * unrelated interface type.
+   *
+   * <p>It compares every alternative of a union type, because the erasure of a union type is the
+   * erasure of the first bound of the alternatives' least upper bound, which is less precise. For
+   * example, if {@code E1}, {@code E2}, and {@code E3} are subclasses of {@code Base}, then the
+   * exception parameter {@code e} of {@code catch (E1 | E2 e)} cannot be the same object as an
+   * expression of type {@code E3}, though the erasure of the type of {@code e} is {@code Base}.
+   *
+   * @param a the type of an expression
+   * @param b the type of another expression
+   * @param javacTypes the javac type utilities
+   * @return true if an expression of type {@code a} and an expression of type {@code b} might
+   *     evaluate to the same object
+   */
+  public static boolean canAlias(
+      TypeMirror a, TypeMirror b, com.sun.tools.javac.code.Types javacTypes) {
+    if (a.getKind() == TypeKind.UNION) {
+      for (TypeMirror alternative : ((UnionType) a).getAlternatives()) {
+        if (canAlias(alternative, b, javacTypes)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (b.getKind() == TypeKind.UNION) {
+      return canAlias(b, a, javacTypes);
+    }
+    return javacTypes.isCastable(javacTypes.erasure((Type) a), javacTypes.erasure((Type) b));
+  }
+
+  /**
    * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
    * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
    *
