@@ -9,9 +9,9 @@
 
 ### Changes for type system implementers
 
-An aggregate checker's messages include those of its immediate subcheckers, so
-code in an `AggregateChecker` can report a diagnostic whose message key a
-subchecker's `messages.properties` file defines.
+A checker can report a diagnostic whose message key only a subchecker's
+`messages.properties` file defines; the diagnostic uses the subchecker's message
+text.
 
 ### Closed issues
 
