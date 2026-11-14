@@ -6,6 +6,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsP;
@@ -68,6 +69,22 @@ public class ArrayCreation extends JavaExpression {
       }
     }
     return null;
+  }
+
+  @Override
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    // The created array is a new object, so only its dimensions and initializers read locations.
+    for (JavaExpression n : dimensions) {
+      if (n != null && n.containsModifiableAliasOf(store, other)) {
+        return true;
+      }
+    }
+    for (JavaExpression n : initializers) {
+      if (n.containsModifiableAliasOf(store, other)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

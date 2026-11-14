@@ -102,4 +102,19 @@ public class AssignmentChangesLocations {
       getNextStatic(x).g.toString();
     }
   }
+
+  @Pure
+  static E first(E[] es) {
+    return es[0];
+  }
+
+  // A method can read any array element, not only the elements of arrays in its receiver and
+  // arguments.
+  static void methodCallReadsArrayElement(E[] es, E fresh) {
+    if (first(es).g != null) {
+      es[0] = fresh;
+      // :: error: [dereference.of.nullable]
+      first(es).g.toString();
+    }
+  }
 }

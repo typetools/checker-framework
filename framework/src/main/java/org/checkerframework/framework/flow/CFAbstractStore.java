@@ -1189,13 +1189,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *                 abstract value for such field accesses to at least {@code val} (or the old
    *                 value, if that was less precise). However, this is only necessary if the field
    *                 <em>g</em> is not final.
-   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
+   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where the receiver
+   *                 <em>b</em> reads a location that {@code fieldAccess} might denote.
    *   <li value="3">Remove any information about method calls, including about iterated collection
    *                 elements whose reference is a method call.
-   *   <li value="4">Remove any abstract values for an array access <em>b[i]</em> where {@code
-   *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
-   *                 <em>i</em>.
+   *   <li value="4">Remove any abstract values for an array access <em>b[i]</em> where the array
+   *                 <em>b</em> or the index <em>i</em> reads a location that {@code fieldAccess}
+   *                 might denote.
    * </ol>
    *
    * @param fieldAccess the field access that is assigned
@@ -1260,11 +1260,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract value for other array access <em>b[j]</em> where <em>a</em>
-   *                 and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em>
-   *                 contains a modifiable alias of <em>a[i]</em>.
-   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where <em>a[i]</em>
-   *                 might alias any expression in the receiver <em>b</em> and there is an array
-   *                 expression somewhere in the receiver.
+   *                 and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em> reads a
+   *                 location that <em>a[i]</em> might denote.
+   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where the receiver
+   *                 <em>b</em> reads a location that <em>a[i]</em> might denote.
    *   <li value="3">Remove any information about method calls, including about iterated collection
    *                 elements whose reference is a method call.
    * </ol>
@@ -1292,8 +1291,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
       FieldAccess otherFieldAccess = entry.getKey();
       JavaExpression otherReceiver = otherFieldAccess.getReceiver();
-      if (otherReceiver.containsModifiableAliasOf(this, arrayAccess)
-          && otherReceiver.containsOfClass(ArrayAccess.class)) {
+      if (otherReceiver.containsModifiableAliasOf(this, arrayAccess)) {
         // remove information completely
         fieldValuesIterator.remove();
       }
@@ -1310,9 +1308,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code var}
-   *                 might alias any expression in the receiver <em>b</em>.
+   *                 appears in the receiver <em>b</em>.
    *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code var}
-   *                 might alias the receiver <em>a</em>.
+   *                 appears in the array <em>a</em> or the index <em>i</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
    *                 parameters contains {@code var}, including about iterated collection elements
    *                 whose reference is such a method call, such as {@code list.get(i)}.

@@ -275,9 +275,9 @@ public abstract class JavaExpression {
    * the value of {@code x.f.g} if {@code x} and {@code y} might be the same object, but assigning
    * {@code y.h} does not change the value of {@code x.f.g}, nor of the local variable {@code x}.
    *
-   * <p>This implementation conservatively returns true if this expression equals {@code other} or
-   * if their values might be the same object. A subclass that reads no location, or that knows the
-   * locations it reads, overrides it.
+   * <p>This implementation returns true if this expression equals {@code other} or if their values
+   * might be the same object. It does not examine subexpressions, so every subclass that has
+   * subexpressions overrides it, as does every subclass that reads no location.
    *
    * @param store the store, which determines whether two expressions might alias
    * @param other a local variable, field access, or array access that is assigned
