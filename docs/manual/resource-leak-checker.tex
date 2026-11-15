@@ -768,7 +768,7 @@ An enhanced \<for> loop must not assign to the variable that holds the collectio
 Two forms of \<while> loops are supported:
 
 \begin{itemize}
-  \item An iterator loop: the condition is \<it.hasNext()>, where \<it> is an iterator over the collection, and the loop body calls \<it.next()> exactly once.
+  \item An iterator loop: the condition is \<it.hasNext()>, where \<it> is a local variable that is declared in the statement immediately before the loop and is initialized by a call to \<iterator()> on the collection, as in the example below.  The loop body calls \<it.next()> exactly once.
   \item A loop that empties the collection: the condition is \<!c.isEmpty()>, \code{c.size() > 0}, or \<0 < c.size()>, and the loop body removes an element exactly once, with \<poll()>, \<pollFirst()>, \<pollLast()>, \<remove()>, \<removeFirst()>, \<removeLast()>, or \<pop()>.
 \end{itemize}
 
