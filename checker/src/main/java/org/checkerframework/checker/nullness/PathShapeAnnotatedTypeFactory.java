@@ -13,7 +13,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -191,7 +190,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ PathShape getPathShapeOfPathOrString(ExpressionTree tree) {
     if (TypesUtils.isString(TreeUtils.typeOf(tree))) {
       String constant = TreeUtils.stringConstantValue(tree);
-      return constant == null ? PathShape.UNKNOWN : PathShapeClassifier.classifyPath(constant);
+      return constant == null ? PathShape.UNKNOWN : PathStringClassifier.classifyPath(constant);
     }
     return getPathShape(tree);
   }
