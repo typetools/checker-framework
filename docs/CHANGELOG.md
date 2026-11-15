@@ -16,7 +16,13 @@ Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
 result omits each node that might have a different value by the time the
 enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
 result can be empty.  A subclass that overrides `splitAssignments()` must
-override `nodesWithValueOf()` instead.
+override `nodesWithValueOf()` instead.  `insertValueForNodesWithValueOf()` and
+`hasRefinableSide()` (which the default `strengthenAnnotationOfEqualTo()`
+uses) do not call `nodesWithValueOf()`, so they ignore such an override; a
+subclass that needs its override to affect refinements must also override
+`strengthenAnnotationOfEqualTo()` and any other method that calls
+`insertValueForNodesWithValueOf()`, and insert values for the nodes that its
+`nodesWithValueOf()` returns.
 
 To refine an operand of a comparison, an override of
 `CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method

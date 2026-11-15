@@ -77,6 +77,29 @@ public class AssignmentInComparison {
     }
   }
 
+  @NonNegative int clearArr() {
+    arr = new int[0];
+    return 0;
+  }
+
+  // The right operand reassigns `arr` after the left operand reads `arr.length`.
+  void otherOperandReassignsComparedSequence() {
+    int i;
+    if (arr.length > (i = clearArr())) {
+      // :: error: [array.access.unsafe.high]
+      int value = arr[i];
+    }
+  }
+
+  // The right operand reassigns `k`, which the refinement of `j` would mention.
+  static void otherOperandReassignsAddend(int[] a, @NonNegative int j, @NonNegative int k) {
+    int i;
+    if ((i = j) + k < (k = a.length)) {
+      // :: error: [array.access.unsafe.high]
+      int value = a[j + k];
+    }
+  }
+
   void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
     if ((this.arr = b).length == setArr(c).length) {
       // `setArr` sets `this.arr` to `c`, which might not have the same length as `b`.

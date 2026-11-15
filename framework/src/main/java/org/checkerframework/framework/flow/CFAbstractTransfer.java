@@ -1013,6 +1013,9 @@ public abstract class CFAbstractTransfer<
    *
    * <p>Clients must not modify the result, which is cached.
    *
+   * <p>{@link #insertValueForNodesWithValueOf} and {@link #hasRefinableSide} do not call this
+   * method, so an override of this method does not affect them.
+   *
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return the nodes that have the value of {@code node} when the comparison completes: the sides
    *     of {@code node} if it is an assignment or a value-preserving cast, and otherwise {@code
@@ -1692,11 +1695,14 @@ public abstract class CFAbstractTransfer<
      *     value than evaluating it before
      */
     boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
-      if (anyHeapLocation
+      if (!ignoreOwnLocation
+          && anyHeapLocation
           && analysis.atypeFactory.sideEffectsUnrefineAliases
           && expr.isModifiableByOtherCode()) {
         // As in CFAbstractStore#updateForMethodCall, a write might change the abstract value of
-        // the object that `expr` denotes, even if `expr` still denotes the same object.
+        // the object that `expr` denotes, even if `expr` still denotes the same object.  If
+        // `ignoreOwnLocation` is true, the value of `expr` is stored into its location after these
+        // writes, so its abstract value is the one that was stored.
         return true;
       }
       if (expr instanceof LocalVariable) {
