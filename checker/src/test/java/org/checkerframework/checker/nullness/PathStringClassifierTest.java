@@ -18,8 +18,8 @@ import org.junit.Test;
  * {@code Path}, and {@code java.io.WinNTFileSystem} and {@code java.io.File} for {@code File}. The
  * expected results are checked against the running JDK: the Unix results when the tests run on
  * Unix, and the Windows results when the tests run on Windows. The expected Windows {@code File}
- * result covers JDKs both before and after JDK 25, which differ, so it is checked to be no more
- * specific than the running JDK's result.
+ * result covers JDKs both before JDK 22 and from JDK 22 on, which differ, so it is checked to be no
+ * more specific than the running JDK's result.
  */
 public class PathStringClassifierTest {
 
@@ -33,7 +33,7 @@ public class PathStringClassifierTest {
   private static final PathShape UNKNOWN = PathShape.UNKNOWN;
 
   /**
-   * Checks the path shape of a string under each set of rules.
+   * Checks the path shape of the given string under each set of rules.
    *
    * @param s a path string
    * @param unixPath the expected path shape of {@code Path.of(s)} on Unix, or null if it throws
@@ -64,13 +64,13 @@ public class PathStringClassifierTest {
     } else if (File.separatorChar == '\\') {
       Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
       PathShape actualFile = actualFileShape(s);
-      // A JDK either strips a long-path prefix (JDK 25 and later) or does not.
-      PathShape beforeJdk25 = PathStringClassifier.windowsFileBeforeJdk25(s);
-      PathShape sinceJdk25 =
-          PathStringClassifier.windowsFileBeforeJdk25(PathStringClassifier.stripLongPathPrefix(s));
+      // A JDK either strips a long-path prefix (JDK 22 and later) or does not.
+      PathShape beforeJdk22 = PathStringClassifier.windowsFileBeforeJdk22(s);
+      PathShape sinceJdk22 =
+          PathStringClassifier.windowsFileBeforeJdk22(PathStringClassifier.stripLongPathPrefix(s));
       Assert.assertTrue(
           "actual Windows File " + s + " is " + actualFile,
-          actualFile == beforeJdk25 || actualFile == sinceJdk25);
+          actualFile == beforeJdk22 || actualFile == sinceJdk22);
       Assert.assertEquals("sound Windows File " + s, windowsFile, windowsFile.lub(actualFile));
     }
   }
@@ -203,16 +203,16 @@ public class PathStringClassifierTest {
         HAS_PARENT,
         HAS_NAME,
         HAS_NAME);
-    // A Path requires an absolute path after the long-path prefix.  A File on JDK 25 or later
+    // A Path requires an absolute path after the long-path prefix.  A File on JDK 22 or later
     // strips the prefix, leaving the relative path "foo".
     check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    // As a Windows File, "\\?\foo" has the parent "\\?" on a JDK before JDK 25.
-    Assert.assertEquals(HAS_PARENT, PathStringClassifier.windowsFileBeforeJdk25("\\\\?\\foo"));
+    // As a Windows File, "\\?\foo" has the parent "\\?" on a JDK before JDK 22.
+    Assert.assertEquals(HAS_PARENT, PathStringClassifier.windowsFileBeforeJdk22("\\\\?\\foo"));
     Assert.assertEquals(
         HAS_NAME,
-        PathStringClassifier.windowsFileBeforeJdk25(
+        PathStringClassifier.windowsFileBeforeJdk22(
             PathStringClassifier.stripLongPathPrefix("\\\\?\\foo")));
-    // A File on JDK 25 or later strips the prefix, leaving a root.
+    // A File on JDK 22 or later strips the prefix, leaving a root.
     check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
     check("\\\\?\\C:", HAS_NAME, null, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
     check("\\\\?\\UNC", HAS_NAME, null, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
@@ -246,7 +246,7 @@ public class PathStringClassifierTest {
     check("a?b", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
     check("a ", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
     check("\\\\a?b\\share\\c", HAS_NAME, null, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
-    // No Path may contain the NUL character.
+    // No Path can contain the NUL character.
     check("a\u0000b", null, null, HAS_NAME, HAS_NAME, UNKNOWN, HAS_NAME);
   }
 }
