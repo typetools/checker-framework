@@ -564,15 +564,40 @@ public class AssignmentInComparison {
   }
 
   static class Document {
-    Document current = this;
+    Document current;
     @Nullable String text;
+
+    Document(Document current) {
+      this.current = current;
+    }
   }
 
-  // The string conversion of `value` calls `value.toString()`, which might reassign `d.current`.
-  static void plusAssignStringConversionRelocatesTarget(Document d, Object value) {
+  // The string conversion of `value` calls `value.toString()`, which is side-effect-free, so it
+  // cannot reassign `d.current`.
+  static void plusAssignStringConversionPreservesTarget(Document d, Object value) {
     d.current.text += value;
+    d.current.text.length();
+  }
+
+  // This method is not side-effect-free, so a call to it might reassign `d.current`.
+  static String reassignCurrent(Document d) {
+    d.current = new Document(d);
+    return "";
+  }
+
+  static void plusAssignCallRelocatesTarget(Document d) {
+    d.current.text += reassignCurrent(d);
     // :: error: [dereference.of.nullable]
     d.current.text.length();
+  }
+
+  static void plusAssignCallRelocatesTargetInComparison(Document d) {
+    // :: warning: [nulltest.redundant]
+    if ((d.current.text += reassignCurrent(d)) != null) {
+      // After the assignment, `d.current.text` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      d.current.text.length();
+    }
   }
 
   // A string conversion of a `String` does not call `toString()`.
