@@ -911,10 +911,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      Node unboxed =
+      MethodInvocationNode unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
+      unboxed.setUnboxing();
 
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
@@ -1853,7 +1854,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithMethodInvocationNode(TreeUtils.elementFromUse(nextCall), nextCallNode);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
-      setIterableExpressionOnUnboxingCalls(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1947,7 +1947,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      setIterableExpressionOnUnboxingCalls(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1989,38 +1988,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
-  }
-
-  /**
-   * Sets the iterable expression and the enhanced for loop of each unboxing call that assignment
-   * conversion applied to the given element, so that the result of each such unboxing call (such as
-   * {@code intValue()}) has the qualifiers of the element type of the iterable expression.
-   * Assignment conversion unboxes the element in, for example, {@code for (int x : listOfInteger)}
-   * and {@code for (long x : arrayOfInteger)}.
-   *
-   * <p>This method ignores a boxing call, as in {@code for (Integer x : arrayOfInt)}, because the
-   * boxed value need not have the qualifiers of the element type. For example, a primitive is
-   * interned but its boxed value is not.
-   *
-   * @param element the node that reads an element in the enhanced for loop, before assignment
-   *     conversion: a call to {@code next()} for an {@code Iterable}, or an array access for an
-   *     array
-   * @param expression the iterable expression of the enhanced for loop
-   * @param tree an enhanced for loop
-   */
-  private void setIterableExpressionOnUnboxingCalls(
-      Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
-    Set<Node> converted = treeToImplicitlyConvertedCfgNodes.get(element.getTree());
-    if (converted == null) {
-      return;
-    }
-    for (Node node : converted) {
-      if (node instanceof MethodInvocationNode conversion
-          && TypesUtils.isPrimitive(conversion.getType())) {
-        conversion.setIterableExpression(expression);
-        conversion.setEnhancedForLoop(tree);
-      }
-    }
   }
 
   /**
