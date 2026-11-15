@@ -1482,7 +1482,8 @@ public abstract class CFAbstractTransfer<
    * the guard of an earlier case or a record accessor that a record pattern invokes, ran after the
    * switch evaluated the selector expression (see {@link CaseNode#codeRanSinceSelector()}). That
    * code cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign a
-   * field or change the result of a method call.
+   * field, change the result of a method call, or mutate the object that the selector expression
+   * evaluates to.
    *
    * @param n a case node
    * @return true if the switch selector expression still denotes the value that the switch tests
