@@ -142,7 +142,10 @@ fields or re-opening resources:
 
 \subsectionAndLabel{Resource Leak Checker annotations for collections}{resource-leak-annotations-collections}
 
-The Resource Leak Checker also supports collections of resources. The following annotations express ownership of resource collections.
+The Resource Leak Checker also supports collections of resources.
+Collections need their own annotations, because each resource collection has a unique owner
+(Section~\ref{resource-leak-collections} explains why).
+The following annotations express ownership of resource collections.
 
 \begin{description}
 \item[\refqualclass{checker/collectionownership/qual}{OwningCollection}]
@@ -652,8 +655,9 @@ feature that it is unable to reason about.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
-The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
-has the same must-call and called-methods properties. Instances of \<java.lang.Iterable> are supported;
+The Resource Leak Checker can only verify correct use of homogeneous collections. In a homogeneous collection, every element
+has the same must-call methods. A non-homogeneous collection always leads to a warning.
+Instances of \<java.lang.Iterable> are supported;
 this section calls those ``collections''. Iterators over collections are also supported (Section~\ref{resource-leak-collections-iterators}).
 
 The checker ensures that some loop calls the required methods on all
@@ -672,9 +676,18 @@ The Resource Leak Checker tracks every allocated resource collection in two ways
     collection. Like ownership, the obligation can be passed on to method
     parameters, fields, or return values. Whereas the type system permits at
     most one owner per resource collection, the dataflow analysis tracks at
-    least one obligation per resource collection, which ensures that the
-    obligation is definitely fulfilled.
+    least one obligation per resource collection, so that the checker can
+    verify that the obligation is definitely fulfilled.
 \end{itemize}
+
+For a single resource, \<@Owning> and \<@NotOwning> do not restrict aliasing,
+because it does not matter which alias disposes of the resource. A resource
+collection is different, because its elements can change through any alias.
+For example, suppose a method closes every socket in a list, but some other
+object holds an alias to the list. That object could later add a new socket to
+the list, and nothing would close it. To rule this out without tracking every
+alias, the checker permits only one reference, the owner, to change the
+collection's obligation.
 
 A Java expression is a \textit{resource collection} if:
 
@@ -683,7 +696,8 @@ A Java expression is a \textit{resource collection} if:
   \item the upper bound of that type argument has a non-empty or unknown (\<@MustCallUnknown>) \<MustCall> type.
 \end{enumerate}
 
-For example, expressions of type \mathid{List<Socket>} or \mathid{Iterable<?\ extends @MustCallUnknown Object>} are resource collections, but expressions of type \mathid{Set<String>} or \mathid{Map<String, Socket>} are not.
+For example, expressions of type \code{List<Socket>} or \code{Iterable<?\ extends @MustCallUnknown Object>} are resource collections, but expressions of type \code{Set<String>} or \code{Map<String, Socket>} are not.
+It is a limitation of the Resource Leak Checker that a map, such as a \code{Map<String, Socket>}, cannot own resources.
 
 \subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 
@@ -716,7 +730,7 @@ The type hierarchy of the ownership type system is:
     resource collection that doesn't yet contain any resources.
 
   \item[\refqualclass{checker/collectionownership/qual}{OwningCollectionBottom}]
-    is the type of expressions that are not resource collections. Most
+    is the type of expressions that are definitely not resource collections. Most
     expressions have this type, because most expressions are not collections
     of resources.
 \end{description}
@@ -731,7 +745,8 @@ permitted; the caller then owns the returned element and must dispose of it.
 In exchange for these restrictions, a \<@NotOwningCollection> reference has no
 obligation for the elements of the collection.
 
-Of the qualifiers in this hierarchy, only \<@OwningCollection>, \<@NotOwningCollection>, and the polymorphic qualifier \<@PolyOwningCollection> can be written by programmers. The other two are used only internally.
+Of the qualifiers in this hierarchy, programmers may write only \<@OwningCollection>, \<@NotOwningCollection>, and the polymorphic qualifier \<@PolyOwningCollection>.
+The other two are used only internally, and the checker reports an error if a programmer writes one.
 
 \subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
 
@@ -955,6 +970,9 @@ The checker doesn't allow ownership to be transferred away from a resource colle
   \item The field cannot be returned from a method whose return type is \<@OwningCollection>.
   \item If the field is on the right-hand side of an assignment, the left-hand side has type \<@NotOwningCollection> after the assignment, to maintain the invariant that each resource collection has at most one owner.
   \item The field can be accessed only through \<this> or \<super>. Accessing it through any other receiver, even another instance of the same class, is not permitted.
+    This restriction keeps the reasoning about the field local: the field's obligation belongs to its enclosing object, and the
+    checker verifies it only within that object's own methods, through \<this>. Without it, a method could, for example,
+    add a resource to another object's field after that object has been closed, and nothing would dispose of the resource.
 \end{itemize}
 
 If, for example, a method could transfer the ownership of the field to a parameter of another method, then the checker would have to track that the field is no longer the owner and treat the field as \<@NotOwningCollection> in later invocations of methods on the same object. For simplicity, the checker doesn't track this.
