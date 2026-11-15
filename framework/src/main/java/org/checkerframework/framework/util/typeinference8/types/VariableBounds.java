@@ -472,6 +472,12 @@ public class VariableBounds {
   /**
    * Adds constraints from complementary bounds.
    *
+   * <p>A bound that is a use of another variable relates the qualifiers of the two variables only
+   * if the use's primary annotations are that variable's (see {@link
+   * UseOfVariable#hasVariableQualifiers}). For example, a use that ignores annotations relates only
+   * the Java types of the two variables, so this variable's qualifier bounds imply nothing about the
+   * other variable.
+   *
    * @param kind kind of bound
    * @param s qualifiers
    */
@@ -479,16 +485,16 @@ public class VariableBounds {
       BoundKind kind, Set<? extends AbstractQualifier> s) {
     // Copy bound to equal variables
     for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
-      if (t.isUseOfVariable()) {
-        VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
+      VariableBounds otherBounds = boundsOfVariableWithQualifiers(t);
+      if (otherBounds != null) {
         otherBounds.getQualifierBoundsOfKind(kind).addAll(s);
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
-        if (t.isUseOfVariable()) {
-          VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
+        VariableBounds otherBounds = boundsOfVariableWithQualifiers(t);
+        if (otherBounds != null) {
           otherBounds.getQualifierBoundsOfKind(BoundKind.UPPER).addAll(s);
         }
       }
@@ -496,12 +502,30 @@ public class VariableBounds {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
-        if (t.isUseOfVariable()) {
-          VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
+        VariableBounds otherBounds = boundsOfVariableWithQualifiers(t);
+        if (otherBounds != null) {
           otherBounds.getQualifierBoundsOfKind(BoundKind.LOWER).addAll(s);
         }
       }
     }
+  }
+
+  /**
+   * Returns the bounds of the variable that {@code type} is a use of, if {@code type} is a use of a
+   * variable whose primary annotations are the variable's (see {@link
+   * UseOfVariable#hasVariableQualifiers}); otherwise, returns null.
+   *
+   * @param type a bound of this variable
+   * @return the bounds of the variable that {@code type} is a use of, or null
+   */
+  private static @Nullable VariableBounds boundsOfVariableWithQualifiers(AbstractType type) {
+    if (type.isUseOfVariable()) {
+      UseOfVariable use = (UseOfVariable) type;
+      if (use.hasVariableQualifiers()) {
+        return use.getVariable().getBounds();
+      }
+    }
+    return null;
   }
 
   /**

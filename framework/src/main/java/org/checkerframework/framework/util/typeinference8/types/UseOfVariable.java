@@ -190,9 +190,20 @@ public class UseOfVariable extends AbstractType {
    * @param annotations the qualifiers to add
    */
   public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> annotations) {
-    if (!hasPrimaryAnno && !ignoreAnnotations) {
+    if (hasVariableQualifiers()) {
       variable.getBounds().addQualifierBound(kind, annotations);
     }
+  }
+
+  /**
+   * Returns true if this use's primary annotations are those of the variable that this is a use of:
+   * that is, if this use has no primary annotation and does not ignore annotations. Only then does
+   * a qualifier bound on this use constrain the variable.
+   *
+   * @return true if this use's primary annotations are those of its variable
+   */
+  boolean hasVariableQualifiers() {
+    return !hasPrimaryAnno && !ignoreAnnotations;
   }
 
   /**
@@ -223,7 +234,7 @@ public class UseOfVariable extends AbstractType {
    * @param bound the type of the bound
    */
   public void addBound(Constraint parent, BoundKind kind, AbstractType bound) {
-    if (!hasPrimaryAnno && !ignoreAnnotations) {
+    if (hasVariableQualifiers()) {
       variable.getBounds().addBound(parent, kind, bound);
     } else if (!hasPrimaryAnno) {
       // This use ignores annotations: it is, for example, the lower bound `U` of a variable `T`
