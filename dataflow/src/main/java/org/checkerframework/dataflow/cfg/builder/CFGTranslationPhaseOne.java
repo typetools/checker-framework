@@ -1874,7 +1874,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setInSource(false);
       extendWithMethodInvocationNode(nextCallNode);
 
-      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      AssignmentNode assignNode =
+          translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      // If the loop variable is a primitive, the assignment unboxes the result of next().  Save
+      // the iterable expression in the unboxing conversion, too.
+      MethodInvocationNode unboxingNode =
+          getBoxingConversion(assignNode.getExpression(), nextCallNode);
+      if (unboxingNode != null) {
+        unboxingNode.setIterableExpression(expression);
+        unboxingNode.setEnhancedForLoop(tree);
+      }
 
       assert statement != null;
       scan(statement, p);
@@ -1969,15 +1978,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
+      // If the loop variable's type and the array's component type differ by a boxing or
+      // unboxing conversion, treat that conversion as an iterator.
+      MethodInvocationNode boxingNode =
+          getBoxingConversion(arrayAccessAssignNode.getExpression(), arrayAccessNode);
+      if (boxingNode != null) {
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
@@ -2100,6 +2105,30 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             variableElement.getEnclosingElement(),
             iteratorCall);
     return iteratorVariable;
+  }
+
+  /**
+   * Returns the boxing or unboxing conversion of the given enhanced for loop element, within the
+   * expression that is assigned to the loop variable. For example, if {@code list} is a {@code
+   * List<Integer>}, then in {@code for (long x : list)}, the expression that is assigned to {@code
+   * x} widens the unboxing conversion of the result of {@code next()}.
+   *
+   * @param assignedExpression the expression assigned to an enhanced for loop's variable
+   * @param element the loop's element, before any conversion: a call to {@code next()} or an array
+   *     access
+   * @return the boxing or unboxing conversion of {@code element} in {@code assignedExpression}, or
+   *     null if there is none
+   */
+  private static @Nullable MethodInvocationNode getBoxingConversion(
+      Node assignedExpression, Node element) {
+    Node unwidened =
+        assignedExpression instanceof WideningConversionNode widening
+            ? widening.getOperand()
+            : assignedExpression;
+    if (unwidened != element && unwidened instanceof MethodInvocationNode result) {
+      return result;
+    }
+    return null;
   }
 
   protected VariableTree createEnhancedForLoopArrayVariable(
@@ -3461,8 +3490,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Extends the CFG with the given MethodInvocationNode, accounting for potential exceptions thrown
-   * by the invocation. If the method is annotated {@link TerminatesExecution}, the invocation
-   * terminates execution.
+   * by the invocation. If the invoked method (the method of {@code node}'s target) is annotated
+   * {@link TerminatesExecution}, the invocation terminates execution.
    *
    * @param node an invocation
    */

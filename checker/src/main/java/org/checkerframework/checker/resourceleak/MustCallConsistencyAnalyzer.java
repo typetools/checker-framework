@@ -324,12 +324,20 @@ public class MustCallConsistencyAnalyzer {
      * Gets the must-call methods (i.e., the list of methods that must be called to satisfy the
      * must-call obligation) of each resource alias represented by this Obligation.
      *
+     * <p>All the resource aliases of an Obligation refer to the same resource. Therefore, a
+     * resource alias that has no {@code @MustCall} type in the store has the must-call methods of a
+     * resource alias that does. For example, the store lacks a resource alias that is unassigned on
+     * some path to the store's program point, such as a variable that is assigned the result of a
+     * {@code @MustCallAlias} method that might throw an exception.
+     *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
-     *     null, then the default MustCall type of each variable's class will be used.
+     *     null, then the must-call type of each resource alias is computed as by {@link
+     *     #getMustCallValue}, from its declared type or its class.
      * @return a map from each resource alias of this to a list of its must-call method names, or
-     *     null if the must-call obligations are unsatisfiable (i.e., the value of some tracked
-     *     resource alias of this in the Must Call store is MustCallUnknown)
+     *     null if the must-call obligations are unsatisfiable (i.e., no resource alias of this has
+     *     a {@code @MustCall} type in the Must Call store, and the declared type of some resource
+     *     alias of this is not a {@code @MustCall} type, such as MustCallUnknown)
      */
     public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
         RLCCalledMethodsAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
@@ -337,8 +345,26 @@ public class MustCallConsistencyAnalyzer {
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
+      // The resource aliases that have no @MustCall type in the store.
+      List<ResourceAlias> unrefinedAliases = new ArrayList<>(0);
+      // The must-call methods of a resource alias that has a @MustCall type in the store.
+      List<String> refinedAnnoVals = null;
       for (ResourceAlias alias : this.resourceAliases) {
-        AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
+        AnnotationMirror mcAnno = getRefinedMustCallValue(alias, mcStore);
+        if (mcAnno == null) {
+          unrefinedAliases.add(alias);
+          continue;
+        }
+        refinedAnnoVals = rlAtf.getMustCallValues(mcAnno);
+        result.put(alias, refinedAnnoVals);
+      }
+
+      for (ResourceAlias alias : unrefinedAliases) {
+        if (refinedAnnoVals != null) {
+          result.put(alias, refinedAnnoVals);
+          continue;
+        }
+        AnnotationMirror mcAnno = getMustCallValue(alias, mustCallAnnotatedTypeFactory);
         if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
           // MustCallUnknown; cannot be satisfied
           return null;
@@ -353,36 +379,44 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Gets the must-call type associated with the given resource alias, falling back on the
-     * declared type if there is no refined type for the alias in the store.
+     * Returns the {@code @MustCall} type of the given resource alias in the given store.
      *
      * @param alias a resource alias
      * @param mcStore the must-call checker's store
+     * @return the {@code @MustCall} annotation of {@code alias} in {@code mcStore}, or null if
+     *     {@code mcStore} is null or has no {@code @MustCall} type for {@code alias}
+     */
+    private static @Nullable AnnotationMirror getRefinedMustCallValue(
+        ResourceAlias alias, @Nullable CFStore mcStore) {
+      CFValue value = mcStore == null ? null : mcStore.getValue(alias.reference);
+      if (value == null) {
+        return null;
+      }
+      return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), MustCall.class);
+    }
+
+    /**
+     * Returns the must-call type of the given resource alias, ignoring any store. That is its
+     * declared type, unless its declared type is top. In that case, it is the default must-call
+     * type of the alias's class; or top if the alias's type is not a class, interface, annotation
+     * type, or enum (for example, if it is a wildcard type); or bottom if the alias's type is void.
+     *
+     * @param alias a resource alias
      * @param mcAtf the must-call checker's annotated type factory
      * @return the annotation from the must-call type hierarchy associated with {@code alias}
      */
     private static AnnotationMirror getMustCallValue(
-        ResourceAlias alias, @Nullable CFStore mcStore, MustCallAnnotatedTypeFactory mcAtf) {
-      JavaExpression reference = alias.reference;
-      CFValue value = mcStore == null ? null : mcStore.getValue(reference);
-      if (value != null) {
-        AnnotationMirror result =
-            AnnotationUtils.getAnnotationByClass(value.getAnnotations(), MustCall.class);
-        if (result != null) {
-          return result;
-        }
-      }
-
+        ResourceAlias alias, MustCallAnnotatedTypeFactory mcAtf) {
       AnnotationMirror result =
           mcAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(mcAtf.TOP);
       if (result != null && !AnnotationUtils.areSame(result, mcAtf.TOP)) {
         return result;
       }
-      // There wasn't an @MustCall annotation for it in the store and the type factory has no
-      // information, so fall back to the default must-call type for the class.
+      // The declared type is top, so fall back to the default must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type
       // of a returns-receiver method on something with a MustCall type; for example,
       // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we can.
+      JavaExpression reference = alias.reference;
       TypeElement typeElt = TypesUtils.getTypeElement(reference.getType());
       if (typeElt == null) {
         // typeElt is null if reference.getType() was not a class, interface, annotation

@@ -1,5 +1,5 @@
-// A test that a terminating call that an enhanced for loop desugars to does not cause a false
-// positive.
+// A test that the Resource Leak Checker honors @TerminatesExecution on a call that an enhanced for
+// loop desugars to.
 
 import java.io.IOException;
 import java.net.Socket;
@@ -20,5 +20,12 @@ class TerminatingEnhancedFor {
     Socket s = new Socket(host, port);
     for (String x : it) {}
     s.close();
+  }
+
+  // The loop's iterator() call terminates execution, so no code after the loop executes, and the
+  // socket need not be closed.
+  void noCloseAfterLoop(String host, int port, TerminatingIterable it) throws IOException {
+    Socket s = new Socket(host, port);
+    for (String x : it) {}
   }
 }
