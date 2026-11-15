@@ -887,7 +887,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public TransferResult<CFValue, CFStore> visitCase(
       CaseNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
-    if (!canRefineSwitchSelector(n)) {
+    if (!selectorExpressionDenotesSwitchValue(n)) {
       return result;
     }
     // Refines subtrahend in the switch expression

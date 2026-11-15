@@ -2151,12 +2151,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** True if {@link #switchTree} has a {@code case null}. */
     private final boolean hasNullCaseLabel;
 
-    /**
-     * True if the CFG built so far evaluates code other than the selector expression: the guard of
-     * some case of {@link #switchTree}, or a record accessor that a record pattern invokes.
-     */
-    private boolean otherCodeEvaluated = false;
-
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2170,6 +2164,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
     private @Nullable VariableTree switchExprVarTree;
+
+    /**
+     * True if the CFG built so far contains code that might have side effects, such as the guard of
+     * some case of {@link #switchTree} or a record accessor that a deconstruction pattern invokes,
+     * after the evaluation of the selector expression. If so, the selector expression might no
+     * longer denote the value that the switch tests.
+     */
+    private boolean codeRanSinceSelector = false;
 
     /**
      * Constructs a SwitchBuilder.
@@ -2469,7 +2471,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             // Matching a record pattern invokes record accessors, which might have side effects,
             // even if the match fails.  (Nested record patterns occur only within a record
             // pattern.)
-            otherCodeEvaluated = true;
+            codeRanSinceSelector = true;
           }
         }
 
@@ -2482,7 +2484,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 selectorExprAssignment,
                 exprs,
                 labelsUntested,
-                otherCodeEvaluated,
+                codeRanSinceSelector,
                 env.getTypeUtils());
         if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
@@ -2501,7 +2503,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          otherCodeEvaluated = true;
+          codeRanSinceSelector = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
