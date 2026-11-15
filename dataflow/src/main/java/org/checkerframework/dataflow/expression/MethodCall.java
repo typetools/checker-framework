@@ -191,7 +191,7 @@ public class MethodCall extends JavaExpression {
     StringBuilder preParen = new StringBuilder();
     if (receiver instanceof ClassName) {
       preParen.append(receiver.getType());
-    } else if (receiver instanceof BinaryOperation) {
+    } else if (receiver instanceof BinaryOperation || receiver instanceof UnaryOperation) {
       // Without parentheses, `("a" + s).length()` would be printed as `"a" + s.length()`.
       preParen.append('(').append(receiver).append(')');
     } else {
