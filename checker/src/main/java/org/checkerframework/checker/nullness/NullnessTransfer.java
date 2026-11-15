@@ -363,8 +363,9 @@ public class NullnessTransfer
     TransferResult<NullnessValue, NullnessStore> result = super.visitInstanceOf(n, p);
     NullnessStore thenStore = result.getThenStore();
     NullnessStore elseStore = result.getElseStore();
+    // `n` evaluates to true only if its operand is non-null.  So, in the then store, the operand
+    // is non-null, and so is the binding variable that `n`'s pattern declares, if any.
     makeNonNull(thenStore, n.getOperand());
-    // instanceof is false for null, so a binding variable is non-null.
     if (n.getPatternNode() instanceof LocalVariableNode bindingVar) {
       makeNonNull(thenStore, bindingVar);
     }

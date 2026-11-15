@@ -35,7 +35,7 @@ public class PatternVariableDefaults {
     }
   }
 
-  void instanceOfBoxed(@Unsigned Integer u) {
+  void instanceofBoxed(@Unsigned Integer u) {
     Object o = u;
     if (o instanceof Integer i) {
       // :: error: (operation.unsignedlhs)
@@ -62,7 +62,7 @@ public class PatternVariableDefaults {
     }
   }
 
-  <T extends Number> void instanceOfTypeVariable(@Unsigned T x) {
+  <T extends Number> void instanceofTypeVariable(@Unsigned T x) {
     if (x instanceof T t) {
       @Unsigned T u = t;
       // :: error: (assignment)
