@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -12,8 +13,10 @@ import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -24,10 +27,12 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
@@ -167,6 +172,23 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       // True if a tree whose type mentions a path has been found.
       boolean found = false;
 
+      // The classes that enclose the tree being scanned, innermost first.
+      final Deque<TypeElement> enclosingClasses = new ArrayDeque<>();
+
+      @Override
+      public Void visitClass(ClassTree classTree, Void p) {
+        TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
+        if (classElt == null) {
+          return super.visitClass(classTree, p);
+        }
+        enclosingClasses.push(classElt);
+        try {
+          return super.visitClass(classTree, p);
+        } finally {
+          enclosingClasses.pop();
+        }
+      }
+
       @Override
       public Void scan(Tree t, Void p) {
         // Once a use of a path has been found, return immediately without descending.
@@ -174,7 +196,8 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return null;
         }
         TypeMirror type = TreeUtils.typeOf(t);
-        if ((type != null && mentionsPathOrFile(type, visited)) || usesPathShapeContract(t)) {
+        if ((type != null && mentionsPathOrFile(type, visited))
+            || usesPathShapeContract(t, enclosingClasses)) {
           found = true;
           return null;
         }
@@ -193,10 +216,17 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * also refers to the method that it names. Such a tree must be checked even if it mentions no
    * {@code Path} or {@code File} type and writes no path shape qualifier.
    *
+   * <p>A member's type is examined both as declared and as a member of the type of the receiver,
+   * because a qualifier may appear only in the latter. For example, given {@code class NamedBox
+   * extends Box<@HasName Object>}, the declared type of {@code Box.put(T)} contains no qualifier,
+   * but its type as a member of {@code NamedBox} does.
+   *
    * @param tree a tree
+   * @param enclosingClasses the classes that enclose {@code tree}, innermost first; used to
+   *     determine the type of an implicit receiver
    * @return true if {@code tree} overrides, or refers to, a declaration with a path shape contract
    */
-  private boolean usesPathShapeContract(Tree tree) {
+  private boolean usesPathShapeContract(Tree tree, Deque<TypeElement> enclosingClasses) {
     switch (tree.getKind()) {
       case METHOD -> {
         ExecutableElement method = TreeUtils.elementFromDeclaration((MethodTree) tree);
@@ -215,22 +245,30 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
       }
       case METHOD_INVOCATION -> {
-        return containsPathShapeQualifier(
-            fromElement(TreeUtils.elementFromUse((MethodInvocationTree) tree)));
+        MethodInvocationTree invocation = (MethodInvocationTree) tree;
+        ExecutableElement method = TreeUtils.elementFromUse(invocation);
+        return memberHasPathShapeContract(
+            receiverType(invocation, method, enclosingClasses), method);
       }
       case NEW_CLASS -> {
-        return containsPathShapeQualifier(
-            fromElement(TreeUtils.elementFromUse((NewClassTree) tree)));
+        // Viewing the constructor as a member of the constructed type substitutes the type
+        // arguments of the constructed type and of its enclosing types.
+        return memberHasPathShapeContract(
+            TreeUtils.typeOf(tree), TreeUtils.elementFromUse((NewClassTree) tree));
       }
       case LAMBDA_EXPRESSION -> {
         // The lambda body is checked against the functional interface method's contract.
-        return containsPathShapeQualifier(fromElement(TreeUtils.findFunction(tree, processingEnv)));
+        return memberHasPathShapeContract(
+            TreeUtils.typeOf(tree), TreeUtils.findFunction(tree, processingEnv));
       }
       case MEMBER_REFERENCE -> {
         // The referenced method is checked against the functional interface method's contract.
-        return containsPathShapeQualifier(fromElement(TreeUtils.findFunction(tree, processingEnv)))
-            || containsPathShapeQualifier(
-                fromElement(TreeUtils.elementFromUse((MemberReferenceTree) tree)));
+        MemberReferenceTree memberRef = (MemberReferenceTree) tree;
+        return memberHasPathShapeContract(
+                TreeUtils.typeOf(tree), TreeUtils.findFunction(tree, processingEnv))
+            || memberHasPathShapeContract(
+                TreeUtils.typeOf(memberRef.getQualifierExpression()),
+                TreeUtils.elementFromUse(memberRef));
       }
       case IDENTIFIER, MEMBER_SELECT -> {
         ExpressionTree expr = (ExpressionTree) tree;
@@ -244,12 +282,69 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return elt != null
             && elt.getKind().isField()
             && !elt.getSimpleName().contentEquals("super")
-            && containsPathShapeQualifier(fromElement(elt));
+            && memberHasPathShapeContract(receiverType(expr, elt, enclosingClasses), elt);
       }
       default -> {
         return false;
       }
     }
+  }
+
+  /**
+   * Returns the type of the receiver of the given use of a member. The receiver may be implicit.
+   *
+   * @param tree a method invocation, or an identifier or member select that names a field
+   * @param member the member that {@code tree} uses
+   * @param enclosingClasses the classes that enclose {@code tree}, innermost first
+   * @return the type of the receiver of {@code tree}, or null if there is none (for example,
+   *     because {@code member} is static)
+   */
+  private @Nullable TypeMirror receiverType(
+      ExpressionTree tree, Element member, Deque<TypeElement> enclosingClasses) {
+    if (ElementUtils.isStatic(member)) {
+      return null;
+    }
+    ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+    if (receiver != null) {
+      return TreeUtils.typeOf(receiver);
+    }
+    // The receiver is an implicit `this`: the innermost enclosing class that has the member.
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+    if (declaringClass == null) {
+      return null;
+    }
+    for (TypeElement enclosingClass : enclosingClasses) {
+      if (TypesUtils.isErasedSubtype(enclosingClass.asType(), declaringClass.asType(), types)) {
+        return enclosingClass.asType();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the type of the given member contains a path shape qualifier, either as
+   * declared or as a member of the given receiver type.
+   *
+   * @param receiverType the type of the receiver through which {@code member} is used, or null
+   * @param member a method, constructor, or field
+   * @return true if the type of {@code member} contains a path shape qualifier
+   */
+  private boolean memberHasPathShapeContract(@Nullable TypeMirror receiverType, Element member) {
+    if (containsPathShapeQualifier(fromElement(member))) {
+      return true;
+    }
+    if (receiverType == null || ElementUtils.isStatic(member)) {
+      return false;
+    }
+    TypeKind receiverKind = receiverType.getKind();
+    if (receiverKind != TypeKind.DECLARED
+        && receiverKind != TypeKind.TYPEVAR
+        && receiverKind != TypeKind.INTERSECTION) {
+      return false;
+    }
+    return containsPathShapeQualifier(
+        AnnotatedTypes.asMemberOf(
+            types, this, AnnotatedTypeMirror.createType(receiverType, this, false), member));
   }
 
   /**
@@ -294,8 +389,11 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     switch (type.getKind()) {
       case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
-        return isPathOrFile((TypeElement) declaredType.asElement())
-            || mentionsAny(declaredType.getTypeArguments(), visited);
+        TypeElement typeElt = (TypeElement) declaredType.asElement();
+        List<? extends TypeMirror> typeArgs = declaredType.getTypeArguments();
+        return isPathOrFile(typeElt)
+            || mentionsAny(typeArgs, visited)
+            || (!typeArgs.isEmpty() && hasPathShapeBound(typeElt));
       }
       case ARRAY -> {
         return mentionsPathOrFile(((ArrayType) type).getComponentType(), visited);
@@ -343,6 +441,32 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
     }
     return false;
+  }
+
+  /** A cache for {@link #hasPathShapeBound}. */
+  private final Map<TypeElement, Boolean> hasPathShapeBoundCache = new HashMap<>();
+
+  /**
+   * Returns true if a bound of a type parameter of the given class contains a path shape qualifier,
+   * as in {@code class RequiresNamed<T extends @HasName Object>}. A use of such a class must be
+   * checked, because its type arguments must be within the bounds.
+   *
+   * @param clazz a class
+   * @return true if a bound of a type parameter of {@code clazz} contains a path shape qualifier
+   */
+  private boolean hasPathShapeBound(TypeElement clazz) {
+    Boolean result = hasPathShapeBoundCache.get(clazz);
+    if (result == null) {
+      result = false;
+      for (TypeParameterElement typeParam : clazz.getTypeParameters()) {
+        if (containsPathShapeQualifier(fromElement(typeParam))) {
+          result = true;
+          break;
+        }
+      }
+      hasPathShapeBoundCache.put(clazz, result);
+    }
+    return result;
   }
 
   /**
