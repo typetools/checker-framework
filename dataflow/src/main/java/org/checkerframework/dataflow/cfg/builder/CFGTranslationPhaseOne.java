@@ -1946,6 +1946,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
+      // translateAssignment() might box the element.  The boxing conversion is typed as any other
+      // boxing conversion is, not with the element type:  a boxed element need not have every
+      // qualifier of the element.  For example, an int is @Interned but a boxed int is not.
       translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
 
       assert statement != null;
