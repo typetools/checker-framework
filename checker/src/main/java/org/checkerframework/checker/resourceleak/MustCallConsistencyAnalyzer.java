@@ -2045,8 +2045,8 @@ public class MustCallConsistencyAnalyzer {
     // The CM and MC stores for the CFG edge from currentBlock to successor, when currentBlock has
     // no nodes.  Computed at most once, in the Obligation loop, and only if a consistency check
     // needs them.
-    @Nullable AccumulationStore cmStoreForEdgeFromEmptyBlock = null;
-    @Nullable CFStore mcStoreForEdgeFromEmptyBlock = null;
+    AccumulationStore cmStoreForEdgeFromEmptyBlock = null;
+    CFStore mcStoreForEdgeFromEmptyBlock = null;
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
