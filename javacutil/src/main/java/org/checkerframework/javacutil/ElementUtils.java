@@ -1006,11 +1006,14 @@ public final class ElementUtils {
   /**
    * Resolves a call {@code receiver.methodName()}, where {@code receiver} is an expression of type
    * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
-   * there is no such method.
+   * there is no such method or the method is private or has variable arity.
    *
    * <p>This method considers only non-private methods that have no formal parameters. Therefore, it
-   * returns null for some legal calls: a call to a private method from within its class, and a call
-   * that invokes a variable-arity method such as {@code methodName(Object...)}.
+   * is incomplete but not unsound. A non-null result is always the method that compile-time
+   * resolution chooses, but the result is null for some legal calls: a call to a private method
+   * (legal within the top-level class that declares the method) and a call that invokes a
+   * variable-arity method such as {@code methodName(Object...)}. Thus, a null result does not imply
+   * that the call is illegal.
    *
    * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
    * result is the most specific declaration among {@code receiverType} and its supertypes, but at
@@ -1019,7 +1022,8 @@ public final class ElementUtils {
    * @param receiverType the type of the receiver expression
    * @param methodName the name of the method
    * @param env the processing environment
-   * @return the method that the call invokes, or null if {@code receiverType} has no such method
+   * @return the method that the call invokes, or null if {@code receiverType} has no such method or
+   *     the call invokes a private or variable-arity method
    */
   public static @Nullable ExecutableElement resolveNoArgumentCall(
       TypeMirror receiverType, String methodName, ProcessingEnvironment env) {
@@ -1037,7 +1041,7 @@ public final class ElementUtils {
     // Symbol$CompletionFailure exception.  See
     // https://github.com/typetools/checker-framework/issues/6396.  Searching the members of every
     // supertype avoids the crash.
-    MethodSymbol result = null;
+    List<MethodSymbol> candidates = new ArrayList<>();
     for (Type supertype : javacTypes.closure((Type) upperBound)) {
       for (Symbol member : supertype.tsym.members().getSymbolsByName(name)) {
         // A static or private method is not invoked through the receiver, and neither is a method
@@ -1047,15 +1051,52 @@ public final class ElementUtils {
         if (member instanceof MethodSymbol method
             && method.getParameters().isEmpty()
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
-            && method.isInheritedIn(origin, javacTypes)
-            && (result == null
-                || takesPrecedenceInMethodResolution(
-                    method, result, (Type) upperBound, javacTypes))) {
-          result = method;
+            && method.isInheritedIn(origin, javacTypes)) {
+          candidates.add(method);
         }
       }
     }
+    MethodSymbol result = null;
+    for (MethodSymbol method : candidates) {
+      // A method that another candidate overrides is not a member of the receiver's type.  Without
+      // this check, an overridden concrete method could take precedence over an abstract method
+      // that overrides it.
+      if (!isOverriddenByAny(method, candidates, javacTypes)
+          && (result == null
+              || takesPrecedenceInMethodResolution(
+                  method, result, (Type) upperBound, javacTypes))) {
+        result = method;
+      }
+    }
     return result;
+  }
+
+  /**
+   * Returns true if some method in {@code candidates} overrides {@code method}. A method of an
+   * interface is not considered to override a method of a class (that is, of {@code Object}),
+   * because a class inherits the method of {@code Object} rather than the interface method.
+   *
+   * @param method a method
+   * @param candidates methods with the same signature as {@code method}
+   * @param javacTypes the javac type utilities
+   * @return true if some method in {@code candidates} overrides {@code method}
+   */
+  private static boolean isOverriddenByAny(
+      MethodSymbol method,
+      List<MethodSymbol> candidates,
+      com.sun.tools.javac.code.Types javacTypes) {
+    Symbol owner = method.owner;
+    for (MethodSymbol other : candidates) {
+      Symbol otherOwner = other.owner;
+      if (otherOwner.equals(owner) || (otherOwner.isInterface() && !owner.isInterface())) {
+        continue;
+      }
+      if (otherOwner.isSubClass(owner, javacTypes)
+          && other.overrides(method, (Symbol.TypeSymbol) otherOwner, javacTypes, false)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
