@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
@@ -126,7 +125,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
         ExpressionTree child = args.get(args.size() - 1);
         String constant = TreeUtils.stringConstantValue(child);
         if (constant != null) {
-          factory.refine(type, PathShapeClassifier.classifyFile(constant));
+          factory.refine(type, PathStringClassifier.classifyFile(constant));
         }
       }
     }
@@ -169,7 +168,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
       }
       constants.add(constant);
     }
-    return PathShapeClassifier.classifyPath(constants);
+    return PathStringClassifier.classifyPath(constants);
   }
 
   /**

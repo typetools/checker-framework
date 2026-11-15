@@ -25,6 +25,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * such as creating or deleting a file, can make a {@code @HasName} path lose its name.
  *
  * @see HasParent
+ * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

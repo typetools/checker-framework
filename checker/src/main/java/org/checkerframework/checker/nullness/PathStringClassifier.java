@@ -16,6 +16,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * and {@code sun.nio.fs.WindowsPath} for {@code Path}, and {@code java.io.WinNTFileSystem} and
  * {@code java.io.File} for {@code File}. The two differ; for example, {@code \\server\share} is a
  * root as a {@code Path}, but it has a parent ({@code \\server}) as a {@code File}.
+ *
+ * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
 public final class PathStringClassifier {
 
