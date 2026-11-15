@@ -115,7 +115,9 @@ public class SameLenTransfer extends CFTransfer {
 
           AnnotationMirror combinedSameLen =
               atypeFactory.createCombinedSameLen(
-                  Arrays.asList(targetRec, otherRec), Arrays.asList(UNKNOWN, lengthNodeAnnotation));
+                  Arrays.asList(targetRec, otherRec),
+                  Arrays.asList(
+                      UNKNOWN, lengthNodeAnnotation == null ? UNKNOWN : lengthNodeAnnotation));
           if (rhsMayRelocateTarget) {
             combinedSameLen = removeFromSameLen(combinedSameLen, targetRec);
           }

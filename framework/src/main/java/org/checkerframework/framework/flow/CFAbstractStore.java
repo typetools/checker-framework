@@ -1213,7 +1213,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
       // case 1:
       else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
-        if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
+        // A static field is one location, whatever the receiver expressions are.
+        if (fieldAccess.isStatic()
+            || canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
           if (!otherFieldAccess.isFinal()) {
             if (val != null) {
               V newVal = val.leastUpperBound(otherVal);
