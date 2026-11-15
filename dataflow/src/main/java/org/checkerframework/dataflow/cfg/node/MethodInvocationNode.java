@@ -61,6 +61,15 @@ public class MethodInvocationNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
+   * True if this MethodInvocationNode is an unboxing conversion that the CFG builder inserted, such
+   * as the call to {@code intValue()} in {@code int i = anInteger;}. The receiver of such a call is
+   * the value being unboxed.
+   *
+   * <p>Is set by {@link #setUnboxing}.
+   */
+  protected boolean unboxing = false;
+
+  /**
    * Creates a MethodInvocationNode.
    *
    * @param tree the tree for the method invocation
@@ -142,6 +151,26 @@ public class MethodInvocationNode extends Node {
    */
   public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
     this.enhancedForLoop = enhancedForLoop;
+  }
+
+  /**
+   * Returns true if this MethodInvocationNode is an unboxing conversion that the CFG builder
+   * inserted, such as the call to {@code intValue()} in {@code int i = anInteger;}. The receiver of
+   * such a call is the value being unboxed.
+   *
+   * @return true if this is an unboxing conversion that the CFG builder inserted
+   */
+  public boolean isUnboxing() {
+    return unboxing;
+  }
+
+  /**
+   * Marks this MethodInvocationNode as an unboxing conversion that the CFG builder inserted.
+   *
+   * @see #isUnboxing()
+   */
+  public void setUnboxing() {
+    this.unboxing = true;
   }
 
   @Override
