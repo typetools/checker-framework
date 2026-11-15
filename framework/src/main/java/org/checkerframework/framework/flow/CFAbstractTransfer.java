@@ -1122,6 +1122,11 @@ public abstract class CFAbstractTransfer<
       // also use the qualifiers of the value being unboxed.
       V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
       resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), operandValue));
+    } else if (n.isBoxing()) {
+      // The factory value comes from the declared return type of a method such as
+      // Integer.valueOf(), so also use the qualifiers of the value being boxed.
+      V operandValue = in.getValueOfSubNode(n.getArgument(0));
+      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
     }
 
     store.updateForMethodCall(n, resValue);
@@ -1565,6 +1570,31 @@ public abstract class CFAbstractTransfer<
     boxedType.addAnnotations(annotatedValue.getAnnotations());
     AnnotatedPrimitiveType unboxedType = analysis.atypeFactory.getUnboxedType(boxedType);
     return analysis.createAbstractValue(unboxedType.getPrimaryAnnotations(), type);
+  }
+
+  /**
+   * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedType}. This is only
+   * called at a boxing conversion.
+   *
+   * @param type the boxed type to box to, such as {@code Integer}
+   * @param annotatedValue the value to box, whose type is a primitive type
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy
+   */
+  @SideEffectFree
+  protected @Nullable V getBoxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    PrimitiveType primitive = analysis.getTypes().unboxedType(type);
+    AnnotatedPrimitiveType primitiveType =
+        (AnnotatedPrimitiveType)
+            AnnotatedTypeMirror.createType(primitive, analysis.atypeFactory, false);
+    primitiveType.addAnnotations(annotatedValue.getAnnotations());
+    AnnotatedDeclaredType boxedType = analysis.atypeFactory.getBoxedType(primitiveType);
+    return analysis.createAbstractValue(boxedType.getPrimaryAnnotations(), type);
   }
 
   @Override

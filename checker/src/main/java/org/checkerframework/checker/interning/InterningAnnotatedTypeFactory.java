@@ -264,4 +264,18 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     primitive.replaceAnnotation(INTERNED);
     return primitive;
   }
+
+  /**
+   * Boxes the type and replaces any interning type annotation with @UnknownInterned, since a boxed
+   * value need not be interned, even though every primitive is. For example, {@code
+   * Integer.valueOf(1000) == Integer.valueOf(1000)} can be false.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
+    AnnotatedDeclaredType boxed = super.getBoxedType(type);
+    boxed.replaceAnnotation(TOP);
+    return boxed;
+  }
 }

@@ -70,6 +70,15 @@ public class MethodInvocationNode extends Node {
   protected boolean unboxing = false;
 
   /**
+   * True if this MethodInvocationNode is a boxing conversion that the CFG builder inserted, such as
+   * the call to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument of such
+   * a call is the value being boxed.
+   *
+   * <p>Is set by {@link #setBoxing}.
+   */
+  protected boolean boxing = false;
+
+  /**
    * Creates a MethodInvocationNode.
    *
    * @param tree the tree for the method invocation
@@ -171,6 +180,26 @@ public class MethodInvocationNode extends Node {
    */
   public void setUnboxing() {
     this.unboxing = true;
+  }
+
+  /**
+   * Returns true if this MethodInvocationNode is a boxing conversion that the CFG builder inserted,
+   * such as the call to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument
+   * of such a call is the value being boxed.
+   *
+   * @return true if this is a boxing conversion that the CFG builder inserted
+   */
+  public boolean isBoxing() {
+    return boxing;
+  }
+
+  /**
+   * Marks this MethodInvocationNode as a boxing conversion that the CFG builder inserted.
+   *
+   * @see #isBoxing()
+   */
+  public void setBoxing() {
+    this.boxing = true;
   }
 
   @Override
