@@ -16,7 +16,7 @@ public class ArrayAccess extends JavaExpression {
   protected final JavaExpression index;
 
   /**
-   * Create a new ArrayAccess.
+   * Creates a new ArrayAccess.
    *
    * @param type the type of the array access
    * @param array the array being accessed

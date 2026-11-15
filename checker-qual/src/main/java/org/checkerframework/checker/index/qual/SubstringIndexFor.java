@@ -50,7 +50,7 @@ public @interface SubstringIndexFor {
    *
    * <p>The {@code offset} array must either be empty or the same length as {@code value}.
    *
-   * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
+   * <p>The expressions in {@code offset} can be addition/subtraction of any number of Java
    * expressions. For example, {@code @SubstringIndexFor(value = "a", offset = "b.length() - 1")}.
    */
   @JavaExpression

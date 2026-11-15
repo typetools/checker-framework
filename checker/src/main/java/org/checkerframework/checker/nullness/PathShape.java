@@ -3,25 +3,25 @@ package org.checkerframework.checker.nullness;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
 import org.checkerframework.checker.nullness.qual.PathShapeBottom;
-import org.checkerframework.checker.nullness.qual.PolyPathShape;
 import org.checkerframework.checker.nullness.qual.UnknownPathShape;
 
 /**
  * The path shape of a {@link java.nio.file.Path} or {@link java.io.File}: whether it has a name and
- * whether it has a parent. The constants are ordered from least to most specific, and each one
- * corresponds to a qualifier: {@code UNKNOWN} to {@link UnknownPathShape}, {@code HAS_NAME} to
- * {@link HasName}, and {@code HAS_PARENT} to {@link HasParent}. The qualifiers {@link
- * PathShapeBottom} and {@link PolyPathShape} have no corresponding constant.
+ * whether it has a parent.
  *
- * @see PathStringClassifier
+ * @see PathStringToPathShape
  */
 public enum PathShape {
-  /** The path might be a root or the empty path. */
+  // The constants are ordered from least to most specific.
+
+  /** The path might be a root or the empty path. Corresponds to {@link UnknownPathShape}. */
   UNKNOWN,
-  /** The path has a name. See {@link HasName}. */
+  /** The path has a name. Corresponds to {@link HasName}. */
   HAS_NAME,
-  /** The path has a parent and a name. See {@link HasParent}. */
-  HAS_PARENT;
+  /** The path has a parent and a name. Corresponds to {@link HasParent}. */
+  HAS_PARENT,
+  /** No path has this shape. Corresponds to {@link PathShapeBottom}. */
+  BOTTOM;
 
   /**
    * Returns the less specific of this and {@code other}.

@@ -8,7 +8,7 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
- * An internal checker that estimates which expression's values are less than other expressions'
+ * An internal checker that estimates which expressions' values are less than other expressions'
  * values.
  *
  * @checker_framework.manual #index-checker Index Checker

@@ -24,11 +24,11 @@ import org.plumelib.util.CollectionsP;
 // TODO: large parts of this file are the same as PerDirectorySuite.java.
 // Reduce duplication by moving common parts to an abstract class.
 /**
- * PerDirectorySuite runs a test class once for each set of parameters returned by its method marked
- * with {@code @Parameters}
+ * PerFileSuite runs a test class once for each set of parameters returned by its method marked with
+ * {@code @Parameters}.
  *
  * <p>To use:<br>
- * Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
+ * Annotate your test class with {@code @RunWith(PerFileSuite.class)}<br>
  * Create a parameters method by annotating a public static method with {@code @Parameters}. This
  * method must return either a {@code List<File>} where each element of the list is a Java file to
  * test against OR a {@code String []} where each String in the array is a directory in the tests
@@ -95,7 +95,12 @@ public class PerFileSuite extends RootedSuite {
     return argumentLists;
   }
 
-  /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
+  /**
+   * Returns the method annotated @Parameters, typically the getTestDirs or getTestFiles method.
+   *
+   * @param testClass the test class
+   * @return the method annotated @Parameters
+   */
   private FrameworkMethod getParametersMethod(TestClass testClass) {
     List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
     if (parameterMethods.size() != 1) {
@@ -163,7 +168,7 @@ public class PerFileSuite extends RootedSuite {
     /** A directory prefix to remove from the test name. */
     private final File directoryPrefix;
 
-    /** The parameters, java source file(s) under {@link #directoryPrefix}. */
+    /** The parameters, Java source file(s) under {@link #directoryPrefix}. */
     private final Object[] parameters;
 
     /**
@@ -171,7 +176,7 @@ public class PerFileSuite extends RootedSuite {
      *
      * @param type the test class
      * @param directoryPrefix directory prefix to remove from the test name
-     * @param parameters java source file(s) under {@link #directoryPrefix}
+     * @param parameters Java source file(s) under {@link #directoryPrefix}
      * @throws InitializationError if the test class is malformed
      */
     PerParameterSetTestRunner(Class<?> type, File directoryPrefix, Object[] parameters)

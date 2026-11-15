@@ -210,7 +210,7 @@ public final class ASTIndex extends WrapperMap<Tree, ASTRecord> {
     }
 
     /**
-     * Save a class.
+     * Saves a class.
      *
      * @param node the class
      */

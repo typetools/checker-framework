@@ -29,9 +29,9 @@ public class AnnotatedTypeCombiner extends DoubleAnnotatedTypeScanner<Void> {
   private final QualifierHierarchy hierarchy;
 
   /**
-   * Create an AnnotatedTypeCombiner.
+   * Creates an AnnotatedTypeCombiner.
    *
-   * @param hierarchy the hierarchy used to the compute the GLB
+   * @param hierarchy the hierarchy used to compute the GLB
    */
   public AnnotatedTypeCombiner(QualifierHierarchy hierarchy) {
     this.hierarchy = hierarchy;

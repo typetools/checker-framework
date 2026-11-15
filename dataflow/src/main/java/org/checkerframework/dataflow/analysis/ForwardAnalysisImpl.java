@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsP;
 
 /**
- * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
+ * An implementation of a forward analysis to solve an org.checkerframework.dataflow problem given a
  * control flow graph and a forward transfer function.
  *
  * @param <V> the abstract value type to be tracked by the analysis
@@ -62,7 +62,7 @@ public class ForwardAnalysisImpl<
 
   // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
   /**
-   * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
+   * Constructs an object that can perform an org.checkerframework.dataflow forward analysis over a
    * control flow graph. When using this constructor, the transfer function is set later by the
    * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
    *
@@ -78,7 +78,7 @@ public class ForwardAnalysisImpl<
   }
 
   /**
-   * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
+   * Constructs an object that can perform an org.checkerframework.dataflow forward analysis over a
    * control flow graph given a transfer function.
    *
    * @param transferFunction the transfer function
@@ -396,7 +396,7 @@ public class ForwardAnalysisImpl<
   }
 
   /**
-   * Add a store before the basic block {@code b} by merging with the existing stores for that
+   * Adds a store before the basic block {@code b} by merging with the existing stores for that
    * location.
    *
    * @param b a basic block
@@ -480,11 +480,11 @@ public class ForwardAnalysisImpl<
   }
 
   /**
-   * Merge two stores, possibly widening the result.
+   * Merges two stores, possibly widening the result.
    *
    * @param newStore the new Store
    * @param previousStore the previous Store
-   * @param shouldWiden should widen or not
+   * @param shouldWiden true if the result should be widened
    * @return the merged Store
    */
   private S mergeStores(S newStore, @Nullable S previousStore, boolean shouldWiden) {

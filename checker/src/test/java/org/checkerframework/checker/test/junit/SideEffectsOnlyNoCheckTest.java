@@ -15,7 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SideEffectsOnlyNoCheckTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a SideEffectsOnlyNoCheckTest.
+   * Creates a SideEffectsOnlyNoCheckTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
