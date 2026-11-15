@@ -2533,7 +2533,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so only validate if commonAssignmentCheck wasn't called.
       validateTypeOf(tree);
     }
-    if (!isTypeInferred(tree)) {
+    if (!atypeFactory.isVariableTypeInferred(tree)) {
       warnRedundantAnnotations(tree, variableType);
     }
     Void result = super.visitVariable(tree, p);
@@ -2541,24 +2541,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return result;
-  }
-
-  /**
-   * Returns true if the type of the given variable is not written in source code. That is, the
-   * variable is declared using {@code var} or is a formal parameter of an implicitly typed lambda.
-   *
-   * <p>An inferred type may carry annotations that are not written in source code, such as
-   * annotations that javac reads from a class file.
-   *
-   * @param tree a variable declaration; must be the leaf of the current path
-   * @return true if the type of {@code tree} is not written in source code
-   */
-  private boolean isTypeInferred(VariableTree tree) {
-    if (tree.getType() == null || TreeUtils.isVariableTreeDeclaredUsingVar(tree)) {
-      return true;
-    }
-    TreePath parentPath = getCurrentPath().getParentPath();
-    return parentPath != null && TreeUtils.isImplicitlyTypedLambda(parentPath.getLeaf());
   }
 
   /**

@@ -1,0 +1,3 @@
+InferredTypesLock.java:54:48: compiler.err.proc.messager: [immutable.type.guardedby] immutable types need not be annotated with any qualifier from the @GuardedBy hierarchy
+InferredTypesLock.java:58:27: compiler.err.proc.messager: [immutable.type.guardedby] immutable types need not be annotated with any qualifier from the @GuardedBy hierarchy
+2 errors
