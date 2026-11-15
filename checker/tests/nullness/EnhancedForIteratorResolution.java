@@ -91,6 +91,40 @@ public class EnhancedForIteratorResolution {
     }
   }
 
+  // `AbstractOverrider.iterator()` overrides the concrete `ConcreteOverridden.iterator()`, so the
+  // latter is not a member of `OverriderSubclass` and does not take precedence over
+  // `APureIterable.iterator()`.  (The closure of `OverriderSubclass` visits `AbstractOverrider`,
+  // then `APureIterable`, then `ConcreteOverridden`.)
+  interface APureIterable extends Iterable<String> {
+    @Override
+    @SideEffectFree
+    PureIterator iterator();
+  }
+
+  static class ConcreteOverridden implements Iterable<String> {
+    @Override
+    public Iterator<String> iterator() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  abstract static class AbstractOverrider extends ConcreteOverridden {
+    @Override
+    @SideEffectFree
+    public abstract Iterator<String> iterator();
+  }
+
+  abstract static class OverriderSubclass extends AbstractOverrider implements APureIterable {}
+
+  void overriderSubclass(OverriderSubclass r) {
+    if (f != null) {
+      for (String s : r) {
+        f.toString();
+      }
+      f.toString();
+    }
+  }
+
   void plainIterable(PlainIterable r) {
     if (f != null) {
       for (String s : r) {

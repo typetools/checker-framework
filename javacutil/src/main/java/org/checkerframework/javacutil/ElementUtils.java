@@ -1037,7 +1037,7 @@ public final class ElementUtils {
     // Symbol$CompletionFailure exception.  See
     // https://github.com/typetools/checker-framework/issues/6396.  Searching the members of every
     // supertype avoids the crash.
-    MethodSymbol result = null;
+    List<MethodSymbol> candidates = new ArrayList<>();
     for (Type supertype : javacTypes.closure((Type) upperBound)) {
       for (Symbol member : supertype.tsym.members().getSymbolsByName(name)) {
         // A static or private method is not invoked through the receiver, and neither is a method
@@ -1047,15 +1047,52 @@ public final class ElementUtils {
         if (member instanceof MethodSymbol method
             && method.getParameters().isEmpty()
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
-            && method.isInheritedIn(origin, javacTypes)
-            && (result == null
-                || takesPrecedenceInMethodResolution(
-                    method, result, (Type) upperBound, javacTypes))) {
-          result = method;
+            && method.isInheritedIn(origin, javacTypes)) {
+          candidates.add(method);
         }
       }
     }
+    MethodSymbol result = null;
+    for (MethodSymbol method : candidates) {
+      // A method that another candidate overrides is not a member of the receiver's type.  Without
+      // this check, an overridden concrete method could take precedence over an abstract method
+      // that overrides it.
+      if (!isOverriddenByAny(method, candidates, javacTypes)
+          && (result == null
+              || takesPrecedenceInMethodResolution(
+                  method, result, (Type) upperBound, javacTypes))) {
+        result = method;
+      }
+    }
     return result;
+  }
+
+  /**
+   * Returns true if some method in {@code candidates} overrides {@code method}. A method of an
+   * interface is not considered to override a method of a class (that is, of {@code Object}),
+   * because a class inherits the method of {@code Object} rather than the interface method.
+   *
+   * @param method a method
+   * @param candidates methods with the same signature as {@code method}
+   * @param javacTypes the javac type utilities
+   * @return true if some method in {@code candidates} overrides {@code method}
+   */
+  private static boolean isOverriddenByAny(
+      MethodSymbol method,
+      List<MethodSymbol> candidates,
+      com.sun.tools.javac.code.Types javacTypes) {
+    Symbol owner = method.owner;
+    for (MethodSymbol other : candidates) {
+      Symbol otherOwner = other.owner;
+      if (otherOwner.equals(owner) || (otherOwner.isInterface() && !owner.isInterface())) {
+        continue;
+      }
+      if (otherOwner.isSubClass(owner, javacTypes)
+          && other.overrides(method, (Symbol.TypeSymbol) otherOwner, javacTypes, false)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
