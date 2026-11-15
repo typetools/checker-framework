@@ -1578,7 +1578,7 @@ public abstract class CFAbstractTransfer<
    * called at a boxing conversion.
    *
    * @param type the boxed type to box to, such as {@code Integer}
-   * @param annotatedValue the value to box, whose type is a primitive type
+   * @param annotatedValue a value to box, whose type is a primitive type
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
    *     lacks an annotation in some hierarchy
