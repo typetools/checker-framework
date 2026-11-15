@@ -1018,6 +1018,10 @@ public abstract class CFAbstractTransfer<
    * {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
    * contains {@link Unknown}, which no store holds a value for.
    *
+   * <p>The result omits a {@link NarrowingConversionNode}, as in the rhs of {@code b += i} for a
+   * {@code byte b}. {@link JavaExpression#fromNode} converts such a node to the expression for its
+   * operand, whose value might differ from the narrowed value, even in sign.
+   *
    * <p>Clients must not modify the result, which is cached.
    *
    * @param node a node in an operand of a comparison, possibly an assignment
@@ -1063,6 +1067,10 @@ public abstract class CFAbstractTransfer<
     WrittenLocations locationsWrittenUntilComparison = null;
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
+      if (candidate instanceof NarrowingConversionNode) {
+        // `fromNode` converts the node to the expression for its operand, whose value might differ.
+        continue;
+      }
       JavaExpression expr = JavaExpression.fromNode(candidate);
       if (CFAbstractStore.canInsertJavaExpression(expr)) {
         if (locationsWrittenUntilComparison == null) {
@@ -1110,7 +1118,15 @@ public abstract class CFAbstractTransfer<
     for (AssignmentNode a : chain) {
       written.add(JavaExpression.fromNode(a.getTarget()));
     }
-    ExpressionTree rhsTree = rhsTree(chain.get(chain.size() - 1));
+    AssignmentNode last = chain.get(chain.size() - 1);
+    // The string conversions of a `+=` string concatenation, which happen after `rhs` and the
+    // receivers and indices of the targets are evaluated, might write locations.
+    if (last.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
+        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+      written.addStringConversions(
+          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+    }
+    ExpressionTree rhsTree = rhsTree(last);
     if (rhsTree != null) {
       written.scan(rhsTree, null);
     }
@@ -1584,13 +1600,13 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, n, lhs, rhs,thenStore, rhsValue);
-      processCommonAssignment(in, n, lhs, rhs,elseStore, rhsValue);
+      processCommonAssignment(in, n, lhs, rhs, thenStore, rhsValue);
+      processCommonAssignment(in, n, lhs, rhs, elseStore, rhsValue);
       return new ConditionalTransferResult<>(
           finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, n, lhs, rhs,store, rhsValue);
+      processCommonAssignment(in, n, lhs, rhs, store, rhsValue);
       return new RegularTransferResult<>(finishValue(rhsValue, store), store);
     }
   }
@@ -1670,7 +1686,7 @@ public abstract class CFAbstractTransfer<
       Node lhs,
       Node rhs,
       S store,
-      V rhsValue) {
+      @Nullable V rhsValue) {
 
     // update information in the store
     store.updateForAssignment(lhs, rhsValue);
