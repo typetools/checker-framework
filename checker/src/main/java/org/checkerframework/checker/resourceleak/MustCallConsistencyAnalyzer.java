@@ -332,7 +332,8 @@ public class MustCallConsistencyAnalyzer {
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
-     *     null, then the default MustCall type of each variable's class will be used.
+     *     null, then the must-call type of each resource alias is computed as by {@link
+     *     #getMustCallValue}, from its declared type or its class.
      * @return a map from each resource alias of this to a list of its must-call method names, or
      *     null if the must-call obligations are unsatisfiable (i.e., no resource alias of this has
      *     a {@code @MustCall} type in the Must Call store, and the declared type of some resource
@@ -395,8 +396,10 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Returns the must-call type of the given resource alias, ignoring any store: its declared
-     * type, or the default must-call type of its class if its declared type is top.
+     * Returns the must-call type of the given resource alias, ignoring any store. That is its
+     * declared type, unless its declared type is top. In that case, it is the default must-call
+     * type of the alias's class; or top if the alias's type is not a class, interface, annotation
+     * type, or enum (for example, if it is a wildcard type); or bottom if the alias's type is void.
      *
      * @param alias a resource alias
      * @param mcAtf the must-call checker's annotated type factory

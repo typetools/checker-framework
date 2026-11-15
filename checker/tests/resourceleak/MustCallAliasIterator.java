@@ -22,7 +22,7 @@ class MustCallAliasIterator {
     }
 
     @Override
-    @SuppressWarnings("mustcall:override.return")
+    @SuppressWarnings("mustcall:override.return") // the iterator is this, which must be closed
     public @MustCallAlias Iterator<String> iterator(@MustCallAlias LineReader this) {
       return this;
     }

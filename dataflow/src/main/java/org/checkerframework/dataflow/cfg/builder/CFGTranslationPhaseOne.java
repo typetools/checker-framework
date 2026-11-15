@@ -1852,7 +1852,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setInSource(false);
       extendWithMethodInvocationNode(nextCallNode);
 
-      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      AssignmentNode assignNode =
+          translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      // If the loop variable is a primitive, the assignment's expression is the unboxing
+      // conversion of nextCallNode.  Save the expression in that node, too.
+      if (assignNode.getExpression() instanceof MethodInvocationNode unboxingNode
+          && unboxingNode != nextCallNode) {
+        unboxingNode.setIterableExpression(expression);
+        unboxingNode.setEnhancedForLoop(tree);
+      }
 
       assert statement != null;
       scan(statement, p);
@@ -1947,15 +1955,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
+      // If the loop variable's type and the array's component type differ by a boxing or
+      // unboxing conversion, the assignment's expression is the conversion of arrayAccessNode.
+      // Treat that conversion as an iterator.
+      if (arrayAccessAssignNode.getExpression() instanceof MethodInvocationNode boxingNode) {
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
