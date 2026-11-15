@@ -1638,8 +1638,9 @@ public abstract class CFAbstractTransfer<
         return true;
       }
       for (FieldAccess field : fields) {
-        // Accesses to a static field denote the same location regardless of their receivers,
-        // which might be unrelated classes that inherit the field.
+        // A static field is the same location regardless of the receiver.  Do not check whether
+        // the receivers can alias:  two subclasses that inherit the static field, such as `Left`
+        // in `Left.f` and `Right` in `Right.f`, are not related by subtyping.
         if (field.getField().equals(fa.getField())
             && (fa.isStatic() || analysis.canAlias(field.getReceiver(), fa.getReceiver()))) {
           return true;
@@ -1671,7 +1672,6 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
     Node lhs = n.getTarget();
     Node rhs = n.getExpression();
-    Tree rhsTree = sourceRhsTree(n);
 
     V rhsValue = in.getValueOfSubNode(rhs);
 
@@ -1698,13 +1698,13 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, lhs, rhs, rhsTree, thenStore, rhsValue);
-      processCommonAssignment(in, lhs, rhs, rhsTree, elseStore, rhsValue);
+      processCommonAssignment(in, n, lhs, rhs, thenStore, rhsValue);
+      processCommonAssignment(in, n, lhs, rhs, elseStore, rhsValue);
       return new ConditionalTransferResult<>(
           finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, lhs, rhs, rhsTree, store, rhsValue);
+      processCommonAssignment(in, n, lhs, rhs, store, rhsValue);
       return new RegularTransferResult<>(finishValue(rhsValue, store), store);
     }
   }
@@ -1772,20 +1772,18 @@ public abstract class CFAbstractTransfer<
    * Determines the abstract value of the right-hand side and updates the store accordingly.
    *
    * @param in the store(s) before the assignment
+   * @param assignment the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
-   * @param rhsTree the right-hand side of the assignment as written in source code, or null if
-   *     there is none. This may differ from {@code rhs.getTree()}; for example, the CFG translates
-   *     a postfix increment into a read of a synthetic temporary variable.
    * @param store the regular input store (from {@code in})
    * @param rhsValue the value of the right-hand side of the assignment
    */
   protected void processCommonAssignment(
-      TransferInput<V, S> in, Node lhs, Node rhs, @Nullable Tree rhsTree, S store, V rhsValue) {
+      TransferInput<V, S> in, AssignmentNode assignment, Node lhs, Node rhs, S store, V rhsValue) {
 
     // update information in the store
     store.updateForAssignment(lhs, rhsValue);
-    if (rhsMayRelocateTarget(lhs, rhsTree)) {
+    if (rhsMayRelocateTarget(assignment)) {
       // After the assignment, `lhs` denotes a different location than the one that was assigned.
       // The call above used `rhsValue` to update information about locations that might alias the
       // assigned one.  Now remove the value it recorded for `lhs`.
@@ -1794,26 +1792,36 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if evaluating {@code rhsTree} might change the receiver or index of {@code lhs},
-   * as in {@code n.next = (n = o)}. A method call that is not side-effect-free might change a field
-   * or array element in the receiver or index (see {@link WrittenLocations}), as in {@code
-   * global.next = reassignGlobal()}. Java evaluates the receiver and index of {@code lhs} before
-   * the right-hand side, so in that case the assignment stores into a location that {@code lhs} no
-   * longer denotes after the assignment.
+   * Returns true if evaluating the right-hand side of the given assignment might change the
+   * receiver or index of its target, as in {@code n.next = (n = o)}. A method call that is not
+   * side-effect-free might change a field or array element in the receiver or index (see {@link
+   * WrittenLocations}), as in {@code global.next = reassignGlobal()}. Java evaluates the receiver
+   * and index of the target before the right-hand side, so in that case the assignment stores into
+   * a location that the target no longer denotes after the assignment.
    *
-   * @param lhs the left-hand side of an assignment
-   * @param rhsTree the right-hand side of the assignment as written in source code, or null
-   * @return true if evaluating {@code rhsTree} might change the location that {@code lhs} denotes
+   * <p>The right-hand side is the one written in source code (see {@code sourceRhsTree}). For a
+   * {@code +=} string concatenation, it also includes the string conversions, which might call
+   * {@code toString()} after the receiver and index of the target are evaluated.
+   *
+   * @param assignment an assignment
+   * @return true if evaluating the right-hand side of {@code assignment} might change the location
+   *     that its target denotes
    */
-  private boolean rhsMayRelocateTarget(Node lhs, @Nullable Tree rhsTree) {
+  protected boolean rhsMayRelocateTarget(AssignmentNode assignment) {
+    Node lhs = assignment.getTarget();
     if (lhs instanceof LocalVariableNode) {
       return false;
     }
-    if (rhsTree == null) {
-      return false;
-    }
     WrittenLocations written = new WrittenLocations();
-    written.scan(rhsTree, null);
+    Tree rhsTree = sourceRhsTree(assignment);
+    if (rhsTree != null) {
+      written.scan(rhsTree, null);
+    }
+    if (assignment.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
+        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+      written.addStringConversions(
+          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+    }
     return written.mayChange(JavaExpression.fromNode(lhs), true);
   }
 

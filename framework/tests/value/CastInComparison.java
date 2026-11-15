@@ -25,6 +25,26 @@ public class CastInComparison {
     }
   }
 
+  // The refinement of the cast is a @DoubleVal, which is converted to an @IntVal for `i`.
+  void wideningCastToDouble(@IntVal({5, 6}) int i) {
+    if ((double) i == 5.0) {
+      @IntVal(5) int j = i;
+      // :: error: [assignment]
+      @IntVal(99) int w = i;
+    }
+  }
+
+  // No int value equals 5.5, so the then branch is unreachable.  The value 5.5 is not truncated
+  // to 5.
+  void wideningCastToDoubleNonIntegral(@IntVal({5, 6}) int i) {
+    if ((double) i == 5.5) {
+      @IntVal(99) int w = i;
+    } else {
+      // :: error: [assignment]
+      @IntVal(5) int j = i;
+    }
+  }
+
   void narrowingCast(int i) {
     if ((byte) i == 5) {
       // :: error: [assignment]
