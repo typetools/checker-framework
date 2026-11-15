@@ -5606,11 +5606,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       ExecutableElement accessor = record.getRecordComponents().get(index).getAccessor();
       TypeMirror componentType =
           ((ExecutableType) types.asMemberOf(parentType, accessor)).getReturnType();
-      return new MethodCall(
-          componentType,
-          accessor,
-          getExpressionMatchedByPattern(parentPath),
-          Collections.emptyList());
+      JavaExpression receiver = getExpressionMatchedByPattern(parentPath);
+      if (receiver.containsUnknown()) {
+        // MethodCall#isDeterministic does not check the receiver, so wrapping an unknown receiver
+        // in a MethodCall would hide its nondeterminism.
+        return new Unknown(componentType);
+      }
+      return new MethodCall(componentType, accessor, receiver, Collections.emptyList());
     } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(parent)) {
       // The parent of the case label is a case, whose parent is a switch.
       Tree switchTree = parentPath.getParentPath().getParentPath().getLeaf();

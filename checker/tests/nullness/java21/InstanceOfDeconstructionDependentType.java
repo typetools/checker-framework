@@ -77,6 +77,16 @@ public class InstanceOfDeconstructionDependentType {
     }
   }
 
+  void nestedConditional(boolean flag, Outer o1, Outer o2) {
+    // The matched expression is not deterministic, so `k` is not a key for a map of either record.
+    if ((flag ? o1 : o2) instanceof Outer(KeyedMap(var mm, String k))) {
+      // :: error: [assignment]
+      @KeyFor("o1.km().m") String k2 = k;
+      // :: error: [unboxing.of.nullable]
+      int i = o1.km().m().get(k);
+    }
+  }
+
   void adaptedSwitch(KeyedMap km) {
     switch (km) {
       case KeyedMap(var mm, String k) -> {
