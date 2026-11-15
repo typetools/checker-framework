@@ -45,11 +45,12 @@ public class CaseNode extends Node {
   protected final boolean labelsUntested;
 
   /**
-   * True if code other than the switch selector expression, such as the guard of an earlier case,
-   * is evaluated after the switch selector expression and before this case's labels are tested. See
-   * {@link #isPrecededByOtherCode()}.
+   * True if code that might have side effects, such as the guard of an earlier case or a
+   * deconstruction pattern, may have run between the evaluation of the switch selector expression
+   * and this node. If so, the selector expression might no longer denote the value that the switch
+   * tests. See {@link #codeRanSinceSelector()}.
    */
-  protected final boolean precededByOtherCode;
+  protected final boolean codeRanSinceSelector;
 
   /**
    * Creates a new CaseNode.
@@ -60,9 +61,9 @@ public class CaseNode extends Node {
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param labelsUntested true if the CFG does not test the case expressions; see {@link
    *     #labelsUntested()}
-   * @param precededByOtherCode true if code other than the switch selector expression, such as the
-   *     guard of an earlier case, is evaluated before this case's labels are tested; see {@link
-   *     #isPrecededByOtherCode()}
+   * @param codeRanSinceSelector true if code that might have side effects may have run between the
+   *     evaluation of the switch selector expression and this node; see {@link
+   *     #codeRanSinceSelector()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -70,14 +71,14 @@ public class CaseNode extends Node {
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
       boolean labelsUntested,
-      boolean precededByOtherCode,
+      boolean codeRanSinceSelector,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
     this.labelsUntested = labelsUntested;
-    this.precededByOtherCode = precededByOtherCode;
+    this.codeRanSinceSelector = codeRanSinceSelector;
   }
 
   /**
@@ -114,22 +115,24 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Returns true if code other than the switch selector expression is evaluated after the switch
-   * selector expression and before this case's labels are tested, or while they are tested. Such
-   * code is the guard of an earlier case, or a record accessor that a record pattern of this case
-   * or an earlier case invokes. (The CFG does not represent the record accessor calls.)
+   * Returns true if code that might have side effects may have run between the evaluation of the
+   * switch selector expression and this node, including while this case's labels are tested. Such
+   * code is the guard of an earlier case, or a record accessor that a deconstruction pattern of
+   * this case or an earlier case invokes. (The CFG does not represent the record accessor calls.)
    *
    * <p>If so, that code might have changed the value of the switch selector expression (the
-   * expression of {@link #getSwitchOperand()}). For example, it might assign a field that is the
-   * selector expression, or might mutate the object that the selector expression evaluates to.
-   * Then, a fact about the value that was tested against the case expressions need not hold for the
-   * selector expression. It does hold for the synthetic variable to which that value is assigned.
+   * right-hand side of {@link #getSwitchOperand()}), which then might no longer denote the value
+   * that the switch tests. For example, the code might assign a field that is the selector
+   * expression, or might mutate the object that the selector expression evaluates to. Then, a fact
+   * about the value that was tested against the case expressions need not hold for the selector
+   * expression. It does hold for the synthetic variable (the left-hand side of {@link
+   * #getSwitchOperand()}), which always denotes that value.
    *
-   * @return true if code other than the switch selector expression is evaluated before this case's
-   *     labels are tested, or while they are tested
+   * @return true if code that might have side effects may have run between the evaluation of the
+   *     switch selector expression and this node
    */
-  public boolean isPrecededByOtherCode() {
-    return precededByOtherCode;
+  public boolean codeRanSinceSelector() {
+    return codeRanSinceSelector;
   }
 
   @Override
@@ -158,12 +161,13 @@ public class CaseNode extends Node {
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
         && labelsUntested == other.labelsUntested
-        && precededByOtherCode == other.precededByOtherCode;
+        && codeRanSinceSelector == other.codeRanSinceSelector;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), labelsUntested, precededByOtherCode);
+    return Objects.hash(
+        getSwitchOperand(), getCaseOperands(), labelsUntested, codeRanSinceSelector);
   }
 
   @Override

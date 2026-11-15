@@ -146,7 +146,7 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitCase(
       CaseNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
-    if (!canRefineSwitchSelector(n)) {
+    if (!selectorExpressionDenotesSwitchValue(n)) {
       return result;
     }
     List<Node> caseOperands = n.getCaseOperands();
