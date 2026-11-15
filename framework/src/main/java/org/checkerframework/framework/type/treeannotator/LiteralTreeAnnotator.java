@@ -32,7 +32,7 @@ import org.plumelib.util.StringsP;
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
  * specified by {@link org.checkerframework.framework.qual.QualifierForLiterals}; it is designed to
  * be added to a {@link ListTreeAnnotator} via {@link
- * GenericAnnotatedTypeFactory#createTreeAnnotator()}
+ * GenericAnnotatedTypeFactory#createTreeAnnotator()}.
  *
  * <p>{@link LiteralTreeAnnotator} does not traverse trees deeply.
  *
@@ -62,7 +62,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   /**
    * Map of {@link LiteralKind}s to {@link Tree.Kind}s. This is here and not in LiteralKinds because
    * LiteralKind is in the checker-qual.jar which cannot depend on classes, such as Tree.Kind, that
-   * are in the tools.jar
+   * are in the tools.jar.
    */
   private static final Map<LiteralKind, Tree.Kind> literalKindToTreeKind =
       new EnumMap<>(LiteralKind.class);
@@ -151,7 +151,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Added a rule for a particular {@link LiteralKind}
+   * Adds a rule for a particular {@link LiteralKind}.
    *
    * @param literalKind {@code LiteralKind} that should be defaulted to {@code theQual}
    * @param theQual the {@code AnnotationMirror} that should be applied to the {@code literalKind}
@@ -176,9 +176,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Added a rule for a particular {@link com.sun.source.tree.Tree.Kind}
+   * Adds a rule for a particular {@link com.sun.source.tree.Tree.Kind}.
    *
-   * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
+   * @param treeKind {@code Tree.Kind} that should be defaulted to {@code theQual}
    * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}
    */
   private void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
@@ -190,7 +190,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Added a rule for all String literals that match the given pattern.
+   * Adds a rule for all String literals that match the given pattern.
    *
    * @param regex regex to match Strings against
    * @param theQual {@code AnnotationMirror} to apply to Strings that match the regex
@@ -211,7 +211,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Added a rule for all String literals that match the given pattern.
+   * Adds a rule for all String literals that match the given pattern.
    *
    * @param pattern pattern to match Strings against
    * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern
@@ -260,7 +260,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
-  /** Go through the string patterns and add the greatest lower bound of all matching patterns. */
+  /**
+   * Goes through the string patterns and adds the greatest lower bound of all matching patterns.
+   */
   @Override
   public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
     if (!stringPatterns.isEmpty() && tree.getKind() == Tree.Kind.STRING_LITERAL) {

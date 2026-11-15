@@ -52,7 +52,7 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
   /**
    * Returns the erasure of the named type, or null if the type is not present on this JDK.
    *
-   * @param canonicalName the canonical name of a type that may not be present
+   * @param canonicalName the canonical name of a type that might not be present
    * @return the erasure of the named type, or null
    */
   private @Nullable TypeMirror optionalErasureOf(

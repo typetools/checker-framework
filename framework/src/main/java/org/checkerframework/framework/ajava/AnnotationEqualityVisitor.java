@@ -9,14 +9,14 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Given two ASTs representing the same Java file that may differ in annotations, tests if they have
- * the same annotations.
+ * Given two ASTs representing the same Java file that might differ in annotations, tests if they
+ * have the same annotations.
  *
  * <p>To use this class, have the first AST node accept the visitor and pass the second AST node as
  * the second argument. Then, check {@link #getAnnotationsMatch}.
  */
 public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
-  /** True if a node with mismatched annotations has been seen. */
+  /** True if no node with mismatched annotations has been seen. */
   private boolean annotationsMatch;
 
   /** If a node with mismatched annotations has been seen, stores the node from the first AST. */
@@ -33,9 +33,9 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
   }
 
   /**
-   * Returns true if a visited pair of nodes differed in annotations.
+   * Returns true if no visited pair of nodes differed in annotations.
    *
-   * @return true if some visited pair of nodes differed in annotations
+   * @return true if no visited pair of nodes differed in annotations
    */
   public boolean getAnnotationsMatch() {
     return annotationsMatch;

@@ -19,7 +19,7 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 
 ------------------------------------------------------
 
-Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
+Explain the relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
 the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
 to be a subtype of AbstractBasicAnnotatedTypeFactory, because
 BaseTypeVisitor assumes that.

@@ -196,7 +196,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Compare two TypeAnnotationPositions for equality.
+   * Compares two TypeAnnotationPositions for equality.
    *
    * @param p1 the first position
    * @param p2 the second position
@@ -207,7 +207,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Compare two TypeAnnotationPositions for equality, ignoring the source tree position.
+   * Compares two TypeAnnotationPositions for equality, ignoring the source tree position.
    *
    * @param p1 the first position
    * @param p2 the second position
@@ -235,7 +235,7 @@ public final class TypeAnnotationUtils {
   /**
    * Returns a newly created Attribute.Compound corresponding to an argument AnnotationMirror.
    *
-   * @param am an AnnotationMirror, which may be part of an AST or an internally created subclass
+   * @param am an AnnotationMirror, which might be part of an AST or an internally created subclass
    * @return a new Attribute.Compound corresponding to the AnnotationMirror
    */
   public static Attribute.Compound createCompoundFromAnnotationMirror(
@@ -253,7 +253,7 @@ public final class TypeAnnotationUtils {
   /**
    * Returns a newly created Attribute.TypeCompound corresponding to an argument AnnotationMirror.
    *
-   * @param am an AnnotationMirror, which may be part of an AST or an internally created subclass
+   * @param am an AnnotationMirror, which might be part of an AST or an internally created subclass
    * @param tapos the type annotation position to use
    * @return a new Attribute.TypeCompound corresponding to the AnnotationMirror
    */
@@ -273,7 +273,7 @@ public final class TypeAnnotationUtils {
    * Returns a newly created Attribute corresponding to an argument AnnotationValue.
    *
    * @param meth the ExecutableElement that is assigned the value, needed for empty arrays
-   * @param av an AnnotationValue, which may be part of an AST or an internally created subclass
+   * @param av an AnnotationValue, which might be part of an AST or an internally created subclass
    * @return a new Attribute corresponding to the AnnotationValue
    */
   public static Attribute attributeFromAnnotationValue(
@@ -406,7 +406,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create an unknown TypeAnnotationPosition.
+   * Creates an unknown TypeAnnotationPosition.
    *
    * @return an unknown TypeAnnotationPosition
    */
@@ -415,7 +415,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a method return TypeAnnotationPosition.
+   * Creates a method return TypeAnnotationPosition.
    *
    * @param pos the source tree position
    * @return a method return TypeAnnotationPosition
@@ -425,7 +425,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a method receiver TypeAnnotationPosition.
+   * Creates a method receiver TypeAnnotationPosition.
    *
    * @param pos the source tree position
    * @return a method receiver TypeAnnotationPosition
@@ -435,7 +435,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a method parameter TypeAnnotationPosition.
+   * Creates a method parameter TypeAnnotationPosition.
    *
    * @param pidx the parameter index
    * @param pos the source tree position
@@ -446,7 +446,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a method throws TypeAnnotationPosition.
+   * Creates a method throws TypeAnnotationPosition.
    *
    * @param tidx the throws index
    * @param pos the source tree position
@@ -457,7 +457,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a field TypeAnnotationPosition.
+   * Creates a field TypeAnnotationPosition.
    *
    * @param pos the source tree position
    * @return a field TypeAnnotationPosition
@@ -467,7 +467,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a class extends TypeAnnotationPosition.
+   * Creates a class extends TypeAnnotationPosition.
    *
    * @param implidx the class extends index
    * @param pos the source tree position
@@ -478,7 +478,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a type parameter TypeAnnotationPosition.
+   * Creates a type parameter TypeAnnotationPosition.
    *
    * @param tpidx the type parameter index
    * @param pos the source tree position
@@ -489,7 +489,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a method type parameter TypeAnnotationPosition.
+   * Creates a method type parameter TypeAnnotationPosition.
    *
    * @param tpidx the method type parameter index
    * @param pos the source tree position
@@ -501,7 +501,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a type parameter bound TypeAnnotationPosition.
+   * Creates a type parameter bound TypeAnnotationPosition.
    *
    * @param tpidx the type parameter index
    * @param bndidx the bound index
@@ -515,7 +515,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Create a method type parameter bound TypeAnnotationPosition.
+   * Creates a method type parameter bound TypeAnnotationPosition.
    *
    * @param tpidx the type parameter index
    * @param bndidx the bound index
@@ -529,7 +529,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Copy a TypeAnnotationPosition.
+   * Copies a TypeAnnotationPosition.
    *
    * @param tapos the input TypeAnnotationPosition
    * @return a copied TypeAnnotationPosition
@@ -605,7 +605,7 @@ public final class TypeAnnotationUtils {
   }
 
   /**
-   * Remove type annotations from the given type.
+   * Removes type annotations from the given type.
    *
    * @param in the input type
    * @return the same underlying type, but without type annotations

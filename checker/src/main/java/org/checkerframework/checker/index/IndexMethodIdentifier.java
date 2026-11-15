@@ -125,7 +125,7 @@ public class IndexMethodIdentifier {
   }
 
   /**
-   * Returns true if {@code tree} is an invocation of a method that returns the length of "this"
+   * Returns true if {@code tree} is an invocation of a method that returns the length of "this".
    *
    * @param tree a tree
    * @return true if {@code tree} is an invocation of a method that returns the length of {@code
@@ -140,7 +140,7 @@ public class IndexMethodIdentifier {
 
   /**
    * Returns true if {@code tree} evaluates to the length of "this". This might be a call to
-   * String,length, or a method annotated with @LengthOf.
+   * String.length, or a method annotated with @LengthOf.
    *
    * @return true if {@code tree} evaluates to the length of "this"
    */
@@ -161,7 +161,7 @@ public class IndexMethodIdentifier {
 
   /**
    * Returns true if {@code node} is an invocation of a method that returns the length of {@code
-   * this}
+   * this}.
    *
    * @param node a node
    * @return true if {@code node} is an invocation of a method that returns the length of {@code

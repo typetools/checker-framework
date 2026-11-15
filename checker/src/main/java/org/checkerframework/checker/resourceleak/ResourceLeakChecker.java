@@ -20,7 +20,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * all MustCall obligations are fulfilled.
  *
  * <p>The checker hierarchy is: this "empty" RLC &rarr; RLCCalledMethodsChecker &rarr;
- * MustCallChecker
+ * MustCallChecker.
  *
  * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
  * them to operate on the same CFG (so we can get both a CM and MC store for a given CFG block),
@@ -90,7 +90,7 @@ public class ResourceLeakChecker extends AggregateChecker {
       @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     if (messageKey.equals("required.method.not.called")) {
       // This is safe because of the message key.
-      String qualifiedTypeName = (String) args[1];
+      String qualifiedTypeName = (String) args[2];
       // Only count classes in the JDK, not user-defined classes.
       if (MustCallConsistencyAnalyzer.isJdkClass(qualifiedTypeName)) {
         numMustCallFailed++;
