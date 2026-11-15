@@ -892,9 +892,8 @@ public abstract class CFAbstractTransfer<
         && !ElementUtils.isStatic(method)
         && method.getParameters().isEmpty()
         && method.getSimpleName().contentEquals("booleanValue")
-        && ElementUtils.enclosingTypeElement(method)
-            .getQualifiedName()
-            .contentEquals("java.lang.Boolean");
+        && ElementUtils.enclosingTypeElement(method) instanceof TypeElement enclosingType
+        && enclosingType.getQualifiedName().contentEquals("java.lang.Boolean");
   }
 
   /**
@@ -1665,13 +1664,14 @@ public abstract class CFAbstractTransfer<
    * @param invocationNode a method call or an object creation
    * @param store a store; is side-effected by this method
    * @param executableElement the method or constructor being called
-   * @param invocationTree the tree for the method call or the object creation
+   * @param invocationTree the tree for the method call or the object creation; may be null for a
+   *     method call in a custom CFG
    */
   protected void processPostconditions(
       Node invocationNode,
       S store,
       ExecutableElement executableElement,
-      ExpressionTree invocationTree) {
+      @Nullable ExpressionTree invocationTree) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
     Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement);
     processPostconditionsAndConditionalPostconditions(
@@ -1684,14 +1684,14 @@ public abstract class CFAbstractTransfer<
    *
    * @param invocationNode a method call
    * @param methodElement the method being called
-   * @param invocationTree the tree for the method call
+   * @param invocationTree the tree for the method call; may be null in a custom CFG
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    */
   protected void processConditionalPostconditions(
       MethodInvocationNode invocationNode,
       ExecutableElement methodElement,
-      ExpressionTree invocationTree,
+      @Nullable ExpressionTree invocationTree,
       S thenStore,
       S elseStore) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
@@ -1706,14 +1706,15 @@ public abstract class CFAbstractTransfer<
    * stores after an invocation.
    *
    * @param invocationNode a method call node or an object creation node
-   * @param invocationTree the tree for the method call or for the object creation
+   * @param invocationTree the tree for the method call or for the object creation; may be null for
+   *     a method call in a custom CFG
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    * @param postconditions the postconditions
    */
   private void processPostconditionsAndConditionalPostconditions(
       Node invocationNode,
-      ExpressionTree invocationTree,
+      @Nullable ExpressionTree invocationTree,
       S thenStore,
       S elseStore,
       Set<? extends Contract> postconditions) {
@@ -1723,11 +1724,11 @@ public abstract class CFAbstractTransfer<
       stringToJavaExpr =
           stringExpr ->
               StringToJavaExpression.atMethodInvocation(stringExpr, min, analysis.checker);
-    } else if (invocationNode instanceof ObjectCreationNode) {
+    } else if (invocationNode instanceof ObjectCreationNode ocn) {
       stringToJavaExpr =
           stringExpr ->
               StringToJavaExpression.atConstructorInvocation(
-                  stringExpr, (NewClassTree) invocationTree, analysis.checker);
+                  stringExpr, ocn.getTree(), analysis.checker);
     } else {
       throw new BugInCF(
           "CFAbstractTransfer.processPostconditionsAndConditionalPostconditions received "

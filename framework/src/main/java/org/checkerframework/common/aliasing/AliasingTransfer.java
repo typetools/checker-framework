@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -88,7 +89,7 @@ public class AliasingTransfer extends CFTransfer {
    */
   @Override
   protected void processPostconditions(
-      Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
+      Node n, CFStore store, ExecutableElement executableElement, @Nullable ExpressionTree tree) {
     // TODO: Process ObjectCreationNode here after fixing issue:
     // https://github.com/eisop/checker-framework/issues/400
     if (!(n instanceof MethodInvocationNode min)) {
