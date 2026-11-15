@@ -33,6 +33,13 @@ public class AnonymousEnclosingExpression {
     outer.new Inner(outer, outer, outer) {};
   }
 
+  static void staticContext(@H2S2 AnonymousEnclosingExpression outer, @H1S1 String s1) {
+    outer.new Inner() {};
+    outer.new Inner("s") {};
+    // :: error: (argument)
+    outer.new Inner(s1, s1) {};
+  }
+
   void arguments(@H2S2 AnonymousEnclosingExpression outer, @H1S1 String s1, @H1S2 String s2) {
     outer.new Inner(s1, s2) {};
     // :: error: (argument)

@@ -1,7 +1,7 @@
 // Example from https://openjdk.org/jeps/512.
 // @below-java25-jdk-skip-test
 
-// None of the WPI formats supports the new Java 25 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 25 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test

@@ -176,7 +176,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   }
 
   /**
-   * Determine the widened range from other ranges.
+   * Determines the widened range from other ranges.
    *
    * @param newRange the new range
    * @param oldRange the old range

@@ -24,7 +24,7 @@ import org.checkerframework.framework.source.SourceChecker;
  */
 public class OptionalChecker extends AggregateChecker {
 
-  /** Creates a new {@link org.checkerframework.checker.optional.OptionalChecker} */
+  /** Creates a new {@link org.checkerframework.checker.optional.OptionalChecker}. */
   public OptionalChecker() {}
 
   @Override

@@ -8,7 +8,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Toy type system for testing reflection resolution. Uses
  * org.checkerframework.common.subtyping.qual.Bottom as bottom.
  *
- * @see TestReflectTop, TestReflectSibling1,
+ * @see TestReflectTop
+ * @see TestReflectSibling1
  */
 @SubtypeOf(TestReflectTop.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

@@ -71,10 +71,10 @@ import org.plumelib.util.MapsP;
  * my.pakkage.MyClass.jaif} if using {@link OutputFormat#JAIF}, or {@code my.pakkage.MyClass.astub}
  * if using {@link OutputFormat#STUB}.
  *
- * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
+ * <p>This class populates the initial Scenes by reading existing .jaif files in the {@link
  * #inferOutputDirectory} directory (regardless of output format). Having more information in those
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
- * will be better. {@link #writeScenes} rewrites the initial .jaif files and may create new ones.
+ * will be better. {@link #writeScenes} rewrites the initial .jaif files and might create new ones.
  */
 public class WholeProgramInferenceScenesStorage
     implements WholeProgramInferenceStorage<ATypeElement> {
@@ -86,7 +86,7 @@ public class WholeProgramInferenceScenesStorage
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
 
   /**
-   * Type elements none of whose annotations may be treated as redundant, because whole-program
+   * Type elements none of whose annotations can be treated as redundant, because whole-program
    * inference also inferred, for the same program element, a declaration annotation that is an
    * alias for a type qualifier. Reading the output file gives such an element the aliased type
    * qualifier, so an annotation that is redundant in the input program -- because it is the default
@@ -147,7 +147,7 @@ public class WholeProgramInferenceScenesStorage
   private final Path inferOutputDirectory;
 
   /**
-   * Default constructor.
+   * Creates a new WholeProgramInferenceScenesStorage.
    *
    * @param atypeFactory the type factory associated with this WholeProgramInferenceScenesStorage
    * @param inferOutputDirectory the directory into which to write whole program inference files
@@ -481,7 +481,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Records that no annotation on {@code typeElt} may be omitted from the output file as redundant.
+   * Records that no annotation on {@code typeElt} can be omitted from the output file as redundant.
    *
    * @param typeElt a type element of a scene; see {@link #neverIgnore}
    */
@@ -493,7 +493,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Write all modified scenes into files. (Scenes are modified by the method {@link
+   * Writes all modified scenes into files. (Scenes are modified by the method {@link
    * #updateStorageLocationFromAtm}.)
    *
    * @param outputFormat the output format to use when writing files
@@ -565,7 +565,7 @@ public class WholeProgramInferenceScenesStorage
    * https://github.com/typetools/checker-framework/issues/683 .
    *
    * @param am an annotation to test for whether it should be inserted into source code
-   * @param location where the location would be inserted; used to determine if {@code am} is the
+   * @param location where the annotation would be inserted; used to determine if {@code am} is the
    *     default for that location
    * @param atm its underlying Java type is used to determine if {@code am} is the default for that
    *     type or for that kind of type
@@ -798,7 +798,7 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns a subset of annosSet, consisting of the annotations supported by the type factory
    * associated with this. These are not necessarily legal annotations: they have the right name,
-   * but they may lack elements (fields).
+   * but they might lack elements (fields).
    *
    * <p>The result is unmodifiable and is not aliased to {@code annosSet}.
    *
@@ -947,7 +947,7 @@ public class WholeProgramInferenceScenesStorage
    * org.checkerframework.framework.type.AnnotatedTypeMirror} passed as argument. Annotations in the
    * original set that should be ignored (see {@link #shouldIgnore}) are not added to the resulting
    * set. This method also checks if the AnnotatedTypeMirror has explicit annotations in source
-   * code, and if that is the case no annotations are added for that location.
+   * code, and if that is the case, no annotations are added for that location.
    *
    * <p>This method removes from the ATypeElement all annotations supported by this object's
    * AnnotatedTypeFactory before inserting new ones. It is assumed that every time this method is

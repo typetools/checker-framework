@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -44,7 +45,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
    * Creates a new InitializationStore.
    *
    * @param analysis the analysis class this store belongs to
-   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   * @param sequentialSemantics true if the analysis should use sequential Java semantics
    */
   public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     super(analysis, sequentialSemantics);
@@ -103,7 +104,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
    * the 'invariant' annotation.
    */
   @Override
-  public void updateForMethodCall(MethodInvocationNode n, V val) {
+  public void updateForMethodCall(MethodInvocationNode n, @Nullable V val) {
     // Remove invariant annotated fields to avoid performance issue reported in #1438.
     for (FieldAccess invariantField : invariantFields.keySet()) {
       fieldValues.remove(invariantField);
@@ -123,7 +124,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   }
 
   /**
-   * Mark the field identified by the element {@code field} as initialized if it belongs to the
+   * Marks the field identified by the element {@code field} as initialized if it belongs to the
    * current class, or is static (in which case there is no aliasing issue and we can just add all
    * static fields).
    *
@@ -138,7 +139,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   }
 
   /**
-   * Mark the field identified by the element {@code f} as initialized (the caller needs to ensure
+   * Marks the field identified by the element {@code f} as initialized (the caller needs to ensure
    * that the field belongs to the current class, or is a static field).
    *
    * @param f a field that is initialized
@@ -147,7 +148,12 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     initializedFields.add(f);
   }
 
-  /** Is the field identified by the element {@code f} initialized? */
+  /**
+   * Returns true if the field identified by the element {@code f} is initialized.
+   *
+   * @param f a field
+   * @return true if the field {@code f} is initialized
+   */
   public boolean isFieldInitialized(Element f) {
     return initializedFields.contains(f);
   }

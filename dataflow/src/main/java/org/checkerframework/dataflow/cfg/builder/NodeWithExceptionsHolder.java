@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
   protected final Node node;
 
   /**
-   * Map from exception type to labels of successors that may be reached as a result of that
+   * Map from exception type to labels of successors that might be reached as a result of that
    * exception.
    *
    * <p>This map's keys are the exception types that a Java expression or statement is declared to
@@ -25,7 +25,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
   protected final Map<TypeMirror, Set<Label>> exceptions;
 
   /**
-   * Construct a NodeWithExceptionsHolder for the given node and exceptions.
+   * Constructs a NodeWithExceptionsHolder for the given node and exceptions.
    *
    * @param node the node to hold
    * @param exceptions the exceptions to hold

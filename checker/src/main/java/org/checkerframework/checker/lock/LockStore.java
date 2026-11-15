@@ -9,6 +9,7 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
@@ -73,6 +74,12 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
         localVariableValues.put(localVar, value);
+      }
+    } else if (je instanceof IteratedCollectionElement collectionElt) {
+      CFValue current = iteratedCollectionElements.get(collectionElt);
+      CFValue value = changeLockAnnoToTop(je, current);
+      if (value != null) {
+        iteratedCollectionElements.put(collectionElt, value);
       }
     } else if (je instanceof FieldAccess fieldAcc) {
       CFValue current = fieldValues.get(fieldAcc);
@@ -160,7 +167,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   @Override
-  public void updateForMethodCall(MethodInvocationNode n, CFValue val) {
+  public void updateForMethodCall(MethodInvocationNode n, @Nullable CFValue val) {
     super.updateForMethodCall(n, val);
     ExecutableElement method = n.getTarget().getMethod();
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
@@ -181,11 +188,17 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         }
       }
 
-      // Local variables could also be unlocked via an alias
+      // Local variables and iterated collection elements could also be unlocked via an alias
       for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
         CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
         if (newValue != null) {
           localVariableValues.put(var, newValue);
+        }
+      }
+      for (IteratedCollectionElement ice : new ArrayList<>(iteratedCollectionElements.keySet())) {
+        CFValue newValue = changeLockAnnoToTop(ice, iteratedCollectionElements.get(ice));
+        if (newValue != null) {
+          iteratedCollectionElements.put(ice, newValue);
         }
       }
 

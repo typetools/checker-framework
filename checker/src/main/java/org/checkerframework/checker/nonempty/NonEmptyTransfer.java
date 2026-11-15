@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
@@ -46,7 +47,7 @@ public class NonEmptyTransfer extends CFTransfer {
   private final ExecutableElement listIndexOf;
 
   /**
-   * Create a new {@link NonEmptyTransfer}.
+   * Creates a new {@link NonEmptyTransfer}.
    *
    * @param analysis the analysis for this transfer function
    */
@@ -154,13 +155,13 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * Refine the transfer result's store, given the left- and right-hand side of an equality check
+   * Refines the transfer result's store, given the left- and right-hand side of an equality check
    * comparing container sizes.
    *
    * @param in transfer input used to get the types of subnodes of {@code lhs} and {@code rhs}
-   * @param lhs a node that may be a method invocation of {@link java.util.Collection size()} or
+   * @param lhs a node that might be a method invocation of {@link java.util.Collection size()} or
    *     {@link java.util.Map size()}
-   * @param rhs a node that may be a method invocation of {@link java.util.Collection size()} or
+   * @param rhs a node that might be a method invocation of {@link java.util.Collection size()} or
    *     {@link java.util.Map size()}
    * @param store the "then" store of the comparison operation
    */
@@ -325,8 +326,8 @@ public class NonEmptyTransfer extends CFTransfer {
    * Returns true if the given node is an invocation of {@link java.util.Collection#size()} or
    * {@link java.util.Map#size()}.
    *
-   * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
-   *     {@link java.util.Collection} or {@link java.util.Map} types
+   * @param possibleSizeAccess a node that might be a method call to the {@code size()} method in
+   *     the {@link java.util.Collection} or {@link java.util.Map} types
    * @return true if the node is a method call to size()
    */
   private boolean isSizeAccess(Node possibleSizeAccess) {
@@ -346,13 +347,13 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * If this is an invocation of a size-dependent method, return the value that the method returns
+   * If this is an invocation of a size-dependent method, returns the value that the method returns
    * for an empty container.
    *
    * @param n a node that might be an invocation of a size-dependent method
-   * @return the value that the method returns ffor an empty container, or null
+   * @return the value that the method returns for an empty container, or null
    */
-  private Integer emptyValue(Node n) {
+  private @Nullable Integer emptyValue(Node n) {
     if (isSizeAccess(n)) {
       return 0;
     } else if (NodeUtils.isMethodInvocation(n, listIndexOf, env)) {

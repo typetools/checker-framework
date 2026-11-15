@@ -120,12 +120,12 @@ public class InferenceFactory {
 
   /**
    * Creates a {@link Variable} for {@code typeMirror}'s type parameters and for the type parameters
-   * of every type lexically enclosing {@code typeMirror} (e.g. for {@code Outer<A>.Inner<B>}, both
+   * of every type lexically enclosing {@code typeMirror} (e.g., for {@code Outer<A>.Inner<B>}, both
    * {@code A} and {@code B}), adding each to {@code map} and to {@code classTypeArgVars}. Enclosing
    * types are added before {@code typeMirror}'s own type parameters, so that the order of {@code
    * classTypeArgVars} matches the order produced by {@link #addCapturedTypeArguments}.
    *
-   * @param typeMirror a possibly-nested declared type, e.g. the qualifier type of a raw or
+   * @param typeMirror a possibly-nested declared type, e.g., the qualifier type of a raw or
    *     diamond-instantiated method reference
    * @param type the annotated version of {@code typeMirror}
    * @param memRef the method reference for which {@code typeMirror} is the qualifier type
@@ -185,7 +185,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Gets the target type for the expression for which type arguments are being inferred.
+   * Returns the target type for the expression for which type arguments are being inferred.
    *
    * @return target type for the expression for which type arguments are being inferred
    */
@@ -225,7 +225,10 @@ public class InferenceFactory {
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
-                path, methodInvocation, methodInvocation.getArguments(), executableType);
+                path,
+                methodInvocation,
+                methodInvocation.getArguments(),
+                executableType.getParameterTypes());
         return new ProperType(paramType, this.context);
       }
       case NEW_CLASS -> {
@@ -233,7 +236,14 @@ public class InferenceFactory {
         AnnotatedExecutableType constructorType =
             factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType();
         AnnotatedTypeMirror constATM =
-            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
+            assignedToExecutable(
+                path,
+                newClassTree,
+                newClassTree.getArguments(),
+                TreeUtils.parametersForArguments(
+                    constructorType.getElement(),
+                    newClassTree,
+                    constructorType.getParameterTypes()));
         return new ProperType(constATM, this.context);
       }
       case NEW_ARRAY -> {
@@ -282,7 +292,7 @@ public class InferenceFactory {
   }
 
   /**
-   * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
+   * If the variable's type is a type variable, returns getAnnotatedTypeLhsNoTypeVarDefault(tree).
    * Rationale:
    *
    * <p>For example:
@@ -297,11 +307,11 @@ public class InferenceFactory {
    * }</pre>
    *
    * During type argument inference of {@code bar}, the assignment context is {@code local}. If the
-   * local variable default is used, then the type of assignment context type is {@code @Nullable T}
-   * and the type argument inferred for {@code bar()} is {@code @Nullable T}. And an incompatible
-   * types in return error is issued.
+   * local variable default is used, then the assignment context type is {@code @Nullable T} and the
+   * type argument inferred for {@code bar()} is {@code @Nullable T}. And an incompatible types in
+   * return error is issued.
    *
-   * <p>If instead, the local variable default is not applied, then the assignment context type is
+   * <p>If, instead, the local variable default is not applied, then the assignment context type is
    * {@code T} (with lower bound {@code @NonNull Void} and upper bound {@code @Nullable Object}) and
    * the type argument inferred for {@code bar()} is {@code T}. During dataflow, the type of {@code
    * local} is refined to {@code T} and the return is legal.
@@ -323,7 +333,7 @@ public class InferenceFactory {
    *
    * @param atypeFactory AnnotatedTypeFactory
    * @param assignmentContext VariableTree
-   * @return AnnotatedTypeMirror of Assignment context
+   * @return AnnotatedTypeMirror of assignment context
    */
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
@@ -339,25 +349,25 @@ public class InferenceFactory {
    *
    * @param path path to the argument
    * @param invocation a method or constructor invocation
-   * @param arguments the argument expression tress
-   * @param executableType the type of the method or constructor
+   * @param arguments the argument expression trees
+   * @param paramTypes the types of the formal parameters of the method or constructor that
+   *     correspond to {@code arguments}; see {@link TreeUtils#parametersForArguments}
    * @return the rhs of the assignment of an argument and its formal parameter
    */
   private static AnnotatedTypeMirror assignedToExecutable(
       TreePath path,
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
-      AnnotatedExecutableType executableType) {
+      List<AnnotatedTypeMirror> paramTypes) {
     int treeIndex = argumentIndex(path, invocation, arguments);
 
-    if (treeIndex >= executableType.getParameterTypes().size() - 1
-        && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = executableType.getParameterTypes().size() - 1;
-      AnnotatedTypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
+    if (treeIndex >= paramTypes.size() - 1 && TreeUtils.isVarargsCall(invocation)) {
+      treeIndex = paramTypes.size() - 1;
+      AnnotatedTypeMirror typeMirror = paramTypes.get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
     }
 
-    return executableType.getParameterTypes().get(treeIndex);
+    return paramTypes.get(treeIndex);
   }
 
   /**
@@ -384,9 +394,9 @@ public class InferenceFactory {
   /**
    * Returns true if argumentTree is the tree at the leaf of path. If tree is a conditional
    * expression, isArgument is called recursively on the true and false expressions. If tree is a
-   * switch expression isArgument is called recursively on all yielded expressions.
+   * switch expression, isArgument is called recursively on all yielded expressions.
    *
-   * @param path tree path might contain {@code argumentTree}
+   * @param path a tree path that might contain {@code argumentTree}
    * @param argumentTree an expression tree that might be in {@code path}
    * @return true if argumentTree is the tree at the leaf of path
    */
@@ -409,11 +419,11 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the type of the receiver of {@code tree} or null if {@code tree} does not have a
+   * Returns the type of the receiver of {@code tree}, or null if {@code tree} does not have a
    * receiver.
    *
    * @param tree an expression tree
-   * @return the type of the receiver of {@code tree} or null if {@code tree} does not have a
+   * @return the type of the receiver of {@code tree}, or null if {@code tree} does not have a
    *     receiver
    */
   private static @Nullable DeclaredType getReceiverType(ExpressionTree tree) {
@@ -573,7 +583,7 @@ public class InferenceFactory {
   }
 
   /**
-   * If a mapping, theta, for {@code invocation} doesn't exist create it by:
+   * If a mapping, theta, for {@code invocation} doesn't exist, creates it by:
    *
    * <p>Creates inference variables for the type parameters to {@code executableType} for a
    * particular {@code invocation}. Initializes the bounds of the variables. Returns a mapping from
@@ -641,7 +651,7 @@ public class InferenceFactory {
   }
 
   /**
-   * If a mapping, theta, for {@code memRef} doesn't exist create it by:
+   * If a mapping, theta, for {@code memRef} doesn't exist, creates it by:
    *
    * <p>Creates inference variables for the type parameters to {@code compileTimeDecl} for a
    * particular method reference. Initializes the bounds of the variables. Returns a mapping from
@@ -723,9 +733,9 @@ public class InferenceFactory {
   }
 
   /**
-   * If a mapping, theta, for {@code lambda} doesn't exist create it by:
+   * If a mapping, theta, for {@code lambda} doesn't exist, creates it by:
    *
-   * <p>Creates inference variables for the type parameters to the functional inference of the
+   * <p>Creates inference variables for the type parameters to the functional interface of the
    * lambda. Initializes the bounds of the variables. Returns a mapping from type variables to newly
    * created variables.
    *
@@ -760,7 +770,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Creates capture variables for variables introduced by a capture bounds. The new variables
+   * Creates capture variables for variables introduced by a capture bound. The new variables
    * correspond to the type parameters of {@code capturedType}.
    *
    * @param tree invocation tree that created the capture bound
@@ -790,7 +800,7 @@ public class InferenceFactory {
 
   /**
    * Returns the type of the method or constructor invocation adapted to its arguments. This type
-   * may include inference variables.
+   * might include inference variables.
    *
    * @param invocation method or constructor invocation
    * @return the type of the method or constructor invocation adapted to its arguments
@@ -818,7 +828,7 @@ public class InferenceFactory {
    * <p>The type of a member reference is a functional interface. The function type of a member
    * reference is the type of the single abstract method declared by the functional interface. The
    * compile-time declaration type is the type of the actual method referenced by the method
-   * reference, i.e. the method that is actually being referenced.
+   * reference, i.e., the method that is actually being referenced.
    *
    * <p>For example,
    *
@@ -830,8 +840,8 @@ public class InferenceFactory {
    * Comparator<MyClass> func = MyClass::compareByField;
    * }</pre>
    *
-   * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
-   * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+   * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)}
+   * whereas the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
    *
    * @param memRef method reference tree
    * @return the compile-time declaration of the method reference
@@ -968,9 +978,9 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the proper type for object.
+   * Returns the proper type for Object.
    *
-   * @return the proper type for object
+   * @return the proper type for Object
    */
   public ProperType getObject() {
     TypeMirror objectTypeMirror =
@@ -984,10 +994,10 @@ public class InferenceFactory {
   /**
    * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
-   * <p>The result may share its {@link AnnotatedTypeMirror} with an element of {@code properTypes};
-   * in particular, it does when {@code properTypes} has one element. A caller must not mutate the
-   * result's annotated type in place, because an element of {@code properTypes} may be stored in a
-   * hash set of bounds, whose hash code would change.
+   * <p>The result might share its {@link AnnotatedTypeMirror} with an element of {@code
+   * properTypes}; in particular, it does when {@code properTypes} has one element. A caller must
+   * not mutate the result's annotated type in place, because an element of {@code properTypes}
+   * might be stored in a hash set of bounds, whose hash code would change.
    *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}, or null
@@ -1032,7 +1042,7 @@ public class InferenceFactory {
    * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
    * empty.
    *
-   * <p>As with {@link #lub(Set)}, the result may share its {@link AnnotatedTypeMirror} with an
+   * <p>As with {@link #lub(Set)}, the result might share its {@link AnnotatedTypeMirror} with an
    * element of {@code abstractTypes} -- it returns the element itself when {@code abstractTypes}
    * has one element -- so a caller must not mutate the result's annotated type in place.
    *
@@ -1048,7 +1058,8 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the greatest lower bound of {@code a} and {@code b}.
+   * Returns the greatest lower bound of {@code a} and {@code b}. The result ignores annotations
+   * (see {@link AbstractType#ignoreAnnotations}) only if both {@code a} and {@code b} do.
    *
    * @param a type to glb
    * @param b type to glb
@@ -1083,22 +1094,25 @@ public class InferenceFactory {
         glbATM.replaceAnnotations(aAtm.getPrimaryAnnotations());
       }
     }
+    // The annotations of a type that ignores annotations put no constraint on the result, so the
+    // result ignores annotations only if both types do.  This is the same rule as in `lub`.
+    boolean ignoreAnnotations = a.ignoreAnnotations && b.ignoreAnnotations;
     if (context.types.isSameType(aJavaType, (Type) glb)) {
-      return a.create(glbATM, false);
+      return a.create(glbATM, ignoreAnnotations);
     }
 
     if (context.types.isSameType(bJavaType, (Type) glb)) {
-      return b.create(glbATM, false);
+      return b.create(glbATM, ignoreAnnotations);
     }
 
     if (a.isInferenceType()) {
-      return a.create(glbATM, false);
+      return a.create(glbATM, ignoreAnnotations);
     } else if (b.isInferenceType()) {
-      return b.create(glbATM, false);
+      return b.create(glbATM, ignoreAnnotations);
     }
 
     assert a.isProper() && b.isProper();
-    return new ProperType(glbATM, context, a.ignoreAnnotations && b.ignoreAnnotations);
+    return new ProperType(glbATM, context, ignoreAnnotations);
   }
 
   /**
@@ -1294,9 +1308,9 @@ public class InferenceFactory {
 
   /**
    * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
-   * replaced by the corresponding element of {@code typeArgs}. An instantiation may mention another
-   * variable that is being resolved at the same time, so the instantiations are not final until
-   * this substitution has been performed.
+   * replaced by the corresponding element of {@code typeArgs}. An instantiation might mention
+   * another variable that is being resolved at the same time, so the instantiations are not final
+   * until this substitution has been performed.
    *
    * <p>{@code typeArgs} and {@code variables} are parallel lists: {@code typeArgs.get(i)} is the
    * instantiation of {@code variables.get(i)}.

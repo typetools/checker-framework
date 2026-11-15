@@ -91,7 +91,7 @@ public class LiveVarTransfer
   }
 
   /**
-   * Update the information of live variables from an assignment statement.
+   * Updates the information of live variables from an assignment statement.
    *
    * @param variable the variable that should be killed
    * @param expression the expression in which the variables should be added

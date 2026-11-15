@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessReflectionTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessReflectionTest.
+   * Creates a NullnessReflectionTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

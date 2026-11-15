@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * An integer that, for each of the given sequences, is equal to the sequence's length.
  *
  * <p>This is treated as an {@link IndexOrHigh} annotation internally. This is an implementation
- * detail that may change in the future, when this type may be used to implement more precise
+ * detail that might change in the future, when this type might be used to implement more precise
  * refinements.
  *
  * <p>The usual use case for the {@code LengthOf} annotation is in the definitions of custom

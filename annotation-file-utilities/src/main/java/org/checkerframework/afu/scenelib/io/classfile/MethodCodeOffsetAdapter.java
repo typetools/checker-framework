@@ -68,7 +68,8 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
   }
 
   /**
-   * Record current {@link #offset} as {@link #previousOffset} and increment by {@code i}.
+   * Records the current {@link #offset} as {@link #previousOffset} and increments {@link #offset}
+   * by {@code i}.
    *
    * @param i amount to advance offset
    */

@@ -40,12 +40,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
   /**
    * True if the type being visited is a type argument from a raw type. If true, then the underlying
-   * type may not have the correct relationship with the supertype.
+   * type might not have the correct relationship with the supertype.
    */
   private boolean isTypeArgumentFromRawType = false;
 
   /**
-   * Create a new AsSuperVisitor.
+   * Creates a new AsSuperVisitor.
    *
    * @param atypeFactory the type factory
    */
@@ -172,12 +172,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    * A helper method for asSuper(AMT, Wildcard) methods to use to annotate the wildcard's lower
    * bound.
    *
-   * <p>If the lower bound of superType is Null, then return copyPrimaryAnnos(type, superType)
+   * <p>If the lower bound of superType is Null, then return copyPrimaryAnnos(type, superType).
    *
-   * <p>otherwise, return asSuper(type, superType.getLowerBound()
+   * <p>Otherwise, return asSuper(type, superType.getLowerBound()).
    *
-   * <p>An error is issued if type is a Primitive or Wildcard -- those case are handled in
-   * asSuper(Primitive, Wildcard) and asSuper(Wildcard, Wildcard)
+   * <p>An error is issued if type is a Primitive or Wildcard -- those cases are handled in
+   * asSuper(Primitive, Wildcard) and asSuper(Wildcard, Wildcard).
    *
    * <p>An error is issued if the lower bound of superType is not Null and type is not a subtype of
    * the lower bound.
@@ -426,10 +426,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     List<AnnotatedTypeMirror> newDirectSupertypes = new ArrayList<>();
     for (AnnotatedTypeMirror superBound : superType.getBounds()) {
       AnnotatedTypeMirror found = null;
-      TypeMirror javaSupertype = types.erasure(superBound.getUnderlyingType());
       for (AnnotatedTypeMirror bound : type.getBounds()) {
-        TypeMirror javaSubtype = types.erasure(bound.getUnderlyingType());
-        if (types.isSubtype(javaSubtype, javaSupertype)) {
+        if (TypesUtils.isErasedSubtype(
+            bound.getUnderlyingType(), superBound.getUnderlyingType(), types)) {
           found = visit(bound, superBound, p);
           newDirectSupertypes.add(found);
           break;
@@ -480,10 +479,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitIntersection_Union(
       AnnotatedIntersectionType type, AnnotatedUnionType superType, Void p) {
-    TypeMirror javaSupertype = types.erasure(type.getUnderlyingType());
     for (AnnotatedTypeMirror bound : type.getBounds()) {
-      TypeMirror javaSubtype = types.erasure(superType.getUnderlyingType());
-      if (types.isSubtype(javaSubtype, javaSupertype)) {
+      if (TypesUtils.isErasedSubtype(
+          bound.getUnderlyingType(), superType.getUnderlyingType(), types)) {
         AnnotatedTypeMirror asSuper = visit(bound, superType, p);
         return copyPrimaryAnnos(type, asSuper);
       }

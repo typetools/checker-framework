@@ -14,11 +14,12 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 
 /**
- * Perform some visualization on a control flow graph. The particular operations depend on the
+ * Performs some visualization on a control flow graph. The particular operations depend on the
  * implementation.
  *
  * @param <V> the abstract value type to be tracked by the analysis
@@ -54,17 +55,17 @@ public interface CFGVisualizer<
    * @param entry the entry node of the control flow graph to be represented
    * @param analysis an analysis containing information about the program represented by the CFG.
    *     The information includes {@link Store}s that are valid at the beginning of basic blocks
-   *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
+   *     reachable from {@code entry} and per-node information for value-producing {@link Node}s.
    *     Can also be {@code null} to indicate that this information should not be output.
-   * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a String
-   *     representation of the CFG ({@link StringCFGVisualizer})
+   * @return visualization results, e.g., generated file names ({@link DOTCFGVisualizer}) or a
+   *     String representation of the CFG ({@link StringCFGVisualizer})
    * @see #visualizeWithAction(ControlFlowGraph, Block, Analysis)
    */
   @Nullable Map<String, Object> visualize(
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis);
 
   /**
-   * Output a visualization representing the control flow graph starting at {@code entry}. The keys
+   * Outputs a visualization representing the control flow graph starting at {@code entry}. The keys
    * and values in the returned map are implementation dependent. The concrete actions are
    * implementation dependent, and can include outputting information and producing files.
    *
@@ -75,18 +76,18 @@ public interface CFGVisualizer<
    * @param entry the entry node of the control flow graph to be represented
    * @param analysis an analysis containing information about the program represented by the CFG.
    *     The information includes {@link Store}s that are valid at the beginning of basic blocks
-   *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
+   *     reachable from {@code entry} and per-node information for value-producing {@link Node}s.
    *     Can also be {@code null} to indicate that this information should not be output.
-   * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a String
-   *     representation of the CFG ({@link StringCFGVisualizer})
+   * @return visualization results, e.g., generated file names ({@link DOTCFGVisualizer}) or a
+   *     String representation of the CFG ({@link StringCFGVisualizer})
    * @see #visualize(ControlFlowGraph, Block, Analysis)
    */
   @Nullable Map<String, Object> visualizeWithAction(
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis);
 
   /**
-   * Delegate the visualization responsibility to the passed {@link Store} instance, which will call
-   * back to this visualizer instance for sub-components.
+   * Delegates the visualization responsibility to the passed {@link Store} instance, which will
+   * call back to this visualizer instance for sub-components.
    *
    * @param store the store to visualize
    * @return the String representation of the given store
@@ -101,6 +102,21 @@ public interface CFGVisualizer<
    * @return the String representation of the local variable
    */
   String visualizeStoreLocalVar(LocalVariable localVar, V value);
+
+  /**
+   * Called by {@code CFAbstractStore#internalVisualize()} to visualize an iterated collection
+   * element.
+   *
+   * <p>The default implementation calls {@link #visualizeStoreKeyVal} with the string
+   * representation of {@code ice}.
+   *
+   * @param ice an iterated collection element, such as {@code o} in {@code for (Object o : list)}
+   * @param value the value associated with {@code ice}
+   * @return the String representation of this entry
+   */
+  default String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value) {
+    return visualizeStoreKeyVal(ice.toString(), value);
+  }
 
   /**
    * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the current
@@ -164,7 +180,7 @@ public interface CFGVisualizer<
   String visualizeStoreKeyVal(String keyName, Object value);
 
   /**
-   * Visualize a block based on the analysis.
+   * Visualizes a block based on the analysis.
    *
    * @param bb the block
    * @param analysis the current analysis
@@ -173,7 +189,7 @@ public interface CFGVisualizer<
   String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis);
 
   /**
-   * Visualize a SpecialBlock.
+   * Visualizes a SpecialBlock.
    *
    * @param sbb the special block
    * @return the String representation of the type of the special block {@code sbb}: entry, exit, or
@@ -182,7 +198,7 @@ public interface CFGVisualizer<
   String visualizeSpecialBlock(SpecialBlock sbb);
 
   /**
-   * Visualize a ConditionalBlock.
+   * Visualizes a ConditionalBlock.
    *
    * @param cbb the conditional block
    * @return the String representation of the conditional block
@@ -190,7 +206,7 @@ public interface CFGVisualizer<
   String visualizeConditionalBlock(ConditionalBlock cbb);
 
   /**
-   * Visualize the transferInput before a Block based on the analysis.
+   * Visualizes the transferInput before a Block based on the analysis.
    *
    * @param bb the block
    * @param analysis the current analysis
@@ -199,7 +215,7 @@ public interface CFGVisualizer<
   String visualizeBlockTransferInputBefore(Block bb, Analysis<V, S, T> analysis);
 
   /**
-   * Visualize the transferInput after a Block based on the analysis.
+   * Visualizes the transferInput after a Block based on the analysis.
    *
    * @param bb the block
    * @param analysis the current analysis
@@ -208,7 +224,7 @@ public interface CFGVisualizer<
   String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis);
 
   /**
-   * Visualize a Node based on the analysis.
+   * Visualizes a Node based on the analysis.
    *
    * @param n the node
    * @param analysis the current analysis

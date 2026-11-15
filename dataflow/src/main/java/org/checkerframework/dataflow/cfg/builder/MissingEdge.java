@@ -24,7 +24,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
   /*package-private*/ final @Nullable FlowRule flowRule;
 
   /**
-   * Create a new MissingEdge.
+   * Creates a new MissingEdge.
    *
    * @param source the source of the edge
    * @param index the index (target?) of the edge
@@ -34,7 +34,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
   }
 
   /**
-   * Create a new MissingEdge.
+   * Creates a new MissingEdge.
    *
    * @param source the source of the edge
    * @param index the index (target?) of the edge
@@ -45,7 +45,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
   }
 
   /**
-   * Create a new MissingEdge.
+   * Creates a new MissingEdge.
    *
    * @param source the source of the edge
    * @param index the index (target?) of the edge; null means go to exceptional exit
@@ -57,7 +57,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
   }
 
   /**
-   * Create a new MissingEdge.
+   * Creates a new MissingEdge.
    *
    * @param source the source of the edge
    * @param index the index (target?) of the edge; null means go to exceptional exit

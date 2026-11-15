@@ -65,7 +65,8 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
   }
 
   /**
-   * Replace the annotations in to with the annotations in from, wherever from has an annotation.
+   * Replaces the annotations in {@code to} with the annotations in {@code from}, wherever {@code
+   * from} has an annotation.
    *
    * @param from the source of the annotations
    * @param to the destination of the annotations, modified by this method

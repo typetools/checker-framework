@@ -253,15 +253,15 @@ def push_changes_prompt_if_fail(repo_root: Path) -> None:
     Loop until pushing changes succeeds or the user answers opts to not try again.
     """
     while True:
-        cmd = f"git -C {repo_root} push --tags"
-        subprocess.run([cmd], shell=False, check=False)
-        cmd = f"git -C {repo_root} push origin master"
-        result = subprocess.run([cmd], shell=False, check=False)
+        cmd = ["git", "-C", str(repo_root), "push", "--tags"]
+        subprocess.run(cmd, shell=False, check=False)
+        cmd = ["git", "-C", str(repo_root), "push", "origin", "master"]
+        result = subprocess.run(cmd, shell=False, check=False)
         # Only check the second command, on the theory that both will succeed or both will fail.
         if result.returncode == 0:
             break
         print(
-            f"Could not push from: {repo_root}; result={result} for command: `{cmd}`"
+            f"Could not push from: {repo_root}; result={result} for command: `{shlex.join(cmd)}`"
             f" in {pathlib.Path.cwd()}"
         )
         if not prompt_yn(

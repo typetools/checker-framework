@@ -16,13 +16,13 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -38,6 +38,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
@@ -66,15 +67,8 @@ public class TreeBuilder {
   /** The javac {@link Symtab} object. */
   protected final Symtab symtab;
 
-  /** The javac {@link ProcessingEnvironment} */
+  /** The javac {@link ProcessingEnvironment}. */
   protected final ProcessingEnvironment env;
-
-  /**
-   * {@link Name} object for "close", used when building a tree for a call to {@code close()}.
-   *
-   * @see #buildCloseMethodAccess(ExpressionTree)
-   */
-  private final Name closeName;
 
   /**
    * Creates a new TreeBuilder.
@@ -90,7 +84,6 @@ public class TreeBuilder {
     maker = TreeMaker.instance(context);
     names = Names.instance(context);
     symtab = Symtab.instance(context);
-    closeName = names.fromString("close");
   }
 
   /**
@@ -155,7 +148,7 @@ public class TreeBuilder {
   }
 
   /**
-   * Build a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
+   * Builds a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
    * implements {@link AutoCloseable}. This method is used when desugaring try-with-resources
    * statements during CFG construction.
    *
@@ -163,38 +156,12 @@ public class TreeBuilder {
    * @return the member select tree
    */
   public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
-    DeclaredType exprType =
-        (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(autoCloseableExpr));
-    assert exprType != null
-        : "expression must be of declared type AutoCloseable: " + autoCloseableExpr;
-
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the close() method
-    Symbol.MethodSymbol closeMethod = null;
-
-    // We could use elements.getAllMembers(exprElement) to find the close method, but in rare
-    // cases calling that method crashes with a Symbol$CompletionFailure exception.  See
-    // https://github.com/typetools/checker-framework/issues/6396.  The code below directly
-    // searches all supertypes for the method and avoids the crash.
-    for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
-      for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
-        if (!(m instanceof Symbol.MethodSymbol msym)) {
-          continue;
-        }
-        if (!msym.isStatic() && msym.getParameters().isEmpty()) {
-          closeMethod = msym;
-          break;
-        }
-      }
+    TypeMirror exprType = TreeUtils.typeOf(autoCloseableExpr);
+    ExecutableElement closeMethod = ElementUtils.resolveNoArgumentCall(exprType, "close", env);
+    if (closeMethod == null) {
+      throw new BugInCF("no close method for %s of type %s", autoCloseableExpr, exprType);
     }
-
-    assert closeMethod != null
-        : "@AssumeAssertion(nullness): no close method declared for expression type";
-
-    JCTree.JCFieldAccess closeAccess = TreeUtils.Select(maker, autoCloseableExpr, closeMethod);
-
-    return closeAccess;
+    return TreeUtils.Select(maker, autoCloseableExpr, (Symbol) closeMethod);
   }
 
   /**
@@ -406,6 +373,17 @@ public class TreeBuilder {
   }
 
   /**
+   * Builds an AST Tree representing the null literal.
+   *
+   * @return a Tree representing {@code null}
+   */
+  public LiteralTree buildNullLiteral() {
+    JCTree.JCLiteral literal = maker.Literal(TypeTag.BOT, null);
+    literal.setType(symtab.botType);
+    return literal;
+  }
+
+  /**
    * Builds an AST Tree to compare two operands with less than.
    *
    * @param left the left operand tree
@@ -445,7 +423,7 @@ public class TreeBuilder {
   }
 
   /**
-   * Builds an AST Tree to access the valueOf() method of boxed type such as Short or Float.
+   * Builds an AST Tree to access the valueOf() method of a boxed type such as Short or Float.
    *
    * @param expr an expression whose type is a boxed type
    * @return a MemberSelectTree that accesses the valueOf() method of the expression
@@ -524,7 +502,12 @@ public class TreeBuilder {
     return primValueAccess;
   }
 
-  /** Map public AST Tree.Kinds to internal javac JCTree.Tags. */
+  /**
+   * Maps public AST Tree.Kinds to internal javac JCTree.Tags.
+   *
+   * @param kind a tree kind
+   * @return the javac tag that corresponds to the tree kind
+   */
   public JCTree.Tag kindToTag(Tree.Kind kind) {
     return switch (kind) {
       case AND -> JCTree.Tag.BITAND;
@@ -615,7 +598,7 @@ public class TreeBuilder {
    * @param op an AST Tree operator
    * @param left the left operand tree
    * @param right the right operand tree
-   * @return a Tree representing "left &lt; right"
+   * @return a Tree representing "left op right"
    */
   public BinaryTree buildBinary(
       TypeMirror type, Tree.Kind op, ExpressionTree left, ExpressionTree right) {

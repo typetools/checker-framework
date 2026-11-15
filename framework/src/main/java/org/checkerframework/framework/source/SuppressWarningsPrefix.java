@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * <p>If this annotation is not present on a checker class, then the lowercase name of the checker
  * is used by default. The name of the checker is the part of the checker classname that comes
  * before "Checker" or "Subchecker". If the checker classname is not of this form, then the
- * classname is the checker name.)
+ * classname is the checker name.
  *
  * @checker_framework.manual #suppresswarnings-annotation-syntax
  */
@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 public @interface SuppressWarningsPrefix {
 
   /**
-   * Returns array of strings, any one of which causes this checker to suppress a warning when
+   * Returns an array of strings, any one of which causes this checker to suppress a warning when
    * passed as the argument of {@literal @}{@link SuppressWarnings}.
    *
    * @return array of strings, any one of which causes this checker to suppress a warning when

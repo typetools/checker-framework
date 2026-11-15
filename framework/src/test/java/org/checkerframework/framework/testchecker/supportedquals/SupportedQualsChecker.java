@@ -11,7 +11,7 @@ import org.checkerframework.framework.testchecker.supportedquals.qual.BottomQual
 import org.checkerframework.framework.testchecker.supportedquals.qual.Qualifier;
 
 /**
- * Tests that annotations that have @Target(TYPE_USE, OTHER) (where OTHER is not TYPE_PARAMETER) may
+ * Tests that annotations that have @Target(TYPE_USE, OTHER) (where OTHER is not TYPE_PARAMETER) can
  * be in the qual package so long as {@link BaseAnnotatedTypeFactory#createSupportedTypeQualifiers}
  * is overridden.
  */

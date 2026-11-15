@@ -70,6 +70,12 @@ public class AbstractInvocationType extends AbstractExecutableType {
   }
 
   @Override
+  protected List<AnnotatedTypeMirror> getDeclaredParameterTypes() {
+    return TreeUtils.parametersForArguments(
+        annotatedExecutableType.getElement(), invocation, super.getDeclaredParameterTypes());
+  }
+
+  @Override
   public List<AbstractType> getParameterTypes(@Nullable Theta map, int size) {
     return getParameterTypes(map, size, null, TreeUtils.isVarargsCall(invocation));
   }

@@ -16,10 +16,10 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * AtmKind should mirror TypeKind except that each member has a reference to the AnnotatedTypeMirror
- * that would represents types of its kind.
+ * that represents types of its kind.
  *
  * <p>Note: This class is only useful so that AtmCombo can look up combinations via the
- * AtmKind.ordinal(). See AtmCombo.comboMap
+ * AtmKind.ordinal(). See AtmCombo.comboMap.
  */
 enum AtmKind {
   ARRAY(AnnotatedArrayType.class),
@@ -60,8 +60,8 @@ enum AtmKind {
 }
 
 /**
- * An enum representing the cartesian product of the set of AtmKinds with itself. This represents
- * all pair-wise combinations of AnnotatedTypeMirror subclasses. AtmCombo can be used in a switch to
+ * An enum representing the Cartesian product of the set of AtmKinds with itself. This represents
+ * all pairwise combinations of AnnotatedTypeMirror subclasses. AtmCombo can be used in a switch to
  * easily (and in a readable fashion) enumerate a subset of Atm pairs to handle. It is also used to
  * execute AtmComboVisitor, which is a visitor of all possible combinations of AnnotatedTypeMirror
  * subclasses.
@@ -222,10 +222,10 @@ public enum AtmCombo {
   }
 
   /**
-   * Returns the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g. {@literal
+   * Returns the AtmCombo corresponding to the given pair of AtmKinds. For example, {@literal
    * (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}.
    *
-   * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g. {@literal
+   * @return the AtmCombo corresponding to the given pair of AtmKinds; for example, {@literal
    *     (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
    */
   public static AtmCombo valueOf(AtmKind type1, AtmKind type2) {
@@ -234,8 +234,8 @@ public enum AtmCombo {
 
   /**
    * Returns the AtmCombo corresponding to the pair of the classes for the given
-   * AnnotatedTypeMirrors. e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
-   * AtmCombo.PRIMITIVE_DECLARED}
+   * AnnotatedTypeMirrors. For example, {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
+   * AtmCombo.PRIMITIVE_DECLARED}.
    *
    * @return the AtmCombo corresponding to the pair of the classes for the given
    *     AnnotatedTypeMirrors
@@ -245,8 +245,8 @@ public enum AtmCombo {
   }
 
   /**
-   * Call the visit method that corresponds to the AtmCombo that represents the classes of type1 and
-   * type2. That is, get the combo for type1 and type 2, use it to identify the correct visitor
+   * Calls the visit method that corresponds to the AtmCombo that represents the classes of type1
+   * and type2. That is, get the combo for type1 and type2, use it to identify the correct visitor
    * method, and call that method with type1, type2, and initialParam as arguments to the visit
    * method.
    *

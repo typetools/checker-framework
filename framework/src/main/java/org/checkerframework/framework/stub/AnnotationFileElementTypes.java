@@ -69,7 +69,7 @@ public class AnnotationFileElementTypes {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system
+   * Mapping from fully-qualified class name to corresponding JDK stub files from the file system
    * that have not yet been read. When a file is read, its mapping is removed from this map.
    *
    * <p>By contrast, {@link #remainingJdkStubFilesJar} contains JDK stub files from checker.jar.
@@ -87,10 +87,10 @@ public class AnnotationFileElementTypes {
   /** Which version number of the annotated JDK should be used? */
   private final String annotatedJdkVersion;
 
-  /** Should the JDK be parsed? */
+  /** True if the JDK should be parsed. */
   private final boolean shouldParseJdk;
 
-  /** Parse all JDK files at startup rather than as needed. */
+  /** True if all JDK files should be parsed at startup rather than as needed. */
   private final boolean parseAllJdkFiles;
 
   /** True if -ApermitMissingJdk was passed on the command line. */
@@ -212,7 +212,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parse one .astub file.
+   * Parses one .astub file.
    *
    * @param checkerClass the location of the resource in the checker.jar file
    * @param stubFileName the basename of the .astub file
@@ -265,7 +265,7 @@ public class AnnotationFileElementTypes {
    * ajava file.
    *
    * @param ajavaPath path to an ajava file
-   * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+   * @param root javac tree for the compilation unit stored in {@code ajavaPath}
    */
   public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
     parsing = true;
@@ -298,13 +298,6 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
-  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
-  // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
-  // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
-  // Closing any one of the zip file entries will close the ZipFile, which invalidates the
-  // other zipfile entries.  Therefore, this code does not close any of them.  This code may
-  // leak resources.
-  )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     if (annotationFiles.isEmpty()) {
       return;
@@ -317,39 +310,32 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
-
-      List<AnnotationFileResource> allFiles =
-          AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
+      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          BufferedInputStream annotationFileStream;
-          try {
-            annotationFileStream = new BufferedInputStream(resource.getInputStream());
+          try (BufferedInputStream annotationFileStream =
+              new BufferedInputStream(resource.getInputStream())) {
+            // Is it necessary to also skip files that consist only of Java comments?
+            Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+            if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+              continue;
+            }
+            // We use parseStubFile here even for ajava files because at this stage
+            // ajava files are parsed as stub files. The extra annotation data in an
+            // ajava file is parsed when type-checking the ajava file's corresponding
+            // Java file.
+            AnnotationFileParser.parseStubFile(
+                resource.getDescription(),
+                annotationFileStream,
+                factory,
+                processingEnv,
+                annotationFileAnnos,
+                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
-            continue;
           }
-          // Is it necessary to also skip files that consist only of Java comments?
-          Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-          if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-            continue;
-          }
-          // We use parseStubFile here even for ajava files because at this stage
-          // ajava files are parsed as stub files. The extra annotation data in an
-          // ajava file is parsed when type-checking the ajava file's corresponding
-          // Java file.
-          AnnotationFileParser.parseStubFile(
-              resource.getDescription(),
-              annotationFileStream,
-              factory,
-              processingEnv,
-              annotationFileAnnos,
-              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.
@@ -396,13 +382,16 @@ public class AnnotationFileElementTypes {
                   (parentPath == null
                       ? "current directory"
                       : "directory " + parentPath.getAbsolutePath());
+              String testSrc = System.getProperty("test.src");
               String msg =
                   checker.getClass().getSimpleName()
                       + " did not find annotation file or directory "
                       + path
                       + " on classpath or within "
                       + parentPathDescription
-                      + (fullPath.equals(path) ? "" : (" or at " + fullPath));
+                      + ((testSrc == null || new File(path).isAbsolute())
+                          ? ""
+                          : (" or within directory " + testSrc));
               StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
               sj.add(msg);
               sj.add("Classpath:");
@@ -425,8 +414,8 @@ public class AnnotationFileElementTypes {
    *
    * @param e an Element whose type is returned
    * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
-   *     the annotation file and in the element. Returns {@code null} if {@code element} does not
-   *     appear in an annotation file.
+   *     the annotation file and in the element. Returns {@code null} if {@code e} does not appear
+   *     in an annotation file.
    */
   public @Nullable AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
     if (isParsing()) {
@@ -438,14 +427,14 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Returns the set of declaration annotations for {@code e} containing only annotations explicitly
-   * written in an annotation file or the empty set if {@code e} does not appear in an annotation
-   * file.
+   * Returns the set of declaration annotations for {@code elt} containing only annotations
+   * explicitly written in an annotation file, or the empty set if {@code elt} does not appear in an
+   * annotation file.
    *
    * @param elt element for which annotations are returned
-   * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
-   *     the annotation file and in the element. {@code null} is returned if {@code element} does
-   *     not appear in an annotation file.
+   * @return the declaration annotations for {@code elt} containing only annotations explicitly
+   *     written in the annotation file, or the empty set if {@code elt} does not appear in an
+   *     annotation file
    */
   public @Nullable AnnotationMirrorSet getDeclAnnotations(Element elt) {
     if (stubDebug) {
@@ -802,8 +791,8 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
-   * name to the class contained within it. Also, parses all {@code package-info.java} files.
+   * Walks through the JDK directory and creates a mapping, {@link #remainingJdkStubFiles}, from
+   * file name to the class contained within it. Also, parses all {@code package-info.java} files.
    */
   private void prepJdkStubs() {
     if (!shouldParseJdk) {
@@ -832,8 +821,8 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
-   * name to the class contained within it. Also, parses all {@code package-info.java} files.
+   * Walks through the JDK directory and creates a mapping, {@link #remainingJdkStubFiles}, from
+   * file name to the class contained within it. Also, parses all {@code package-info.java} files.
    *
    * @param jdkDirectory the URL pointing to the JDK directory
    */
@@ -887,7 +876,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFilesJar}, from
+   * Walks through the JDK directory and creates a mapping, {@link #remainingJdkStubFilesJar}, from
    * file name to the class contained within it. Also, parses all {@code package-info.java} files.
    *
    * @param jdkJarfile the URL pointing to the JDK jarfile
@@ -938,7 +927,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Print the strings, in order, each on its own line, indented by two spaces.
+   * Prints the strings, in order, each on its own line, indented by two spaces.
    *
    * @param strings a collection of strings
    */

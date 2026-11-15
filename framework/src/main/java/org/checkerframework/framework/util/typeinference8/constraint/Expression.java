@@ -37,7 +37,8 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * &lt;Expression &rarr; T&gt; An expression is compatible in a loose invocation context with type T
+ * &lt;Expression &rarr; T&gt;: An expression is compatible in a loose invocation context with type
+ * T.
  */
 public class Expression extends TypeConstraint {
 
@@ -49,7 +50,7 @@ public class Expression extends TypeConstraint {
    *
    * @param parent the constraint whose reduction created this constraint
    * @param expressionTree the expression for the constraint
-   * @param t the type that the expression is compatible in a loose invocation context
+   * @param t the type with which the expression is compatible in a loose invocation context
    */
   public Expression(Constraint parent, ExpressionTree expressionTree, AbstractType t) {
     super(parent, t);
@@ -62,7 +63,7 @@ public class Expression extends TypeConstraint {
    *
    * @param source a string describing where this constraint came from
    * @param expressionTree the expression for the constraint
-   * @param t the type that the expression is compatible in a loose invocation context
+   * @param t the type with which the expression is compatible in a loose invocation context
    */
   public Expression(String source, ExpressionTree expressionTree, AbstractType t) {
     super(source, t);
@@ -92,7 +93,7 @@ public class Expression extends TypeConstraint {
   public ReductionResult reduce(Java8InferenceContext context) {
     // See JLS 18.2.1
     if (getT().isProper()) {
-      return reduceProperType();
+      return reduceProperType(context);
     } else if (TreeUtils.isStandaloneExpression(expression)) {
       AbstractType s = new ProperType(expression, context);
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
@@ -139,9 +140,10 @@ public class Expression extends TypeConstraint {
    * JLS 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
    * compatible in a loose invocation context with T (5.3), and false otherwise."
    *
+   * @param context the context
    * @return the result of reducing a proper type
    */
-  private ReductionResult reduceProperType() {
+  private ReductionResult reduceProperType(Java8InferenceContext context) {
     // Assume the constraint reduces to TRUE, if it did not the code wouldn't compile with
     // javac.
 
@@ -154,6 +156,15 @@ public class Expression extends TypeConstraint {
     // here would replace that message by "type.arguments.not.inferred" and would also suppress
     // every other check that BaseTypeVisitor performs on the invocation, because
     // BaseTypeVisitor.visitMethodInvocation returns as soon as inference fails.
+
+    // Whether unchecked conversion is necessary determines whether the return type of an invocation
+    // type is erased (JLS 15.12.2.6).  Unchecked conversion that is necessary to check a poly
+    // expression is attributed to that expression's own constraints, not to this one.
+    if (TreeUtils.isStandaloneExpression(expression)
+        && TypesUtils.needsUncheckedConversion(
+            TreeUtils.typeOf(expression), getT().getJavaType(), context.env)) {
+      return ReductionResult.UNCHECKED_CONVERSION;
+    }
 
     // TODO: This should return false in some cases.
     // com.sun.tools.javac.code.Types.isConvertible(com.sun.tools.javac.code.Type,
@@ -168,7 +179,7 @@ public class Expression extends TypeConstraint {
    * instance creation expression, the corresponding "method" used for inference is defined in
    * 15.9.3).
    *
-   * <p>This bound set may contain new inference variables, as well as dependencies between these
+   * <p>This bound set might contain new inference variables, as well as dependencies between these
    * new variables and the inference variables in T.
    *
    * @param context the context
@@ -189,12 +200,35 @@ public class Expression extends TypeConstraint {
     Theta map =
         context.inferenceTypeFactory.createThetaForInvocation(
             expressionTree, executableType, context);
-    BoundSet b2 = context.inference.createB2(executableType, args, map);
+    BoundSet b2 = context.inference.createB2(expressionTree, executableType, args, map);
     return context.inference.createB3(b2, expressionTree, executableType, T, map);
   }
 
   /**
-   * Reduce this constraint.
+   * Returns a constraint between a parameter type of the function type of the exact method
+   * reference {@code memRef} and the corresponding formal parameter type of its compile-time
+   * declaration (or, for the receiver of an unbound reference, the reference type). These parameter
+   * types act as the argument types of the method reference's implicit invocation of the
+   * compile-time declaration (JLS 15.13.1). Unchecked conversion that is necessary to reduce the
+   * constraint is necessary for the compile-time declaration to be applicable, so {@code memRef},
+   * not the enclosing invocation, needs it.
+   *
+   * @param s a parameter type of the function type
+   * @param t the corresponding formal parameter type of the compile-time declaration, or the
+   *     reference type
+   * @param kind the kind of the constraint
+   * @param memRef an exact method reference
+   * @return the constraint between {@code s} and {@code t}
+   */
+  private Typing memRefParameterConstraint(
+      AbstractType s, AbstractType t, Kind kind, MemberReferenceTree memRef) {
+    Typing constraint = new Typing(this, s, t, kind);
+    constraint.invocation = memRef;
+    return constraint;
+  }
+
+  /**
+   * Reduces this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
@@ -232,17 +266,41 @@ public class Expression extends TypeConstraint {
         }
 
         constraintSet.add(
-            new Typing(this, targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
+            memRefParameterConstraint(targetReference, referenceType, Kind.SUBTYPE, memRef));
       }
       for (int i = 0; i < ps.size(); i++) {
-        constraintSet.add(new Typing(this, ps.get(i), fs.get(i), TypeConstraint.Kind.SUBTYPE));
+        AbstractType p = ps.get(i);
+        AbstractType f = fs.get(i);
+        // ‹P → F› for a primitive F reduces to ‹P = box(F)› (JLS 18.2.2), which would make P's
+        // qualifiers equal to the primitive's.  P is only unboxed to F, so require only a subtype.
+        // Unchecked conversion is never necessary to convert to a primitive type.
+        Kind kind =
+            !p.isProper() && f.getTypeKind().isPrimitive() ? Kind.SUBTYPE : Kind.TYPE_COMPATIBILITY;
+        constraintSet.add(memRefParameterConstraint(p, f, kind, memRef));
       }
+      // Reduce the parameter constraints now, rather than returning them. Reducing them records in
+      // context.needUncheckedConversion whether memRef needs unchecked conversion, which determines
+      // whether the return type below is erased (JLS 15.12.2.6).
+      BoundSet b2 = constraintSet.reduce(context);
       AbstractType r = T.getFunctionTypeReturnType();
-      if (r != null) {
-        AbstractType rPrime = typeOfPoAppMethod.getReturnType(null).capture(context);
-        constraintSet.add(new Typing(this, rPrime, r, TypeConstraint.Kind.TYPE_COMPATIBILITY));
+      if (r == null) {
+        return b2;
       }
-      return constraintSet;
+      // JLS 15.12.2.6: if unchecked conversion was necessary for the compile-time declaration to be
+      // applicable, the return type of its invocation type is the erasure of its return type.
+      AbstractType compileTimeReturn = typeOfPoAppMethod.getReturnType(null);
+      AbstractType invocationReturn =
+          context.needUncheckedConversion.contains(memRef)
+              ? compileTimeReturn.getErased()
+              : compileTimeReturn;
+      return ReductionResultPair.of(
+          new ConstraintSet(
+              new Typing(
+                  this,
+                  invocationReturn.capture(context),
+                  r,
+                  TypeConstraint.Kind.TYPE_COMPATIBILITY)),
+          b2);
     }
     // else the method reference is inexact.
 
@@ -296,18 +354,24 @@ public class Expression extends TypeConstraint {
     // return type of the invocation type (15.12.2.6) of the compile-time declaration.
     // If R' is void, the constraint reduces to false; otherwise, the constraint reduces
     // to <R' -> R>.  R, the result of the function type, is the local variable `r`.
+    // JLS 15.12.2.6: if unchecked conversion was necessary for the compile-time declaration to be
+    // applicable, the return type of its invocation type is the erasure of its return type.
+    AbstractType invocationReturn =
+        context.needUncheckedConversion.contains(memRef)
+            ? compileTimeReturn.getErased()
+            : compileTimeReturn;
     return ReductionResultPair.of(
         new ConstraintSet(
             new Typing(
                 this,
-                compileTimeReturn.capture(context),
+                invocationReturn.capture(context),
                 r,
                 TypeConstraint.Kind.TYPE_COMPATIBILITY)),
         b2);
   }
 
   /**
-   * Reduce this constraint.
+   * Reduces this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
@@ -460,8 +524,9 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Infers the type of {@code lambda} which may create a bounds set that needs to be resolved as
-   * part of a larger inference problem. See 18.5.3: Functional Interface Parameterization Inference
+   * Infers the type of {@code lambda}, which might create a bound set that needs to be resolved as
+   * part of a larger inference problem. See 18.5.3: Functional Interface Parameterization
+   * Inference.
    *
    * @param t the target type of the lambda
    * @param lambda a lambda expression

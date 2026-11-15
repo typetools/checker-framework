@@ -31,6 +31,13 @@ public class I18nFormat {
     // :: warning: [i18nformat.indirect.arguments]
     MessageFormat.format("{0, number}", new Object[2]);
 
+    // A primitive array is a single varargs element, not the varargs array itself.
+    MessageFormat.format("{0}", new int[] {1, 2});
+    // :: error: [argument]
+    MessageFormat.format("{0, number}", new int[] {1, 2});
+    // :: warning: [i18nformat.missing.arguments]
+    MessageFormat.format("{0} {1}", new int[] {1, 2});
+
     MessageFormat.format("{0}", "S");
     MessageFormat.format("{0}", 1);
     MessageFormat.format("{0}", new Date());
