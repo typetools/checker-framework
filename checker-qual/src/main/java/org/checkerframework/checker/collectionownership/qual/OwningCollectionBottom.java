@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /**
  * The bottom qualifier of the Collection Ownership type hierarchy. It is the default qualifier.
  *
- * <p>An expression of type {@code @OwningCollectionBottom} is either not a collection/array or is a
- * collection/array whose elements have empty {@code @MustCall} type.
+ * <p>An expression of type {@code @OwningCollectionBottom} is either not a collection or is a
+ * collection whose elements have empty {@code @MustCall} type.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */

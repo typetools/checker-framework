@@ -191,7 +191,10 @@ functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
 type is a functional interface is checked:  the method can assume nothing about an
 argument to a parameter whose type is a type variable, nor about the elements
-of a varargs array.  How the argument is checked depends on its form:
+of a varargs array.  How the argument is checked depends on its form.
+Parentheses around the argument are ignored, and so is a cast of a lambda, a
+method reference, a conditional expression, or a switch expression, because
+such a cast does not change the code that the argument denotes.
 
 \begin{itemize}
 \item
@@ -199,6 +202,12 @@ of a varargs array.  How the argument is checked depends on its form:
   the required purity annotations.
 \item
   A lambda is checked via its body, which must have the required purity.
+\item
+  A conditional expression (\<?:>) or a switch expression is checked branch
+  by branch:  each of its possible result expressions is checked according
+  to these rules.
+\item
+  The \<null> literal is not checked, because it denotes no code.
 \item
   Any other argument is checked via the functional method of the argument's
   declared type, which must have the required purity annotations.
@@ -208,6 +217,8 @@ of a varargs array.  How the argument is checked depends on its form:
   m(String::length, "hi");   // OK: String.length() is side-effect-free
   m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
   m(s -> count++, "hi");     // error: the lambda body has a side effect
+  m(b ? String::length : s -> 0, "hi");  // OK: each branch is side-effect-free
+  m(b ? null : s -> count++, "hi");      // error: the false branch has a side effect
 
   void caller(Function<String, Integer> g) {
     m(g, "hi");              // error: [purity.functional.argument] Function.apply is not @SideEffectFree
@@ -321,6 +332,36 @@ MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in 
 \noindent
 You can fix the definition by making its body pure.  Alternatively, you can
 suppress the warning; see \chapterpageref{suppressing-warnings}.
+
+\iffalse
+A \refqualclass{dataflow/qual}{SideEffectsOnly} annotation is inherited in
+the same way:  an overriding method that has no purity annotation is checked
+against the overridden method's \<@SideEffectsOnly> annotation.  The
+annotation's expressions are interpreted in the overridden method, which
+declares them.  For example, in the inherited annotation, \<this.f> names the
+field \<f> that the overridden method sees, even if the overriding method's
+class declares a field \<f> that hides it.
+
+An overriding method can strengthen an inherited \<@SideEffectsOnly>
+annotation by writing \refqualclass{dataflow/qual}{SideEffectFree},
+\refqualclass{dataflow/qual}{Pure}, or a \<@SideEffectsOnly> annotation in
+which each expression is one that the overridden method lists or is reached
+through one that the overridden method lists.  For example, an override of a
+\<@SideEffectsOnly("\#1")> method can be annotated
+\<@SideEffectsOnly("\#1.f")>, and an override of a
+\<@SideEffectsOnly(\{"\#1", "\#2"\})> method can be annotated
+\<@SideEffectsOnly("\#2")>.
+
+A method that overrides methods in two or more supertypes, and that has no
+purity annotation of its own, inherits the \<@SideEffectsOnly> expressions of
+all of the overridden methods.  If those methods' annotations differ, the
+union of their expressions permits more side effects than an overridden
+method permits, so the Checker Framework issues a
+\<purity.sideeffectsonly.overriding> error for each overridden method that
+permits less than the union.  To fix the errors, write, on the overriding
+method, a \<@SideEffectsOnly> annotation that every overridden method permits,
+or a stronger purity annotation.
+\fi
 
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
