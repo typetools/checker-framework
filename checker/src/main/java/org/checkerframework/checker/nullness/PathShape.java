@@ -31,6 +31,38 @@ public enum PathShape {
   }
 
   /**
+   * Returns the path shape of {@code p.resolve(q)}, where this is the path shape of {@code p}.
+   *
+   * @param other the path shape of a path {@code q}
+   * @return the path shape of {@code p.resolve(q)}
+   */
+  public PathShape resolve(PathShape other) {
+    // If q is absolute, the result is q.  If q is empty, the result is p.  Otherwise, the result is
+    // q appended to p.
+    if (other == HAS_PARENT || (other == HAS_NAME && this != UNKNOWN)) {
+      return HAS_PARENT;
+    } else {
+      return other;
+    }
+  }
+
+  /**
+   * Returns the path shape of {@code p.resolveSibling(q)}, where this is the path shape of {@code
+   * p}.
+   *
+   * @param other the path shape of a path {@code q}
+   * @return the path shape of {@code p.resolveSibling(q)}
+   */
+  public PathShape resolveSibling(PathShape other) {
+    // The result is q if p has no parent, and p.getParent().resolve(q) otherwise.
+    if (other == HAS_PARENT || (other == HAS_NAME && this == HAS_PARENT)) {
+      return HAS_PARENT;
+    } else {
+      return other;
+    }
+  }
+
+  /**
    * Returns the path shape of a path with the given properties. A path that has no name has no path
    * shape other than {@code UNKNOWN}, even if it has a parent.
    *
