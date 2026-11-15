@@ -378,6 +378,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
     if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
+      // The refined type of the subtrahend mentions offsetNode, so it holds after the comparison
+      // only if offsetNode still has the value that was compared.
+      if (mayBeChangedByLaterOperand(offsetNode)) {
+        return;
+      }
 
       Node minuend = subtractionNode.getLeftOperand();
       UBQualifier minuendQual = getUBQualifier(minuend, in);
