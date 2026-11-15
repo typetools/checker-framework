@@ -1118,8 +1118,9 @@ public abstract class CFAbstractTransfer<
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
     if (n.isUnboxing()) {
-      // The factory value comes from the declared return type of a method such as intValue(), so
-      // also use the qualifiers of the value being unboxed.
+      // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type
+      // factory computes for the call) comes from the declared return type of `intValue()`, which
+      // lacks the qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
       V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
       resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), operandValue));
     }
