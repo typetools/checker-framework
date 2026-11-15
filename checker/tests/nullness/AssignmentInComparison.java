@@ -141,6 +141,26 @@ public class AssignmentInComparison {
     }
   }
 
+  static class Base {
+    static @Nullable AssignmentInComparison current;
+  }
+
+  static class Left extends Base {}
+
+  static class Right extends Base {}
+
+  static void staticFieldThroughSiblingSubclasses() {
+    if (Right.current == null) {
+      return;
+    }
+    if ((Left.current = Right.current.next) != null) {
+      // `Left.current` and `Right.current` are the same field, so after the assignment
+      // `Right.current.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      Right.current.next.toString();
+    }
+  }
+
   static void anonymousClassInitializerReassignsReceiver(AssignmentInComparison other) {
     if (global == null) {
       return;
@@ -505,6 +525,24 @@ public class AssignmentInComparison {
       n.value = (n = o).text;
       p.value.length();
     }
+  }
+
+  static class Document {
+    Document current = this;
+    @Nullable String text;
+  }
+
+  // The string conversion of `value` calls `value.toString()`, which might reassign `d.current`.
+  static void plusAssignStringConversionRelocatesTarget(Document d, Object value) {
+    d.current.text += value;
+    // :: error: [dereference.of.nullable]
+    d.current.text.length();
+  }
+
+  // A string conversion of a `String` does not call `toString()`.
+  static void plusAssignStringNoConversion(Document d, String value) {
+    d.current.text += value;
+    d.current.text.length();
   }
 
   static void annotationArgumentInRhs(

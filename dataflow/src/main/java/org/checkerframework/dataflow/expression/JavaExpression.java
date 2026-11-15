@@ -32,7 +32,6 @@ import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
-import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -490,8 +489,6 @@ public abstract class JavaExpression {
     JavaExpression result = null;
     if (receiverNode instanceof FieldAccessNode fieldAccessNode) {
       result = fromNodeFieldAccess(fieldAccessNode);
-    } else if (receiverNode instanceof ExplicitThisNode) {
-      result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof ThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
@@ -559,6 +556,7 @@ public abstract class JavaExpression {
    * @param tree a javac tree
    * @return a JavaExpression for the given javac tree
    */
+  @SideEffectFree
   public static JavaExpression fromTree(ExpressionTree tree) {
     JavaExpression result;
     switch (tree.getKind()) {
@@ -696,6 +694,7 @@ public abstract class JavaExpression {
    * @param tree a variable tree
    * @return a JavaExpression for {@code tree}
    */
+  @SideEffectFree
   public static JavaExpression fromVariableTree(VariableTree tree) {
     return fromVariableElement(
         TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree), tree);
@@ -742,6 +741,7 @@ public abstract class JavaExpression {
    * @param memberSelectTree tree
    * @return a JavaExpression for {@code memberSelectTree}
    */
+  @SideEffectFree
   private static JavaExpression fromMemberSelect(MemberSelectTree memberSelectTree) {
     TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
     if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -810,6 +810,7 @@ public abstract class JavaExpression {
    * @param accessTree a method or constructor invocation
    * @return the receiver of the given invocation
    */
+  @SideEffectFree
   public static JavaExpression getReceiver(ExpressionTree accessTree) {
     // TODO: Handle field accesses too?
     assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
