@@ -11,7 +11,7 @@ import org.checkerframework.checker.modifiability.qual.Shrinkable;
  * <ul>
  *   <li>{@link #getVivify} is like {@code get}, but it never returns null; instead, it stores an
  *       empty value and returns that.
- *   <li>{@link #prune} removes empty values
+ *   <li>{@link #prune} removes empty values.
  * </ul>
  *
  * @param <K> the type of the map keys

@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  *
  * <p>If the annotation E has elements annotated by {@link QualifierArgument}, their values are
  * copied to the arguments (elements) of annotation P with the same names. Different element names
- * may be used in E and P, if a {@link QualifierArgument} in E gives the name of the corresponding
+ * can be used in E and P, if a {@link QualifierArgument} in E gives the name of the corresponding
  * element in P.
  *
  * <p>For example, the following code declares a postcondition annotation for the {@link

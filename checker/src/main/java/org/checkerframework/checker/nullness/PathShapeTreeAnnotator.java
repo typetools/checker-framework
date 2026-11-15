@@ -170,7 +170,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
         ExpressionTree child = args.get(args.size() - 1);
         String constant = TreeUtils.stringConstantValue(child);
         if (constant != null) {
-          factory.refine(type, PathStringClassifier.classifyFile(constant));
+          factory.refine(type, PathStringToPathShape.forFile(constant));
         }
       }
     }
@@ -231,7 +231,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
       }
       constants.add(constant);
     }
-    return PathStringClassifier.classifyPath(constants);
+    return PathStringToPathShape.forPath(constants);
   }
 
   /**

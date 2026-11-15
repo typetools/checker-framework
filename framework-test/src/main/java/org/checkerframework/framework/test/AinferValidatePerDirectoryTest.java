@@ -63,7 +63,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
   }
 
   /**
-   * The directory where inference output files are found.
+   * Returns the directory where inference output files are found.
    *
    * @param checkerShortName the short name of the checker, as used in the naming conventions for
    *     files, e.g. "index" for the Index Checker or "testchecker" for the AInferTestChecker
@@ -134,7 +134,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
    * Generates the correct argument to the {@code -Aajava} or {@code -Astubs} CF option
    * corresponding to the source file {@code sourceFile} and the WPI output type.
    *
-   * @param sourceFile a java source file
+   * @param sourceFile a Java source file
    * @param inferenceBaseDir the base directory in which inference output is placed
    * @param extension the extension to use: either .astub or .ajava
    * @return the ajava argument for the corresponding ajava files, if there are any

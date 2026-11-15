@@ -145,7 +145,7 @@ public final class CheckedExceptionsUtil {
     }
 
     /**
-     * If any exception in {@code thrownExceptions} is assignable to {@code type}, then remove it
+     * If any exception in {@code thrownExceptions} is assignable to {@code type}, then removes it
      * from the list.
      *
      * @param type an exception type

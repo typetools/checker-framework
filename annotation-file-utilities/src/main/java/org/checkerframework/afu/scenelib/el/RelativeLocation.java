@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * A {@link RelativeLocation} holds location information for a instanceof, cast, or new: either the
+ * A {@link RelativeLocation} holds location information for an instanceof, cast, or new: either the
  * bytecode offset or the source code index. I call instanceof, cast, or new "the construct".
  */
 public final class RelativeLocation implements Comparable<RelativeLocation> {
@@ -60,7 +60,7 @@ public final class RelativeLocation implements Comparable<RelativeLocation> {
   }
 
   /**
-   * Returns true if this {@link RelativeLocation} equals {@code o}; a slightly faster variant of
+   * Returns true if this {@link RelativeLocation} equals {@code l}; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * RelativeLocation}.
    */

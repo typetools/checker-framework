@@ -84,9 +84,9 @@ public class OptionalImplTransfer extends CFTransfer {
   private final List<ExecutableElement> nonEmptyToPresentStreamMethods;
 
   /**
-   * Create an OptionalImplTransfer.
+   * Creates an OptionalImplTransfer.
    *
-   * @param analysis the OptionalImpl Checker instance
+   * @param analysis the analysis for this transfer function
    */
   public OptionalImplTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
@@ -254,7 +254,7 @@ public class OptionalImplTransfer extends CFTransfer {
   /**
    * Returns the {@link VariableTree} for a receiver element if it is declared in a method body
    * (i.e., it is either a local variable, resource variable, or a formal parameter), otherwise
-   * return null.
+   * returns null.
    *
    * @param receiverElement the receiver element
    * @return the {@link VariableTree} if the receiver is declared in a method body

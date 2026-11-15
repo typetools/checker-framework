@@ -61,6 +61,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ final AnnotationMirror HAS_PARENT =
       AnnotationBuilder.fromClass(elements, HasParent.class);
 
+  /** The @{@link PathShapeBottom} annotation. */
+  /*package-private*/ final AnnotationMirror PATH_SHAPE_BOTTOM =
+      AnnotationBuilder.fromClass(elements, PathShapeBottom.class);
+
   /** The {@code java.nio.file.Path} interface. */
   /*package-private*/ final TypeElement pathElement =
       ElementUtils.getTypeElement(processingEnv, Path.class);
@@ -159,6 +163,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       case UNKNOWN -> UNKNOWN_PATH_SHAPE;
       case HAS_NAME -> HAS_NAME;
       case HAS_PARENT -> HAS_PARENT;
+      case BOTTOM -> PATH_SHAPE_BOTTOM;
     };
   }
 
@@ -211,7 +216,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ PathShape getPathShapeOfPathOrString(ExpressionTree tree) {
     if (TypesUtils.isString(TreeUtils.typeOf(tree))) {
       String constant = TreeUtils.stringConstantValue(tree);
-      return constant == null ? PathShape.UNKNOWN : PathStringClassifier.classifyPath(constant);
+      return constant == null ? PathShape.UNKNOWN : PathStringToPathShape.forPath(constant);
     }
     return getPathShape(tree);
   }

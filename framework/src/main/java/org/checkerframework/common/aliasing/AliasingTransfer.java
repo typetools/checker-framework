@@ -28,8 +28,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Type refinement is treated in the usual way, except that at (pseudo-)assignments the RHS may lose
- * its type refinement, before the LHS is type-refined.
+ * Type refinement is treated in the usual way, except that at (pseudo-)assignments the RHS might
+ * lose its type refinement, before the LHS is type-refined.
  *
  * <p>The RHS always loses its type refinement (it is widened to {@literal @}MaybeAliased, and its
  * declared type must have been {@literal @}MaybeAliased) except in the following cases:
@@ -48,7 +48,7 @@ public class AliasingTransfer extends CFTransfer {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Create a new AliasingTransfer.
+   * Creates a new AliasingTransfer.
    *
    * @param analysis the CFAbstractAnalysis
    */
@@ -79,12 +79,12 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Handling pseudo-assignments. Called by {@code CFAbstractTransfer.visitMethodInvocation()}.
+   * Handles pseudo-assignments. Called by {@code CFAbstractTransfer.visitMethodInvocation()}.
    *
    * <p>Case 2: Given a method call, traverses all formal parameters of the method declaration, and
-   * if it doesn't have the {@literal @}NonLeaked or {@literal @}LeakedToResult annotations, we
-   * remove the node of the respective argument in the method call from the store. If parameter has
-   * {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
+   * if a parameter doesn't have the {@literal @}NonLeaked or {@literal @}LeakedToResult
+   * annotations, removes the node of the respective argument in the method call from the store. If
+   * a parameter has {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
    */
   @Override
   protected void processPostconditions(
@@ -134,8 +134,8 @@ public class AliasingTransfer extends CFTransfer {
 
   /**
    * Case 3: Given a method invocation expression, if the parent of the expression is not a
-   * statement, check if there are any arguments of the method call annotated as
-   * {@literal @}LeakedToResult and remove it from the store, since it might be leaked.
+   * statement, checks whether any arguments of the method call are annotated as
+   * {@literal @}LeakedToResult and removes them from the store, since they might be leaked.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(

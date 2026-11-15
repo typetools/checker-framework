@@ -13,20 +13,36 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class DetachedVarSymbol extends Symbol.VarSymbol {
 
+  /** The declaration tree for this variable, or null if it has not been set. */
   protected @Nullable VariableTree decl;
 
-  /** Construct a detached variable symbol, given its flags, name, type and owner. */
+  /**
+   * Constructs a detached variable symbol, given its flags, name, type, and owner.
+   *
+   * @param flags the modifier flags of the variable
+   * @param name the name of the variable
+   * @param type the type of the variable
+   * @param owner the symbol that owns the variable, such as a method
+   */
   public DetachedVarSymbol(long flags, Name name, Type type, Symbol owner) {
     super(flags, name, type, owner);
     this.decl = null;
   }
 
-  /** Set the declaration tree for the variable. */
+  /**
+   * Sets the declaration tree for the variable.
+   *
+   * @param decl the declaration tree for the variable
+   */
   public void setDeclaration(VariableTree decl) {
     this.decl = decl;
   }
 
-  /** Get the declaration tree for the variable. */
+  /**
+   * Returns the declaration tree for the variable.
+   *
+   * @return the declaration tree for the variable, or null if it has not been set
+   */
   public @Nullable VariableTree getDeclaration() {
     return decl;
   }

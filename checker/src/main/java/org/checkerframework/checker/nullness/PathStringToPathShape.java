@@ -1,13 +1,11 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Converts path strings to {@link PathShape}s. Given a string, it returns the path shape of the
- * {@link java.nio.file.Path} or {@link java.io.File} that is constructed from the string: whether
- * that path has a name and whether it has a parent. That conversion is this class's only purpose;
- * operations on path shapes are in {@link PathShape}.
+ * corresponding {@link java.nio.file.Path} or {@link java.io.File}. That conversion is this class's
+ * only purpose; operations on path shapes are in {@link PathShape}.
  *
  * <p>Each result is correct under both Unix and Windows rules, because it is the weaker of the Unix
  * result and the Windows result.
@@ -19,10 +17,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
-public final class PathStringClassifier {
+public final class PathStringToPathShape {
 
   /** Do not instantiate. */
-  private PathStringClassifier() {
+  private PathStringToPathShape() {
     throw new Error("Do not instantiate");
   }
 
@@ -30,10 +28,10 @@ public final class PathStringClassifier {
    * Returns the path shape of {@code Path.of(s)}.
    *
    * @param s a path string
-   * @return the path shape of {@code Path.of(s)} under both Unix and Windows rules
+   * @return the path shape of {@code Path.of(s)}
    */
-  public static PathShape classifyPath(String s) {
-    return lub(unixPath(s), windowsPath(s));
+  public static PathShape forPath(String s) {
+    return unixPath(s).lub(windowsPath(s));
   }
 
   /**
@@ -41,42 +39,26 @@ public final class PathStringClassifier {
    *
    * @param strings a non-empty list of the arguments to {@code Path.of}: {@code first}, followed by
    *     the elements of {@code more}
-   * @return the path shape of {@code Path.of(first, more...)} under both Unix and Windows rules
+   * @return the path shape of {@code Path.of(first, more...)}
    * @throws IllegalArgumentException if {@code strings} is empty
    */
-  public static PathShape classifyPath(List<String> strings) {
+  public static PathShape forPath(List<String> strings) {
     if (strings.isEmpty()) {
-      throw new IllegalArgumentException("classifyPath: empty list of arguments to Path.of");
+      throw new IllegalArgumentException("forPath: empty list of arguments to Path.of");
     }
     // Each platform joins the strings with its own separator.  The Windows result can depend on
     // the separator; for example, Windows recognizes the prefix "\\?\" only with backslashes.
-    return lub(unixPath(join(strings, '/')), windowsPath(join(strings, '\\')));
+    return unixPath(join(strings, '/')).lub(windowsPath(join(strings, '\\')));
   }
 
   /**
    * Returns the path shape of {@code new File(s)}.
    *
    * @param s a path string
-   * @return the path shape of {@code new File(s)} under both Unix and Windows rules
+   * @return the path shape of {@code new File(s)}
    */
-  public static PathShape classifyFile(String s) {
-    return lub(unixFile(s), windowsFile(s));
-  }
-
-  /**
-   * Returns the least upper bound (the weaker) of the given per-platform path shapes. A null
-   * argument means that the string is not a valid path on that platform, so {@code Path.of} throws
-   * {@code InvalidPathException} on that platform, which therefore imposes no constraint.
-   *
-   * @param unix a Unix path shape, or null if the string is invalid on Unix
-   * @param windows a Windows path shape, or null if the string is invalid on Windows
-   * @return the least upper bound of the two path shapes
-   */
-  private static PathShape lub(@Nullable PathShape unix, @Nullable PathShape windows) {
-    if (unix == null) {
-      return windows == null ? PathShape.UNKNOWN : windows;
-    }
-    return windows == null ? unix : unix.lub(windows);
+  public static PathShape forFile(String s) {
+    return unixFile(s).lub(windowsFile(s));
   }
 
   /**
@@ -120,13 +102,13 @@ public final class PathStringClassifier {
    * Returns the path shape of {@code Path.of(s)} on Unix.
    *
    * @param s a path string
-   * @return the path shape of {@code Path.of(s)} on Unix, or null if {@code s} is not a valid Unix
-   *     path
+   * @return the path shape of {@code Path.of(s)} on Unix, or {@code BOTTOM} if {@code s} is not a
+   *     valid Unix path (because {@code Path.of(s)} throws {@code InvalidPathException} on Unix)
    */
-  /*package-private*/ static @Nullable PathShape unixPath(String s) {
+  /*package-private*/ static PathShape unixPath(String s) {
     // UnixPath.normalizeAndCheck forbids the NUL character.
     if (s.indexOf('\u0000') != -1) {
-      return null;
+      return PathShape.BOTTOM;
     }
     return unixFile(s);
   }
@@ -161,28 +143,43 @@ public final class PathStringClassifier {
   private static final String LONG_PATH_PREFIX = "\\\\?\\";
 
   /**
+   * Returns the given path string without its Windows long-path prefix, as {@code
+   * WindowsPathParser.parse} and {@code WinNTFileSystem.stripLongOrUNCPrefix} (JDK 22 and later)
+   * do. A prefix {@code \\?\UNC\} becomes {@code \\}, a prefix {@code \\?\} is removed, and {@code
+   * \\?\UNC} becomes {@code \\} (where {@code WindowsPathParser.parse} makes it {@code UNC}). Any
+   * other string is returned unchanged.
+   *
+   * @param path a path string
+   * @return {@code path} without its long-path prefix
+   */
+  /*package-private*/ static String stripLongPathPrefix(String path) {
+    if (!path.startsWith(LONG_PATH_PREFIX)) {
+      return path;
+    }
+    if (path.startsWith("UNC\\", 4)) {
+      return "\\\\" + path.substring(8);
+    }
+    String rest = path.substring(4);
+    // If only "UNC" remains, then a trailing backslash was likely removed.
+    return rest.equals("UNC") ? "\\\\" : rest;
+  }
+
+  /**
    * Returns the path shape of {@code Path.of(s)} on Windows. This follows {@code
    * WindowsPathParser.parse}.
    *
    * @param s a path string
-   * @return the path shape of {@code Path.of(s)} on Windows, or null if {@code s} is not a valid
-   *     Windows path
+   * @return the path shape of {@code Path.of(s)} on Windows, or {@code BOTTOM} if {@code s} is not
+   *     a valid Windows path (because {@code Path.of(s)} throws {@code InvalidPathException} on
+   *     Windows)
    */
-  /*package-private*/ static @Nullable PathShape windowsPath(String s) {
-    String input = s;
-
-    // A long-path prefix:  "\\?\" or "\\?\UNC\".
-    boolean expectUnc = false;
-    boolean expectAbsolute = false;
-    if (input.startsWith(LONG_PATH_PREFIX)) {
-      if (input.startsWith("UNC\\", 4)) {
-        expectUnc = true;
-        input = "\\\\" + input.substring(8);
-      } else {
-        expectAbsolute = true;
-        input = input.substring(4);
-      }
-    }
+  /*package-private*/ static PathShape windowsPath(String s) {
+    // A long-path prefix "\\?\UNC\" requires a UNC path, and "\\?\" requires an absolute path.
+    // For "\\?\UNC", stripLongPathPrefix returns "\\", not "UNC" as WindowsPathParser does, but
+    // both are invalid:  "\\" lacks a UNC host name, and "UNC" is not absolute.
+    boolean expectUnc = s.startsWith(LONG_PATH_PREFIX + "UNC\\");
+    boolean expectAbsolute = !expectUnc && s.startsWith(LONG_PATH_PREFIX);
+    String input = stripLongPathPrefix(s);
 
     boolean hasRoot;
     boolean isUnc = false;
@@ -196,13 +193,13 @@ public final class PathStringClassifier {
       int next = nextSlash(input, off, len);
       if (off == next || hasInvalidWindowsPathChar(input, off, next)) {
         // The UNC path is missing the host name, or the host name is invalid.
-        return null;
+        return PathShape.BOTTOM;
       }
       off = nextNonSlash(input, next, len);
       next = nextSlash(input, off, len);
       if (off == next || hasInvalidWindowsPathChar(input, off, next)) {
         // The UNC path is missing the share name, or the share name is invalid.
-        return null;
+        return PathShape.BOTTOM;
       }
       off = next;
       hasRoot = true;
@@ -222,7 +219,7 @@ public final class PathStringClassifier {
     }
 
     if ((expectUnc && !isUnc) || (expectAbsolute && !isAbsolute)) {
-      return null;
+      return PathShape.BOTTOM;
     }
 
     // Count the names in the remainder, as WindowsPathParser.normalize does.
@@ -231,11 +228,11 @@ public final class PathStringClassifier {
     while (off < len) {
       int next = nextSlash(input, off, len);
       if (hasInvalidWindowsPathChar(input, off, next)) {
-        return null;
+        return PathShape.BOTTOM;
       }
       if (input.charAt(next - 1) == ' ') {
         // A name must not end with a space.
-        return null;
+        return PathShape.BOTTOM;
       }
       nameCount++;
       off = nextNonSlash(input, next, len);
@@ -330,7 +327,11 @@ public final class PathStringClassifier {
    * @return the path shape of {@code new File(s)} on Windows
    */
   /*package-private*/ static PathShape windowsFile(String s) {
-    return windowsFileBeforeJdk22(s).lub(windowsFileBeforeJdk22(stripLongPathPrefix(s)));
+    PathShape beforeJdk22 = windowsFileBeforeJdk22(s);
+    if (!s.startsWith(LONG_PATH_PREFIX)) {
+      return beforeJdk22;
+    }
+    return beforeJdk22.lub(windowsFileBeforeJdk22(stripLongPathPrefix(s)));
   }
 
   /**
@@ -350,27 +351,6 @@ public final class PathStringClassifier {
     } else {
       return PathShape.of(index + 1 < path.length(), true);
     }
-  }
-
-  /**
-   * Returns the given path string without its Windows long-path prefix, as {@code
-   * WinNTFileSystem.stripLongOrUNCPrefix} (JDK 22 and later) does. A prefix {@code \\?\UNC\}
-   * becomes {@code \\}, a prefix {@code \\?\} is removed, and {@code \\?\UNC} becomes {@code \\}.
-   * Any other string is returned unchanged.
-   *
-   * @param path a path string
-   * @return {@code path} without its long-path prefix
-   */
-  /*package-private*/ static String stripLongPathPrefix(String path) {
-    if (!path.startsWith(LONG_PATH_PREFIX)) {
-      return path;
-    }
-    if (path.startsWith("UNC\\", 4)) {
-      return "\\\\" + path.substring(8);
-    }
-    String rest = path.substring(4);
-    // If only "UNC" remains, then a trailing backslash was likely removed.
-    return rest.equals("UNC") ? "\\\\" : rest;
   }
 
   /**
