@@ -79,7 +79,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -1958,7 +1957,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     } else {
       ExecutableElement argFunction =
-          functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+          PurityChecker.functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
       if (argFunction == null) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
@@ -2166,59 +2165,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return functionalType == null
         || PurityChecker.isSameOrOverrides(
             TypesUtils.findFunction(functionalType, env), paramFunction, env);
-  }
-
-  /**
-   * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
-   * or null if it has none.
-   *
-   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
-   * argument can also be of a class type, including an anonymous class, that implements the
-   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
-   * functional subinterface can implement {@code paramFunction} with a default method and declare
-   * an unrelated abstract method as its own functional method; the default method is what runs.
-   *
-   * @param type the type of an argument
-   * @param paramFunction the functional method of the parameter's type
-   * @param env the processing environment
-   * @return the method of {@code type} that implements {@code paramFunction}, or null
-   */
-  private @Nullable ExecutableElement functionalMethodOf(
-      TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
-    Elements elements = env.getElementUtils();
-    TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
-    if (functionalType != null) {
-      ExecutableElement function = TypesUtils.findFunction(functionalType, env);
-      if (PurityChecker.isSameOrOverrides(function, paramFunction, env)) {
-        return function;
-      }
-    }
-    if (type.getKind() == TypeKind.TYPEVAR) {
-      type = TypesUtils.upperBound(type);
-    }
-    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
-      // Only a class or interface type declares methods.  The null type, which is the type of
-      // the null literal, has an element whose members cannot be queried.
-      return null;
-    }
-    TypeElement typeElement = TypesUtils.getTypeElement(type);
-    if (typeElement == null) {
-      return null;
-    }
-    // The members of a class that inherits its implementation from a superclass include both
-    // that implementation and the interface's abstract method.  The implementation is what runs.
-    ExecutableElement abstractMatch = null;
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-      if (method.equals(paramFunction) || elements.overrides(method, paramFunction, typeElement)) {
-        if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
-          return method;
-        }
-        if (abstractMatch == null) {
-          abstractMatch = method;
-        }
-      }
-    }
-    return abstractMatch;
   }
 
   /**

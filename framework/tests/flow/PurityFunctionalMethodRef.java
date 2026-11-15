@@ -142,4 +142,50 @@ public class PurityFunctionalMethodRef {
     // Function.apply runs.
     SubApplier a = PurityFunctionalMethodRef::applyStatic;
   }
+
+  /**
+   * Implements {@code Function.apply} with a side-effect-free default method, and declares an
+   * unrelated functional method.
+   */
+  @FunctionalInterface
+  interface PureDefaultFunction extends Function<String, Integer> {
+    @Override
+    @SideEffectFree
+    default Integer apply(String s) {
+      return 0;
+    }
+
+    int other();
+  }
+
+  /** Implements {@code Function.apply} with a default method that has no purity annotation. */
+  @FunctionalInterface
+  interface ImpureDefaultFunction extends Function<String, Integer> {
+    @Override
+    default Integer apply(String s) {
+      return 0;
+    }
+
+    int other();
+  }
+
+  @FunctionalInterface
+  interface PureDefaultApplier {
+    @SideEffectFree
+    int apply(PureDefaultFunction f, String s);
+  }
+
+  @FunctionalInterface
+  interface ImpureDefaultApplier {
+    @SideEffectFree
+    int apply(ImpureDefaultFunction f, String s);
+  }
+
+  void defaultImplementationOfCallback() {
+    // applyStatic calls Function.apply, which a PureDefaultFunction implements with a
+    // side-effect-free method; a call through PureDefaultApplier checks only `other`.
+    PureDefaultApplier a = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    ImpureDefaultApplier b = PurityFunctionalMethodRef::applyStatic;
+  }
 }
