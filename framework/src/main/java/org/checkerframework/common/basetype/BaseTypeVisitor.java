@@ -1991,6 +1991,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * {@code parameterFunction} and its overrides, such as {@code hashCode}. An override of {@code
    * method} can rely on the purity that {@code method} promises of its arguments.
    *
+   * <p>The body might not have been attributed yet. In an unattributed body, every identifier
+   * that has the name of {@code parameter} is treated as a use that might rely on the purity.
+   *
    * @param method a method or constructor
    * @param parameter a functional-interface parameter of {@code method}
    * @param parameterFunction the functional method of {@code parameter}'s type
@@ -2079,9 +2082,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           && parameter.equals(TreeUtils.elementFromTree(identifier));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The body might not have been attributed yet, as when it is in a top-level class that javac
+     * has not yet processed. An identifier that has no element is treated as a use of {@link
+     * #parameter} if it has the same name. Such a use can rely on the purity of the argument, even
+     * if it is in a context that {@link #isParameter} would otherwise exempt.
+     */
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-      if (parameter.equals(TreeUtils.elementFromTree(tree))) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt == null
+          ? tree.getName().contentEquals(parameter.getSimpleName())
+          : parameter.equals(elt)) {
         found = true;
       }
       return null;
