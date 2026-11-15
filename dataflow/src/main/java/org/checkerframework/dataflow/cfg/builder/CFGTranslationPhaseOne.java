@@ -66,7 +66,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3426,17 +3425,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param node an invocation
    */
   private void extendWithMethodInvocationNode(MethodInvocationNode node) {
-    ExecutableElement method = node.getTarget().getMethod();
-    List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
+    extendWithInvocationNode(node, node.getTarget().getMethod());
+  }
+
+  /**
+   * Extends the CFG with the given node, which invokes the given method or constructor, accounting
+   * for potential exceptions thrown by the invocation. If {@code executable} is annotated {@link
+   * TerminatesExecution}, the invocation terminates execution.
+   *
+   * @param node a method invocation or object creation
+   * @param executable the method or constructor that {@code node} invokes
+   */
+  private void extendWithInvocationNode(Node node, ExecutableElement executable) {
+    List<? extends TypeMirror> thrownTypes = executable.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
 
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
-    if (annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
+    if (annotationProvider.getDeclAnnotation(executable, TerminatesExecution.class) != null) {
       extendedNode.setTerminatesExecution(true);
     }
   }
@@ -3481,15 +3491,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Node node =
         new ObjectCreationNode(tree, enclosingExprNode, constructorNode, arguments, classbody);
-    List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
-    Set<TypeMirror> thrownSet =
-        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
-    // Add exceptions explicitly mentioned in the throws clause.
-    thrownSet.addAll(thrownTypes);
-    // Add types to account for unchecked exceptions
-    thrownSet.addAll(uncheckedExceptionTypes);
-
-    extendWithNodeWithExceptions(node, thrownSet);
+    extendWithInvocationNode(node, constructor);
 
     return node;
   }
