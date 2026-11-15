@@ -166,6 +166,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       if (nodeList.isEmpty()) {
         return result;
       }
+      if (rhsMayRelocateTarget(node)) {
+        // After the assignment, the target denotes a different array than the one that was
+        // assigned, so a bound that names the target would be wrong.
+        return result;
+      }
       Node dim = acNode.getDimension(0);
 
       UBQualifier previousQualifier = getUBQualifier(dim, in);

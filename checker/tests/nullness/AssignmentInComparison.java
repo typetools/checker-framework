@@ -543,6 +543,27 @@ public class AssignmentInComparison {
     d.current.text.length();
   }
 
+  // This method is not side-effect-free, so a call to it might reassign `d.current`.
+  static String reassignCurrent(Document d) {
+    d.current = new Document(d);
+    return "";
+  }
+
+  static void plusAssignCallRelocatesTarget(Document d) {
+    d.current.text += reassignCurrent(d);
+    // :: error: [dereference.of.nullable]
+    d.current.text.length();
+  }
+
+  static void plusAssignCallRelocatesTargetInComparison(Document d) {
+    // :: warning: [nulltest.redundant]
+    if ((d.current.text += reassignCurrent(d)) != null) {
+      // After the assignment, `d.current.text` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      d.current.text.length();
+    }
+  }
+
   // A string conversion of a `String` does not call `toString()`.
   static void plusAssignStringNoConversion(Document d, String value) {
     d.current.text += value;

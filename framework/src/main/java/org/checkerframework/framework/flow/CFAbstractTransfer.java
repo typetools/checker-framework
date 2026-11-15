@@ -988,12 +988,15 @@ public abstract class CFAbstractTransfer<
    * {@code b}, and {@code c}. Otherwise, the only candidate is {@code node} itself.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
-   * CFAbstractStore#canInsertJavaExpression}) and that, when the comparison completes, might have a
-   * different value than {@code node} had when it was evaluated. A candidate's value can change
-   * when code that is evaluated after the candidate writes a variable, field, or array element that
-   * the candidate reads. That code is the rest of the assignment, and the code in the enclosing
-   * expressions that is evaluated after {@code node} and before the comparison completes, such as
-   * the right operand of the comparison if {@code node} is in its left operand. For example:
+   * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
+   * when the comparison completes, might have a different value than {@code node} had when it was
+   * evaluated. (A client such as the SameLen Checker can relate an operation such as {@code "x" +
+   * i} to other expressions, even though no store holds a value for it.) A candidate's value can
+   * change when code that is evaluated after the candidate writes a variable, field, or array
+   * element that the candidate reads. That code is the rest of the assignment, and the code in the
+   * enclosing expressions that is evaluated after {@code node} and before the comparison completes,
+   * such as the right operand of the comparison if {@code node} is in its left operand. For
+   * example:
    *
    * <ul>
    *   <li>The result for {@code n = n.next} is just {@code n}, because after the assignment {@code
@@ -1017,6 +1020,10 @@ public abstract class CFAbstractTransfer<
    * <p>A node that is not an assignment is a candidate even if it contains an assignment, as in
    * {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
    * contains {@link Unknown}, which no store holds a value for.
+   *
+   * <p>The result omits a {@link NarrowingConversionNode}, as in the rhs of {@code b += i} for a
+   * {@code byte b}. {@link JavaExpression#fromNode} converts such a node to the expression for its
+   * operand, whose value might differ from the narrowed value, even in sign.
    *
    * <p>Clients must not modify the result, which is cached.
    *
@@ -1063,8 +1070,14 @@ public abstract class CFAbstractTransfer<
     WrittenLocations locationsWrittenUntilComparison = null;
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
+      if (candidate instanceof NarrowingConversionNode) {
+        // `fromNode` converts the node to the expression for its operand, whose value might differ.
+        continue;
+      }
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (CFAbstractStore.canInsertJavaExpression(expr)) {
+      if (CFAbstractStore.canInsertJavaExpression(expr)
+          || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+              && !expr.containsUnknown())) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1110,7 +1123,15 @@ public abstract class CFAbstractTransfer<
     for (AssignmentNode a : chain) {
       written.add(JavaExpression.fromNode(a.getTarget()));
     }
-    ExpressionTree rhsTree = rhsTree(chain.get(chain.size() - 1));
+    AssignmentNode last = chain.get(chain.size() - 1);
+    // The string conversions of a `+=` string concatenation, which happen after `rhs` and the
+    // receivers and indices of the targets are evaluated, might write locations.
+    if (last.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
+        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+      written.addStringConversions(
+          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+    }
+    ExpressionTree rhsTree = rhsTree(last);
     if (rhsTree != null) {
       written.scan(rhsTree, null);
     }
