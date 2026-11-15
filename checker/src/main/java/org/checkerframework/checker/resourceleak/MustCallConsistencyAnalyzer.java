@@ -1500,6 +1500,7 @@ public class MustCallConsistencyAnalyzer {
           return;
         }
         VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+        incrementNumMustCallFailed(lhsElement.asType());
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -1645,6 +1646,7 @@ public class MustCallConsistencyAnalyzer {
     if (!calledMethodsSatisfyMustCall(mcValues, cmAnno)) {
       VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
       if (!checker.shouldSkipUses(lhsElement)) {
+        incrementNumMustCallFailed(lhsElement.asType());
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -2421,6 +2423,7 @@ public class MustCallConsistencyAnalyzer {
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
           reportedErrorAliases.add(firstAlias);
+          incrementNumMustCallFailed(firstAlias.reference.getType());
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
@@ -2465,13 +2468,35 @@ public class MustCallConsistencyAnalyzer {
    * @param type the type of the object that has a must-call obligation
    */
   private void incrementMustCallImpl(TypeMirror type) {
-    // Only count uses of JDK classes, since that's what the paper reported.  The erasure of a
-    // type variable is the erasure of its upper bound.
-    TypeElement typeElement = TypesUtils.getTypeElement(checker.getTypeUtils().erasure(type));
-    if (typeElement == null || !isJdkClass(typeElement.getQualifiedName().toString())) {
-      return;
+    if (isCountedType(type)) {
+      checker.numMustCall++;
     }
-    checker.numMustCall++;
+  }
+
+  /**
+   * Increments the -AcountMustCall counter of failures. Call this when issuing a {@code
+   * required.method.not.called} error. Uses the same classification as {@link
+   * #incrementMustCallImpl}, so that the two counters are consistent.
+   *
+   * @param type the type of the object whose must-call obligation is not satisfied
+   */
+  private void incrementNumMustCallFailed(TypeMirror type) {
+    if (countMustCall && isCountedType(type)) {
+      checker.numMustCallFailed++;
+    }
+  }
+
+  /**
+   * Returns true if an object of the given type should be counted by -AcountMustCall. Only uses of
+   * JDK classes are counted, since that's what the paper reported.
+   *
+   * @param type the type of an object that has a must-call obligation
+   * @return true if an object of the given type should be counted by -AcountMustCall
+   */
+  private boolean isCountedType(TypeMirror type) {
+    // The erasure of a type variable is the erasure of its upper bound.
+    TypeElement typeElement = TypesUtils.getTypeElement(checker.getTypeUtils().erasure(type));
+    return typeElement != null && isJdkClass(typeElement.getQualifiedName().toString());
   }
 
   /**
