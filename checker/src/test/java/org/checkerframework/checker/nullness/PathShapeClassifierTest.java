@@ -167,7 +167,8 @@ public class PathShapeClassifierTest {
         HAS_NAME,
         HAS_NAME);
     // The long-path prefix requires an absolute path.  As a Windows File, the path is "foo" (no
-    // parent) on a JDK that removes the long-path prefix, and has parent "\\?" on one that does not.
+    // parent) on a JDK that removes the long-path prefix, and has parent "\\?" on one that does
+    // not.
     check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
     Assert.assertEquals(HAS_PARENT, PathShapeClassifier.windowsFileRetainingPrefix("\\\\?\\foo"));
     Assert.assertEquals(HAS_NAME, PathShapeClassifier.windowsFileStrippingPrefix("\\\\?\\foo"));
