@@ -988,12 +988,15 @@ public abstract class CFAbstractTransfer<
    * {@code b}, and {@code c}. Otherwise, the only candidate is {@code node} itself.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
-   * CFAbstractStore#canInsertJavaExpression}) and that, when the comparison completes, might have a
-   * different value than {@code node} had when it was evaluated. A candidate's value can change
-   * when code that is evaluated after the candidate writes a variable, field, or array element that
-   * the candidate reads. That code is the rest of the assignment, and the code in the enclosing
-   * expressions that is evaluated after {@code node} and before the comparison completes, such as
-   * the right operand of the comparison if {@code node} is in its left operand. For example:
+   * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
+   * when the comparison completes, might have a different value than {@code node} had when it was
+   * evaluated. (A client such as the SameLen Checker can relate an operation such as {@code "x" +
+   * i} to other expressions, even though no store holds a value for it.) A candidate's value can
+   * change when code that is evaluated after the candidate writes a variable, field, or array
+   * element that the candidate reads. That code is the rest of the assignment, and the code in the
+   * enclosing expressions that is evaluated after {@code node} and before the comparison completes,
+   * such as the right operand of the comparison if {@code node} is in its left operand. For
+   * example:
    *
    * <ul>
    *   <li>The result for {@code n = n.next} is just {@code n}, because after the assignment {@code
@@ -1064,7 +1067,9 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (CFAbstractStore.canInsertJavaExpression(expr)) {
+      if (CFAbstractStore.canInsertJavaExpression(expr)
+          || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+              && !expr.containsUnknown())) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
