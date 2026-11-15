@@ -1,4 +1,3 @@
-import java.util.List;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 
@@ -7,13 +6,6 @@ public class EnhancedForCharacter {
 
   void array(Character[] array) {
     for (long x : array) {
-      @SignedPositive long y = x;
-      @Signed long z = x;
-    }
-  }
-
-  void iterable(List<Character> list) {
-    for (long x : list) {
       @SignedPositive long y = x;
       @Signed long z = x;
     }

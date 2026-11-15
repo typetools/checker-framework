@@ -892,15 +892,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the type of the input node is a boxed type, or a type variable or wildcard whose upper bound
-   * is a boxed type, unboxes it; otherwise, leaves it alone.
+   * If the input node is a boxed type, unboxes it; otherwise, leaves it alone.
    *
    * @param node an input node
    * @return a Node representing the unboxed version of the input, which might simply be the input
    *     node
    */
   protected Node unbox(Node node) {
-    if (TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(node.getType()))) {
+    if (TypesUtils.isBoxedPrimitive(node.getType())) {
 
       MemberSelectTree primValueSelect = treeBuilder.buildPrimValueMethodAccess(node.getTree());
       handleArtificialTree(primValueSelect);
@@ -1178,8 +1177,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
-    // A type variable whose upper bound is a boxed type, such as `T extends Integer`, is unboxed.
-    boolean isRightBoxed = TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(nodeType));
+    boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
     boolean isRightReference = nodeType instanceof ReferenceType;
     boolean isLeftNumeric = TypesUtils.isNumeric(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
