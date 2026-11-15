@@ -19,10 +19,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>{@code @HasParent} is a subtype of {@link HasName}.
  *
- * <p>The property depends only on the characters of the path, not on the file system. Therefore,
- * once a path is known to be {@code @HasParent}, it remains {@code @HasParent}.
- *
- * @checker_framework.manual #path-shape-checker Path Shape Checker
+ * <p>Whether a path has a parent depends only on the path's characters. It does not depend on the
+ * file system; for example, it does not depend on whether the file or its parent directory exists.
+ * Therefore, no operation, such as creating or deleting a file, can make a {@code @HasParent} path
+ * lose its parent.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
