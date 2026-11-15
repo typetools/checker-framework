@@ -3507,8 +3507,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Extends the CFG with the given MethodInvocationNode, accounting for potential exceptions thrown
-   * by the invocation. If the method is annotated {@link TerminatesExecution}, the invocation
-   * terminates execution.
+   * by the invocation. If the invoked method (the method of {@code node}'s target) is annotated
+   * {@link TerminatesExecution}, the invocation terminates execution.
    *
    * @param node an invocation
    */
