@@ -1854,8 +1854,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       AssignmentNode assignNode =
           translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
-      // If the loop variable is a primitive, the assignment unboxes the result of next().  Save
-      // the iterable expression in the unboxing conversion, too.
+      // If the return type of next() is a boxed primitive type and the loop variable is a
+      // primitive, the assignment unboxes the result of next().  Save the iterable expression in
+      // the unboxing conversion, too.
       setLoopOfBoxingConversion(assignNode.getExpression(), nextCallNode, tree);
 
       assert statement != null;
@@ -2024,9 +2025,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Records the given enhanced for loop, and its iterable expression, in the boxing or unboxing
    * conversion of the loop's element within the expression that is assigned to the loop variable.
-   * Does nothing if that expression contains no such conversion. For example, if {@code list} is a
-   * {@code List<Integer>}, then in {@code for (long x : list)}, the expression that is assigned to
-   * {@code x} widens the unboxing conversion of the result of {@code next()}.
+   * Does nothing if that expression contains no such conversion. For example, if {@code array} is
+   * an {@code Integer[]}, then in {@code for (long x : array)}, the expression that is assigned to
+   * {@code x} widens the unboxing conversion of the array access.
    *
    * @param assignedExpression the expression assigned to the loop's variable
    * @param element the loop's element, before any conversion: a call to {@code next()} or an array
