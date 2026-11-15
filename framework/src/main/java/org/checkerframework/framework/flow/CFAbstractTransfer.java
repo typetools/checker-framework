@@ -1680,10 +1680,15 @@ public abstract class CFAbstractTransfer<
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
    * @param store the regular input store (from {@code in})
-   * @param rhsValue the value of the right-hand side of the assignment
+   * @param rhsValue the value of the right-hand side of the assignment, or null if it is unknown
    */
   protected void processCommonAssignment(
-      TransferInput<V, S> in, AssignmentNode assignment, Node lhs, Node rhs, S store, V rhsValue) {
+      TransferInput<V, S> in,
+      AssignmentNode assignment,
+      Node lhs,
+      Node rhs,
+      S store,
+      @Nullable V rhsValue) {
 
     // update information in the store
     store.updateForAssignment(lhs, rhsValue);

@@ -82,6 +82,17 @@ public class AssignmentInComparison {
   static void otherOperandReassignsOffset(@NonNegative int k, @NonNegative int j) {
     int[] a = new int[110];
     if (k < a.length - (j = (k = 100))) {
+      // :: error: [array.access.unsafe.high.constant]
+      a[j + k] = 0;
+    }
+  }
+
+  // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
+  // the new value of `k`.
+  static void otherOperandReassignsAdditionOffset(@NonNegative int k, @NonNegative int n) {
+    int[] a = new int[110];
+    int j;
+    if (k + (j = n) < (k = a.length)) {
       // :: error: [array.access.unsafe.high]
       a[j + k] = 0;
     }

@@ -257,6 +257,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       NumericalSubtractionNode node,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
+    // The refined type of the left operand mentions the right operand, so it holds after a
+    // comparison only if the right operand still has the value that was compared.
+    if (mayBeChangedByLaterOperand(node.getRightOperand())) {
+      return;
+    }
     UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
     UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
 
@@ -283,8 +288,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       Node other,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    UBQualifier operandQual = getUBQualifier(operand, in);
-    UBQualifier newQual = operandQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
+    UBQualifier newQual = getUBQualifier(operand, in);
+    // The offset mentions `other`, so it holds after a comparison only if `other` still has the
+    // value that was compared.
+    if (!mayBeChangedByLaterOperand(other)) {
+      newQual = newQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
+    }
 
     // If the node is NonNegative, add an LTEL to the qual. If Positive, add an LTL.
     if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {

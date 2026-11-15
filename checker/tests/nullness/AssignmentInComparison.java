@@ -528,14 +528,18 @@ public class AssignmentInComparison {
   }
 
   static class Document {
-    Document current = this;
+    Document current;
     @Nullable String text;
+
+    Document(Document current) {
+      this.current = current;
+    }
   }
 
-  // The string conversion of `value` calls `value.toString()`, which might reassign `d.current`.
-  static void plusAssignStringConversionRelocatesTarget(Document d, Object value) {
+  // The string conversion of `value` calls `value.toString()`, which is side-effect-free, so it
+  // cannot reassign `d.current`.
+  static void plusAssignStringConversionPreservesTarget(Document d, Object value) {
     d.current.text += value;
-    // :: error: [dereference.of.nullable]
     d.current.text.length();
   }
 
