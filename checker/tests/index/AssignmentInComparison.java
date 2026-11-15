@@ -51,6 +51,20 @@ public class AssignmentInComparison {
     }
   }
 
+  static void targetSameLen(AssignmentInComparison n, int[] a, int @SameLen("#2") [] b) {
+    n.arr = b;
+    int @SameLen("a") [] x = n.arr;
+  }
+
+  // The assignment writes the `arr` field of the original `n`, not of `other`.
+  static void receiverReassignedSameLen(
+      AssignmentInComparison n, AssignmentInComparison other, int[] a, int @SameLen("#3") [] b) {
+    n.arr = (n = other) == null ? b : b;
+    // :: error: [assignment]
+    int @SameLen("a") [] x = n.arr;
+    int @SameLen("a") [] y = b;
+  }
+
   void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
     if ((this.arr = b).length == setArr(c).length) {
       // `setArr` sets `this.arr` to `c`, which might not have the same length as `b`.

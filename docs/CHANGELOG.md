@@ -10,7 +10,9 @@
 ### Changes for type system implementers
 
 `CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
-right-hand side of the assignment as written in source code.
+assignment node.  New method `CFAbstractTransfer.rhsMayRelocateTarget()`
+returns true if evaluating an assignment's right-hand side might change the
+location that its target denotes, as in `n.next = (n = o)`.
 
 Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
 result omits each node that might have a different value by the time the

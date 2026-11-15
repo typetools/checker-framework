@@ -391,6 +391,24 @@ public class AssignmentInComparison {
     }
   }
 
+  static class Document {
+    Document current = this;
+    @Nullable String text;
+  }
+
+  // The string conversion of `value` calls `value.toString()`, which might reassign `d.current`.
+  static void plusAssignStringConversionRelocatesTarget(Document d, Object value) {
+    d.current.text += value;
+    // :: error: [dereference.of.nullable]
+    d.current.text.length();
+  }
+
+  // A string conversion of a `String` does not call `toString()`.
+  static void plusAssignStringNoConversion(Document d, String value) {
+    d.current.text += value;
+    d.current.text.length();
+  }
+
   static void annotationArgumentInRhs(
       @Nullable Object o, @Nullable Object p, Map<String, Object> m) {
     // The annotation argument `"m"` is not an assignment to a variable.
