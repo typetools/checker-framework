@@ -1550,8 +1550,8 @@ public abstract class CFAbstractTransfer<
    * only called at an unboxing conversion.
    *
    * @param type the primitive type to unbox to
-   * @param annotatedValue the value to unbox, whose type is a boxed primitive type or a type
-   *     variable or wildcard whose upper bound is one
+   * @param annotatedValue a value to unbox, whose type is a boxed primitive type or a type variable
+   *     or wildcard whose upper bound is one
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
    *     lacks an annotation in some hierarchy
