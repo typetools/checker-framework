@@ -17,8 +17,9 @@ verifies that code is properly internationalized.
 A Compiler Message Key Checker (Section \refwithpage{compilermsgs-checker})
 verifies that compiler message keys used in the Checker Framework are
 declared in a property file.
-This is an example of a simple specialization of the property
-file checker, and the Checker Framework source code shows how it is used.
+The Compiler Message Key Checker is an example of a simple specialization of
+the Property File Checker, and the Checker Framework source code shows how
+it is used.
 
 It is easy to customize the Property Key Checker for other related purposes.
 Take a look at the source code of the Compiler Message Key Checker and adapt it for
@@ -41,7 +42,7 @@ property file or resource bundle, and adds annotations as appropriate.
 
 If you pass a \code{CharSequence} (including \<String>) variable to be
 eventually used as a key, you
-also need to annotate all these variables with \code{@PropertyKey}.
+also need to annotate all such variables with \code{@PropertyKey}.
 
 
 The checker can be invoked by running the following
@@ -125,7 +126,7 @@ The Internationalization Checker verifies these two properties:
 
 \end{enumerate}
 
-If you use the Internationalization Checker, you may want to also use the
+If you use the Internationalization Checker, you might want to also use the
 Internationalization Format String Checker, or I18n Format String Checker
 (Chapter~\ref{i18n-formatter-checker}).
 It verifies that internationalization format strings are well-formed and
@@ -155,7 +156,7 @@ It is a subtype of \refqualclass{checker/i18n/qual}{UnknownLocalizableKey},
 which is the default and which programmers do not need to write.
 \end{description}
 
-You may need to add the \code{@Localized} annotation to more methods in the
+You might need to add the \code{@Localized} annotation to more methods in the
 JDK or other libraries, or in your own code.
 
 
@@ -211,7 +212,7 @@ command:
 
 You must specify the resource, which maps compiler message keys to user-visible
 text.  The checker supports the same options as the general Property Key Checker.
-Within the Checker Framework we only use property files,
+Within the Checker Framework, we only use property files,
 so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
 
 % LocalWords:  NullPointerException genpropkey compilermsgs propkey PropertyKey

@@ -80,17 +80,25 @@ public class I18nFormatterTreeUtil {
         TreeUtils.getMethod(I18nInvalidFormat.class, "value", 0, processingEnv);
   }
 
-  /** Describe the format annotation type. */
+  /** Describes the format annotation type. */
   public enum FormatType {
+    /** An invalid format string, annotated with {@link I18nInvalidFormat}. */
     I18NINVALID,
+    /** A valid format string, annotated with {@link I18nFormat}. */
     I18NFORMAT,
+    /**
+     * A format string that is associated with an argument, annotated with {@link I18nFormatFor}.
+     */
     I18NFORMATFOR
   }
 
   /**
-   * Takes an exception that describes an invalid formatter string and returns a syntax trees
-   * element that represents a {@link I18nInvalidFormat} annotation with the exception's error
-   * message as value.
+   * Takes an exception that describes an invalid formatter string and returns a syntax tree element
+   * that represents an {@link I18nInvalidFormat} annotation with the exception's error message as
+   * its value.
+   *
+   * @param ex an exception that describes an invalid formatter string
+   * @return an {@link I18nInvalidFormat} annotation whose value is the exception's error message
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());
@@ -119,9 +127,9 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Gets the value() element/field out of an I18NFormatFor annotation.
+   * Gets the value() element/field out of an I18nFormatFor annotation.
    *
-   * @param anno an I18NFormatFor annotation
+   * @param anno an I18nFormatFor annotation
    * @return its value() element/field
    */
   /*package-private*/ String getI18nFormatForValue(AnnotationMirror anno) {
@@ -129,8 +137,8 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation, and returns
-   * its value.
+   * Takes a syntax tree element that represents an {@link I18nInvalidFormat} annotation, and
+   * returns its value.
    *
    * @param anno an I18nInvalidFormat annotation
    * @return its value() element/field, within double-quotes
@@ -142,7 +150,7 @@ public class I18nFormatterTreeUtil {
   /**
    * Creates a {@code @}{@link I18nFormat} annotation with the given list as its value.
    *
-   * @param args conversion categories for the {@code @Format} annotation
+   * @param args conversion categories for the {@code @I18nFormat} annotation
    * @return a {@code @}{@link I18nFormat} annotation with the given list as its value
    */
   public AnnotationMirror categoriesToFormatAnnotation(I18nConversionCategory[] args) {
@@ -336,7 +344,7 @@ public class I18nFormatterTreeUtil {
 
     /**
      * This method checks the validity of the FormatFor. If it is valid, this.args will be set to
-     * the correct parameter arguments. Otherwise, it will be still null.
+     * the correct parameter arguments. Otherwise, it will still be null.
      *
      * @param theargs arguments to the format method call
      * @param method the ExecutableElement of the format method

@@ -111,7 +111,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   /**
    * If true, print debugging information when an inference is attempted but cannot be completed. An
    * inference can be attempted without success for example because the current storage system does
-   * not support placing annotation in the location for which an annotation was inferred.
+   * not support placing an annotation in the location for which an annotation was inferred.
    */
   private final boolean showWpiFailedInferences;
 
@@ -289,7 +289,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param methodElt the element of the method or constructor being invoked
    * @param arguments the arguments of the invocation
    * @param receiver the receiver node, if there is one; null if there is not
-   * @param invocationTree the method or constructor invocation, used to viewpoint adapt any
+   * @param invocationTree the method or constructor invocation, used to viewpoint-adapt any
    *     dependent types when storing newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
@@ -1041,8 +1041,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code; side-effected by this method
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file annotation file containing the executable; used for marking the scene as modified
-   *     (needing to be written to disk)
+   * @param file the annotation file containing the executable; used for marking the scene as
+   *     modified (needing to be written to disk)
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */

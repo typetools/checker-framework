@@ -75,7 +75,7 @@ public final class CFGVisualizeOptions {
   }
 
   /**
-   * Parse the command line arguments.
+   * Parses the command line arguments.
    *
    * <p>This method calls System.exit(1) if there are no arguments or if the input file cannot be
    * read.
@@ -214,7 +214,7 @@ public final class CFGVisualizeOptions {
   }
 
   /**
-   * Print usage information.
+   * Prints usage information.
    *
    * <p>Prints usage information to System.out.
    */
@@ -237,7 +237,7 @@ public final class CFGVisualizeOptions {
   }
 
   /**
-   * Print error message.
+   * Prints an error message.
    *
    * <p>Sends the error message to System.err.
    *

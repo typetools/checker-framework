@@ -20,11 +20,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>{@code @HasParent} is a subtype of {@link HasName}.
  *
  * <p>Whether a path has a parent depends only on the path's characters and on the rules by which
- * the platform (and, for a {@code File}, the JDK version) parses them; for example, {@code a\b} has
- * a parent on Windows but not on Unix. It does not depend on the state of the file system; for
- * example, it does not depend on whether the file or its parent directory exists. Therefore, no
- * operation, such as creating or deleting a file, can make a {@code @HasParent} path lose its
- * parent.
+ * the platform and the JDK version parse them; for example, {@code a\b} has a parent on Windows but
+ * not on Unix. It does not depend on the state of the file system; for example, it does not depend
+ * on whether the file or its parent directory exists. Therefore, no operation, such as creating or
+ * deleting a file, can make a {@code @HasParent} path lose its parent.
  *
  * @checker_framework.manual #path-shape-checker Path Shape Checker
  */

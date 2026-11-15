@@ -15,8 +15,8 @@ public interface ForwardAnalysis<
     extends Analysis<V, S, T> {
 
   /**
-   * Returns stores at return statements. These stores are transfer results at return node. Thus for
-   * a forward analysis, these stores contain the analyzed flow information from entry nodes to
+   * Returns stores at return statements. These stores are transfer results at return nodes. Thus,
+   * for a forward analysis, these stores contain the analyzed flow information from entry nodes to
    * return nodes.
    *
    * @return the transfer results for each return node in the CFG

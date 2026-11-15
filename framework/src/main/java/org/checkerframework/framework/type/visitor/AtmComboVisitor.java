@@ -14,7 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors. See AtmCombo, it
+ * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors. See AtmCombo, which
  * enumerates all possible combinations and provides an "accept" method used to call AtmComboVisitor
  * visit methods.
  *
@@ -32,7 +32,7 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
    *
    * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
    * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
-   * @param param subtype specific parameter passed to every visit method
+   * @param param subtype-specific parameter passed to every visit method
    * @return an error message
    */
   default String defaultErrorMessage(
@@ -58,7 +58,7 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
    *
    * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
    * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
-   * @param param subtype specific parameter passed to every visit method
+   * @param param subtype-specific parameter passed to every visit method
    * @return a value of type RETURN_TYPE, if no exception is thrown
    */
   default RETURN_TYPE defaultAction(

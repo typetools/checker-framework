@@ -11,7 +11,7 @@ will raise no error at run time.
 the ``n''.
 
 Here are examples of errors that the
-I18n Format Checker
+I18n Format String Checker
 detects at compile time.
 
 \begin{Verbatim}
@@ -34,7 +34,7 @@ Checker, see Section~\ref{i18n-format-running}.
 
 The Internationalization Checker or I18n Checker (\sectionpageref{i18n-checker})
 has a different purpose.  It verifies that your code is properly
-internationalized: any user-visible text should be obtained from a
+internationalized: any user-visible text is obtained from a
 localization resource and all keys exist in that resource.
 
 The paper ``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA
@@ -94,7 +94,7 @@ Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
 
 \begin{Verbatim}
   static void method(@I18nFormatFor("#2") String format, Object... args) {
-    // the body may use the parameters like this:
+    // the body might use the parameters like this:
     MessageFormat.format(format, args);
   }
 
@@ -105,7 +105,7 @@ Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
 
 \item[\refqualclass{checker/i18nformatter/qual}{I18nInvalidFormat}]
   represents an invalid i18n format string. Programmers are not allowed to
-  write this annotation. It is only used internally by the type checker.
+  write this annotation. It is used only internally by the type-checker.
 
 \item[\refqualclass{checker/i18nformatter/qual}{I18nUnknownFormat}]
   represents any string.  The string might or might not be a valid i18n
@@ -128,7 +128,7 @@ For example, a date argument is not compatible with
 the \<number> format type, i.e., \code{MessageFormat.format("\{0, number\}",
 new Date())} will throw an exception.
 
-The I18n Checker represents the possible arguments via \emph{conversion
+The I18n Format String Checker represents the possible arguments via \emph{conversion
   categories}.  A conversion category defines a set of restrictions or a
 subtyping rule.
 
@@ -220,7 +220,7 @@ and guarantees the following:
 \begin{enumerate}
   \item The checker issues a warning for the following cases:
     \begin{enumerate}
-      \item There are missing arguments from what is required by the format string.
+      \item Fewer arguments are passed than what is required by the format string.
 
       \code{MessageFormat.format("\{0, number\} \{1, number\}", 3.14); // Output: 3.14 \{1\}}
 
@@ -334,7 +334,7 @@ resource bundles.
 For more about checking property files, see \chapterpageref{propkey-checker}.
 
 
-\sectionAndLabel{Running the Internationalization Format Checker}{i18n-format-running}
+\sectionAndLabel{Running the Internationalization Format String Checker}{i18n-format-running}
 
 The checker can be invoked by running one of the following commands (with
 the whole command on one line).
@@ -385,7 +385,7 @@ To use the \refclass{checker/i18nformatter/util}{I18nFormatUtil} class, the \<ch
 must be on the classpath at run time.
 
 
-\sectionAndLabel{Examples of using the Internationalization Format Checker}{i18n-format-examples}
+\sectionAndLabel{Examples of using the Internationalization Format String Checker}{i18n-format-examples}
 
 \begin{itemize}
   \item Using \sunjavadoc{java.base/java/text/MessageFormat.html\#format(java.lang.String,java.lang.Object...)}{MessageFormat.format}.

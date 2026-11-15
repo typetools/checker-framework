@@ -82,7 +82,7 @@ import org.plumelib.util.CollectionsP;
  * enclosing class.
  *
  * <p>Note: This class makes the assumption that the must-call set has only one element. Must-call
- * sets with more than one element may be supported in the future.
+ * sets with more than one element might be supported in the future.
  *
  * <p>See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC} for an explanation of the meaning of the
  * flags {@code -Ainfer} and {@code -AenableWpiForRlc}.
@@ -94,7 +94,7 @@ public class MustCallInference {
    * Keys represent inferred owning fields, and values contain the must-call method names (Note:
    * currently this code assumes that the must-call set only contains one element). When inference
    * finishes, all of the fields in this map will be given an @Owning annotation. Note that this map
-   * is not monotonically-increasing: fields may be added to this map and then removed during
+   * is not monotonically increasing: fields can be added to this map and then removed during
    * inference. For example, if a field's must-call method is called, it is added to this map. If,
    * in a later statement in the same method, the same field is re-assigned, it will be removed from
    * this map (since the field assignment invalidated the previously-inferred disposing of the
@@ -154,9 +154,9 @@ public class MustCallInference {
 
   /**
    * This map is used to track must-alias relationships between the obligations that are
-   * resource-aliased to the return nodes and method parameters. The keys are the obligation of
-   * return nodes, and the values are the index of current method formal parameter (1-based) that is
-   * aliased with the return node. This map will be used to infer the {@link MustCallAlias}
+   * resource-aliased to the return nodes and method parameters. The keys are the obligations of
+   * return nodes, and the values are the index of the current method's formal parameter (1-based)
+   * that is aliased with the return node. This map will be used to infer the {@link MustCallAlias}
    * annotation for method parameters.
    */
   private final Map<Obligation, Integer> returnObligationToParameter = new HashMap<>();
@@ -274,8 +274,8 @@ public class MustCallInference {
    *       NotOwning} annotation to the return type of the current method. Note the implication: if
    *       a method returns a field of this class at <i>any</i> return site, the return type is
    *       inferred to be non-owning.
-   *   <li>Compute the index of the parameter that is an alias of the return node and add it the
-   *       {@link #returnObligationToParameter} map.
+   *   <li>Computes the index of the parameter that is an alias of the return node and adds it to
+   *       the {@link #returnObligationToParameter} map.
    * </ul>
    *
    * @param obligations the current set of tracked Obligations
@@ -381,8 +381,8 @@ public class MustCallInference {
 
   /**
    * This method checks if a field is an owning candidate. A field is an owning candidate if it has
-   * a non-empty must-call obligation, unless it is {code @MustCallUnknown}. For a
-   * {code @MustCallUnknown} field, we don't want to infer anything. So, we conservatively treat it
+   * a non-empty must-call obligation, unless it is {@code @MustCallUnknown}. For a
+   * {@code @MustCallUnknown} field, we don't want to infer anything. So, we conservatively treat it
    * as a non-owning candidate.
    *
    * @param resourceLeakAtf the type factory
@@ -504,12 +504,12 @@ public class MustCallInference {
   }
 
   /**
-   * Returns the (1-based) index of the method parameter that exist in the set of aliases of the
-   * given {@code obligation}, if one exists; otherwise, return -1.
+   * Returns the (1-based) index of the method parameter that exists in the set of aliases of the
+   * given {@code obligation}, if one exists; otherwise, returns -1.
    *
    * @param obligation the obligation
-   * @return the index of the current method parameter that exist in the set of aliases of the given
-   *     obligation, if one exists; otherwise, return -1
+   * @return the index of the current method parameter that exists in the set of aliases of the
+   *     given obligation, if one exists; otherwise, -1
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
@@ -626,9 +626,9 @@ public class MustCallInference {
   }
 
   /**
-   * Infers ownership transfer at the method call to infer @owning annotations for formal parameters
+   * Infers ownership transfer at the method call to infer @Owning annotations for formal parameters
    * of the current method, if the parameter is passed into the call and the corresponding formal
-   * parameter of the callee is @owning.
+   * parameter of the callee is @Owning.
    *
    * @param obligations the current set of tracked Obligations
    * @param invocation the method or constructor invocation

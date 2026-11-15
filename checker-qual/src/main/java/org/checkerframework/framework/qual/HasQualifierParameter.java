@@ -65,7 +65,7 @@ import java.lang.annotation.Target;
  * <p>When {@code @HasQualifierParameter} is written on a package, it is equivalent to writing that
  * annotation on each class in the package or in a sub-package. It can be disabled on a specific
  * class and its subclasses by writing {@code @NoQualifierParameter} on that class. This annotation
- * may not be written on the same class as {@code NoQualifierParameter} for the same hierarchy.
+ * must not be written on the same class as {@code NoQualifierParameter} for the same hierarchy.
  *
  * @see NoQualifierParameter
  */

@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Define the relation between a base unit and the current unit.
+ * Defines the relation between a base unit and the current unit.
  *
  * <p>TODO: add support for factors and more general formulas? E.g. it would be cool if the relation
  * hour &rarr; minute and Fahrenheit &rarr; Celsius could be expressed.

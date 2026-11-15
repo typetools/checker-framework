@@ -36,7 +36,7 @@ public class InstanceOfNode extends Node {
   protected final Types types;
 
   /**
-   * Create an InstanceOfNode.
+   * Creates an InstanceOfNode.
    *
    * @param tree instanceof tree
    * @param operand the expression in the instanceof tree
@@ -48,7 +48,7 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * Create an InstanceOfNode.
+   * Creates an InstanceOfNode.
    *
    * @param tree instanceof tree
    * @param operand the expression in the instanceof tree
@@ -75,7 +75,7 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * A list of all binding variables in this instanceof. This is lazily initialized, use {@link
+   * A list of all binding variables in this instanceof. This is lazily initialized; use {@link
    * #getBindingVariables()}.
    */
   protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
@@ -108,7 +108,7 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * The reference type being tested against.
+   * Returns the reference type being tested against.
    *
    * @return the reference type
    */

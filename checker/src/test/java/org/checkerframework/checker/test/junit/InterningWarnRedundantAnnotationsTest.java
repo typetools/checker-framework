@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class InterningWarnRedundantAnnotationsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a InterningWarnRedundantAnnotationsTest.
+   * Creates an InterningWarnRedundantAnnotationsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

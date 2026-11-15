@@ -17,7 +17,7 @@ public final class ArrayAFT extends AnnotationFieldType {
 
   /**
    * Constructs a new {@link ArrayAFT} representing an array type with the given element type.
-   * {@code elementType} may be {@code null} to indicate that the element type is unknown (see
+   * {@code elementType} can be {@code null} to indicate that the element type is unknown (see
    * {@link AnnotationBuilder#addEmptyArrayField}).
    *
    * @param elementType the element type of the array, or {@code null} if it is unknown

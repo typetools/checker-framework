@@ -60,7 +60,7 @@ public class JavaStubifier {
   }
 
   /**
-   * Process each file in the given directory; see class documentation for details.
+   * Processes each file in the given directory; see class documentation for details.
    *
    * @param dir directory to process
    */
@@ -116,7 +116,7 @@ public class JavaStubifier {
     /** The visitor instance. */
     private final MinimizerVisitor mv;
 
-    /** Create a MinimizerCallback instance. */
+    /** Creates a MinimizerCallback instance. */
     public MinimizerCallback() {
       this.mv = new MinimizerVisitor();
     }
@@ -147,7 +147,7 @@ public class JavaStubifier {
 
   /** Visitor to process one compilation unit; see class documentation for details. */
   private static class MinimizerVisitor extends ModifierVisitor<Void> {
-    /** True if to consider members implicitly public. */
+    /** True if members are considered implicitly public. */
     private boolean implicitlyPublic = false;
 
     @Override
@@ -225,7 +225,7 @@ public class JavaStubifier {
     }
 
     /**
-     * Remove the whole node if it is private or package private.
+     * Removes the whole node if it is private or package private.
      *
      * @param node a Node to inspect
      * @return true if the node was removed
@@ -243,7 +243,7 @@ public class JavaStubifier {
     }
 
     /**
-     * Remove the whole node if it is private.
+     * Removes the whole node if it is private.
      *
      * @param node a Node to inspect
      * @return true if the node was removed
