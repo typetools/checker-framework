@@ -914,6 +914,66 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * The supertype of a supertype in another compilation unit of the stub file is resolved using
+   * that compilation unit's package and imports, not those of the subtype's compilation unit.
+   */
+  @Test
+  public void testSupertypeOfSupertypeUsesItsCompilationUnitsImports() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Parent {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends p.Base {",
+            "  void m(Inner x) {}",
+            "}",
+            "package p;",
+            "import r.Parent;",
+            "public class Base extends Parent {}",
+            "package r;",
+            "public class Parent {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lr/Parent$Inner;)V");
+  }
+
+  /**
+   * A package-private member type of a supertype in another package is not inherited, so it does
+   * not hide a member type of a later supertype. A member type of an interface is implicitly public,
+   * so it is inherited from another package.
+   */
+  @Test
+  public void testInaccessibleInheritedMemberTypeOfStubSupertype() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class C extends p.Base implements I {",
+            "  void m(Inner x) {}",
+            "}",
+            "interface I {",
+            "  class Inner {}",
+            "}",
+            "class D implements p.J {",
+            "  void m(JInner x) {}",
+            "}",
+            "class E extends p.Base {",
+            "  void m(Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  static class Inner {}",
+            "}",
+            "public interface J {",
+            "  class JInner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$Inner;)V");
+    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
+    // `E` inherits no member type `Inner`, so `Inner` is not resolved to `p.Base.Inner`.
+    assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
+  }
+
+  /**
    * A class's member types are not in scope in the class's header, such as in the bounds of its
    * type parameters, but they are in scope in its body.
    */
