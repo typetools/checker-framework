@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
  * href="https://github.com/typetools/checker-framework/issues/1919"><b>not currently
  * enforced</b></a>.
  *
- * <p>A meta-annotation that restricts the type-use locations where a type qualifier may be written.
- * When written together with {@code @Target({ElementType.TYPE_USE})}, the given type qualifier may
+ * <p>A meta-annotation that restricts the type-use locations where a type qualifier can be written.
+ * When written together with {@code @Target({ElementType.TYPE_USE})}, the given type qualifier can
  * be written only at locations listed in the {@code @TargetLocations(...)} meta-annotation.
  * {@code @Target({ElementType.TYPE_USE})} together with no {@code @TargetLocations(...)} means that
  * the qualifier can be written on any type use.

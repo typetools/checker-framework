@@ -79,7 +79,7 @@ public class PhaseOneResult {
   /*package-private*/ final Types types;
 
   /**
-   * Create a PhaseOneResult with the given data.
+   * Creates a PhaseOneResult with the given data.
    *
    * @param underlyingAST the underlying AST
    * @param treeToCfgNodes the tree to nodes mapping
@@ -89,8 +89,8 @@ public class PhaseOneResult {
    * @param bindings the label bindings
    * @param leaders the leaders
    * @param returnNodes the return nodes
-   * @param regularExitLabel the regular exit labels
-   * @param exceptionalExitLabel the exceptional exit labels
+   * @param regularExitLabel the regular exit label
+   * @param exceptionalExitLabel the exceptional exit label
    * @param declaredClasses the declared classes
    * @param declaredLambdas the declared lambdas
    * @param types the javac type utilities

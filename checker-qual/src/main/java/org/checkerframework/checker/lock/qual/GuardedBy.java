@@ -14,8 +14,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
- * Indicates that a thread may dereference the value referred to by the annotated variable only if
- * the thread holds all the given lock expressions.
+ * Indicates that a thread is permitted to dereference the value referred to by the annotated
+ * variable only if the thread holds all the given lock expressions.
  *
  * <p>{@code @GuardedBy({})} is the default type qualifier.
  *

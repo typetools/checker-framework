@@ -18,7 +18,7 @@ public class JavaExpressionParseException extends Exception {
   public final Object[] args;
 
   /**
-   * Create a new JavaExpressionParseException.
+   * Creates a new JavaExpressionParseException.
    *
    * @param errorKey the error message key
    * @param args the arguments to the error message key
@@ -28,7 +28,7 @@ public class JavaExpressionParseException extends Exception {
   }
 
   /**
-   * Create a new JavaExpressionParseException.
+   * Creates a new JavaExpressionParseException.
    *
    * @param cause cause
    * @param errorKey the error message key
@@ -76,7 +76,7 @@ public class JavaExpressionParseException extends Exception {
   }
 
   /**
-   * Returns The arguments to the error message key.
+   * Returns the arguments to the error message key.
    *
    * @return the arguments to the error message key
    */

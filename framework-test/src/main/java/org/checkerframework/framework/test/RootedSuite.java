@@ -7,7 +7,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 
 /**
- * Encapsulates the directory root to search within for test files to parameterise the test with.
+ * Encapsulates the directory root to search within for test files to parameterize the test with.
  */
 abstract class RootedSuite extends Suite {
 

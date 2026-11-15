@@ -36,9 +36,9 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror FENUM_TOP;
 
   /**
-   * Create a FenumAnnotatedTypeFactory.
+   * Creates a FenumAnnotatedTypeFactory.
    *
-   * @param checker checker
+   * @param checker the checker
    */
   @SuppressWarnings("this-escape")
   public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -98,7 +98,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final QualifierKind FENUM_KIND;
 
     /**
-     * Creates FenumQualifierHierarchy.
+     * Creates a FenumQualifierHierarchy.
      *
      * @param qualifierClasses qualifier classes
      * @param elements element utils

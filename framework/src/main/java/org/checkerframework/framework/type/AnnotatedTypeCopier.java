@@ -26,7 +26,7 @@ import org.plumelib.util.CollectionsP;
  * This ensures that, if a reference appears in multiple locations in the original type, a
  * corresponding copy of the original type appears in the same locations in the output copy. This
  * ensures that the recursive loops in the input type are preserved in its output copy (see
- * makeOrReturnCopy)
+ * makeOrReturnCopy).
  *
  * <p>In general, AnnotatedTypeMirrors should be copied via AnnotatedTypeMirror#deepCopy and
  * AnnotatedTypeMirror#shallowCopy. AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier
@@ -34,7 +34,7 @@ import org.plumelib.util.CollectionsP;
  *
  * <pre>{@code new AnnotatedTypeCopier().visit(myTypeVar);}</pre>
  *
- * Note: There are methods that may require a copy of a type mirror with slight changes. It is
+ * Note: There are methods that might require a copy of a type mirror with slight changes. It is
  * intended that this class can be overridden for these cases.
  *
  * @see org.checkerframework.framework.type.TypeVariableSubstitutor
@@ -61,7 +61,7 @@ public class AnnotatedTypeCopier
   protected final boolean copyAnnotations;
 
   /**
-   * Creates an AnnotatedTypeCopier that may or may not copyAnnotations By default
+   * Creates an AnnotatedTypeCopier that might or might not copy annotations. By default,
    * AnnotatedTypeCopier provides two major properties in its copies:
    *
    * <ol>
@@ -72,8 +72,11 @@ public class AnnotatedTypeCopier
    * </ol>
    *
    * If copyAnnotations is set to false, the second property, annotation preservation, is removed.
-   * This is useful for cases in which the user may want to copy the structure of a type exactly but
-   * NOT its annotations.
+   * This is useful for cases in which the user might want to copy the structure of a type exactly
+   * but NOT its annotations.
+   *
+   * @param copyAnnotations true if annotations should be copied, false if only the structure should
+   *     be copied
    */
   public AnnotatedTypeCopier(boolean copyAnnotations) {
     this.copyAnnotations = copyAnnotations;
@@ -313,13 +316,13 @@ public class AnnotatedTypeCopier
    * preserve the structure of the original AnnotatedTypeMirror.
    *
    * <p>makeOrReturnCopy first checks to see if an object has been encountered before. If so, it
-   * returns the previously generated duplicate of that object if not, it creates a duplicate of the
-   * object and stores it in the history, originalToCopy
+   * returns the previously generated duplicate of that object. If not, it creates a duplicate of
+   * the object and stores it in the history, originalToCopy.
    *
    * @param original a reference to a type to copy
    * @param originalToCopy a mapping of previously encountered references to the copies made for
    *     those references
-   * @param <T> the type of original copy, this is a shortcut to avoid having to insert casts all
+   * @param <T> the type of original copy; this is a shortcut to avoid having to insert casts all
    *     over the visitor
    * @return a copy of original
    */

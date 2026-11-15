@@ -4,9 +4,9 @@
 
 If we know, by some means of alias tracking, that a reference to a collection is
 unique and used only in one place,
-then it may be safely converted both ways between `@GrowOnly` and `@CanShrink`.
+then it can be safely converted both ways between `@GrowOnly` and `@CanShrink`.
 This allows one to "freeze" and "unfreeze" the collection for a while.
-That may be quite a common thing, so it could enable checking more code.
+That might be quite a common thing, so it could enable checking more code.
 On the other hand, satisfying the necessary uniqueness conditions might be difficult.
 
 ## 2. Qualifier hierarchy for shrink-only
@@ -19,7 +19,7 @@ Bottom <: ShrinkOnly <: CannotAddTo
 Bottom <: Growable <: CannotAddTo
 ```
 
-This may not be very useful in isolation, but common pairs of qualifiers from
+This might not be very useful in isolation, but common pairs of qualifiers from
 the two hierarchies can be:
 
 ```text

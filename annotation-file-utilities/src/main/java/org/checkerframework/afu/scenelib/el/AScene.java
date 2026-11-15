@@ -14,9 +14,9 @@ import org.checkerframework.checker.modifiability.qual.Modifiable;
  * An {@code AScene} (annotated scene) represents the annotations on a set of Java classes and
  * packages along with the definitions of some or all of the annotation types used.
  *
- * <p>Each client of the annotation library may wish to use its own representation for certain kinds
- * of annotations instead of a simple name-value map; thus, a layer of abstraction in the storage of
- * annotations was introduced.
+ * <p>Each client of the annotation library might wish to use its own representation for certain
+ * kinds of annotations instead of a simple name-value map; thus, a layer of abstraction in the
+ * storage of annotations was introduced.
  *
  * <p>{@code AScene}s and many {@link AElement}s can contain other {@link AElement}s. When these
  * objects are created, their collections of subelements are empty. In order to associate an
@@ -52,8 +52,8 @@ public class AScene implements Cloneable {
   /**
    * Contains for each annotation type a set of imports to be added to the source if the annotation
    * is inserted with the "abbreviate" option on.<br>
-   * <strong>Key</strong>: fully-qualified name of an annotation. e.g. for {@code @com.foo.Bar(x) },
-   * the fully-qualified name is {@code com.foo.Bar} <br>
+   * <strong>Key</strong>: fully-qualified name of an annotation. For example, for
+   * {@code @com.foo.Bar(x)}, the fully-qualified name is {@code com.foo.Bar}. <br>
    * <strong>Value</strong>: names of packages this annotation needs
    */
   public final Map<String, Set<String>> imports = new LinkedHashMap<>();
@@ -133,7 +133,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Fetch the classes in this scene, represented as AClass objects.
+   * Returns the classes in this scene, represented as AClass objects.
    *
    * @return an immutable map from binary names to AClass objects
    */
@@ -186,7 +186,7 @@ public class AScene implements Cloneable {
    * conditions.
    *
    * @param s0 the first AScene to compare
-   * @param s1 the second Ascene to compare
+   * @param s1 the second AScene to compare
    */
   @SuppressWarnings({"this-escape"})
   public static void checkClone(AScene s0, AScene s1) {
@@ -251,7 +251,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Throw exception if m0 == m1 or !m0.equals(m1). (See {@link #checkClone(AScene, AScene)} for
+   * Throws an exception if m0 == m1 or !m0.equals(m1). (See {@link #checkClone(AScene, AScene)} for
    * explanation.)
    *
    * @param <K> the type of map keys
@@ -272,7 +272,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Throw exception if e0 == e1 or !e0.equals(e1). (See {@link #checkClone(AScene, AScene)} for
+   * Throws an exception if e0 == e1 or !e0.equals(e1). (See {@link #checkClone(AScene, AScene)} for
    * explanation.)
    *
    * @param e0 the first element to compare
@@ -298,7 +298,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Throw exception on visit if el == arg or !el.equals(arg). (See {@link #checkClone(AScene,
+   * Throws an exception on visit if el == arg or !el.equals(arg). (See {@link #checkClone(AScene,
    * AScene)} for explanation.)
    */
   private static ElementVisitor<Void, AElement> checkVisitor =
