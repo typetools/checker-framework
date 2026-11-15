@@ -77,6 +77,16 @@ public class AssignmentInComparison {
     }
   }
 
+  // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
+  // the new value of `k`.
+  static void otherOperandReassignsOffset(@NonNegative int k, @NonNegative int j) {
+    int[] a = new int[110];
+    if (k < a.length - (j = (k = 100))) {
+      // :: error: [array.access.unsafe.high]
+      a[j + k] = 0;
+    }
+  }
+
   void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
     if ((this.arr = b).length == setArr(c).length) {
       // `setArr` sets `this.arr` to `c`, which might not have the same length as `b`.
