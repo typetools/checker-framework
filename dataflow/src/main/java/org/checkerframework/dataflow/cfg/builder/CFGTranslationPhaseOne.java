@@ -69,7 +69,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -352,9 +351,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * The type of the exception that a switch throws when no case matches: MatchException if the
-   * source version is 21 or later, and IncompatibleClassChangeError otherwise.
+   * source version is 21 or later, and IncompatibleClassChangeError otherwise. Null if the type is
+   * not available.
    */
-  protected final TypeMirror matchExceptionType;
+  protected final @Nullable TypeMirror matchExceptionType;
 
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
@@ -457,8 +457,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             ? maybeGetTypeMirror("java.lang.MatchException")
             : null;
     matchExceptionType =
-        Objects.requireNonNullElse(
-            matchException, getTypeMirror(IncompatibleClassChangeError.class));
+        matchException != null
+            ? matchException
+            : maybeGetTypeMirror(IncompatibleClassChangeError.class);
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
@@ -2490,7 +2491,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // accessor throws in a MatchException (JLS 14.30.2).
         boolean hasRecordPattern =
             CaseUtils.getLabels(caseTree).stream().anyMatch(TreeUtils::isDeconstructionPatternTree);
-        if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || hasRecordPattern) {
+        if (matchExceptionType != null
+            && ((isLastCaseOfExhaustive && !labelAlwaysMatches) || hasRecordPattern)) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
           // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
           extendWithNodeWithException(caseNode, matchExceptionType);
@@ -2516,14 +2518,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             Label guardFalseLabel = new Label();
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
             addLabelForNextNode(guardFalseLabel);
-            NodeWithExceptionsHolder noMatchNode =
-                extendWithNodeWithException(
-                    new MarkerNode(
-                        null,
-                        "no case matches: guard is false in last case of exhaustive switch #"
-                            + TreeUtils.treeUids.get(switchTree),
-                        env.getTypeUtils()),
-                    matchExceptionType);
+            MarkerNode noMatchMarker =
+                new MarkerNode(
+                    null,
+                    "no case matches: guard is false in last case of exhaustive switch #"
+                        + TreeUtils.treeUids.get(switchTree),
+                    env.getTypeUtils());
+            // If the exception type is not available, the node still terminates execution, which
+            // is modeled as an edge to the exceptional exit.
+            ExtendedNode noMatchNode;
+            if (matchExceptionType != null) {
+              noMatchNode = extendWithNodeWithException(noMatchMarker, matchExceptionType);
+            } else {
+              addToLookupMap(noMatchMarker);
+              noMatchNode = new NodeHolder(noMatchMarker);
+              extendWithExtendedNode(noMatchNode);
+            }
             noMatchNode.setTerminatesExecution(true);
           }
         }
