@@ -261,9 +261,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Removes information that might not be valid any more after code with arbitrary side effects
-   * has been executed, but that is not represented by a node in the control flow graph. An example
-   * is a call to a record accessor that is not side-effect-free, which a record pattern invokes
+   * Removes information that might not be valid any more after code with arbitrary side effects has
+   * been executed, but that is not represented by a node in the control flow graph. An example is a
+   * call to a record accessor that is not side-effect-free, which a record pattern invokes
    * implicitly.
    *
    * <p>This has the same effect on the store as {@link #updateForMethodCall} for a method that is

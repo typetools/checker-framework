@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -844,8 +845,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
-  /** The UID for the next unique name. */
-  protected long uid = 0;
+  /**
+   * The UID for the next unique name.
+   *
+   * <p>This is static so that names are unique across all CFGs, not just within one CFG. Therefore,
+   * a client can use the name of a temporary variable to identify it, even in a data structure that
+   * holds the temporary variables of more than one method.
+   */
+  protected static final AtomicLong uid = new AtomicLong();
 
   /**
    * Returns a unique name starting with {@code prefix}.
@@ -854,7 +861,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a unique name starting with {@code prefix}
    */
   protected String uniqueName(String prefix) {
-    return prefix + "#num" + uid++;
+    return prefix + "#num" + uid.getAndIncrement();
   }
 
   /**
@@ -2144,12 +2151,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** True if {@link #switchTree} has a {@code case null}. */
     private final boolean hasNullCaseLabel;
 
-    /**
-     * True if the CFG built so far evaluates code other than the selector expression: the guard of
-     * some case of {@link #switchTree}, or a record accessor that a record pattern invokes.
-     */
-    private boolean otherCodeEvaluated = false;
-
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2163,6 +2164,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
     private @Nullable VariableTree switchExprVarTree;
+
+    /**
+     * True if the CFG built so far contains code that might have side effects, such as the guard of
+     * some case of {@link #switchTree} or a record accessor that a deconstruction pattern invokes,
+     * after the evaluation of the selector expression. If so, the selector expression might no
+     * longer denote the value that the switch tests.
+     */
+    private boolean codeRanSinceSelector = false;
 
     /**
      * Constructs a SwitchBuilder.
@@ -2462,7 +2471,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             // Matching a record pattern invokes record accessors, which might have side effects,
             // even if the match fails.  (Nested record patterns occur only within a record
             // pattern.)
-            otherCodeEvaluated = true;
+            codeRanSinceSelector = true;
           }
         }
 
@@ -2475,7 +2484,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 selectorExprAssignment,
                 exprs,
                 labelsUntested,
-                otherCodeEvaluated,
+                codeRanSinceSelector,
                 env.getTypeUtils());
         // A record pattern calls accessor methods, and the switch wraps any exception that an
         // accessor throws in a MatchException (JLS 14.30.2).
@@ -2498,7 +2507,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          otherCodeEvaluated = true;
+          codeRanSinceSelector = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {

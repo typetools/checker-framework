@@ -1352,7 +1352,7 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     // The case labels are tested against the value of the selector expression that was saved
     // before the switch.  If the selector expression may have changed since then, do not refine it.
-    boolean canRefineSelector = canRefineSwitchSelector(n);
+    boolean canRefineSelector = selectorExpressionDenotesSwitchValue(n);
     S store = in.getRegularStore();
     S thenStoreIn = in.getThenStore();
     S elseStoreIn = in.getElseStore();
@@ -1432,7 +1432,8 @@ public abstract class CFAbstractTransfer<
    *
    * @param store a store before the record accessor calls; is not side-effected by this method
    * @param n the case node whose record patterns invoke the accessors
-   * @param canRefineSelector the result of {@link #canRefineSwitchSelector} for {@code n}
+   * @param canRefineSelector the result of {@link #selectorExpressionDenotesSwitchValue} for {@code
+   *     n}
    * @return a copy of {@code store} with the effect of the accessor calls applied
    */
   private S applyRecordAccessorSideEffects(S store, CaseNode n, boolean canRefineSelector) {
@@ -1495,19 +1496,24 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a transfer function may refine the switch selector expression (the expression
-   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if other code, such as the
-   * guard of an earlier case or a record accessor that a record pattern invokes, might have changed
-   * the abstract value of the selector expression since it was evaluated (see {@link
-   * CaseNode#isPrecededByOtherCode()}). That code cannot assign a local variable that it does not
-   * declare (JLS 14.11.1), but it can assign a field or change the result of a method call. The
-   * synthetic variable to which the selector expression is assigned may always be refined.
+   * Returns true if the switch selector expression (the right-hand side of {@code
+   * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
+   * If this returns false, a transfer function must not refine the selector expression at {@code
+   * n}, but it may refine the synthetic variable (the left-hand side of {@code
+   * n.getSwitchOperand()}).
+   *
+   * <p>The selector expression might not denote the tested value if code with side effects, such as
+   * the guard of an earlier case or a record accessor that a record pattern invokes, ran after the
+   * switch evaluated the selector expression (see {@link CaseNode#codeRanSinceSelector()}). That
+   * code cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign a
+   * field, change the result of a method call, or mutate the object that the selector expression
+   * evaluates to.
    *
    * @param n a case node
-   * @return true if a transfer function may refine the switch selector expression at {@code n}
+   * @return true if the switch selector expression still denotes the value that the switch tests
    */
-  protected boolean canRefineSwitchSelector(CaseNode n) {
-    if (!n.isPrecededByOtherCode()) {
+  protected boolean selectorExpressionDenotesSwitchValue(CaseNode n) {
+    if (!n.codeRanSinceSelector()) {
       return true;
     }
     JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
