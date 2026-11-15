@@ -3975,7 +3975,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (tree.getType() == null || TreeUtils.isVariableTreeDeclaredUsingVar(tree)) {
       return true;
     }
-    if (TreeUtils.elementFromDeclaration(tree).getKind() != ElementKind.PARAMETER) {
+    VariableElement element = TreeUtils.elementFromDeclaration(tree);
+    if (element != null && element.getKind() != ElementKind.PARAMETER) {
       return false;
     }
     // A lambda parameter is declared in the current compilation unit.
