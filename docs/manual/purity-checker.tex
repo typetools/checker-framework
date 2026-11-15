@@ -287,10 +287,10 @@ method other than the functional method on it.
 
 A class that inherits a method from its superclass, and in doing so
 implements an interface method, does not override the interface method
-either, but it is checked against the same rule.  If the inherited method
-relies on its functional-interface argument being pure, and the interface
-method does not guarantee that purity, the class is an error
-(\<purity.inherited.functional.parameter>).
+either.  It is checked by the same rule:  the class is an error
+(\<purity.inherited.functional.parameter>) if the inherited method assumes a
+purity of a functional-interface argument that the interface method, or a
+method that the interface method overrides, does not promise.
 
 The assumption affects purity checking, and the dataflow analysis of a lambda
 in the method body, but not the dataflow analysis of the body itself.  A

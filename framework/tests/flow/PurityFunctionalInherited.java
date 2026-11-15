@@ -82,6 +82,17 @@ public class PurityFunctionalInherited {
     return a.apply(() -> 0);
   }
 
+  static class IgnoringBase {
+    /** The body cannot be overridden, and it never calls {@code s.get}. */
+    @SideEffectFree
+    public final int apply(Supplier<Integer> s) {
+      return 0;
+    }
+  }
+
+  // IgnoringBase.apply does not rely on the purity of its argument.
+  static class SubOfIgnoring extends IgnoringBase implements Unannotated {}
+
   /** The errors are at the declarations of Sub and SubOverrides, not where they are used. */
   void passesImplementations() {
     runsUnannotated(new Sub());

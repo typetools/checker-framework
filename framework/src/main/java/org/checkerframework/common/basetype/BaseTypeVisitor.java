@@ -2130,15 +2130,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Checks that a call through {@code functionalMethod} guarantees, of the code that it passes to
-   * each functional-interface parameter of {@code implementation}, the purity that {@code
-   * implementation}'s body assumes of it; see {@link
-   * PurityChecker#functionalParameterPurity(org.checkerframework.javacutil.AnnotationProvider,
-   * ExecutableElement, int, ProcessingEnvironment)}.
+   * Checks that every call that can run {@code implementation} through {@code functionalMethod}
+   * guarantees, of the code that it passes to each functional-interface parameter of {@code
+   * implementation}, the purity that {@code implementation}'s body assumes of it. That is the
+   * purity that {@link PurityChecker#functionalParameterPurity} computes, less the purity that
+   * every call to the parameter's functional method has regardless of the argument: the purity of
+   * the functional method's own annotations and of the command-line assumptions such as {@code
+   * -AassumeSideEffectFree}.
    *
-   * <p>That method accounts for each declaration that {@code implementation} overrides. This one is
-   * for another way that a call through {@code functionalMethod} can run {@code implementation}: as
-   * a method that a class inherits and that implements {@code functionalMethod} only in that class.
+   * <p>{@link PurityChecker#functionalParameterPurity} accounts for each declaration that {@code
+   * implementation} overrides. This method is for the other ways that a call through {@code
+   * functionalMethod} can run {@code implementation}: as a method reference, or as a method that a
+   * class inherits and that implements {@code functionalMethod} only in that class.
+   *
+   * <p>A call through {@code functionalMethod}, or through any method that {@code functionalMethod}
+   * overrides, can run {@code implementation}. Each call checks its arguments against the
+   * declaration that it invokes.
    *
    * @param reportTree the tree at which to report an error
    * @param implementation the method that a call through {@code functionalMethod} runs
@@ -2155,33 +2162,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       int offset,
       @CompilerMessageKey String messageKey) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    List<? extends VariableElement> implementationParams = implementation.getParameters();
-    for (int i = 0; i < implementationParams.size(); i++) {
+    if (PurityChecker.functionalParameterKinds(atypeFactory, implementation, env).isEmpty()) {
+      // The implementation assumes nothing of its functional-interface arguments.
+      return;
+    }
+    // The methods through which a call can run the implementation.
+    List<ExecutableElement> declarations = new ArrayList<>();
+    declarations.add(functionalMethod);
+    declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
+    List<? extends VariableElement> params = implementation.getParameters();
+    for (int i = 0; i < params.size(); i++) {
+      ExecutableElement parameterFunction =
+          PurityChecker.parameterFunctionalMethod(implementation, i, env);
+      if (parameterFunction == null) {
+        continue;
+      }
       EnumSet<PurityKind> assumed =
-          PurityChecker.functionalParameterPurity(atypeFactory, implementation, i, env);
+          PurityChecker.functionalParameterPurity(
+              atypeFactory, implementation, i, parameterFunction, env);
+      assumed.removeAll(implementationPurityKinds(parameterFunction));
       if (assumed.isEmpty()) {
         continue;
       }
-      ExecutableElement parameterFunction =
-          PurityChecker.parameterFunctionalMethod(implementation, i, env);
-      assert parameterFunction != null
-          : "@AssumeAssertion(nullness): functionalParameterPurity is empty for a parameter whose"
-              + " type is not a functional interface";
-      int j = i + offset;
-      EnumSet<PurityKind> provided =
-          j < functionalMethod.getParameters().size()
-              ? PurityChecker.guaranteedFunctionalArgumentPurity(
-                  atypeFactory, functionalMethod, j, parameterFunction, env)
-              : EnumSet.noneOf(PurityKind.class);
-      if (!provided.containsAll(assumed)) {
-        reportErrorOnce(
-            reportTree,
-            messageKey,
-            implementationParams.get(i).getSimpleName(),
-            implementation,
-            purityKindsToString(assumed),
-            functionalMethod,
-            purityKindsToString(provided));
+      for (ExecutableElement declaration : declarations) {
+        EnumSet<PurityKind> provided =
+            PurityChecker.guaranteedFunctionalArgumentPurity(
+                atypeFactory, declaration, i + offset, parameterFunction, env);
+        if (!provided.containsAll(assumed)) {
+          // The error message names the first declaration whose calls lack the guarantee.
+          if (mightRelyOnFunctionalParameter(implementation, params.get(i), parameterFunction)) {
+            reportErrorOnce(
+                reportTree,
+                messageKey,
+                params.get(i).getSimpleName(),
+                ElementUtils.getSimpleDescription(implementation),
+                purityKindsToString(assumed),
+                ElementUtils.getSimpleDescription(declaration),
+                purityKindsToString(provided));
+          }
+          break;
+        }
       }
     }
   }
@@ -5633,63 +5653,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks that every call that can run the referenced method through the method reference
      * guarantees, of the code that it passes to each functional-interface parameter of the
-     * referenced method, the purity that the referenced method's body assumes of it. That is the
-     * purity that {@link PurityChecker#functionalParameterPurity} computes, less the purity that
-     * every call to the parameter's functional method has regardless of the argument: the purity of
-     * the functional method's own annotations and of the command-line assumptions such as {@code
-     * -AassumeSideEffectFree}.
-     *
-     * <p>A call through the functional method, or through any method that the functional method
-     * overrides, can run the referenced method. Each call checks its arguments against the
-     * declaration that it invokes.
+     * referenced method, the purity that the referenced method's body assumes of it; see {@link
+     * BaseTypeVisitor#checkImplementationFunctionalParameters}.
      */
     private void checkMethodReferenceFunctionalParameters() {
-      ExecutableElement referenced = overrider.getElement();
-      ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-      if (PurityChecker.functionalParameterKinds(atypeFactory, referenced, env).isEmpty()) {
-        // The referenced method assumes nothing of its functional-interface arguments.
-        return;
-      }
-      ExecutableElement functionalMethod = overridden.getElement();
-      // The methods through which a call can run the referenced method.
-      List<ExecutableElement> declarations = new ArrayList<>();
-      declarations.add(functionalMethod);
-      declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
-      int offset = methodRefParameterOffset();
-      List<? extends VariableElement> params = referenced.getParameters();
-      for (int i = 0; i < params.size(); i++) {
-        ExecutableElement parameterFunction =
-            PurityChecker.parameterFunctionalMethod(referenced, i, env);
-        if (parameterFunction == null) {
-          continue;
-        }
-        EnumSet<PurityKind> assumed =
-            PurityChecker.functionalParameterPurity(
-                atypeFactory, referenced, i, parameterFunction, env);
-        assumed.removeAll(implementationPurityKinds(parameterFunction));
-        if (assumed.isEmpty()) {
-          continue;
-        }
-        for (ExecutableElement declaration : declarations) {
-          EnumSet<PurityKind> provided =
-              PurityChecker.guaranteedFunctionalArgumentPurity(
-                  atypeFactory, declaration, i + offset, parameterFunction, env);
-          if (!provided.containsAll(assumed)) {
-            // The error message names the first declaration whose calls lack the guarantee.
-            if (mightRelyOnFunctionalParameter(referenced, params.get(i), parameterFunction)) {
-              reportErrorOnce(
-                  overriderTree,
-                  "purity.methodref.functional.parameter",
-                  params.get(i).getSimpleName(),
-                  ElementUtils.getSimpleDescription(referenced),
-                  purityKindsToString(assumed),
-                  ElementUtils.getSimpleDescription(declaration),
-                  purityKindsToString(provided));
-            }
-            break;
-          }
-        }
-      }
+      checkImplementationFunctionalParameters(
+          overriderTree,
+          overrider.getElement(),
+          overridden.getElement(),
+          methodRefParameterOffset(),
+          "purity.methodref.functional.parameter");
     }
 
     /**
