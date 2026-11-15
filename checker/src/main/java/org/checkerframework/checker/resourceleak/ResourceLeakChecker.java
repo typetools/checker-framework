@@ -90,7 +90,7 @@ public class ResourceLeakChecker extends AggregateChecker {
       @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     if (messageKey.equals("required.method.not.called")) {
       // This is safe because of the message key.
-      String qualifiedTypeName = (String) args[1];
+      String qualifiedTypeName = (String) args[2];
       // Only count classes in the JDK, not user-defined classes.
       if (MustCallConsistencyAnalyzer.isJdkClass(qualifiedTypeName)) {
         numMustCallFailed++;

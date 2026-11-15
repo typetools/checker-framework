@@ -86,6 +86,10 @@ public class SameLenTransfer extends CFTransfer {
 
     Node exprNode = node.getExpression();
     Node recNode = node.getTarget();
+    // If true, then after the assignment the target denotes a different location than the one that
+    // was assigned, as in `n.values = id(n = other, a)`.  The base transfer function has removed
+    // the target from the store, and the combined @SameLen annotation must not mention it.
+    boolean rhsMayRelocateTarget = rhsMayRelocateTarget(node);
 
     // Handle b = new T[a.length]
     if (exprNode instanceof ArrayCreationNode acNode) {
@@ -112,6 +116,9 @@ public class SameLenTransfer extends CFTransfer {
           AnnotationMirror combinedSameLen =
               atypeFactory.createCombinedSameLen(
                   Arrays.asList(targetRec, otherRec), Arrays.asList(UNKNOWN, lengthNodeAnnotation));
+          if (rhsMayRelocateTarget) {
+            combinedSameLen = removeFromSameLen(combinedSameLen, targetRec);
+          }
 
           propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
           return result;
@@ -137,11 +144,34 @@ public class SameLenTransfer extends CFTransfer {
       AnnotationMirror combinedSameLen =
           atypeFactory.createCombinedSameLen(
               Arrays.asList(targetRec, exprRec), Arrays.asList(UNKNOWN, rightAnnoOrUnknown));
+      if (rhsMayRelocateTarget) {
+        combinedSameLen = removeFromSameLen(combinedSameLen, targetRec);
+      }
 
       propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
     }
 
     return result;
+  }
+
+  /**
+   * Returns a copy of the given {@code @SameLen} annotation that does not contain the given
+   * expression.
+   *
+   * @param sameLenAnno a {@code @SameLen} annotation
+   * @param expr an expression to remove from {@code sameLenAnno}
+   * @return a copy of {@code sameLenAnno} that does not contain {@code expr}
+   */
+  private AnnotationMirror removeFromSameLen(AnnotationMirror sameLenAnno, JavaExpression expr) {
+    List<String> values =
+        new ArrayList<>(
+            AnnotationUtils.getElementValueArray(
+                sameLenAnno, atypeFactory.sameLenValueElement, String.class));
+    if (!values.remove(expr.toString())) {
+      return sameLenAnno;
+    }
+    // Removing an element preserves the alphabetical order that createSameLen requires.
+    return atypeFactory.createSameLen(values);
   }
 
   /**

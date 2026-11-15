@@ -66,6 +66,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
@@ -1419,15 +1420,75 @@ public class ValueTransfer extends CFTransfer {
               ? atypeFactory.UNKNOWNVAL
               : getValueAnnotation(currentValueFromStore));
       // Combine the new annotations based on the results of the comparison with the existing
-      // type.
+      // type.  `internal` might have a different type than `node`, as when `node` is a widening
+      // cast and `internal` is its operand.
       AnnotationMirror newAnno =
-          qualHierarchy.greatestLowerBoundShallow(anno, je.getType(), currentAnno, je.getType());
+          qualHierarchy.greatestLowerBoundShallow(
+              convertToTypeOf(anno, internal), je.getType(), currentAnno, je.getType());
       store.insertValue(je, newAnno);
 
-      if (node instanceof FieldAccessNode) {
-        refineArrayAtLengthAccess((FieldAccessNode) internal, store);
-      } else if (node instanceof MethodInvocationNode miNode) {
+      if (internal instanceof FieldAccessNode fieldNode) {
+        refineArrayAtLengthAccess(fieldNode, store);
+      } else if (internal instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
+      }
+    }
+  }
+
+  /**
+   * Converts a value annotation for a node, such as a widening cast, to an annotation for a node
+   * that has the same value but a different numeric type, such as the operand of the cast. For
+   * example, a {@code @DoubleVal} annotation for {@code (double) i} is converted to an
+   * {@code @IntVal} annotation for {@code i}. The result contains only the values that are exactly
+   * representable in the type of {@code internal}; it is bottom if there are none. Non-integral
+   * values are never truncated.
+   *
+   * @param anno a value annotation for a node that has the same value as {@code internal}
+   * @param internal the node to which the result applies
+   * @return an annotation for {@code internal} that represents the values of {@code anno} that
+   *     {@code internal} can have
+   */
+  private AnnotationMirror convertToTypeOf(AnnotationMirror anno, Node internal) {
+    if (!AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
+      // Only a @DoubleVal annotation needs conversion.  No value-preserving conversion goes from a
+      // floating-point type to an integral type, so if `internal` is floating-point, then so is
+      // the node that `anno` is for.
+      return anno;
+    }
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(internal.getType());
+    if (kind == null) {
+      return anno;
+    }
+    List<Double> doubles = atypeFactory.getDoubleValues(anno);
+    switch (kind) {
+      case FLOAT -> {
+        List<Double> floats = new ArrayList<>(doubles.size());
+        for (Double d : doubles) {
+          double dv = d;
+          if (Double.isNaN(dv) || (double) (float) dv == dv) {
+            floats.add(d);
+          }
+        }
+        return atypeFactory.createDoubleValAnnotation(floats);
+      }
+      case BYTE, SHORT, CHAR, INT, LONG -> {
+        long min = TypeKindUtils.minValue(kind);
+        long max = TypeKindUtils.maxValue(kind);
+        List<Long> longs = new ArrayList<>(doubles.size());
+        for (Double d : doubles) {
+          double dv = d;
+          // -0x1p63 is Long.MIN_VALUE, and 0x1p63 is one more than Long.MAX_VALUE.
+          if (dv == Math.rint(dv) && dv >= -0x1p63 && dv < 0x1p63) {
+            long l = (long) dv;
+            if (min <= l && l <= max) {
+              longs.add(l);
+            }
+          }
+        }
+        return atypeFactory.createIntValAnnotation(longs);
+      }
+      default -> {
+        return anno;
       }
     }
   }
