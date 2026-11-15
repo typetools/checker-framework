@@ -1118,8 +1118,9 @@ public abstract class CFAbstractTransfer<
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
     if (n.isUnboxing()) {
-      // The factory value comes from the declared return type of a method such as intValue(), so
-      // also use the qualifiers of the value being unboxed.
+      // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type
+      // factory computes for the call) comes from the declared return type of `intValue()`, which
+      // lacks the qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
       V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
       resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), operandValue));
     }
@@ -1409,15 +1410,15 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned.
+   * incomparable, then {@code value1} is returned. If either is null, the other is returned.
    *
-   * @param value1 an abstract value
-   * @param value2 another abstract value
+   * @param value1 an abstract value, or null
+   * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
-   *     value1}
+   *     value1}; null if both parameters are null
    */
   @Pure
-  public V moreSpecificValue(V value1, V value2) {
+  public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
     if (value1 == null) {
       return value2;
     }
