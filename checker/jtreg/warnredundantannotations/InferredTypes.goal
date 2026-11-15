@@ -1,0 +1,3 @@
+InferredTypes.java:50:36: compiler.warn.proc.messager: [redundant.anno] Annotation @Initialized @NonNull Foo is redundant: it's the same as the default at this location
+InferredTypes.java:54:19: compiler.warn.proc.messager: [redundant.anno] Annotation @UnknownInitialization @Nullable Foo is redundant: it's the same as the default at this location
+2 warnings
