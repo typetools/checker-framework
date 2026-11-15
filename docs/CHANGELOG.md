@@ -10,9 +10,7 @@
 ### Changes for type system implementers
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
-of a block.  It replaces `RLCCalledMethodsAnnotatedTypeFactory.getInput()`.
-
-Removed `MustCallAnnotatedTypeFactory.getStoreForBlock()`.
+of a block.
 
 ### Closed issues
 
