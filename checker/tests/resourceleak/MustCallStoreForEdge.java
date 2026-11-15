@@ -62,4 +62,19 @@ class MustCallStoreForEdge {
       return;
     }
   }
+
+  // The resource leaks only along the then edge of the second conditional.
+  void leakOnThenEdge(String filename, boolean b, boolean c) throws IOException {
+    // :: error: (required.method.not.called)
+    LineReader lr = new LineReader(filename);
+    if (b) {
+      lr.close();
+      return;
+    }
+    Iterator<String> it = lr.iterator();
+    if (c) {
+      return;
+    }
+    lr.close();
+  }
 }

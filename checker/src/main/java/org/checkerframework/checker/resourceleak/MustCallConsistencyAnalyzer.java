@@ -2041,7 +2041,12 @@ public class MustCallConsistencyAnalyzer {
                 + " with exception type "
                 + exceptionType;
     // Computed outside the Obligation loop for efficiency.
-    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = cmAtf.getRegularStore(successor);
+    // The CM and MC stores for the CFG edge from currentBlock to successor, when currentBlock has
+    // no nodes.  Computed at most once, in the Obligation loop, and only if a consistency check
+    // needs them.
+    @Nullable AccumulationStore cmStoreForEdgeFromEmptyBlock = null;
+    @Nullable CFStore mcStoreForEdgeFromEmptyBlock = null;
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -2127,8 +2132,16 @@ public class MustCallConsistencyAnalyzer {
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
-          cmStore = getStoreForEdgeFromEmptyBlock(cmAtf, currentBlock, successor); // 1. (CM)
-          mcStore = getStoreForEdgeFromEmptyBlock(mcAtf, currentBlock, successor); // 1. (MC)
+          if (cmStoreForEdgeFromEmptyBlock == null) {
+            cmStoreForEdgeFromEmptyBlock =
+                getStoreForEdgeFromEmptyBlock(cmAtf, currentBlock, successor); // 1. (CM)
+          }
+          if (mcStoreForEdgeFromEmptyBlock == null) {
+            mcStoreForEdgeFromEmptyBlock =
+                getStoreForEdgeFromEmptyBlock(mcAtf, currentBlock, successor); // 1. (MC)
+          }
+          cmStore = cmStoreForEdgeFromEmptyBlock;
+          mcStore = mcStoreForEdgeFromEmptyBlock;
         } else {
           // In this case, current block has at least one node.
           // Use the called-methods store immediately after the last node in
@@ -2203,7 +2216,7 @@ public class MustCallConsistencyAnalyzer {
         }
       }
       case SPECIAL_BLOCK -> {
-        return atf.getInput(successor).getRegularStore();
+        return atf.getRegularStore(currentBlock);
       }
       default -> throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
