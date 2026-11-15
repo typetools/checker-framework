@@ -29,8 +29,9 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * annotations of the variable's instantiation. To ensure this, some types are marked as ignoring
  * annotations (see {@link AbstractType#ignoreAnnotations}).
  *
- * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
- * kinds of annotations are ignored:
+ * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth.
+ *
+ * <p>Two kinds of annotations are ignored:
  *
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
@@ -230,6 +231,49 @@ final class IgnoredAnnotations {
   }
 
   /**
+   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
+   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
+   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
+   * primary annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
+   *     nothing
+   */
+  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
+    return (type1.ignoreAnnotations || type2.ignoreAnnotations)
+        && type1.getOrigin() == null
+        && type2.getOrigin() == null
+        && hasNoTypeArguments(type1.getAnnotatedType())
+        && hasNoTypeArguments(type2.getAnnotatedType());
+  }
+
+  /**
+   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
+   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
+   * and its bounds get the primary annotations of {@code source}'s bounds.
+   *
+   * @param source a type whose primary annotations to copy
+   * @param target the type whose primary annotations to replace; side-effected by this method
+   */
+  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
+    if (source.getPrimaryAnnotations().isEmpty()
+        && source instanceof AnnotatedTypeVariable sourceTV
+        && target instanceof AnnotatedTypeVariable targetTV) {
+      targetTV.clearPrimaryAnnotations();
+      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
+      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
+    } else {
+      target.replaceAnnotations(source.getAnnotations());
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  /// Private methods appear below; package-protected methods appear above
+  ///
+
+  /**
    * Returns the upper bound of {@code type} if it is a type variable, following the bounds of type
    * variables whose upper bound is a type variable; otherwise, returns {@code type} itself.
    *
@@ -278,25 +322,6 @@ final class IgnoredAnnotations {
     }
     AbstractType asSuper = type.asSuper(classType);
     return asSuper != null && asSuper.isProper() ? asSuper : type;
-  }
-
-  /**
-   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
-   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
-   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
-   * primary annotations.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
-   *     nothing
-   */
-  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
-    return (type1.ignoreAnnotations || type2.ignoreAnnotations)
-        && type1.getOrigin() == null
-        && type2.getOrigin() == null
-        && hasNoTypeArguments(type1.getAnnotatedType())
-        && hasNoTypeArguments(type2.getAnnotatedType());
   }
 
   /**
@@ -624,25 +649,5 @@ final class IgnoredAnnotations {
       return superBound.getKind() == TypeKind.NULL ? wildcard.getExtendsBound() : superBound;
     }
     return type;
-  }
-
-  /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
-   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
-   * and its bounds get the primary annotations of {@code source}'s bounds.
-   *
-   * @param source a type whose primary annotations to copy
-   * @param target the type whose primary annotations to replace; side-effected by this method
-   */
-  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
-    if (source.getPrimaryAnnotations().isEmpty()
-        && source instanceof AnnotatedTypeVariable sourceTV
-        && target instanceof AnnotatedTypeVariable targetTV) {
-      targetTV.clearPrimaryAnnotations();
-      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
-      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
-    } else {
-      target.replaceAnnotations(source.getAnnotations());
-    }
   }
 }
