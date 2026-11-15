@@ -1239,24 +1239,22 @@ public class MustCallConsistencyAnalyzer {
         // This satisfies case 1.
         return true;
       } else {
-        Obligation toRemove = null;
-        Obligation toAdd = null;
+        // There may be several matching obligations: for example, a collection whose elements
+        // have multiple must-call methods has one collection obligation per method.
+        Set<Obligation> toRemove = new LinkedHashSet<>();
+        Set<Obligation> toAdd = new LinkedHashSet<>();
         for (Obligation obligation : obligations) {
           ResourceAlias alias = obligation.getResourceAlias(expression);
           if (alias != null) {
-            // This satisfies case 2 above. Remove all its aliases, then return below.
-            if (toRemove != null) {
-              throw new TypeSystemError(
-                  "tried to remove multiple sets containing a reset expression at once");
-            }
-            toRemove = obligation;
-            toAdd = obligation.getReplacement(ImmutableSet.of(alias), obligation.whenToEnforce);
+            // This satisfies case 2 above. Replace every matching obligation, then return below.
+            toRemove.add(obligation);
+            toAdd.add(obligation.getReplacement(ImmutableSet.of(alias), obligation.whenToEnforce));
           }
         }
 
-        if (toRemove != null) {
-          obligations.remove(toRemove);
-          obligations.add(toAdd);
+        if (!toRemove.isEmpty()) {
+          obligations.removeAll(toRemove);
+          obligations.addAll(toAdd);
           // This satisfies case 2.
           return true;
         }

@@ -137,6 +137,7 @@ final class WhileDisposalLoopMatcher {
     MethodInvocationTree extractionCall =
         new WhileBodyScanner(
                 headerMatch.headerVarName,
+                headerMatch.headerVarElement,
                 headerMatch.collectionVarNameForInvalidation,
                 headerMatch.allowedExtractMethods)
             .scanLoopBody(tree.getStatement());
@@ -245,6 +246,10 @@ final class WhileDisposalLoopMatcher {
     if (iteratorVarName == null) {
       return null;
     }
+    Element iteratorElement = TreeUtils.elementFromTree(receiver);
+    if (iteratorElement == null) {
+      return null;
+    }
 
     ExpressionTree collectionTree = recoverCollectionFromIteratorReceiver(receiver, loop);
     if (collectionTree == null) {
@@ -253,7 +258,11 @@ final class WhileDisposalLoopMatcher {
 
     Name collectionVarName = CollectionOwnershipUtils.getNameFromExpressionTree(collectionTree);
     return new WhileHeaderInfo(
-        collectionTree, collectionVarName, iteratorVarName, ITERATOR_EXTRACT_METHODS);
+        collectionTree,
+        collectionVarName,
+        iteratorVarName,
+        iteratorElement,
+        ITERATOR_EXTRACT_METHODS);
   }
 
   /**
@@ -344,6 +353,10 @@ final class WhileDisposalLoopMatcher {
     if (collectionVarName == null) {
       return null;
     }
+    Element collectionElement = TreeUtils.elementFromTree(receiver);
+    if (collectionElement == null) {
+      return null;
+    }
     if (!coAtf.isResourceCollection(receiver)) {
       return null;
     }
@@ -354,7 +367,11 @@ final class WhileDisposalLoopMatcher {
     }
 
     return new WhileHeaderInfo(
-        collectionTree, collectionVarName, collectionVarName, NONEMPTY_EXTRACT_METHODS);
+        collectionTree,
+        collectionVarName,
+        collectionVarName,
+        collectionElement,
+        NONEMPTY_EXTRACT_METHODS);
   }
 
   /**
@@ -480,11 +497,15 @@ final class WhileDisposalLoopMatcher {
    *
    * @param invocation a method invocation
    * @param headerVarName the iterator or collection variable constrained by the header
+   * @param headerVarElement the element of the variable named {@code headerVarName}
    * @param allowedExtractMethods extraction methods permitted by the matched header form
    * @return true if {@code invocation} is an allowed extraction call on {@code headerVarName}
    */
   private boolean isExtractionCallOnHeaderVar(
-      MethodInvocationTree invocation, Name headerVarName, Set<String> allowedExtractMethods) {
+      MethodInvocationTree invocation,
+      Name headerVarName,
+      Element headerVarElement,
+      Set<String> allowedExtractMethods) {
     ExpressionTree methodSelect = invocation.getMethodSelect();
     if (!(methodSelect instanceof MemberSelectTree memberSelectTree)) {
       return false;
@@ -498,9 +519,14 @@ final class WhileDisposalLoopMatcher {
       return false;
     }
 
-    Name receiverName =
-        CollectionOwnershipUtils.getNameFromExpressionTree(memberSelectTree.getExpression());
-    return receiverName != null && receiverName == headerVarName;
+    ExpressionTree receiver = memberSelectTree.getExpression();
+    Name receiverName = CollectionOwnershipUtils.getNameFromExpressionTree(receiver);
+    if (receiverName == null || receiverName != headerVarName) {
+      return false;
+    }
+    // Compare elements, not just names, so that a field access such as `other.it` does not match
+    // a local variable `it`.
+    return TreeUtils.elementFromTree(receiver) == headerVarElement;
   }
 
   /**
@@ -520,6 +546,9 @@ final class WhileDisposalLoopMatcher {
 
     /** Iterator or collection variable constrained by the loop header. */
     private final Name headerVarName;
+
+    /** The element of {@link #headerVarName}. */
+    private final Element headerVarElement;
 
     /** Collection variable whose writes should invalidate the match, if one exists. */
     private final @Nullable Name collectionVarNameForInvalidation;
@@ -543,14 +572,17 @@ final class WhileDisposalLoopMatcher {
      * Creates a {@link WhileBodyScanner}.
      *
      * @param headerVarName iterator or collection variable constrained by the header
+     * @param headerVarElement the element of {@code headerVarName}
      * @param collectionVarNameForInvalidation collection variable whose writes invalidate the match
      * @param allowedExtractMethods extraction methods allowed by the matched header form
      */
     private WhileBodyScanner(
         Name headerVarName,
+        Element headerVarElement,
         @Nullable Name collectionVarNameForInvalidation,
         Set<String> allowedExtractMethods) {
       this.headerVarName = headerVarName;
+      this.headerVarElement = headerVarElement;
       this.collectionVarNameForInvalidation = collectionVarNameForInvalidation;
       this.allowedExtractMethods = allowedExtractMethods;
     }
@@ -602,7 +634,7 @@ final class WhileDisposalLoopMatcher {
         return;
       }
       if (!isExtractionCallOnHeaderVar(
-          methodInvocationTree, headerVarName, allowedExtractMethods)) {
+          methodInvocationTree, headerVarName, headerVarElement, allowedExtractMethods)) {
         return;
       }
 
@@ -812,12 +844,14 @@ final class WhileDisposalLoopMatcher {
    * @param collectionVarNameForInvalidation collection variable whose writes should invalidate the
    *     match, if one exists.
    * @param headerVarName iterator variable or collection variable constrained by the loop header.
+   * @param headerVarElement the element of {@code headerVarName}.
    * @param allowedExtractMethods extraction methods accepted for this matched header.
    */
   private record WhileHeaderInfo(
       ExpressionTree collectionTree,
       @Nullable Name collectionVarNameForInvalidation,
       Name headerVarName,
+      Element headerVarElement,
       Set<String> allowedExtractMethods) {}
 
   /** Lazily-computed CFG facts used to resolve matched while loops. */
