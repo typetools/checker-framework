@@ -1152,7 +1152,12 @@ public abstract class CFAbstractTransfer<
     Node[] sides = new Node[chain.size() + 1];
     // The number of non-null elements of `sides`, which is the size of the result.
     int resultSize = 0;
-    if (!mayBeChanged(rhs, written)) {
+    // If the chain stopped at a conversion, then the conversion changes the value (the loop above
+    // looks through value-preserving widening conversions). JavaExpression.fromNode ignores the
+    // conversion, so omit `rhs`: its expression does not have the value of the chain.
+    boolean rhsIsValueChangingConversion =
+        rhs instanceof WideningConversionNode || rhs instanceof NarrowingConversionNode;
+    if (!rhsIsValueChangingConversion && !mayBeChanged(rhs, written)) {
       sides[chain.size()] = rhs;
       resultSize++;
     }
@@ -1633,8 +1638,10 @@ public abstract class CFAbstractTransfer<
         return true;
       }
       for (FieldAccess field : fields) {
+        // Accesses to a static field denote the same location regardless of their receivers,
+        // which might be unrelated classes that inherit the field.
         if (field.getField().equals(fa.getField())
-            && analysis.canAlias(field.getReceiver(), fa.getReceiver())) {
+            && (fa.isStatic() || analysis.canAlias(field.getReceiver(), fa.getReceiver()))) {
           return true;
         }
       }
