@@ -8,9 +8,10 @@ class ResetThrows {
   @CreatesMustCallFor("#1")
   static void reset(Socket s) throws IOException {}
 
-  static void leak() throws IOException {
-    // Counted.  Not verified, because it leaks if reset() throws an exception.
-    Socket s = new Socket();
+  static void leak(String host, int port) throws IOException {
+    // Counted.  Not verified, because it leaks if reset() throws an exception.  (An unconnected
+    // socket, as created by `new Socket()`, has no must-call obligation and is not counted.)
+    Socket s = new Socket(host, port);
     // Counted.  Not verified, because it leaks.
     reset(s);
   }
