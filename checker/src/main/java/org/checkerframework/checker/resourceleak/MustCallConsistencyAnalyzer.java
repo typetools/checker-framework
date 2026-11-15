@@ -659,8 +659,8 @@ public class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath, TypeMirror)} is true for each
-   * expression in the argument to the CreatesMustCallFor annotation. As a special case, the
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath, TypeMirror)} is true for
+   * each expression in the argument to the CreatesMustCallFor annotation. As a special case, the
    * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
    * constructor of the relevant class (invoking a constructor already creates an obligation). If
    * none of these conditions are true for any of the expressions, this method issues a
