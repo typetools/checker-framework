@@ -111,6 +111,17 @@ public class AssignmentInComparison {
     }
   }
 
+  // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
+  // the new value of `k`.
+  static void otherOperandReassignsAdditionOffset(@NonNegative int k, @NonNegative int n) {
+    int[] a = new int[110];
+    int j;
+    if (k + (j = n) < (k = a.length)) {
+      // :: error: [array.access.unsafe.high]
+      a[j + k] = 0;
+    }
+  }
+
   static void targetSameLen(AssignmentInComparison n, int[] a, int @SameLen("#2") [] b) {
     n.arr = b;
     int @SameLen("a") [] x = n.arr;
