@@ -73,11 +73,8 @@ public final class PathStringClassifier {
   private static PathShape lub(@Nullable PathShape unix, @Nullable PathShape windows) {
     if (unix == null) {
       return windows == null ? PathShape.UNKNOWN : windows;
-    } else if (windows == null) {
-      return unix;
-    } else {
-      return unix.lub(windows);
     }
+    return windows == null ? unix : unix.lub(windows);
   }
 
   /**
@@ -155,7 +152,7 @@ public final class PathStringClassifier {
   // Windows Path:  sun.nio.fs.WindowsPathParser and sun.nio.fs.WindowsPath
   //
 
-  /** Characters that may not appear in a Windows path, other than control characters. */
+  /** Characters that cannot appear in a Windows path, other than control characters. */
   private static final String WINDOWS_RESERVED_CHARS = "<>:\"|?*";
 
   /** The Windows long-path prefix {@code \\?\}. */
@@ -235,7 +232,7 @@ public final class PathStringClassifier {
         return null;
       }
       if (input.charAt(next - 1) == ' ') {
-        // A name may not end with a space.
+        // A name must not end with a space.
         return null;
       }
       nameCount++;
@@ -266,13 +263,13 @@ public final class PathStringClassifier {
   }
 
   /**
-   * Returns true if the given part of the string contains a character that may not appear in a name
+   * Returns true if the given part of the string contains a character that cannot appear in a name
    * in a Windows {@code Path}.
    *
    * @param s a string
    * @param from the index of the first character to examine
    * @param to the index after the last character to examine
-   * @return true if {@code s.substring(from, to)} contains a character that may not appear in a
+   * @return true if {@code s.substring(from, to)} contains a character that cannot appear in a
    *     Windows {@code Path} name
    */
   private static boolean hasInvalidWindowsPathChar(String s, int from, int to) {
@@ -323,7 +320,7 @@ public final class PathStringClassifier {
 
   /**
    * Returns the path shape of {@code new File(s)} on Windows, under every JDK. Starting with JDK
-   * 25, {@code WinNTFileSystem.normalize} strips a long-path prefix ({@code \\?\} or {@code
+   * 22, {@code WinNTFileSystem.normalize} strips a long-path prefix ({@code \\?\} or {@code
    * \\?\UNC\}) before it normalizes the rest of the string; earlier JDKs do not. The result is the
    * weaker of the two behaviors.
    *
@@ -331,23 +328,23 @@ public final class PathStringClassifier {
    * @return the path shape of {@code new File(s)} on Windows
    */
   /*package-private*/ static PathShape windowsFile(String s) {
-    return windowsFileBeforeJdk25(s).lub(windowsFileBeforeJdk25(stripLongPathPrefix(s)));
+    return windowsFileBeforeJdk22(s).lub(windowsFileBeforeJdk22(stripLongPathPrefix(s)));
   }
 
   /**
-   * Returns the path shape of {@code new File(s)} on Windows, for a JDK before JDK 25, which does
+   * Returns the path shape of {@code new File(s)} on Windows, for a JDK before JDK 22, which does
    * not strip a long-path prefix. This follows {@code File.getName} and {@code File.getParent}.
    *
    * @param s a path string
-   * @return the path shape of {@code new File(s)} on Windows, for a JDK before JDK 25
+   * @return the path shape of {@code new File(s)} on Windows, for a JDK before JDK 22
    */
-  /*package-private*/ static PathShape windowsFileBeforeJdk25(String s) {
+  /*package-private*/ static PathShape windowsFileBeforeJdk22(String s) {
     String path = windowsFileNormalize(s);
     int prefixLength = windowsFilePrefixLength(path);
     int index = path.lastIndexOf('\\');
     if (index < prefixLength) {
       boolean hasName = path.length() > prefixLength;
-      return PathShape.of(hasName, hasName && prefixLength > 0);
+      return PathShape.of(hasName, prefixLength > 0);
     } else {
       return PathShape.of(index + 1 < path.length(), true);
     }
@@ -355,7 +352,7 @@ public final class PathStringClassifier {
 
   /**
    * Returns the given path string without its Windows long-path prefix, as {@code
-   * WinNTFileSystem.stripLongOrUNCPrefix} (JDK 25 and later) does. A prefix {@code \\?\UNC\}
+   * WinNTFileSystem.stripLongOrUNCPrefix} (JDK 22 and later) does. A prefix {@code \\?\UNC\}
    * becomes {@code \\}, a prefix {@code \\?\} is removed, and {@code \\?\UNC} becomes {@code \\}.
    * Any other string is returned unchanged.
    *
