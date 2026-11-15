@@ -74,6 +74,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -130,6 +131,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -3850,7 +3852,90 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Collection<@Nullable String> to Collection<@NonNull String>.
       AnnotatedTypeMirror castTypeAsExprType =
           AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprType);
-      return typeHierarchy.isSubtype(exprType, castTypeAsExprType);
+      // The projection discards any type argument of castType that does not appear in the
+      // supertype, so check such type arguments separately.
+      return typeHierarchy.isSubtype(exprType, castTypeAsExprType)
+          && areUndeterminedTypeArgumentsUnrestricted(castType, exprTM);
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if each type argument of {@code castType} that is not determined by the Java type
+   * {@code exprTM} is no more restrictive than its type parameter's declared upper bound.
+   *
+   * <p>A type argument of {@code castType} is undetermined if its type parameter does not appear in
+   * the supertype of {@code castType}'s generic class whose class is that of {@code exprTM}. For
+   * example, in a cast from {@code Object} to {@code List<? extends @NonNull Object>}, the type
+   * argument of {@code List} is undetermined. Because the Java cast is checked, such a type argument
+   * is an unbounded wildcard as far as Java is concerned, but its annotations might be restrictive.
+   * The run-time check does not verify those annotations, so the cast is unsafe unless they are no
+   * more restrictive than the declared bound of the type parameter.
+   *
+   * @param castType annotated type of the cast; not a type variable
+   * @param exprTM the Java type of the casted expression; its erasure is a supertype of the erasure
+   *     of the Java type of {@code castType}
+   * @return true if each type argument of {@code castType} that is not determined by {@code exprTM}
+   *     is no more restrictive than its type parameter's declared upper bound
+   */
+  private boolean areUndeterminedTypeArgumentsUnrestricted(
+      AnnotatedTypeMirror castType, TypeMirror exprTM) {
+    if (castType.getKind() != TypeKind.DECLARED) {
+      return true;
+    }
+    AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
+    if (castDeclared.isUnderlyingTypeRaw()) {
+      return true;
+    }
+    List<AnnotatedTypeMirror> castTypeArgs = castDeclared.getTypeArguments();
+    if (castTypeArgs.isEmpty()) {
+      return true;
+    }
+    TypeElement castElement = (TypeElement) castDeclared.getUnderlyingType().asElement();
+    AnnotatedDeclaredType genericCastType = atypeFactory.getAnnotatedType(castElement);
+    List<AnnotatedTypeMirror> typeParams = genericCastType.getTypeArguments();
+    if (typeParams.size() != castTypeArgs.size()) {
+      return true;
+    }
+
+    // The supertypes of the generic cast type whose classes are those of exprTM.
+    List<Type> genericCastAsExprTypes = new ArrayList<>();
+    List<? extends TypeMirror> exprClasses =
+        exprTM.getKind() == TypeKind.INTERSECTION
+            ? ((IntersectionType) exprTM).getBounds()
+            : Collections.singletonList(types.erasure(exprTM));
+    for (TypeMirror exprClass : exprClasses) {
+      TypeMirror genericCastAsExprType =
+          TypesUtils.asSuper(
+              castElement.asType(), types.erasure(exprClass), atypeFactory.getProcessingEnv());
+      if (genericCastAsExprType != null) {
+        genericCastAsExprTypes.add((Type) genericCastAsExprType);
+      }
+    }
+
+    for (int i = 0; i < castTypeArgs.size(); i++) {
+      AnnotatedTypeMirror castTypeArg = castTypeArgs.get(i);
+      if (castTypeArg.getKind() != TypeKind.WILDCARD
+          || typeParams.get(i).getKind() != TypeKind.TYPEVAR) {
+        continue;
+      }
+      AnnotatedTypeVariable typeParam = (AnnotatedTypeVariable) typeParams.get(i);
+      Type typeVar = (Type) typeParam.getUnderlyingType();
+      boolean isDetermined = false;
+      for (Type genericCastAsExprType : genericCastAsExprTypes) {
+        if (genericCastAsExprType.contains(typeVar)) {
+          isDetermined = true;
+          break;
+        }
+      }
+      if (isDetermined) {
+        continue;
+      }
+      AnnotatedTypeMirror wildcardUpperBound =
+          ((AnnotatedWildcardType) castTypeArg).getExtendsBound();
+      if (!typeHierarchy.isSubtype(typeParam.getUpperBound(), wildcardUpperBound)) {
+        return false;
+      }
     }
     return true;
   }
