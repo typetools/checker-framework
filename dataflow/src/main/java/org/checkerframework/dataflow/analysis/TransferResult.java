@@ -35,7 +35,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
   protected final @Nullable Map<TypeMirror, S> exceptionalStores;
 
   /**
-   * Create a new TransferResult, given {@link #resultValue} and {@link #exceptionalStores}.
+   * Creates a new TransferResult, given {@link #resultValue} and {@link #exceptionalStores}.
    *
    * @param resultValue the abstract value of the {@link
    *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
@@ -59,7 +59,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
   }
 
   /**
-   * Set the value of {@link #resultValue}.
+   * Sets the value of {@link #resultValue}.
    *
    * @param resultValue the abstract value of the {@link
    *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
@@ -143,7 +143,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
   public abstract boolean storeChanged();
 
   /**
-   * Construct a shallow copy of this {@code TransferResult}, but with the given {@code
+   * Constructs a shallow copy of this {@code TransferResult}, but with the given {@code
    * exceptionalStores}.
    *
    * @param exceptionalStores the new exceptional stores to use

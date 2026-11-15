@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 public @interface AnnotatedFor {
   /**
    * Returns the type systems for which the class has been annotated. Legal arguments are any string
-   * that may be passed to the {@code -processor} command-line argument: the fully qualified class
+   * that can be passed to the {@code -processor} command-line argument: the fully qualified class
    * name for the checker, or a shorthand for built-in checkers. Using the annotation with no
    * arguments, as in {@code @AnnotatedFor({})}, has no effect.
    *

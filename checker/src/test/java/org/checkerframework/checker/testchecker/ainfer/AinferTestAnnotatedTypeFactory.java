@@ -132,7 +132,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected class AinferTestTreeAnnotator extends TreeAnnotator {
 
     /**
-     * Create a new AinferTestTreeAnnotator.
+     * Creates a new AinferTestTreeAnnotator.
      *
      * @param atypeFactory the type factory
      */
@@ -209,7 +209,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final QualifierKind SIBLING_WITH_FIELDS_KIND;
 
     /**
-     * Creates a AinferTestQualifierHierarchy from the given classes.
+     * Creates an AinferTestQualifierHierarchy from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils

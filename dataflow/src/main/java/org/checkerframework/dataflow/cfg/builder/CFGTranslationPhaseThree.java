@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.BugInCF;
  *   <li>Two consecutive, non-empty, regular basic blocks where the second block has exactly one
  *       predecessor (namely the other of the two blocks): In this case, the two blocks are merged.
  *   <li>Some basic blocks might not be reachable from the entryBlock. These basic blocks are
- *       removed, and the list of predecessors (in the doubly-linked structure of basic blocks) are
+ *       removed, and the list of predecessors (in the doubly-linked structure of basic blocks) is
  *       adapted correctly.
  * </ol>
  *
@@ -41,7 +41,7 @@ public final class CFGTranslationPhaseThree {
     throw new Error("Do not instantiate");
   }
 
-  /** A simple wrapper object that holds a basic block and allows to set one of its successors. */
+  /** A simple wrapper object that holds a basic block and allows setting one of its successors. */
   protected static interface PredecessorHolder {
     /**
      * Sets the successor.
@@ -59,7 +59,7 @@ public final class CFGTranslationPhaseThree {
   }
 
   /**
-   * Perform phase three on the control flow graph {@code cfg}.
+   * Performs phase three on the control flow graph {@code cfg}.
    *
    * @param cfg the control flow graph. Ownership is transferred to this method and the caller is
    *     not allowed to read or modify {@code cfg} after the call to {@code process} any more.
@@ -145,7 +145,7 @@ public final class CFGTranslationPhaseThree {
   }
 
   /**
-   * Simplify the CFG by merging consecutive single-successor blocks.
+   * Simplifies the CFG by merging consecutive single-successor blocks.
    *
    * @param blocks the set of blocks to process
    */
@@ -202,9 +202,9 @@ public final class CFGTranslationPhaseThree {
   }
 
   /**
-   * Compute the set of empty regular basic blocks {@code emptyBlocks}, starting at {@code start}
-   * and going both forward and backwards. Furthermore, compute the predecessors of these empty
-   * blocks ({@code predecessors} ), and their single successor (return value).
+   * Computes the set of empty regular basic blocks {@code emptyBlocks}, starting at {@code start}
+   * and going both forward and backwards. Furthermore, computes the predecessors of these empty
+   * blocks ({@code predecessors}), and their single successor (return value).
    *
    * @param start the starting point of the search (an empty, regular basic block)
    * @param emptyBlocks a set to be filled by this method with all empty basic blocks found
@@ -244,8 +244,8 @@ public final class CFGTranslationPhaseThree {
   }
 
   /**
-   * Compute the set of empty regular basic blocks {@code emptyBlocks}, starting at {@code start}
-   * and looking only backwards in the control flow graph. Furthermore, compute the predecessors of
+   * Computes the set of empty regular basic blocks {@code emptyBlocks}, starting at {@code start}
+   * and looking only backwards in the control flow graph. Furthermore, computes the predecessors of
    * these empty blocks ({@code predecessors}).
    *
    * @param start the starting point of the search (an empty, regular basic block)
@@ -285,7 +285,7 @@ public final class CFGTranslationPhaseThree {
   /**
    * Returns a predecessor holder that can be used to set the successor of {@code pred} in the place
    * where previously the edge pointed to {@code cur}. Additionally, the predecessor holder also
-   * takes care of unlinking (i.e., removing the {@code pred} from {@code cur's} predecessors).
+   * takes care of unlinking (i.e., removing the {@code pred} from {@code cur}'s predecessors).
    *
    * @param pred a block whose successor should be set
    * @param cur the previous successor of {@code pred}
