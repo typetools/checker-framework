@@ -1,6 +1,6 @@
 // A test of iteration over a resource whose iterator() method returns @MustCallAlias.  The
 // iterator() call might throw an exception before the iterator variable is assigned, so the store
-// at a handler that the loop body's exceptions also reach has no refined type for the iterator
+// at a handler that the loop body's exceptions also reach has no @MustCall type for the iterator
 // variable.  The iterator variable is a resource alias of the resource.
 
 import java.io.BufferedReader;

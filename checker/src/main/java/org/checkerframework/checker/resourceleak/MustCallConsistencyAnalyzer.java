@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -321,50 +320,50 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Gets the must-call methods (i.e., the list of methods that must be called to satisfy the
-     * must-call obligation) of each resource alias represented by this Obligation.
+     * Returns the must-call methods (i.e., the list of methods that must be called to satisfy the
+     * must-call obligation) of each resource alias of this Obligation through which the obligation
+     * can be satisfied.
      *
-     * <p>All the resource aliases of an Obligation refer to the same resource. Therefore, a
-     * resource alias that has no {@code @MustCall} type in the store has the must-call methods of a
-     * resource alias that does. For example, the store lacks a resource alias that is unassigned on
-     * some path to the store's program point, such as a variable that is assigned the result of a
-     * {@code @MustCallAlias} method that might throw an exception.
+     * <p>If some resource alias of this has a {@code @MustCall} type in the store, then the result
+     * contains exactly the resource aliases that have one. A resource alias that has no
+     * {@code @MustCall} type in the store cannot satisfy the obligation, so the result omits it.
+     * For example, the store lacks a resource alias that is unassigned on some path to the store's
+     * program point, such as a variable that is assigned the result of a {@code @MustCallAlias}
+     * method that might throw an exception. The Called Methods store lacks such a resource alias as
+     * well, so no method is known to have been called on it. Its declared type, however, might be
+     * {@code @MustCall({})}, as for a variable of type {@code Iterator}; using that type would make
+     * the obligation trivially satisfied.
+     *
+     * <p>If no resource alias of this has a {@code @MustCall} type in the store, then the result
+     * contains every resource alias of this, with the must-call type computed by {@link
+     * #getMustCallValueFromDeclaration}.
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
-     * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
-     *     null, then the must-call type of each resource alias is computed as by {@link
-     *     #getMustCallValue}, from its declared type or its class.
-     * @return a map from each resource alias of this to a list of its must-call method names, or
-     *     null if the must-call obligations are unsatisfiable (i.e., no resource alias of this has
-     *     a {@code @MustCall} type in the Must Call store, and the declared type of some resource
-     *     alias of this is not a {@code @MustCall} type, such as MustCallUnknown)
+     * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis, or null
+     * @return a map from resource aliases of this to lists of their must-call method names, whose
+     *     iteration order is that of {@link #resourceAliases}; or null if the must-call obligations
+     *     are unsatisfiable (i.e., no resource alias of this has a {@code @MustCall} type in the
+     *     Must Call store, and the declared type of some resource alias of this is not a
+     *     {@code @MustCall} type, such as MustCallUnknown)
      */
     public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
         RLCCalledMethodsAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
-      Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
-      MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-          rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
-
-      // The resource aliases that have no @MustCall type in the store.
-      List<ResourceAlias> unrefinedAliases = new ArrayList<>(0);
-      // The must-call methods of a resource alias that has a @MustCall type in the store.
-      List<String> refinedAnnoVals = null;
+      Map<ResourceAlias, List<String>> result = new LinkedHashMap<>(this.resourceAliases.size());
       for (ResourceAlias alias : this.resourceAliases) {
-        AnnotationMirror mcAnno = getRefinedMustCallValue(alias, mcStore);
-        if (mcAnno == null) {
-          unrefinedAliases.add(alias);
-          continue;
+        AnnotationMirror mcAnno = getMustCallValueFromStore(alias, mcStore);
+        if (mcAnno != null) {
+          result.put(alias, rlAtf.getMustCallValues(mcAnno));
         }
-        refinedAnnoVals = rlAtf.getMustCallValues(mcAnno);
-        result.put(alias, refinedAnnoVals);
+      }
+      if (!result.isEmpty()) {
+        return result;
       }
 
-      for (ResourceAlias alias : unrefinedAliases) {
-        if (refinedAnnoVals != null) {
-          result.put(alias, refinedAnnoVals);
-          continue;
-        }
-        AnnotationMirror mcAnno = getMustCallValue(alias, mustCallAnnotatedTypeFactory);
+      MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+          rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
+      for (ResourceAlias alias : this.resourceAliases) {
+        AnnotationMirror mcAnno =
+            getMustCallValueFromDeclaration(alias, mustCallAnnotatedTypeFactory);
         if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
           // MustCallUnknown; cannot be satisfied
           return null;
@@ -386,7 +385,7 @@ public class MustCallConsistencyAnalyzer {
      * @return the {@code @MustCall} annotation of {@code alias} in {@code mcStore}, or null if
      *     {@code mcStore} is null or has no {@code @MustCall} type for {@code alias}
      */
-    private static @Nullable AnnotationMirror getRefinedMustCallValue(
+    private static @Nullable AnnotationMirror getMustCallValueFromStore(
         ResourceAlias alias, @Nullable CFStore mcStore) {
       CFValue value = mcStore == null ? null : mcStore.getValue(alias.reference);
       if (value == null) {
@@ -405,7 +404,7 @@ public class MustCallConsistencyAnalyzer {
      * @param mcAtf the must-call checker's annotated type factory
      * @return the annotation from the must-call type hierarchy associated with {@code alias}
      */
-    private static AnnotationMirror getMustCallValue(
+    private static AnnotationMirror getMustCallValueFromDeclaration(
         ResourceAlias alias, MustCallAnnotatedTypeFactory mcAtf) {
       AnnotationMirror result =
           mcAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(mcAtf.TOP);
@@ -2393,9 +2392,9 @@ public class MustCallConsistencyAnalyzer {
     }
 
     boolean mustCallSatisfied = false;
-    for (ResourceAlias alias : obligation.resourceAliases) {
-
-      List<String> mustCallValuesForAlias = mustCallValues.get(alias);
+    for (Map.Entry<ResourceAlias, List<String>> entry : mustCallValues.entrySet()) {
+      ResourceAlias alias = entry.getKey();
+      List<String> mustCallValuesForAlias = entry.getValue();
       // optimization when there are no methods to call
       if (mustCallValuesForAlias.isEmpty()) {
         mustCallSatisfied = true;
@@ -2435,7 +2434,8 @@ public class MustCallConsistencyAnalyzer {
 
     if (!mustCallSatisfied) {
       // Report the error at the first alias' definition. This choice is arbitrary but
-      // consistent.
+      // consistent. The first alias might be absent from mustCallValues, so report the
+      // must-call methods of the first alias that is present.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
@@ -2443,7 +2443,7 @@ public class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
-              formatMissingMustCallMethods(mustCallValues.get(firstAlias)),
+              formatMissingMustCallMethods(mustCallValues.values().iterator().next()),
               firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
