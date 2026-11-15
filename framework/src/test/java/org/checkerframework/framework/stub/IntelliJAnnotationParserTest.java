@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import java.util.Arrays;
 import java.util.Collections;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.stub.IntelliJAnnotationParser.ParsedItemSignature;
 import org.junit.Assert;
@@ -241,5 +242,48 @@ public class IntelliJAnnotationParserTest {
     // A single value need not be surrounded by braces.
     Assert.assertEquals(
         Arrays.asList("\"a\""), IntelliJAnnotationParser.parseArrayLiteral("\"a\""));
+  }
+
+  /**
+   * Parses a literal of a primitive type.
+   *
+   * @param s the literal
+   * @param kind the element type
+   * @return the result of {@link IntelliJAnnotationParser#parsePrimitiveLiteral}
+   */
+  private static @Nullable Object parsePrimitive(String s, TypeKind kind) {
+    return IntelliJAnnotationParser.parsePrimitiveLiteral(s, kind);
+  }
+
+  @Test
+  public void testParsePrimitiveLiteralCharWidening() {
+    // A character literal is widened to the element type.
+    Assert.assertEquals(Long.valueOf(49), parsePrimitive("'1'", TypeKind.LONG));
+    Assert.assertEquals(Integer.valueOf(65), parsePrimitive("'A'", TypeKind.INT));
+    Assert.assertEquals(Character.valueOf('A'), parsePrimitive("'A'", TypeKind.CHAR));
+    Assert.assertEquals(Integer.valueOf(10), parsePrimitive("'\\n'", TypeKind.INT));
+    Assert.assertNull(parsePrimitive("'A'", TypeKind.BOOLEAN));
+    Assert.assertNull(parsePrimitive("'\\u00ff'", TypeKind.BYTE));
+  }
+
+  @Test
+  public void testParsePrimitiveLiteralIntegralWidth() {
+    // An unsuffixed integral literal has type int, even if the element type is long.
+    Assert.assertEquals(Long.valueOf(-1), parsePrimitive("0xFFFFFFFF", TypeKind.LONG));
+    Assert.assertEquals(Long.valueOf(0xFFFFFFFFL), parsePrimitive("0xFFFFFFFFL", TypeKind.LONG));
+    Assert.assertNull(parsePrimitive("3000000000", TypeKind.LONG));
+    Assert.assertEquals(Long.valueOf(3000000000L), parsePrimitive("3000000000L", TypeKind.LONG));
+    Assert.assertEquals(Double.valueOf(-1.0), parsePrimitive("0xFFFFFFFF", TypeKind.DOUBLE));
+    Assert.assertEquals(Float.valueOf(-1.0f), parsePrimitive("0xFFFFFFFF", TypeKind.FLOAT));
+    Assert.assertNull(parsePrimitive("3000000000", TypeKind.DOUBLE));
+  }
+
+  @Test
+  public void testParsePrimitiveLiteralFloatToDouble() {
+    // A float literal is rounded to float before it is widened to double.
+    Assert.assertEquals(Double.valueOf((double) 0.1f), parsePrimitive("0.1f", TypeKind.DOUBLE));
+    Assert.assertEquals(Double.valueOf(0.1), parsePrimitive("0.1", TypeKind.DOUBLE));
+    Assert.assertEquals(Float.valueOf(0.1f), parsePrimitive("0.1f", TypeKind.FLOAT));
+    Assert.assertNull(parsePrimitive("0.1d", TypeKind.FLOAT));
   }
 }

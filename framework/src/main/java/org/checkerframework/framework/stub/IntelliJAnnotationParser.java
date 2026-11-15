@@ -482,20 +482,28 @@ public final class IntelliJAnnotationParser {
    */
   private static @Nullable Object parseElementValue(
       String rawVal, TypeMirror type, ProcessingEnvironment processingEnv) {
-    String unquotedVal = stripQuotes(rawVal);
+    String trimmedVal = rawVal.trim();
+    boolean isQuoted = isQuoted(trimmedVal);
+    String unquotedVal = stripQuotes(trimmedVal);
     TypeKind kind = type.getKind();
     if (kind.isPrimitive()) {
-      Object literal = parsePrimitiveLiteral(unquotedVal, kind);
-      if (literal != null) {
+      Object literal = parsePrimitiveLiteral(trimmedVal, kind);
+      if (literal != null || isQuoted) {
         return literal;
       }
       // The value may be a constant field, such as java.lang.Long.MIN_VALUE.
-      return constantFieldValue(unquotedVal, kind, processingEnv.getElementUtils());
+      Object constant = constantValue(unquotedVal, processingEnv.getElementUtils());
+      return constant == null ? null : convertConstant(constant, kind);
     } else if (kind == TypeKind.DECLARED) {
       DeclaredType dt = (DeclaredType) type;
       TypeElement dtElt = (TypeElement) dt.asElement();
       if (dtElt.getQualifiedName().contentEquals("java.lang.String")) {
-        return unquotedVal;
+        if (isQuoted) {
+          return unquotedVal;
+        }
+        // The value may be a constant field, such as java.io.File.separator.
+        Object constant = constantValue(unquotedVal, processingEnv.getElementUtils());
+        return constant instanceof String ? constant : null;
       } else if (dtElt.getKind() == ElementKind.ENUM) {
         int separator = Math.max(unquotedVal.lastIndexOf('.'), unquotedVal.lastIndexOf('$'));
         if (separator != -1) {
@@ -522,14 +530,25 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Parses a literal of a primitive type.
+   * Parses a literal that is assignable to a primitive type. A character literal, such as {@code
+   * 'A'}, is converted to {@code kind} as Java's assignment conversion would, so {@code 'A'} is 65
+   * when {@code kind} is int.
    *
-   * @param s the unquoted value string
+   * @param rawVal the value string, which may be enclosed in quotation marks
    * @param kind a primitive type kind
-   * @return the value that {@code s} represents, or null if {@code s} is not a literal of type
-   *     {@code kind}
+   * @return the value that {@code rawVal} represents, or null if {@code rawVal} is not a literal
+   *     that is assignable to type {@code kind}
    */
-  private static @Nullable Object parsePrimitiveLiteral(String s, TypeKind kind) {
+  /*package-private*/ static @Nullable Object parsePrimitiveLiteral(String rawVal, TypeKind kind) {
+    String trimmedVal = rawVal.trim();
+    if (trimmedVal.startsWith("'") && isQuoted(trimmedVal)) {
+      Character c = parseChar(stripQuotes(trimmedVal));
+      return c == null ? null : convertConstant(c, kind);
+    }
+    String s = stripQuotes(trimmedVal);
+    // An integral literal has type long if it has an "L" or "l" suffix, and type int otherwise.
+    // Java widens it to the type of the element.
+    boolean hasLongSuffix = s.endsWith("l") || s.endsWith("L");
     switch (kind) {
       case BOOLEAN -> {
         return parseBoolean(s);
@@ -538,7 +557,7 @@ public final class IntelliJAnnotationParser {
         return parseChar(s);
       }
       case LONG -> {
-        return parseIntegralLiteral(s, true);
+        return parseIntegralLiteral(s, hasLongSuffix);
       }
       case INT, SHORT, BYTE -> {
         Long value = parseIntegralLiteral(s, false);
@@ -556,15 +575,27 @@ public final class IntelliJAnnotationParser {
       }
       case FLOAT, DOUBLE -> {
         // An integral literal, such as 0x1f or 10L, is assignable to a float or double element.
-        Long integralValue = parseIntegralLiteral(s, true);
+        Long integralValue = parseIntegralLiteral(s, hasLongSuffix);
         if (integralValue != null) {
           long v = integralValue;
           return kind == TypeKind.FLOAT ? (Object) (float) v : (Object) (double) v;
+        }
+        if (!hasLongSuffix && parseIntegralLiteral(s, true) != null) {
+          // An int literal that is out of range, which Java rejects.
+          return null;
         }
         String digits = s.replace("_", "").trim();
         if (kind == TypeKind.FLOAT && (digits.endsWith("d") || digits.endsWith("D"))) {
           // A double literal is not assignable to a float element.
           return null;
+        }
+        if (kind == TypeKind.DOUBLE && (digits.endsWith("f") || digits.endsWith("F"))) {
+          // A float literal is rounded to float, then widened to double.
+          try {
+            return (double) Float.parseFloat(digits);
+          } catch (NumberFormatException e) {
+            return null;
+          }
         }
         try {
           // These methods accept a trailing "f", "F", "d", or "D" and hexadecimal notation.
@@ -662,16 +693,14 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Returns the value of a constant field, such as {@code java.lang.Long.MIN_VALUE}, converted to
-   * the given primitive type as Java's assignment conversion would.
+   * Returns the value of a constant field, such as {@code java.lang.Long.MIN_VALUE}.
    *
    * @param s a qualified field name
-   * @param kind a primitive type kind
    * @param elements the element utilities
-   * @return the field's constant value converted to type {@code kind}, or null if {@code s} does
-   *     not name a constant field whose value is assignable to type {@code kind}
+   * @return the field's constant value (a boxed primitive or a String), or null if {@code s} does
+   *     not name a constant field
    */
-  private static @Nullable Object constantFieldValue(String s, TypeKind kind, Elements elements) {
+  private static @Nullable Object constantValue(String s, Elements elements) {
     int lastDot = s.lastIndexOf('.');
     if (lastDot <= 0) {
       return null;
@@ -683,8 +712,7 @@ public final class IntelliJAnnotationParser {
     String fieldName = s.substring(lastDot + 1);
     for (VariableElement field : ElementFilter.fieldsIn(owner.getEnclosedElements())) {
       if (field.getSimpleName().contentEquals(fieldName)) {
-        Object constant = field.getConstantValue();
-        return constant == null ? null : convertConstant(constant, kind);
+        return field.getConstantValue();
       }
     }
     return null;
@@ -924,12 +952,22 @@ public final class IntelliJAnnotationParser {
    */
   /*package*/ static String stripQuotes(String s) {
     s = s.trim();
-    if (s.length() >= 2
-        && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))
-        && !lastCharIsEscaped(s)) {
+    if (isQuoted(s)) {
       return StringsP.unescapeJava(s.substring(1, s.length() - 1));
     }
     return s;
+  }
+
+  /**
+   * Returns true if {@code s} is enclosed in single or double quotation marks.
+   *
+   * @param s a trimmed string
+   * @return true if {@code s} is enclosed in single or double quotation marks
+   */
+  private static boolean isQuoted(String s) {
+    return s.length() >= 2
+        && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))
+        && !lastCharIsEscaped(s);
   }
 
   /**
