@@ -337,8 +337,18 @@ public class MustCallConsistencyAnalyzer {
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
+      // The aliases whose must-call type is @PolyMustCall.  Such an alias is the result of a
+      // @MustCallAlias method, such as the iterator variable of an enhanced for loop whose
+      // iterator() method returns @MustCallAlias, and the store contains no refined type for it.
+      // It has the same must-call methods as the other aliases.
+      List<ResourceAlias> polyAliases = new ArrayList<>(0);
+      List<String> nonPolyAnnoVals = null;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
+        if (AnnotationUtils.areSame(mcAnno, mustCallAnnotatedTypeFactory.POLY)) {
+          polyAliases.add(alias);
+          continue;
+        }
         if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
           // MustCallUnknown; cannot be satisfied
           return null;
@@ -348,6 +358,16 @@ public class MustCallConsistencyAnalyzer {
         // obligation in the first place.
         // TODO: add an assertion that annoVals is non-empty and address any failures
         result.put(alias, annoVals);
+        nonPolyAnnoVals = annoVals;
+      }
+      if (!polyAliases.isEmpty()) {
+        if (nonPolyAnnoVals == null) {
+          // No alias has a known must-call type; cannot be satisfied
+          return null;
+        }
+        for (ResourceAlias alias : polyAliases) {
+          result.put(alias, nonPolyAnnoVals);
+        }
       }
       return result;
     }
