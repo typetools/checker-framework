@@ -433,7 +433,7 @@ public class NullnessVisitor
       }
     }
     if (tree.getPattern() instanceof BindingPatternTree bindingPattern) {
-      checkInstanceOfPattern(tree, bindingPattern.getVariable());
+      checkInstanceofPattern(tree, bindingPattern.getVariable());
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, validate the reference type and scan the expression and the pattern or type.
@@ -447,7 +447,7 @@ public class NullnessVisitor
   }
 
   @Override
-  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
     return withNonNull(expType);
   }
 
