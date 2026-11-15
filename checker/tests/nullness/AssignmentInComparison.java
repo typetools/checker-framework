@@ -141,6 +141,26 @@ public class AssignmentInComparison {
     }
   }
 
+  static class Base {
+    static @Nullable AssignmentInComparison current;
+  }
+
+  static class Left extends Base {}
+
+  static class Right extends Base {}
+
+  static void staticFieldThroughSiblingSubclasses() {
+    if (Right.current == null) {
+      return;
+    }
+    if ((Left.current = Right.current.next) != null) {
+      // `Left.current` and `Right.current` are the same field, so after the assignment
+      // `Right.current.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      Right.current.next.toString();
+    }
+  }
+
   static void anonymousClassInitializerReassignsReceiver(AssignmentInComparison other) {
     if (global == null) {
       return;
