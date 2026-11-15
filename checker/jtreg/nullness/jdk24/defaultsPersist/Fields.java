@@ -23,6 +23,9 @@ public class Fields {
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD),
   })
   public String fieldDefault() {
     return "Object f = new Object();";
@@ -35,6 +38,9 @@ public class Fields {
         type = FIELD),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = FIELD),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = FIELD),
   })
   public String fieldDefaultOneExplicit() {
@@ -51,6 +57,9 @@ public class Fields {
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD),
   })
   public String fieldWithDefaultQualifier() {
     return "@DefaultQualifier(Nullable.class)" + System.lineSeparator() + " Object f;";
@@ -65,6 +74,9 @@ public class Fields {
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = FIELD,
         genericLocation = {0, 0}),
@@ -74,6 +86,10 @@ public class Fields {
         genericLocation = {0, 0}),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = FIELD,
+        genericLocation = {0, 0}),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = FIELD,
         genericLocation = {0, 0}),
   })
@@ -90,6 +106,9 @@ public class Fields {
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/Nullable",
         type = FIELD,
         genericLocation = {0, 0}),
@@ -102,6 +121,10 @@ public class Fields {
         type = FIELD,
         genericLocation = {0, 0}),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD,
+        genericLocation = {0, 0}),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = FIELD,
         genericLocation = {0, 0, 0, 0}),
@@ -114,6 +137,10 @@ public class Fields {
         type = FIELD,
         genericLocation = {0, 0, 0, 0}),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD,
+        genericLocation = {0, 0, 0, 0}),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = FIELD,
         genericLocation = {0, 0, 0, 0, 0, 0}),
@@ -123,6 +150,10 @@ public class Fields {
         genericLocation = {0, 0, 0, 0, 0, 0}),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = FIELD,
+        genericLocation = {0, 0, 0, 0, 0, 0}),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = FIELD,
         genericLocation = {0, 0, 0, 0, 0, 0}),
   })
@@ -139,6 +170,9 @@ public class Fields {
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD),
 
     // in front of Object //TODO: NEXT ANNO CHANGE TO NULLABLE WHEN WE GET JDK WORKING WITH THIS
     @TADescription(
@@ -153,6 +187,10 @@ public class Fields {
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD,
         genericLocation = {3, 0, 2, 0}),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD,
+        genericLocation = {3, 0, 2, 0}),
 
     // in front of the wildcard (?)
     @TADescription(
@@ -165,6 +203,10 @@ public class Fields {
         genericLocation = {3, 0}),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = FIELD,
+        genericLocation = {3, 0}),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
         type = FIELD,
         genericLocation = {3, 0}),
   })
@@ -181,6 +223,9 @@ public class Fields {
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = FIELD),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD),
 
     // in front of the wildcard (?)
     @TADescription(
@@ -193,6 +238,10 @@ public class Fields {
         genericLocation = {3, 0}),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = FIELD,
+        genericLocation = {3, 0}),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
         type = FIELD,
         genericLocation = {3, 0}),
 
@@ -210,6 +259,10 @@ public class Fields {
         type = FIELD,
         genericLocation = {3, 0, 2, 0}),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD,
+        genericLocation = {3, 0, 2, 0}),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = FIELD,
         genericLocation = {3, 0, 2, 0, 3, 0}),
@@ -222,6 +275,10 @@ public class Fields {
         type = FIELD,
         genericLocation = {3, 0, 2, 0, 3, 0}),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = FIELD,
+        genericLocation = {3, 0, 2, 0, 3, 0}),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = FIELD,
         genericLocation = {3, 0, 2, 0, 3, 0, 0, 0}),
@@ -231,6 +288,10 @@ public class Fields {
         genericLocation = {3, 0, 2, 0, 3, 0, 0, 0}),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = FIELD,
+        genericLocation = {3, 0, 2, 0, 3, 0, 0, 0}),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = FIELD,
         genericLocation = {3, 0, 2, 0, 3, 0, 0, 0}),
   })
