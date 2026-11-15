@@ -20,9 +20,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * share}. Every name element of a {@code @HasName} path is non-empty, because only the empty path
  * has an empty name element.
  *
- * <p>Whether a path has a name depends only on the path's characters. It does not depend on the
- * file system; for example, it does not depend on whether the file exists. Therefore, no operation,
- * such as creating or deleting a file, can make a {@code @HasName} path lose its name.
+ * <p>Whether a path has a name depends only on the path's characters and on the rules by which the
+ * platform (and, for a {@code File}, the JDK version) parses them; for example, {@code C:} has a
+ * name on Unix but not on Windows. It does not depend on the state of the file system; for example,
+ * it does not depend on whether the file exists. Therefore, no operation, such as creating or
+ * deleting a file, can make a {@code @HasName} path lose its name.
  *
  * @see HasParent
  * @checker_framework.manual #path-shape-checker Path Shape Checker
