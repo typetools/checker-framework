@@ -174,37 +174,51 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     // LockAnnotatedTypeFactory, but it affects only the LockPossiblyHeld type hierarchy (not
     // the @GuardedBy hierarchy), so it cannot use that logic.
     if (!atypeFactory.isSideEffectFree(method)) {
-      // After the call to super.updateForMethodCall, only final fields are left in
-      // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
-      // hierarchy, even a final field might be locked or unlocked by a side-effecting method.
-      // So, final fields must be set to @LockPossiblyHeld, but the annotation in the
-      // GuardedBy hierarchy should not be changed.
-      for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
-        if (newValue != null) {
-          fieldValues.put(field, newValue);
-        } else {
-          fieldValues.remove(field);
-        }
-      }
+      changeLockAnnosToTopAfterSideEffect();
+    }
+  }
 
-      // Local variables and iterated collection elements could also be unlocked via an alias
-      for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
-        if (newValue != null) {
-          localVariableValues.put(var, newValue);
-        }
-      }
-      for (IteratedCollectionElement ice : new ArrayList<>(iteratedCollectionElements.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(ice, iteratedCollectionElements.get(ice));
-        if (newValue != null) {
-          iteratedCollectionElements.put(ice, newValue);
-        }
-      }
+  @Override
+  public void updateForUnknownSideEffect() {
+    super.updateForUnknownSideEffect();
+    changeLockAnnosToTopAfterSideEffect();
+  }
 
-      if (thisValue != null) {
-        thisValue = changeLockAnnoToTop(null, thisValue);
+  /**
+   * Changes the LockPossiblyHeld annotation of each stored value to top, because code that is not
+   * side-effect-free might lock or unlock any lock. Is called after the superclass has removed the
+   * values that such code might change.
+   */
+  private void changeLockAnnosToTopAfterSideEffect() {
+    // After the superclass has handled a side effect, only final fields are left in fieldValues.
+    // For the LockPossiblyHeld hierarchy, even a final field might be locked or unlocked by a
+    // side-effecting method.  So, final fields must be set to @LockPossiblyHeld, but the
+    // annotation in the GuardedBy hierarchy should not be changed.
+    for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
+      if (newValue != null) {
+        fieldValues.put(field, newValue);
+      } else {
+        fieldValues.remove(field);
       }
+    }
+
+    // Local variables and iterated collection elements could also be unlocked via an alias
+    for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
+      if (newValue != null) {
+        localVariableValues.put(var, newValue);
+      }
+    }
+    for (IteratedCollectionElement ice : new ArrayList<>(iteratedCollectionElements.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(ice, iteratedCollectionElements.get(ice));
+      if (newValue != null) {
+        iteratedCollectionElements.put(ice, newValue);
+      }
+    }
+
+    if (thisValue != null) {
+      thisValue = changeLockAnnoToTop(null, thisValue);
     }
   }
 

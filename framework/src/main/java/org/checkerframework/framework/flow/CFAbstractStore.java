@@ -241,8 +241,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
-
-      boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
 
       boolean hasDoesNotUnrefineReceiver = atypeFactory.hasDoesNotUnrefineReceiver(method);
@@ -254,57 +252,91 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       @Nullable List<JavaExpression> seOnlyExpressions =
           analysis.getSideEffectsOnlyExpressions(methodInvocationNode);
 
-      // TODO: Also remove if any element/argument to the annotation is not
-      // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
-
-      // Update local variables and iterated collection elements.
-      if (sideEffectsUnrefineAliases) {
-        localVariableValues
-            .entrySet()
-            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
-        iteratedCollectionElements
-            .entrySet()
-            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
-      }
-
-      // Update this value.
-      // `thisValue` is the abstract value of the expression `this`.  A callee with a
-      // `@SideEffectsOnly` annotation can change it only if the annotation lists `this` itself.
-      // (At call site `x.m()`, the callee's `this` corresponds to `x`.)
-      boolean thisIsSideEffected =
-          seOnlyExpressions == null
-              || seOnlyExpressions.stream().anyMatch(je -> je instanceof ThisReference);
-      if (sideEffectsUnrefineAliases
-          && thisIsSideEffected
-          && !(unrefinableReceiverJe instanceof ThisReference)
-          && !(unrefinableReceiverJe instanceof SuperReference)) {
-        thisValue = null;
-      }
-
-      // Update field values.
-      if (sideEffectsUnrefineAliases) {
-        fieldValues
-            .entrySet()
-            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
-      } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields).
-        updateFieldValuesForMethodCall(atypeFactory, unrefinableReceiverJe, seOnlyExpressions);
-      }
-
-      // Update array values.
-      arrayValues
-          .entrySet()
-          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
-
-      // Update information about method calls.
-      methodCallExpressions
-          .entrySet()
-          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+      removeSideEffectedValues(unrefinableReceiverJe, seOnlyExpressions);
     }
 
     // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Removes information that might not be valid any more after code with arbitrary side effects
+   * has been executed, but that is not represented by a node in the control flow graph. An example
+   * is a call to a record accessor that is not side-effect-free, which a record pattern invokes
+   * implicitly.
+   *
+   * <p>This has the same effect on the store as {@link #updateForMethodCall} for a method that is
+   * not side-effect-free and that has no {@code @SideEffectsOnly} or
+   * {@code @DoesNotUnrefineReceiver} annotation, except that it stores no value for a method call.
+   * Subclasses that override {@link #updateForMethodCall} to remove or keep additional information
+   * should override this method in the same way.
+   */
+  public void updateForUnknownSideEffect() {
+    removeSideEffectedValues(null, null);
+  }
+
+  /**
+   * Helper for {@link #updateForMethodCall} and {@link #updateForUnknownSideEffect}. Removes
+   * information that might not be valid any more after a call to a method that is not
+   * side-effect-free.
+   *
+   * @param unrefinableReceiverJe if non-null, an expression that should not be unrefined
+   * @param seOnlyExpressions if non-null, the only expressions that the method might side-effect
+   */
+  private void removeSideEffectedValues(
+      @Nullable JavaExpression unrefinableReceiverJe,
+      @Nullable List<JavaExpression> seOnlyExpressions) {
+    @SuppressWarnings("unchecked")
+    GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
+    boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
+
+    // TODO: Also remove if any element/argument to the annotation is not
+    // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+
+    // Update local variables and iterated collection elements.
+    if (sideEffectsUnrefineAliases) {
+      localVariableValues
+          .entrySet()
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+      iteratedCollectionElements
+          .entrySet()
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+    }
+
+    // Update this value.
+    // `thisValue` is the abstract value of the expression `this`.  A callee with a
+    // `@SideEffectsOnly` annotation can change it only if the annotation lists `this` itself.
+    // (At call site `x.m()`, the callee's `this` corresponds to `x`.)
+    boolean thisIsSideEffected =
+        seOnlyExpressions == null
+            || seOnlyExpressions.stream().anyMatch(je -> je instanceof ThisReference);
+    if (sideEffectsUnrefineAliases
+        && thisIsSideEffected
+        && !(unrefinableReceiverJe instanceof ThisReference)
+        && !(unrefinableReceiverJe instanceof SuperReference)) {
+      thisValue = null;
+    }
+
+    // Update field values.
+    if (sideEffectsUnrefineAliases) {
+      fieldValues
+          .entrySet()
+          .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+    } else {
+      // Case 2 (unassignable fields) and case 3 (monotonic fields).
+      updateFieldValuesForMethodCall(atypeFactory, unrefinableReceiverJe, seOnlyExpressions);
+    }
+
+    // Update array values.
+    arrayValues
+        .entrySet()
+        .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+
+    // Update information about method calls.
+    methodCallExpressions
+        .entrySet()
+        .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
   }
 
   /**
