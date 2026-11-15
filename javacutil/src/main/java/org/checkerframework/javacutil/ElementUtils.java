@@ -1006,11 +1006,14 @@ public final class ElementUtils {
   /**
    * Resolves a call {@code receiver.methodName()}, where {@code receiver} is an expression of type
    * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
-   * there is no such method.
+   * there is no such method or the method is private or has variable arity.
    *
    * <p>This method considers only non-private methods that have no formal parameters. Therefore, it
-   * returns null for some legal calls: a call to a private method from within its class, and a call
-   * that invokes a variable-arity method such as {@code methodName(Object...)}.
+   * is incomplete but not unsound. A non-null result is always the method that compile-time
+   * resolution chooses, but the result is null for some legal calls: a call to a private method
+   * (legal within the top-level class that declares the method) and a call that invokes a
+   * variable-arity method such as {@code methodName(Object...)}. Thus, a null result does not imply
+   * that the call is illegal.
    *
    * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
    * result is the most specific declaration among {@code receiverType} and its supertypes, but at
@@ -1019,7 +1022,8 @@ public final class ElementUtils {
    * @param receiverType the type of the receiver expression
    * @param methodName the name of the method
    * @param env the processing environment
-   * @return the method that the call invokes, or null if {@code receiverType} has no such method
+   * @return the method that the call invokes, or null if {@code receiverType} has no such method or
+   *     the call invokes a private or variable-arity method
    */
   public static @Nullable ExecutableElement resolveNoArgumentCall(
       TypeMirror receiverType, String methodName, ProcessingEnvironment env) {
