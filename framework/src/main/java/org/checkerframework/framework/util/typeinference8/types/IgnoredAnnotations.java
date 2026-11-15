@@ -370,14 +370,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the ignored positions of {@code atm}.
+   * Returns the ignored positions of {@code atm}, as an identity set, because distinct positions
+   * can hold equal types.
    *
    * @param type a type
    * @param atm an annotated type with the same structure as {@code type}'s annotated type, such as
    *     a deep copy of it; not modified
    * @param qh the qualifier hierarchy
-   * @return the types within {@code atm} that are at its ignored positions, as an identity set,
-   *     because distinct positions can hold equal types
+   * @return the types within {@code atm} that are at its ignored positions
    */
   private static Set<AnnotatedTypeMirror> ignoredPositions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
@@ -533,10 +533,20 @@ final class IgnoredAnnotations {
 
   /**
    * Gives each ignored position of {@code atm1} the annotations of the corresponding position of
-   * {@code atm2}, and vice versa. If corresponding positions of both types are ignored positions,
-   * then the one in {@code atm1} gets the annotations of the one in {@code atm2}, so the two have
-   * the same annotations. Positions correspond only where the two types have the same structure;
-   * elsewhere, nothing is replaced.
+   * {@code atm2}, and vice versa.
+   *
+   * <ul>
+   *   <li>If a position of {@code atm1} is ignored, it gets the annotation of the corresponding
+   *       position in {@code atm2}. (Note that this happens even if that position {@code atm2} is
+   *       also ignored.)
+   *   <li>Otherwise, if a position of {@code atm1} is ignored, it gets the annotation of the
+   *       corresponding position in {@code atm2}.
+   * </ul>
+   *
+   * At the end, {@code atm1} and {@code atm1} have the same annotations.
+   *
+   * <p>Positions correspond only where the two types have the same structure; elsewhere, nothing is
+   * replaced.
    *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
