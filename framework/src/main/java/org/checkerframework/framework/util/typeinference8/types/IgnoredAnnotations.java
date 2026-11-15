@@ -36,11 +36,17 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
  *       including those of its bounds if it is a type variable or a wildcard, and
- *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} where
- *       {@link AbstractType#applyInstantiations} replaced a use of an inference variable by the
- *       variable's instantiation, and that instantiation ignores annotations. The type's {@link
- *       ProperType#getOrigin() origin} is the type before instantiations were applied; it has a use
- *       of an inference variable at each ignored position.
+ *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} that
+ *       {@link AbstractType#applyInstantiations} created, at which it replaced a use of an
+ *       inference variable by the variable's instantiation, and either:
+ *       <ul>
+ *         <li>that instantiation ignores annotations, and the use does not have a non-polymorphic
+ *             primary annotation in every qualifier hierarchy (if it does, then those annotations
+ *             replace the instantiation's; see {@link UseOfVariable#applyInstantiations}), or
+ *         <li>the corresponding position of that instantiation is an ignored position of it.
+ *       </ul>
+ *       The type's {@link ProperType#getOrigin() origin} is the type before instantiations were
+ *       applied; it has a use of an inference variable at each ignored position.
  * </ul>
  *
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
@@ -58,11 +64,19 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code sub} and {@code sup} with their ignored annotations
-   * replaced. If the primary annotations of {@code sub} are ignored, then they are replaced with
-   * bottom annotations. If the primary annotations of {@code sup} are ignored, then they are
-   * replaced with top annotations. Ignored annotations elsewhere in either type are replaced with
-   * the annotations at the corresponding position in the other type. If neither type has ignored
-   * annotations, the result holds the types' own annotated types; otherwise it holds copies.
+   * replaced.
+   *
+   * <ul>
+   *   <li>If the primary annotations of {@code sub} are ignored, then they are replaced with bottom
+   *       annotations.
+   *   <li>If the primary annotations of {@code sup} are ignored, then they are replaced with top
+   *       annotations.
+   *   <li>Ignored annotations elsewhere in either type are replaced with the annotations at the
+   *       corresponding position in the other type.
+   * </ul>
+   *
+   * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
+   * otherwise it holds copies.
    *
    * @param sub a potential subtype
    * @param sup the potential supertype
@@ -107,10 +121,15 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
-   * with their ignored annotations replaced. Each ignored annotation of one type is replaced by the
-   * annotation at the corresponding position of the other type. If neither type has ignored
-   * annotations, the result holds the types' own annotated types; otherwise it holds modified
-   * copies.
+   * with their ignored annotations replaced.
+   *
+   * <ul>
+   *   <li>Each ignored annotation of one type is replaced by the annotation at the corresponding
+   *       position of the other type.
+   * </ul>
+   *
+   * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
+   * otherwise it holds modified copies.
    *
    * @param type1 a type
    * @param type2 a type with the same Java type as {@code type1}
