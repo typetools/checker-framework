@@ -160,7 +160,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // null if right-hand-side is not an array creation expression
     ArrayCreationNode acNode = (expNodeSansCast instanceof ArrayCreationNode acn2) ? acn2 : null;
 
-    if (acNode != null) {
+    // If the right-hand side might change the receiver or index of the target, as in `h.arr = new
+    // int[(h = other).arr.length]`, then after the assignment the target denotes a different array
+    // than the one that was created, so the dimension is not related to its length.
+    if (acNode != null && !rhsMayRelocateTarget(node)) {
       // Right-hand side of assignment is an array creation expression
       List<Node> nodeList = acNode.getDimensions();
       if (nodeList.isEmpty()) {

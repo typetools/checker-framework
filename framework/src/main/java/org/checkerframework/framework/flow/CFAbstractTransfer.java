@@ -1247,6 +1247,15 @@ public abstract class CFAbstractTransfer<
     if (rhsTree != null) {
       written.scan(rhsTree, null);
     }
+    // A `+=` string concatenation might call `toString()` after evaluating its rhs and before
+    // storing into its target. Only the innermost node of the chain can be a compound assignment,
+    // because the expression of a compound assignment node is not an assignment or cast.
+    if (innermost instanceof AssignmentNode a
+        && a.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
+        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+      written.addStringConversions(
+          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+    }
     // The sides that the result contains, in source order: `sides[i]` is the target of
     // `chain.get(i)` if that is an assignment, and `chain.get(i)` itself if that is a cast; and
     // `sides[chain.size()]` is `rhs`. An element is null if the result omits that side.
@@ -1925,7 +1934,12 @@ public abstract class CFAbstractTransfer<
    * @param rhsValue the value of the right-hand side of the assignment
    */
   protected void processCommonAssignment(
-      TransferInput<V, S> in, AssignmentNode assignment, Node lhs, Node rhs, S store, V rhsValue) {
+      TransferInput<V, S> in,
+      AssignmentNode assignment,
+      Node lhs,
+      Node rhs,
+      S store,
+      @Nullable V rhsValue) {
 
     // update information in the store
     store.updateForAssignment(lhs, rhsValue);

@@ -642,8 +642,12 @@ public class AssignmentInComparison {
   }
 
   static class Document {
-    Document current = this;
+    Document current;
     @Nullable String text;
+
+    Document(Document current) {
+      this.current = current;
+    }
   }
 
   // The string conversion of `value` calls `value.toString()`, which might reassign `d.current`.
@@ -651,6 +655,14 @@ public class AssignmentInComparison {
     d.current.text += value;
     // :: error: [dereference.of.nullable]
     d.current.text.length();
+  }
+
+  static void plusAssignStringConversionRelocatesTargetInComparison(Document d, Object value) {
+    // :: warning: [nulltest.redundant]
+    if ((d.current.text += value) != null) {
+      // :: error: [dereference.of.nullable]
+      d.current.text.length();
+    }
   }
 
   // A string conversion of a `String` does not call `toString()`.
