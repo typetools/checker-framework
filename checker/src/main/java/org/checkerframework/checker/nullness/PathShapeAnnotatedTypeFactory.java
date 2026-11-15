@@ -32,7 +32,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
-import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -185,10 +184,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Returns true if the given tree overrides, or refers to, a declaration whose type contains a
-   * path shape qualifier, such as a method whose return type is {@code @HasName Object}. A lambda or
-   * method reference refers to the method of its functional interface, and a method reference also
-   * refers to the method that it names. Such a tree must be checked even if it mentions no {@code
-   * Path} or {@code File} type and writes no path shape qualifier.
+   * path shape qualifier, such as a method whose return type is {@code @HasName Object}. A lambda
+   * or method reference refers to the method of its functional interface, and a method reference
+   * also refers to the method that it names. Such a tree must be checked even if it mentions no
+   * {@code Path} or {@code File} type and writes no path shape qualifier.
    *
    * @param tree a tree
    * @return true if {@code tree} overrides, or refers to, a declaration with a path shape contract
@@ -221,8 +220,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
       case LAMBDA_EXPRESSION -> {
         // The lambda body is checked against the functional interface method's contract.
-        return containsPathShapeQualifier(
-            fromElement(TreeUtils.findFunction(tree, processingEnv)));
+        return containsPathShapeQualifier(fromElement(TreeUtils.findFunction(tree, processingEnv)));
       }
       case MEMBER_REFERENCE -> {
         // The referenced method is checked against the functional interface method's contract.
@@ -442,7 +440,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ PathShape getPathShapeOfPathOrString(ExpressionTree tree) {
     if (TypesUtils.isString(TreeUtils.typeOf(tree))) {
       String constant = TreeUtils.stringConstantValue(tree);
-      return constant == null ? PathShape.UNKNOWN : PathShapeClassifier.classifyPath(constant);
+      return constant == null ? PathShape.UNKNOWN : PathStringClassifier.classifyPath(constant);
     }
     return getPathShape(tree);
   }

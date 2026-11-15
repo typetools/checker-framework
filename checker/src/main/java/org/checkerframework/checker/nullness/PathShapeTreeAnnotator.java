@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
@@ -79,7 +78,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
         }
         PathShape result = receiverShape(tree);
         for (ExpressionTree arg : args) {
-          result = resolveShape(result, factory.getPathShapeOfPathOrString(arg));
+          result = result.resolve(factory.getPathShapeOfPathOrString(arg));
         }
         factory.refine(type, result);
       }
@@ -87,8 +86,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
         if (args.size() == 1) {
           factory.refine(
               type,
-              resolveSiblingShape(
-                  receiverShape(tree), factory.getPathShapeOfPathOrString(args.get(0))));
+              receiverShape(tree).resolveSibling(factory.getPathShapeOfPathOrString(args.get(0))));
         }
       }
       default -> {}
@@ -126,7 +124,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
         ExpressionTree child = args.get(args.size() - 1);
         String constant = TreeUtils.stringConstantValue(child);
         if (constant != null) {
-          factory.refine(type, PathShapeClassifier.classifyFile(constant));
+          factory.refine(type, PathStringClassifier.classifyFile(constant));
         }
       }
     }
@@ -169,39 +167,6 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
       }
       constants.add(constant);
     }
-    return PathShapeClassifier.classifyPath(constants);
-  }
-
-  /**
-   * Returns the path shape of {@code a.resolve(b)}.
-   *
-   * @param a the path shape of the receiver
-   * @param b the path shape of the argument
-   * @return the path shape of {@code a.resolve(b)}
-   */
-  /*package-private*/ static PathShape resolveShape(PathShape a, PathShape b) {
-    // If b is absolute, the result is b.  If b is empty, the result is a.  Otherwise, the result
-    // is b appended to a.
-    if (b == PathShape.HAS_PARENT || (b == PathShape.HAS_NAME && a != PathShape.UNKNOWN)) {
-      return PathShape.HAS_PARENT;
-    } else {
-      return b;
-    }
-  }
-
-  /**
-   * Returns the path shape of {@code a.resolveSibling(b)}.
-   *
-   * @param a the path shape of the receiver
-   * @param b the path shape of the argument
-   * @return the path shape of {@code a.resolveSibling(b)}
-   */
-  /*package-private*/ static PathShape resolveSiblingShape(PathShape a, PathShape b) {
-    // The result is b if a has no parent, and a.getParent().resolve(b) otherwise.
-    if (b == PathShape.HAS_PARENT || (b == PathShape.HAS_NAME && a == PathShape.HAS_PARENT)) {
-      return PathShape.HAS_PARENT;
-    } else {
-      return b;
-    }
+    return PathStringClassifier.classifyPath(constants);
   }
 }

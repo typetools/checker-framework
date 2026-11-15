@@ -6,7 +6,8 @@ import org.checkerframework.checker.nullness.qual.HasName;
 
 public class PathShapeFunctionalContract {
   interface Maker {
-    @HasName Object make();
+    @HasName
+    Object make();
   }
 
   interface Taker {
