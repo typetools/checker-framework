@@ -141,6 +141,28 @@ public final class PathStringToPathShape {
   private static final String LONG_PATH_PREFIX = "\\\\?\\";
 
   /**
+   * Returns the given path string without its Windows long-path prefix, as {@code
+   * WindowsPathParser.parse} and {@code WinNTFileSystem.stripLongOrUNCPrefix} (JDK 22 and later)
+   * do. A prefix {@code \\?\UNC\} becomes {@code \\}, a prefix {@code \\?\} is removed, and {@code
+   * \\?\UNC} becomes {@code \\} (where {@code WindowsPathParser.parse} makes it {@code UNC}). Any
+   * other string is returned unchanged.
+   *
+   * @param path a path string
+   * @return {@code path} without its long-path prefix
+   */
+  /*package-private*/ static String stripLongPathPrefix(String path) {
+    if (!path.startsWith(LONG_PATH_PREFIX)) {
+      return path;
+    }
+    if (path.startsWith("UNC\\", 4)) {
+      return "\\\\" + path.substring(8);
+    }
+    String rest = path.substring(4);
+    // If only "UNC" remains, then a trailing backslash was likely removed.
+    return rest.equals("UNC") ? "\\\\" : rest;
+  }
+
+  /**
    * Returns the path shape of {@code Path.of(s)} on Windows. This follows {@code
    * WindowsPathParser.parse}.
    *
@@ -150,20 +172,12 @@ public final class PathStringToPathShape {
    *     Windows)
    */
   /*package-private*/ static PathShape windowsPath(String s) {
-    String input = s;
-
-    // A long-path prefix:  "\\?\" or "\\?\UNC\".
-    boolean expectUnc = false;
-    boolean expectAbsolute = false;
-    if (input.startsWith(LONG_PATH_PREFIX)) {
-      if (input.startsWith("UNC\\", 4)) {
-        expectUnc = true;
-        input = "\\\\" + input.substring(8);
-      } else {
-        expectAbsolute = true;
-        input = input.substring(4);
-      }
-    }
+    // A long-path prefix "\\?\UNC\" requires a UNC path, and "\\?\" requires an absolute path.
+    // For "\\?\UNC", stripLongPathPrefix returns "\\", not "UNC" as WindowsPathParser does, but
+    // both are invalid:  "\\" lacks a UNC host name, and "UNC" is not absolute.
+    boolean expectUnc = s.startsWith(LONG_PATH_PREFIX + "UNC\\");
+    boolean expectAbsolute = !expectUnc && s.startsWith(LONG_PATH_PREFIX);
+    String input = stripLongPathPrefix(s);
 
     boolean hasRoot;
     boolean isUnc = false;
@@ -311,7 +325,11 @@ public final class PathStringToPathShape {
    * @return the path shape of {@code new File(s)} on Windows
    */
   /*package-private*/ static PathShape windowsFile(String s) {
-    return windowsFileBeforeJdk22(s).lub(windowsFileBeforeJdk22(stripLongPathPrefix(s)));
+    PathShape beforeJdk22 = windowsFileBeforeJdk22(s);
+    if (!s.startsWith(LONG_PATH_PREFIX)) {
+      return beforeJdk22;
+    }
+    return beforeJdk22.lub(windowsFileBeforeJdk22(stripLongPathPrefix(s)));
   }
 
   /**
@@ -331,27 +349,6 @@ public final class PathStringToPathShape {
     } else {
       return PathShape.of(index + 1 < path.length(), true);
     }
-  }
-
-  /**
-   * Returns the given path string without its Windows long-path prefix, as {@code
-   * WinNTFileSystem.stripLongOrUNCPrefix} (JDK 22 and later) does. A prefix {@code \\?\UNC\}
-   * becomes {@code \\}, a prefix {@code \\?\} is removed, and {@code \\?\UNC} becomes {@code \\}.
-   * Any other string is returned unchanged.
-   *
-   * @param path a path string
-   * @return {@code path} without its long-path prefix
-   */
-  /*package-private*/ static String stripLongPathPrefix(String path) {
-    if (!path.startsWith(LONG_PATH_PREFIX)) {
-      return path;
-    }
-    if (path.startsWith("UNC\\", 4)) {
-      return "\\\\" + path.substring(8);
-    }
-    String rest = path.substring(4);
-    // If only "UNC" remains, then a trailing backslash was likely removed.
-    return rest.equals("UNC") ? "\\\\" : rest;
   }
 
   /**

@@ -44,23 +44,21 @@ public class PathStringToPathShapeTest {
    *     if it throws
    * @param unixFile the expected path shape of {@code new File(s)} on Unix
    * @param windowsFile the expected path shape of {@code new File(s)} on Windows
-   * @param path the expected result of {@link PathStringToPathShape#forPath}
-   * @param file the expected result of {@link PathStringToPathShape#forFile}
    */
   private static void check(
       String s,
       PathShape unixPath,
       PathShape windowsPath,
       PathShape unixFile,
-      PathShape windowsFile,
-      PathShape path,
-      PathShape file) {
+      PathShape windowsFile) {
     Assert.assertEquals("unixPath " + s, unixPath, PathStringToPathShape.unixPath(s));
     Assert.assertEquals("windowsPath " + s, windowsPath, PathStringToPathShape.windowsPath(s));
     Assert.assertEquals("unixFile " + s, unixFile, PathStringToPathShape.unixFile(s));
     Assert.assertEquals("windowsFile " + s, windowsFile, PathStringToPathShape.windowsFile(s));
-    Assert.assertEquals("forPath " + s, path, PathStringToPathShape.forPath(s));
-    Assert.assertEquals("forFile " + s, file, PathStringToPathShape.forFile(s));
+    Assert.assertEquals(
+        "forPath " + s, unixPath.lub(windowsPath), PathStringToPathShape.forPath(s));
+    Assert.assertEquals(
+        "forFile " + s, unixFile.lub(windowsFile), PathStringToPathShape.forFile(s));
     if (File.separatorChar == '/') {
       Assert.assertEquals("actual Unix Path " + s, unixPath, actualPathShape(s));
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
@@ -84,8 +82,8 @@ public class PathStringToPathShapeTest {
    * PathStringToPathShape} and the running JDK.
    *
    * @param expected the expected result of {@link PathStringToPathShape#forPath(List)}
-   * @param first the first argument to {@code Path.of}
-   * @param more the remaining arguments to {@code Path.of}
+   * @param first a path string, the first argument to {@code Path.of}
+   * @param more path strings, the remaining arguments to {@code Path.of}
    */
   private static void checkJoin(PathShape expected, String first, String... more) {
     List<String> strings = new ArrayList<>();
@@ -151,71 +149,63 @@ public class PathStringToPathShapeTest {
 
   @Test
   public void testRelative() {
-    check("a", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check("a/", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check(".", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check("..", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check("a/b", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
-    check("a/..", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("a", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("a/", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check(".", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("..", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("a/b", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("a/..", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
     // A backslash is a separator on Windows, but not on Unix.
-    check("a\\b", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    check("a\\b", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
   }
 
   @Test
   public void testEmptyAndRoots() {
-    check("", UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("/", UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("//", UNKNOWN, BOTTOM, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("/a", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
-    check("\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    check("", UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
+    check("/", UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
+    check("//", UNKNOWN, BOTTOM, UNKNOWN, UNKNOWN);
+    check("\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("/a", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
   }
 
   @Test
   public void testDrives() {
-    check("C:", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("C:/", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("C:foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
-    check("C:\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
-    check("a:b", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    check("C:", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("C:/", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("C:foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("C:\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("a:b", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
     // A Windows File removes slashes before a drive letter; a Windows Path forbids the colon.
-    check("/C:/x", HAS_PARENT, BOTTOM, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("/C:/x", HAS_PARENT, BOTTOM, HAS_PARENT, HAS_PARENT);
   }
 
   @Test
   public void testUnc() {
-    check("\\\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
-    check("\\\\server", HAS_NAME, BOTTOM, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    check("\\\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\server", HAS_NAME, BOTTOM, HAS_NAME, HAS_PARENT);
     // A Path treats "\\server\share" as a root, but a File treats it as having a parent.
-    check("\\\\server\\share", HAS_NAME, UNKNOWN, HAS_NAME, HAS_PARENT, UNKNOWN, HAS_NAME);
-    check("\\\\server\\share\\", HAS_NAME, UNKNOWN, HAS_NAME, HAS_PARENT, UNKNOWN, HAS_NAME);
-    check("\\\\server\\share\\a", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
-    check("//server/share", HAS_PARENT, UNKNOWN, HAS_PARENT, HAS_PARENT, UNKNOWN, HAS_PARENT);
-    check(
-        "//server/share/a", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("\\\\server\\share", HAS_NAME, UNKNOWN, HAS_NAME, HAS_PARENT);
+    check("\\\\server\\share\\", HAS_NAME, UNKNOWN, HAS_NAME, HAS_PARENT);
+    check("\\\\server\\share\\a", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("//server/share", HAS_PARENT, UNKNOWN, HAS_PARENT, HAS_PARENT);
+    check("//server/share/a", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
   }
 
   @Test
   public void testLongPathPrefix() {
-    check("\\\\?\\C:\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
-    check(
-        "\\\\?\\UNC\\server\\share\\a",
-        HAS_NAME,
-        HAS_PARENT,
-        HAS_NAME,
-        HAS_PARENT,
-        HAS_NAME,
-        HAS_NAME);
+    check("\\\\?\\C:\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("\\\\?\\UNC\\server\\share\\a", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
     // A Path requires an absolute path after the long-path prefix.  A File on JDK 22 or later
     // strips the prefix, leaving the relative path "foo".
-    check("\\\\?\\foo", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("\\\\?\\foo", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
     // A File on JDK 22 or later strips the prefix, leaving a root.
-    check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
-    check("\\\\?\\C:", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
-    check("\\\\?\\UNC", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
-    check("\\\\?\\UNC\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
-    check("\\\\?\\\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("\\\\?\\C:", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\?\\UNC", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\?\\UNC\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\?\\\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
   }
 
   @Test
@@ -240,11 +230,11 @@ public class PathStringToPathShapeTest {
   @Test
   public void testInvalid() {
     // A Windows Path forbids some characters and a trailing space; a File does not.
-    check("foo:bar", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check("a?b", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check("a ", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
-    check("\\\\a?b\\share\\c", HAS_NAME, BOTTOM, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    check("foo:bar", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    check("a?b", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    check("a ", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    check("\\\\a?b\\share\\c", HAS_NAME, BOTTOM, HAS_NAME, HAS_PARENT);
     // No Path can contain the NUL character.
-    check("a\u0000b", BOTTOM, BOTTOM, HAS_NAME, HAS_NAME, BOTTOM, HAS_NAME);
+    check("a\u0000b", BOTTOM, BOTTOM, HAS_NAME, HAS_NAME);
   }
 }
