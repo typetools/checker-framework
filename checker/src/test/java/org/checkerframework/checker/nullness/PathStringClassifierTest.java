@@ -6,13 +6,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Tests {@link PathShapeClassifier}.
+ * Tests {@link PathStringClassifier}.
  *
  * <p>The project does not run tests on Windows, so the expected Windows results are derived from
  * the JDK source code: {@code sun.nio.fs.WindowsPathParser} and {@code sun.nio.fs.WindowsPath} for
@@ -22,7 +21,7 @@ import org.junit.Test;
  * result covers JDKs both before and after JDK 25, which differ, so it is checked to be no more
  * specific than the running JDK's result.
  */
-public class PathShapeClassifierTest {
+public class PathStringClassifierTest {
 
   /** Abbreviation for {@link PathShape#HAS_NAME}. */
   private static final PathShape HAS_NAME = PathShape.HAS_NAME;
@@ -37,12 +36,13 @@ public class PathShapeClassifierTest {
    * Checks the path shape of a string under each set of rules.
    *
    * @param s a path string
-   * @param unixPath the expected shape of {@code Path.of(s)} on Unix, or null if it throws
-   * @param windowsPath the expected shape of {@code Path.of(s)} on Windows, or null if it throws
-   * @param unixFile the expected shape of {@code new File(s)} on Unix
-   * @param windowsFile the expected shape of {@code new File(s)} on Windows
-   * @param path the expected result of {@link PathShapeClassifier#classifyPath}
-   * @param file the expected result of {@link PathShapeClassifier#classifyFile}
+   * @param unixPath the expected path shape of {@code Path.of(s)} on Unix, or null if it throws
+   * @param windowsPath the expected path shape of {@code Path.of(s)} on Windows, or null if it
+   *     throws
+   * @param unixFile the expected path shape of {@code new File(s)} on Unix
+   * @param windowsFile the expected path shape of {@code new File(s)} on Windows
+   * @param path the expected result of {@link PathStringClassifier#classifyPath}
+   * @param file the expected result of {@link PathStringClassifier#classifyFile}
    */
   private static void check(
       String s,
@@ -52,12 +52,12 @@ public class PathShapeClassifierTest {
       PathShape windowsFile,
       PathShape path,
       PathShape file) {
-    Assert.assertEquals("unixPath " + s, unixPath, PathShapeClassifier.unixPath(s));
-    Assert.assertEquals("windowsPath " + s, windowsPath, PathShapeClassifier.windowsPath(s));
-    Assert.assertEquals("unixFile " + s, unixFile, PathShapeClassifier.unixShape(s));
-    Assert.assertEquals("windowsFile " + s, windowsFile, PathShapeClassifier.windowsFile(s));
-    Assert.assertEquals("classifyPath " + s, path, PathShapeClassifier.classifyPath(s));
-    Assert.assertEquals("classifyFile " + s, file, PathShapeClassifier.classifyFile(s));
+    Assert.assertEquals("unixPath " + s, unixPath, PathStringClassifier.unixPath(s));
+    Assert.assertEquals("windowsPath " + s, windowsPath, PathStringClassifier.windowsPath(s));
+    Assert.assertEquals("unixFile " + s, unixFile, PathStringClassifier.unixFile(s));
+    Assert.assertEquals("windowsFile " + s, windowsFile, PathStringClassifier.windowsFile(s));
+    Assert.assertEquals("classifyPath " + s, path, PathStringClassifier.classifyPath(s));
+    Assert.assertEquals("classifyFile " + s, file, PathStringClassifier.classifyFile(s));
     if (File.separatorChar == '/') {
       Assert.assertEquals("actual Unix Path " + s, unixPath, actualPathShape(s));
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
@@ -65,9 +65,9 @@ public class PathShapeClassifierTest {
       Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
       PathShape actualFile = actualFileShape(s);
       // A JDK either strips a long-path prefix (JDK 25 and later) or does not.
-      PathShape beforeJdk25 = PathShapeClassifier.windowsFileShape(s);
+      PathShape beforeJdk25 = PathStringClassifier.windowsFileBeforeJdk25(s);
       PathShape sinceJdk25 =
-          PathShapeClassifier.windowsFileShape(PathShapeClassifier.stripLongPathPrefix(s));
+          PathStringClassifier.windowsFileBeforeJdk25(PathStringClassifier.stripLongPathPrefix(s));
       Assert.assertTrue(
           "actual Windows File " + s + " is " + actualFile,
           actualFile == beforeJdk25 || actualFile == sinceJdk25);
@@ -79,7 +79,7 @@ public class PathShapeClassifierTest {
    * Checks the path shape of {@code Path.of(first, more...)}, under both the classifier and the
    * running JDK.
    *
-   * @param expected the expected result of {@link PathShapeClassifier#classifyPath(List)}
+   * @param expected the expected result of {@link PathStringClassifier#classifyPath(List)}
    * @param first the first argument to {@code Path.of}
    * @param more the remaining arguments to {@code Path.of}
    */
@@ -89,7 +89,7 @@ public class PathShapeClassifierTest {
     strings.addAll(Arrays.asList(more));
     String desc = strings.toString();
     Assert.assertEquals(
-        "classifyPath " + desc, expected, PathShapeClassifier.classifyPath(strings));
+        "classifyPath " + desc, expected, PathStringClassifier.classifyPath(strings));
     @Nullable PathShape actual;
     try {
       actual = actualShape(Path.of(first, more));
@@ -99,21 +99,21 @@ public class PathShapeClassifierTest {
     if (File.separatorChar == '/') {
       Assert.assertEquals(
           "actual Unix Path " + desc,
-          PathShapeClassifier.unixPath(PathShapeClassifier.join(strings, '/')),
+          PathStringClassifier.unixPath(PathStringClassifier.join(strings, '/')),
           actual);
     } else if (File.separatorChar == '\\') {
       Assert.assertEquals(
           "actual Windows Path " + desc,
-          PathShapeClassifier.windowsPath(PathShapeClassifier.join(strings, '\\')),
+          PathStringClassifier.windowsPath(PathStringClassifier.join(strings, '\\')),
           actual);
     }
   }
 
   /**
-   * Returns the shape of {@code Path.of(s)} on the current platform.
+   * Returns the path shape of {@code Path.of(s)} on the current platform.
    *
    * @param s a path string
-   * @return the shape of {@code Path.of(s)}, or null if {@code s} is not a valid path
+   * @return the path shape of {@code Path.of(s)}, or null if {@code s} is not a valid path
    */
   private static @Nullable PathShape actualPathShape(String s) {
     try {
@@ -124,10 +124,10 @@ public class PathShapeClassifierTest {
   }
 
   /**
-   * Returns the shape of the given path.
+   * Returns the path shape of the given path.
    *
    * @param p a path
-   * @return the shape of {@code p}
+   * @return the path shape of {@code p}
    */
   private static PathShape actualShape(Path p) {
     Path fileName = p.getFileName();
@@ -135,10 +135,10 @@ public class PathShapeClassifierTest {
   }
 
   /**
-   * Returns the shape of {@code new File(s)} on the current platform.
+   * Returns the path shape of {@code new File(s)} on the current platform.
    *
    * @param s a path string
-   * @return the shape of {@code new File(s)}
+   * @return the path shape of {@code new File(s)}
    */
   private static PathShape actualFileShape(String s) {
     File f = new File(s);
@@ -230,7 +230,7 @@ public class PathShapeClassifierTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testJoinEmpty() {
-    PathShapeClassifier.classifyPath(new ArrayList<>());
+    PathStringClassifier.classifyPath(new ArrayList<>());
   }
 
   @Test

@@ -20,8 +20,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * share}. Every name element of a {@code @HasName} path is non-empty, because only the empty path
  * has an empty name element.
  *
- * <p>The property depends only on the characters of the path, not on the file system. Therefore,
- * once a path is known to be {@code @HasName}, it remains {@code @HasName}.
+ * <p>Whether a path has a name depends only on the path's characters. It does not depend on the
+ * file system; for example, it does not depend on whether the file exists. Therefore, no operation,
+ * such as creating or deleting a file, can make a {@code @HasName} path lose its name.
  *
  * @see HasParent
  */

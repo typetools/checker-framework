@@ -1,82 +1,45 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.HasName;
-import org.checkerframework.checker.nullness.qual.HasParent;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Classifies path strings by path shape: whether the {@link java.nio.file.Path} or {@link
- * java.io.File} that is constructed from a string has a name and has a parent. Each result is
- * correct under both Unix and Windows rules, because it is the weaker of the Unix result and the
- * Windows result.
+ * Converts path strings to {@link PathShape}s. Given a string, it returns the path shape of the
+ * {@link java.nio.file.Path} or {@link java.io.File} that is constructed from the string: whether
+ * that path has a name and whether it has a parent. That conversion is this class's only purpose;
+ * operations on path shapes are in {@link PathShape}.
+ *
+ * <p>Each result is correct under both Unix and Windows rules, because it is the weaker of the Unix
+ * result and the Windows result.
  *
  * <p>The Windows rules are derived from the JDK source code: {@code sun.nio.fs.WindowsPathParser}
  * and {@code sun.nio.fs.WindowsPath} for {@code Path}, and {@code java.io.WinNTFileSystem} and
  * {@code java.io.File} for {@code File}. The two differ; for example, {@code \\server\share} is a
  * root as a {@code Path}, but it has a parent ({@code \\server}) as a {@code File}.
  */
-public final class PathShapeClassifier {
+public final class PathStringClassifier {
 
   /** Do not instantiate. */
-  private PathShapeClassifier() {
+  private PathStringClassifier() {
     throw new Error("Do not instantiate");
   }
 
-  /** The shape of a path, from least to most specific. */
-  public enum PathShape {
-    /** The path might be a root or the empty path. */
-    UNKNOWN,
-    /** The path has a name. See {@link HasName}. */
-    HAS_NAME,
-    /** The path has a parent and a name. See {@link HasParent}. */
-    HAS_PARENT;
-
-    /**
-     * Returns the less specific of this and {@code other}.
-     *
-     * @param other another path shape
-     * @return the less specific of this and {@code other}
-     */
-    public PathShape lub(PathShape other) {
-      return this.compareTo(other) <= 0 ? this : other;
-    }
-
-    /**
-     * Returns the shape of a path with the given properties. A path that has no name has no shape
-     * other than {@code UNKNOWN}, even if it has a parent.
-     *
-     * @param hasName true if a path has a non-empty name
-     * @param hasParent true if the path has a parent
-     * @return the shape of the path
-     */
-    /*package-private*/ static PathShape of(boolean hasName, boolean hasParent) {
-      if (!hasName) {
-        return UNKNOWN;
-      } else if (hasParent) {
-        return HAS_PARENT;
-      } else {
-        return HAS_NAME;
-      }
-    }
-  }
-
   /**
-   * Returns the shape of {@code Path.of(s)}.
+   * Returns the path shape of {@code Path.of(s)}.
    *
    * @param s a path string
-   * @return the shape of {@code Path.of(s)} under both Unix and Windows rules
+   * @return the path shape of {@code Path.of(s)} under both Unix and Windows rules
    */
   public static PathShape classifyPath(String s) {
-    return weaker(unixPath(s), windowsPath(s));
+    return lub(unixPath(s), windowsPath(s));
   }
 
   /**
-   * Returns the shape of {@code Path.of(first, more...)}.
+   * Returns the path shape of {@code Path.of(first, more...)}.
    *
    * @param strings a non-empty list of the arguments to {@code Path.of}: {@code first}, followed by
    *     the elements of {@code more}
-   * @return the shape of {@code Path.of(first, more...)} under both Unix and Windows rules
+   * @return the path shape of {@code Path.of(first, more...)} under both Unix and Windows rules
    * @throws IllegalArgumentException if {@code strings} is empty
    */
   public static PathShape classifyPath(List<String> strings) {
@@ -85,7 +48,48 @@ public final class PathShapeClassifier {
     }
     // Each platform joins the strings with its own separator.  The Windows result can depend on
     // the separator; for example, Windows recognizes the prefix "\\?\" only with backslashes.
-    return weaker(unixPath(join(strings, '/')), windowsPath(join(strings, '\\')));
+    return lub(unixPath(join(strings, '/')), windowsPath(join(strings, '\\')));
+  }
+
+  /**
+   * Returns the path shape of {@code new File(s)}.
+   *
+   * @param s a path string
+   * @return the path shape of {@code new File(s)} under both Unix and Windows rules
+   */
+  public static PathShape classifyFile(String s) {
+    return lub(unixFile(s), windowsFile(s));
+  }
+
+  /**
+   * Returns the least upper bound (the weaker) of the given per-platform path shapes. A null
+   * argument means that the string is not a valid path on that platform, so {@code Path.of} throws
+   * {@code InvalidPathException} on that platform, which therefore imposes no constraint.
+   *
+   * @param unix a Unix path shape, or null if the string is invalid on Unix
+   * @param windows a Windows path shape, or null if the string is invalid on Windows
+   * @return the least upper bound of the two path shapes
+   */
+  private static PathShape lub(@Nullable PathShape unix, @Nullable PathShape windows) {
+    if (unix == null) {
+      return windows == null ? PathShape.UNKNOWN : windows;
+    } else if (windows == null) {
+      return unix;
+    } else {
+      return unix.lub(windows);
+    }
+  }
+
+  /**
+   * Returns the path shape of the path with the given root and number of name elements.
+   *
+   * @param hasRoot true if a path has a root component
+   * @param nameCount the number of name elements in the path, not counting the root; each of them
+   *     is non-empty
+   * @return the path shape of the path
+   */
+  private static PathShape shapeFromNames(boolean hasRoot, int nameCount) {
+    return PathShape.of(nameCount > 0, hasRoot ? nameCount >= 1 : nameCount >= 2);
   }
 
   /**
@@ -109,74 +113,34 @@ public final class PathShapeClassifier {
     return sb.toString();
   }
 
-  /**
-   * Returns the shape of {@code new File(s)}.
-   *
-   * @param s a path string
-   * @return the shape of {@code new File(s)} under both Unix and Windows rules
-   */
-  public static PathShape classifyFile(String s) {
-    return weaker(unixShape(s), windowsFile(s));
-  }
-
-  /**
-   * Returns the weaker of the given per-platform results. A null argument means that the string is
-   * not a valid path on that platform, so the constructor throws an exception and the platform
-   * imposes no constraint.
-   *
-   * @param unix a Unix result, or null if the string is invalid on Unix
-   * @param windows a Windows result, or null if the string is invalid on Windows
-   * @return the weaker of the two results
-   */
-  private static PathShape weaker(@Nullable PathShape unix, @Nullable PathShape windows) {
-    if (unix == null) {
-      return windows == null ? PathShape.UNKNOWN : windows;
-    } else if (windows == null) {
-      return unix;
-    } else {
-      return unix.lub(windows);
-    }
-  }
-
-  /**
-   * Returns the shape of the path with the given root and number of name elements.
-   *
-   * @param hasRoot true if a path has a root component
-   * @param nameCount the number of name elements in the path, not counting the root; each of them
-   *     is non-empty
-   * @return the shape of the path
-   */
-  private static PathShape shapeFromNames(boolean hasRoot, int nameCount) {
-    return PathShape.of(nameCount > 0, hasRoot ? nameCount >= 1 : nameCount >= 2);
-  }
-
   // ///////////////////////////////////////////////////////////////////////////
   // Unix
   //
 
   /**
-   * Returns the shape of {@code Path.of(s)} on Unix.
+   * Returns the path shape of {@code Path.of(s)} on Unix.
    *
    * @param s a path string
-   * @return the shape of {@code Path.of(s)} on Unix, or null if {@code s} is not a valid Unix path
+   * @return the path shape of {@code Path.of(s)} on Unix, or null if {@code s} is not a valid Unix
+   *     path
    */
   /*package-private*/ static @Nullable PathShape unixPath(String s) {
     // UnixPath.normalizeAndCheck forbids the NUL character.
     if (s.indexOf('\u0000') != -1) {
       return null;
     }
-    return unixShape(s);
+    return unixFile(s);
   }
 
   /**
-   * Returns the shape of the given Unix path string. It is the shape of {@code new File(s)} on
-   * Unix, and of {@code Path.of(s)} if {@code s} is a valid Unix path. Unix path normalization, for
-   * both {@code Path} and {@code File}, removes redundant and trailing slashes.
+   * Returns the path shape of {@code new File(s)} on Unix. It is also the path shape of {@code
+   * Path.of(s)} if {@code s} is a valid Unix path. Unix path normalization, for both {@code Path}
+   * and {@code File}, removes redundant and trailing slashes.
    *
    * @param s a path string
-   * @return the shape of {@code s} under Unix rules
+   * @return the path shape of {@code new File(s)} on Unix
    */
-  /*package-private*/ static PathShape unixShape(String s) {
+  /*package-private*/ static PathShape unixFile(String s) {
     boolean hasRoot = s.startsWith("/");
     int nameCount = 0;
     for (String name : s.split("/", -1)) {
@@ -198,12 +162,12 @@ public final class PathShapeClassifier {
   private static final String LONG_PATH_PREFIX = "\\\\?\\";
 
   /**
-   * Returns the shape of {@code Path.of(s)} on Windows. This follows {@code
+   * Returns the path shape of {@code Path.of(s)} on Windows. This follows {@code
    * WindowsPathParser.parse}.
    *
    * @param s a path string
-   * @return the shape of {@code Path.of(s)} on Windows, or null if {@code s} is not a valid Windows
-   *     path
+   * @return the path shape of {@code Path.of(s)} on Windows, or null if {@code s} is not a valid
+   *     Windows path
    */
   /*package-private*/ static @Nullable PathShape windowsPath(String s) {
     String input = s;
@@ -358,27 +322,26 @@ public final class PathShapeClassifier {
   //
 
   /**
-   * Returns the shape of {@code new File(s)} on Windows, under every JDK. Starting with JDK 25,
-   * {@code WinNTFileSystem.normalize} strips a long-path prefix ({@code \\?\} or {@code \\?\UNC\})
-   * before it normalizes the rest of the string; earlier JDKs do not. The result is the weaker of
-   * the two behaviors.
+   * Returns the path shape of {@code new File(s)} on Windows, under every JDK. Starting with JDK
+   * 25, {@code WinNTFileSystem.normalize} strips a long-path prefix ({@code \\?\} or {@code
+   * \\?\UNC\}) before it normalizes the rest of the string; earlier JDKs do not. The result is the
+   * weaker of the two behaviors.
    *
    * @param s a path string
-   * @return the shape of {@code new File(s)} on Windows
+   * @return the path shape of {@code new File(s)} on Windows
    */
   /*package-private*/ static PathShape windowsFile(String s) {
-    return windowsFileShape(s).lub(windowsFileShape(stripLongPathPrefix(s)));
+    return windowsFileBeforeJdk25(s).lub(windowsFileBeforeJdk25(stripLongPathPrefix(s)));
   }
 
   /**
-   * Returns the shape of {@code new File(s)} on Windows, for a JDK that does not strip a long-path
-   * prefix. This follows {@code File.getName} and {@code File.getParent}.
+   * Returns the path shape of {@code new File(s)} on Windows, for a JDK before JDK 25, which does
+   * not strip a long-path prefix. This follows {@code File.getName} and {@code File.getParent}.
    *
    * @param s a path string
-   * @return the shape of {@code new File(s)} on Windows, for a JDK that does not strip a long-path
-   *     prefix
+   * @return the path shape of {@code new File(s)} on Windows, for a JDK before JDK 25
    */
-  /*package-private*/ static PathShape windowsFileShape(String s) {
+  /*package-private*/ static PathShape windowsFileBeforeJdk25(String s) {
     String path = windowsFileNormalize(s);
     int prefixLength = windowsFilePrefixLength(path);
     int index = path.lastIndexOf('\\');
@@ -418,7 +381,7 @@ public final class PathShapeClassifier {
    * @param path a path string
    * @return the normalized path string
    */
-  /*package-private*/ static String windowsFileNormalize(String path) {
+  private static String windowsFileNormalize(String path) {
     int n = path.length();
     char prev = 0;
     for (int i = 0; i < n; i++) {
