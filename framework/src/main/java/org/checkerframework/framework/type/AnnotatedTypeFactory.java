@@ -3968,13 +3968,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * So, for such a variable, {@link AnnotatedTypeMirror#getExplicitAnnotations()} can return
    * annotations that are not written in source code.
    *
-   * @param tree a variable declaration in the current compilation unit
+   * @param tree a variable declaration
    * @return true if the type of {@code tree} is not written in source code
    */
   public boolean isVariableTypeInferred(VariableTree tree) {
     if (tree.getType() == null || TreeUtils.isVariableTreeDeclaredUsingVar(tree)) {
       return true;
     }
+    if (TreeUtils.elementFromDeclaration(tree).getKind() != ElementKind.PARAMETER) {
+      return false;
+    }
+    // A lambda parameter is declared in the current compilation unit.
     TreePath path = getPath(tree);
     TreePath parentPath = path == null ? null : path.getParentPath();
     return parentPath != null && TreeUtils.isImplicitlyTypedLambda(parentPath.getLeaf());
