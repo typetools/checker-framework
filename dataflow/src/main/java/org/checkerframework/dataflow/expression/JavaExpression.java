@@ -556,6 +556,7 @@ public abstract class JavaExpression {
    * @param tree a javac tree
    * @return a JavaExpression for the given javac tree
    */
+  @SideEffectFree
   public static JavaExpression fromTree(ExpressionTree tree) {
     JavaExpression result;
     switch (tree.getKind()) {
@@ -693,6 +694,7 @@ public abstract class JavaExpression {
    * @param tree a variable tree
    * @return a JavaExpression for {@code tree}
    */
+  @SideEffectFree
   public static JavaExpression fromVariableTree(VariableTree tree) {
     return fromVariableElement(
         TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree), tree);
@@ -739,6 +741,7 @@ public abstract class JavaExpression {
    * @param memberSelectTree tree
    * @return a JavaExpression for {@code memberSelectTree}
    */
+  @SideEffectFree
   private static JavaExpression fromMemberSelect(MemberSelectTree memberSelectTree) {
     TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
     if (TreeUtils.isClassLiteral(memberSelectTree)) {
@@ -807,6 +810,7 @@ public abstract class JavaExpression {
    * @param accessTree a method or constructor invocation
    * @return the receiver of the given invocation
    */
+  @SideEffectFree
   public static JavaExpression getReceiver(ExpressionTree accessTree) {
     // TODO: Handle field accesses too?
     assert accessTree instanceof MethodInvocationTree || accessTree instanceof NewClassTree;
