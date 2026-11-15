@@ -2149,6 +2149,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private @Nullable VariableTree switchExprVarTree;
 
     /**
+     * True if the CFG built so far contains code that might have side effects, such as a guard or a
+     * deconstruction pattern, after the evaluation of the selector expression. If so, the selector
+     * expression might no longer denote the value that the switch tests.
+     */
+    private boolean codeRanSinceSelector = false;
+
+    /**
      * Constructs a SwitchBuilder.
      *
      * @param switchTree a {@link SwitchTree} or a {@code SwitchExpressionTree}
@@ -2442,13 +2449,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
+          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+            // Matching a deconstruction pattern calls accessor methods.
+            codeRanSinceSelector = true;
+          }
         }
 
         // If true, the labels are not tested.
         boolean labelsUntested = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree, index);
         extendWithNode(
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, labelsUntested, env.getTypeUtils()));
+                caseTree,
+                selectorExprAssignment,
+                exprs,
+                labelsUntested,
+                codeRanSinceSelector,
+                env.getTypeUtils()));
         if (!labelsUntested) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
@@ -2459,6 +2475,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          codeRanSinceSelector = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {

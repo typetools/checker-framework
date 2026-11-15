@@ -1359,9 +1359,11 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (selectorExpressionDenotesSwitchValue(n)) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1386,6 +1388,28 @@ public abstract class CFAbstractTransfer<
       return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the switch selector expression (the right-hand side of {@code
+   * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
+   * If this returns false, a transfer function must not refine the selector expression at {@code
+   * n}, but it may refine the synthetic variable (the left-hand side of {@code
+   * n.getSwitchOperand()}).
+   *
+   * <p>The selector expression might not denote the tested value if code with side effects, such as
+   * a guard, ran after the switch evaluated the selector expression. For example, a guard might
+   * reassign a field that is the selector expression.
+   *
+   * @param n a case node
+   * @return true if the switch selector expression still denotes the value that the switch tests
+   */
+  protected boolean selectorExpressionDenotesSwitchValue(CaseNode n) {
+    if (!n.codeRanSinceSelector()) {
+      return true;
+    }
+    // Code in a guard cannot assign a local variable that is declared outside the guard.
+    return !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
   }
 
   // /**

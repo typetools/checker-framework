@@ -46,6 +46,13 @@ public class CaseNode extends Node {
   protected final boolean labelsUntested;
 
   /**
+   * True if code that might have side effects, such as a guard or a deconstruction pattern, may
+   * have run between the evaluation of the switch selector expression and this node. If so, the
+   * selector expression might no longer denote the value that the switch tests.
+   */
+  protected final boolean codeRanSinceSelector;
+
+  /**
    * Creates a new CaseNode.
    *
    * @param tree the tree for this node
@@ -54,6 +61,9 @@ public class CaseNode extends Node {
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param labelsUntested true if the CFG does not test the case expressions; see {@link
    *     #labelsUntested()}
+   * @param codeRanSinceSelector true if code that might have side effects may have run between the
+   *     evaluation of the switch selector expression and this node; see {@link
+   *     #codeRanSinceSelector()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -61,12 +71,14 @@ public class CaseNode extends Node {
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
       boolean labelsUntested,
+      boolean codeRanSinceSelector,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
     this.labelsUntested = labelsUntested;
+    this.codeRanSinceSelector = codeRanSinceSelector;
   }
 
   /**
@@ -107,6 +119,21 @@ public class CaseNode extends Node {
     return labelsUntested;
   }
 
+  /**
+   * Returns true if code that might have side effects, such as a guard or a deconstruction pattern,
+   * may have run between the evaluation of the switch selector expression and this node. If so, the
+   * selector expression (the right-hand side of {@link #getSwitchOperand()}) might no longer denote
+   * the value that the switch tests, for example if it is a field that a guard reassigned. The
+   * synthetic variable (the left-hand side of {@link #getSwitchOperand()}) always denotes that
+   * value.
+   *
+   * @return true if code that might have side effects may have run between the evaluation of the
+   *     switch selector expression and this node
+   */
+  public boolean codeRanSinceSelector() {
+    return codeRanSinceSelector;
+  }
+
   @Override
   public CaseTree getTree() {
     return tree;
@@ -132,12 +159,14 @@ public class CaseNode extends Node {
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
-        && labelsUntested == other.labelsUntested;
+        && labelsUntested == other.labelsUntested
+        && codeRanSinceSelector == other.codeRanSinceSelector;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), labelsUntested);
+    return Objects.hash(
+        getSwitchOperand(), getCaseOperands(), labelsUntested, codeRanSinceSelector);
   }
 
   @Override

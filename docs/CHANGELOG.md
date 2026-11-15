@@ -15,6 +15,13 @@ an exhaustive switch.  For a `CaseNode` whose `labelsUntested()` is true, the CF
 does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
 store.
 
+The `CaseNode` constructor takes a new `codeRanSinceSelector` argument, and the
+new method `CaseNode.codeRanSinceSelector()` returns it.  It is true if a guard
+or a deconstruction pattern may have run since the switch evaluated its selector
+expression.  The new method
+`CFAbstractTransfer.selectorExpressionDenotesSwitchValue()` indicates whether a
+transfer function may refine the selector expression at a `CaseNode`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
