@@ -15,7 +15,11 @@ might denote a location (a variable, field, or array element) that the
 expression or one of its subexpressions reads.  It no longer returns true merely
 because the value of a subexpression might be the same object as the value of
 `other`.  For example, assigning `y.g` does not change the value of the local
-variable `x` or of `x.f`.  The default implementation returns true; a subclass
+variable `x` or of `x.f`, even if the value of `x` might be the same object as
+the value of `y.g`.  As a result, when `CFAbstractStore` processes an assignment
+to `y.g`, it retains its refined types for `x.f` (and for other field accesses
+whose receiver is `x`) rather than discarding them, so a checker issues fewer
+false positive warnings.  The default implementation returns true; a subclass
 of `JavaExpression` that overrides it must adopt the new meaning.
 
 `CFAbstractStore.canAlias(a, b)` returns true if a cast from the erasure of the
