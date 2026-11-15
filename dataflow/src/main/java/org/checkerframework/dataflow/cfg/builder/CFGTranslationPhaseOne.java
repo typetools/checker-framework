@@ -892,14 +892,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the input node is a boxed type, unboxes it; otherwise, leaves it alone.
+   * If the type of the input node is a boxed type, or a type variable or wildcard whose upper bound
+   * is a boxed type, unboxes it; otherwise, leaves it alone.
    *
    * @param node an input node
    * @return a Node representing the unboxed version of the input, which might simply be the input
    *     node
    */
   protected Node unbox(Node node) {
-    if (TypesUtils.isBoxedPrimitive(node.getType())) {
+    if (TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(node.getType()))) {
 
       MemberSelectTree primValueSelect = treeBuilder.buildPrimValueMethodAccess(node.getTree());
       handleArtificialTree(primValueSelect);
@@ -911,10 +912,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      Node unboxed =
+      MethodInvocationNode unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
+      unboxed.setUnboxing();
 
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
@@ -1176,7 +1178,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
-    boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
+    // A type variable whose upper bound is a boxed type, such as `T extends Integer`, is unboxed.
+    boolean isRightBoxed = TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(nodeType));
     boolean isRightReference = nodeType instanceof ReferenceType;
     boolean isLeftNumeric = TypesUtils.isNumeric(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
@@ -1853,7 +1856,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithMethodInvocationNode(TreeUtils.elementFromUse(nextCall), nextCallNode);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
-      setIterableExpressionOnUnboxingCalls(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1947,7 +1949,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      setIterableExpressionOnUnboxingCalls(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1989,38 +1990,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
-  }
-
-  /**
-   * Sets the iterable expression and the enhanced for loop of each unboxing call that assignment
-   * conversion applied to the given element, so that the result of each such unboxing call (such as
-   * {@code intValue()}) has the qualifiers of the element type of the iterable expression.
-   * Assignment conversion unboxes the element in, for example, {@code for (int x : listOfInteger)}
-   * and {@code for (long x : arrayOfInteger)}.
-   *
-   * <p>This method ignores a boxing call, as in {@code for (Integer x : arrayOfInt)}, because the
-   * boxed value need not have the qualifiers of the element type. For example, a primitive is
-   * interned but its boxed value is not.
-   *
-   * @param element the node that reads an element in the enhanced for loop, before assignment
-   *     conversion: a call to {@code next()} for an {@code Iterable}, or an array access for an
-   *     array
-   * @param expression the iterable expression of the enhanced for loop
-   * @param tree an enhanced for loop
-   */
-  private void setIterableExpressionOnUnboxingCalls(
-      Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
-    Set<Node> converted = treeToImplicitlyConvertedCfgNodes.get(element.getTree());
-    if (converted == null) {
-      return;
-    }
-    for (Node node : converted) {
-      if (node instanceof MethodInvocationNode conversion
-          && TypesUtils.isPrimitive(conversion.getType())) {
-        conversion.setIterableExpression(expression);
-        conversion.setEnhancedForLoop(tree);
-      }
-    }
   }
 
   /**

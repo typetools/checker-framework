@@ -112,7 +112,10 @@ public class TreeBuilder {
 
     Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
-    DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
+    // The return type of iterator() as a member of the expression's type, such as
+    // Iterator<Integer> for a List<Integer>, not Iterator<E>.
+    DeclaredType iteratorType =
+        (DeclaredType) javacTypes.memberType((Type) exprType, iteratorMethod).getReturnType();
     iteratorType =
         (DeclaredType) javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
@@ -228,6 +231,11 @@ public class TreeBuilder {
       elementType = symtab.objectType;
     } else {
       elementType = (Type) exprType.getTypeArguments().get(0);
+      // An expression does not have a wildcard type, so use the wildcard's upper bound.
+      if (elementType instanceof Type.WildcardType wildcard) {
+        Type extendsBound = wildcard.getExtendsBound();
+        elementType = extendsBound != null ? extendsBound : symtab.objectType;
+      }
     }
 
     // Replace the next method's generic return type with
@@ -471,11 +479,12 @@ public class TreeBuilder {
    * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float, where
    * * is the corresponding primitive type (i.e. shortValue or floatValue).
    *
-   * @param expr an expression whose type is a boxed type
+   * @param expr an expression whose type is a boxed type, or a type variable or wildcard whose
+   *     upper bound is a boxed type
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
-    TypeMirror boxedType = TreeUtils.typeOf(expr);
+    TypeMirror boxedType = TypesUtils.upperBound(TreeUtils.typeOf(expr));
     TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
 
     assert TypesUtils.isBoxedPrimitive(boxedType);
