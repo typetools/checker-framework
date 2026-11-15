@@ -15,7 +15,8 @@ might denote a location (a variable, field, or array element) that the
 expression or one of its subexpressions reads.  It no longer returns true merely
 because the value of a subexpression might be the same object as the value of
 `other`.  For example, assigning `y.g` does not change the value of the local
-variable `x` or of `x.f`.
+variable `x` or of `x.f`.  A method call is treated as reading every field and
+array element.
 
 ### Closed issues
 

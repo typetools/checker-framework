@@ -41,4 +41,39 @@ public class AssignmentChangesLocations {
       x.f.g.toString();
     }
   }
+
+  static class Holder {
+    @Nullable Holder next;
+    int count;
+
+    @org.checkerframework.dataflow.qual.Pure
+    int index() {
+      return next == null ? 0 : 1;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    int countIndex() {
+      return count;
+    }
+  }
+
+  // Assigning `h.next` might change `h.index()`, and therefore `a[h.index()]`, because the method's
+  // result might depend on `h.next`.
+  static void arrayIndexedByMethodCall(@Nullable String[] a, Holder h) {
+    if (a[h.index()] != null) {
+      h.next = null;
+      // :: error: [dereference.of.nullable]
+      a[h.index()].length();
+    }
+  }
+
+  // Assigning `h.count` might change `h.countIndex()`, even though the type of `h.count` is
+  // unrelated to the type of `h`.
+  static void arrayIndexedByMethodCallPrimitiveField(@Nullable String[] a, Holder h) {
+    if (a[h.countIndex()] != null) {
+      h.count = 1;
+      // :: error: [dereference.of.nullable]
+      a[h.countIndex()].length();
+    }
+  }
 }

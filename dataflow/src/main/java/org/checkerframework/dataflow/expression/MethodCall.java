@@ -175,6 +175,12 @@ public class MethodCall extends JavaExpression {
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    // The method's result might depend on any heap state, such as a field of an object reachable
+    // from the receiver or an argument, or a static field.  Therefore, assigning any field or array
+    // element might change the value of this method call.
+    if (other instanceof FieldAccess || other instanceof ArrayAccess) {
+      return true;
+    }
     if (receiver.containsModifiableAliasOf(store, other)) {
       return true;
     }
