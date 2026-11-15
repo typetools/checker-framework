@@ -250,7 +250,9 @@ public class MustCallConsistencyAnalyzer {
      * the same key.
      *
      * <p>The key is used only for statistics. It is not part of {@link #equals} or {@link
-     * #hashCode}, so it does not affect the analysis.
+     * #hashCode}, so it does not affect the analysis's results. However, {@link
+     * BlockWithObligations#equals} does consider it, so under -AcountMustCall the analysis might
+     * explore a block more than once with Obligations that differ only in their keys.
      */
     public final @Nullable Object countKey;
 
@@ -643,7 +645,7 @@ public class MustCallConsistencyAnalyzer {
     if (node instanceof MethodInvocationNode min
         && cmAtf.canCreateObligations()
         && cmAtf.hasCreatesMustCallFor(min)) {
-      checkCreatesMustCallForInvocation(obligations, min);
+      checkCreatesMustCallForInvocation(obligations, min, exceptionType);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
@@ -657,7 +659,7 @@ public class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true for each
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath, TypeMirror)} is true for each
    * expression in the argument to the CreatesMustCallFor annotation. As a special case, the
    * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
    * constructor of the relevant class (invoking a constructor already creates an obligation). If
@@ -674,9 +676,12 @@ public class MustCallConsistencyAnalyzer {
    *     an Obligation in it which tracks any expression from the CreatesMustCallFor annotation as
    *     one of its resource aliases
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    */
   private void checkCreatesMustCallForInvocation(
-      Set<Obligation> obligations, MethodInvocationNode node) {
+      Set<Obligation> obligations, MethodInvocationNode node, @Nullable TypeMirror exceptionType) {
 
     TreePath currentPath = cmAtf.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
@@ -684,7 +689,8 @@ public class MustCallConsistencyAnalyzer {
             node, cmAtf, cmAtf);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
-      if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
+      if (!isValidCreatesMustCallForExpression(
+          obligations, expression, currentPath, exceptionType)) {
         missing.add(expression);
       }
     }
@@ -717,7 +723,7 @@ public class MustCallConsistencyAnalyzer {
   /**
    * Checks the validity of the given expression from an invoked method's {@link
    * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. Helper method for
-   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
+   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode, TypeMirror)}.
    *
    * <p>An expression is valid if one of the following conditions is true:
    *
@@ -734,10 +740,16 @@ public class MustCallConsistencyAnalyzer {
    * @param expression an element of a method's @CreatesMustCallFor annotation
    * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
    *     annotation {@code expression} came
+   * @param exceptionType a description of the outgoing CFG edge from the invocation: {@code null}
+   *     to indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
-      Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
+      Set<Obligation> obligations,
+      JavaExpression expression,
+      TreePath invocationPath,
+      @Nullable TypeMirror exceptionType) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
@@ -769,14 +781,16 @@ public class MustCallConsistencyAnalyzer {
             // tracks.  The @CreatesMustCallFor method is responsible for the resource that the
             // replaced Obligation tracked.  Doing so could over-count, because
             // @CreatesMustCallFor doesn't guarantee that a new resource is created: it just
-            // means that a new resource might have been created.
-            toAdd =
-                new Obligation(
-                    ImmutableSet.of(alias),
-                    obligation.whenToEnforce,
-                    checker.countFoundObligation(
+            // means that a new resource might have been created.  If the invocation throws an
+            // exception, then the replaced resource is still outstanding, so toAdd retains the
+            // replaced Obligation's key.
+            Object countKey =
+                exceptionType == null
+                    ? checker.countFoundObligation(
                         new CreatesMustCallForKey(invocationPath.getLeaf(), expression),
-                        expression.getType()));
+                        expression.getType())
+                    : obligation.countKey;
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce, countKey);
           }
         }
 
@@ -2536,6 +2550,26 @@ public class MustCallConsistencyAnalyzer {
     public final ImmutableSet<Obligation> obligations;
 
     /**
+     * The {@link Obligation#countKey}s of {@link #obligations}, each paired with its Obligation.
+     * Empty if no Obligation has a count key, as is always the case unless -AcountMustCall was
+     * passed.
+     *
+     * <p>{@link Obligation#equals} ignores count keys, but this class's {@link #equals} does not.
+     * Otherwise, when two states that differ only in their count keys reach the same block, the
+     * analysis would discard one of them, and -AcountMustCall would not count a failure for the
+     * discarded state's count keys.
+     */
+    private final ImmutableSet<ObligationAndCountKey> countKeys;
+
+    /**
+     * An Obligation and its count key.
+     *
+     * @param obligation an Obligation
+     * @param countKey the Obligation's {@link Obligation#countKey}
+     */
+    private record ObligationAndCountKey(Obligation obligation, @Nullable Object countKey) {}
+
+    /**
      * Create a new BlockWithObligations from a block and a set of dataflow facts.
      *
      * @param b the block
@@ -2545,6 +2579,18 @@ public class MustCallConsistencyAnalyzer {
     public BlockWithObligations(Block b, Set<Obligation> obligations) {
       this.block = b;
       this.obligations = ImmutableSet.copyOf(obligations);
+      ImmutableSet<ObligationAndCountKey> countKeys = ImmutableSet.of();
+      for (Obligation obligation : this.obligations) {
+        if (obligation.countKey != null) {
+          ImmutableSet.Builder<ObligationAndCountKey> builder = ImmutableSet.builder();
+          for (Obligation o : this.obligations) {
+            builder.add(new ObligationAndCountKey(o, o.countKey));
+          }
+          countKeys = builder.build();
+          break;
+        }
+      }
+      this.countKeys = countKeys;
     }
 
     @Override
@@ -2556,7 +2602,9 @@ public class MustCallConsistencyAnalyzer {
         return false;
       }
       BlockWithObligations that = (BlockWithObligations) o;
-      return block.equals(that.block) && obligations.equals(that.obligations);
+      return block.equals(that.block)
+          && obligations.equals(that.obligations)
+          && countKeys.equals(that.countKeys);
     }
 
     @Override

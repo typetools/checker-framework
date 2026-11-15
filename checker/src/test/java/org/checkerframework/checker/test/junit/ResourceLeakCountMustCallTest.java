@@ -66,6 +66,24 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
+   * If a {@code CreatesMustCallFor} method throws an exception, the obligation that it would have
+   * replaced is not verified.
+   */
+  @Test
+  public void resetThatThrowsDoesNotVerifyReplacedObligation() {
+    assertCounts("ResetThrows.java", false, 2, 0);
+  }
+
+  /**
+   * When a path on which a {@code CreatesMustCallFor} method replaces an obligation merges with a
+   * path on which it does not, neither obligation is verified.
+   */
+  @Test
+  public void resetOnOneBranchVerifiesNeitherObligation() {
+    assertCounts("ResetOnOneBranch.java", false, 2, 0);
+  }
+
+  /**
    * Runs the Resource Leak Checker with {@code -AcountMustCall} on the given file and checks the
    * statistics that it prints.
    *
