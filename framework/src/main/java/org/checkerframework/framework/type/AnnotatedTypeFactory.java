@@ -3915,6 +3915,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if {@code elt} is the binding variable of a type pattern that is nested in a
+   * record pattern, such as {@code s} in {@code o instanceof Box(String s)}.
+   *
+   * @param elt an element
+   * @return true if {@code elt} is the binding variable of a type pattern that is nested in a
+   *     record pattern
+   */
+  public boolean isNestedBindingVariable(Element elt) {
+    // TODO: Once dataflow refines a nested binding variable by its record component (follow-up
+    // pull request), default nested binding variables to top as well and remove this method.
+    // See #7032.
+    if (elt.getKind() != ElementKind.BINDING_VARIABLE) {
+      return false;
+    }
+    Tree decl = declarationFromElement(elt);
+    TreePath path = decl == null ? null : getPath(decl);
+    // The parent of the variable is a binding pattern, whose parent might be a record pattern.
+    TreePath bindingPattern = path == null ? null : path.getParentPath();
+    TreePath enclosing = bindingPattern == null ? null : bindingPattern.getParentPath();
+    return enclosing != null && TreeUtils.isDeconstructionPatternTree(enclosing.getLeaf());
+  }
+
+  /**
    * Gets the path for the given {@link Tree} under the current root by checking from the visitor's
    * current path, and using {@link Trees#getPath(CompilationUnitTree, Tree)} (which is much slower)
    * only if {@code tree} is not found on the current path.

@@ -24,9 +24,10 @@ assignment if the pattern is unconditional for that type, and like an
 
 `TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
 
-New overridable methods `BaseTypeVisitor.checkInstanceofPattern()` and
-`BaseTypeVisitor.instanceofPatternMatchedType()` check the binding variable of
-an `instanceof` type pattern.  New overridable methods
+New overridable method `BaseTypeVisitor.checkInstanceOfPattern()` checks the
+binding variable of an `instanceof` type pattern.  A subclass can override the
+new method `BaseTypeVisitor.instanceOfPatternMatchedType()` to exclude values
+that `instanceof` never matches, such as null.  New overridable methods
 `CFAbstractTransfer.refineBindingVariable()` and
 `CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
 

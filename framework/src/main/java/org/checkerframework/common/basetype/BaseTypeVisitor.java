@@ -498,7 +498,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports a warning if the type of the binding variable declared by {@code bindingPattern} is not
    * a safe downcast from {@code componentType}, as adjusted by {@link
-   * #instanceofPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
+   * #instanceOfPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
    * unconditional for the record component that it is matched against.
    *
    * @param bindingPattern a type pattern nested in a record pattern
@@ -510,7 +510,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       BindingPatternTree bindingPattern,
       AnnotatedTypeMirror variableType,
       AnnotatedTypeMirror componentType) {
-    if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(componentType))) {
+    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(componentType))) {
       checker.reportWarning(
           bindingPattern, "instanceof.pattern.unsafe", componentType, bindingPattern.getVariable());
     }
@@ -3888,7 +3888,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         VariableTree variableTree = bindingPatternTree.getVariable();
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
-          checkInstanceofPattern(tree, variableTree);
+          checkInstanceOfPattern(tree);
         }
       } else {
         // A record pattern is checked by checkRecordPatternTypeInference and
@@ -3911,38 +3911,41 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports an {@code instanceof.pattern.unsafe} warning if the given binding variable's type is
-   * not a safe downcast from the type of the given instanceof expression's left operand, as
-   * adjusted by {@link #instanceofPatternMatchedType}.
+   * Reports an {@code instanceof.pattern.unsafe} warning if the type of the binding variable of
+   * {@code tree}'s type pattern is not a safe downcast from the type that {@link
+   * #instanceOfPatternMatchedType} returns for the type of {@code tree}'s left operand.
    *
    * <p>For example, in the Tainting Checker, if {@code o} is {@code @Tainted}, then this method
    * warns about {@code o instanceof @Untainted String s}, because the run-time test does not check
    * that {@code o} is untainted.
    *
-   * @param tree an instanceof expression whose pattern is a binding pattern
-   * @param variableTree the binding variable of the pattern of {@code tree}
+   * @param tree an instanceof expression whose pattern must be a type pattern
    */
-  protected void checkInstanceofPattern(InstanceOfTree tree, VariableTree variableTree) {
+  protected void checkInstanceOfPattern(InstanceOfTree tree) {
+    if (!(tree.getPattern() instanceof BindingPatternTree bindingPatternTree)) {
+      throw new BugInCF("checkInstanceOfPattern: not a type pattern: %s", tree);
+    }
+    VariableTree variableTree = bindingPatternTree.getVariable();
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
     AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-    if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(expType))) {
+    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(expType))) {
       checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
     }
   }
 
   /**
-   * Returns the type that a type pattern's binding variable is checked against, given the type of
-   * the value that the pattern is matched against: the left operand of an instanceof expression, or
-   * the record component that a type pattern nested in a record pattern is matched against.
+   * Returns the type of the values of {@code expType} that a type pattern can match, given the type
+   * of the value that the pattern is matched against: the left operand of an instanceof expression,
+   * or the record component that a type pattern nested in a record pattern is matched against.
    *
-   * <p>This implementation returns {@code expType} itself. A subclass overrides this method if a
-   * type pattern matches only some values of {@code expType}; for example, a type pattern that is
-   * not unconditional does not match null.
+   * <p>This implementation returns {@code expType} itself. A subclass overrides this method if the
+   * run-time test of a type pattern rejects some values whatever their Java type; for example, a
+   * type pattern that is not unconditional does not match null.
    *
    * @param expType the type of the value that a type pattern is matched against
-   * @return the type that a type pattern's binding variable is checked against
+   * @return the type of the values of {@code expType} that a type pattern can match
    */
-  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
+  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
     return expType;
   }
 
