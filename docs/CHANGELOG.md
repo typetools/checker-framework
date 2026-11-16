@@ -13,6 +13,9 @@
 takes an additional first argument, the operator, because the conversions of a
 binary operation's operands depend on the operator.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
