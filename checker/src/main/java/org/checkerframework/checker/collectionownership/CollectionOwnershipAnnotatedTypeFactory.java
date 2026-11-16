@@ -22,7 +22,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -35,6 +34,7 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollectionBot
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
@@ -70,7 +70,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The annotated type factory for the Collection Ownership Checker. As the last checker in the
@@ -727,8 +726,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (typeMirror.getKind() == TypeKind.NULL) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
-    TypeElement typeElement = TypesUtils.getTypeElement(typeMirror);
-    if (typeElement != null && rlAtf.hasEmptyMustCallValue(typeElement)) {
+    // Use the argument's effective must-call type rather than the declaration of its class:  an
+    // expression of type `@MustCallUnknown Object` may be owning even though `Object` has no
+    // must-call obligations.  A missing @MustCall annotation means @MustCallUnknown.
+    AnnotationMirror mustCallAnno =
+        mustCallType == null ? null : mustCallType.getPrimaryAnnotation(MustCall.class);
+    if (mustCallAnno != null && rlAtf.getMustCallValues(mustCallAnno).isEmpty()) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
 
