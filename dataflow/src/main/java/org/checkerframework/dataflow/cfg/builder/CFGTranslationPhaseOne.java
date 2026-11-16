@@ -2814,14 +2814,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * <p>On the path on which the try block throws an exception, the try-with-resources statement
    * suppresses any exception that {@code close()} throws, and then rethrows the try block's
-   * exception (JLS 14.20.3.1). On that path, a call to a {@code close()} method annotated
-   * {@code @TerminatesExecution} does not terminate execution, because the method may terminate by
+   * exception (JLS 14.20.3.1). On that path, the try block's exception propagates even if {@code
+   * close()} is annotated {@code @TerminatesExecution}, because the method may terminate by
    * throwing an exception.
    *
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param isExceptionalPath true if the call is on the path on which the try block throws an
-   *     exception
+   *     exception (the primary exception) that propagates after the call to {@code close}
    * @param p the value to pass to calls to {@code scan}
    */
   private void addCloseCallForResource(
@@ -2882,7 +2882,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE, !isExceptionalPath);
+    if (isExceptionalPath) {
+      // Any exception that close() throws is suppressed, and control continues to the code that
+      // rethrows the primary exception.  Model that by catching every exception that close()
+      // throws and continuing after the call.  If close() terminates execution, it has no normal
+      // successor, but its exceptional successors still reach the rethrow of the primary
+      // exception.
+      Label suppressedLabel = new Label();
+      tryStack.pushFrame(
+          new TryCatchFrame(
+              types,
+              Collections.singletonList(
+                  new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
+      extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+      tryStack.popFrame();
+      addLabelForNextNode(suppressedLabel);
+    } else {
+      extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+    }
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2914,27 +2931,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private MethodInvocationNode extendWithArtificialCall(
       MethodInvocationTree call, Node receiver, NullReceiver nullReceiver) {
-    return extendWithArtificialCall(call, receiver, nullReceiver, true);
-  }
-
-  /**
-   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
-   * call to {@code hasNext()} in an enhanced for loop.
-   *
-   * @param call the call
-   * @param receiver the receiver of the call
-   * @param nullReceiver what happens when the receiver is null. If the receiver is never null, such
-   *     as {@code this}, the call does not throw a {@code NullPointerException}, regardless of this
-   *     argument.
-   * @param mayTerminateExecution if true, the call terminates execution if the invoked method is
-   *     annotated {@link TerminatesExecution}. If false, the call never terminates execution.
-   * @return the node for the call
-   */
-  private MethodInvocationNode extendWithArtificialCall(
-      MethodInvocationTree call,
-      Node receiver,
-      NullReceiver nullReceiver,
-      boolean mayTerminateExecution) {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
@@ -2942,10 +2938,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
-    ExtendedNode extendedNode = extendWithMethodInvocationNode(callNode);
-    if (!mayTerminateExecution) {
-      extendedNode.setTerminatesExecution(false);
-    }
+    extendWithMethodInvocationNode(callNode);
     return callNode;
   }
 
@@ -2972,7 +2965,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param finallyLabel label for the entry of the finally block for the normal case
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
-   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, given
+   *     whether the finally block is for the path on which the try block throws an exception
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link

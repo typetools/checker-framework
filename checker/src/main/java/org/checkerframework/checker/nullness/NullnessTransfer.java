@@ -482,6 +482,11 @@ public class NullnessTransfer
    * so after such an invocation, the receiver expression may denote a different value than the one
    * the invocation tested for nullness.
    *
+   * <p>This is conservative. It returns true if an argument assigns any part of the receiver
+   * expression. If the receiver expression is assignable by other code, it also returns true if an
+   * argument assigns a non-local variable or (unless {@link #nonNullAssumptionAfterInvocation} is
+   * set) invokes a method or constructor that is not side-effect-free.
+   *
    * <p>The bodies of lambda expressions and anonymous classes in the arguments are not evaluated
    * along with the arguments, so this method does not examine them.
    *
@@ -545,6 +550,7 @@ public class NullnessTransfer
           public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
             // A method with side effects may reassign a receiver that is assignable by other code.
             if (receiverAssignableByOtherCode
+                && !nonNullAssumptionAfterInvocation
                 && !isSideEffectFree(TreeUtils.elementFromUse(node))) {
               return true;
             }
@@ -556,6 +562,7 @@ public class NullnessTransfer
             // A constructor with side effects may reassign a receiver that is assignable by other
             // code.
             if (receiverAssignableByOtherCode
+                && !nonNullAssumptionAfterInvocation
                 && !isSideEffectFree(TreeUtils.elementFromUse(node))) {
               return true;
             }
