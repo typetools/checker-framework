@@ -46,9 +46,9 @@ public class CaseNode extends Node {
   protected final boolean labelsUntested;
 
   /**
-   * True if code that might have side effects, such as a guard or a deconstruction pattern, may
-   * have run between the evaluation of the switch selector expression and this node. If so, the
-   * selector expression might no longer denote the value that the switch tests.
+   * True if code that might have side effects, such as a guard or a deconstruction pattern, can run
+   * between the evaluation of the switch selector expression and this node. If so, the selector
+   * expression might no longer denote the value that the switch tests.
    */
   protected final boolean codeRanSinceSelector;
 
@@ -61,7 +61,7 @@ public class CaseNode extends Node {
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param labelsUntested true if the CFG does not test the case expressions; see {@link
    *     #labelsUntested()}
-   * @param codeRanSinceSelector true if code that might have side effects may have run between the
+   * @param codeRanSinceSelector true if code that might have side effects can run between the
    *     evaluation of the switch selector expression and this node; see {@link
    *     #codeRanSinceSelector()}
    * @param types a factory of utility methods for operating on types
@@ -121,14 +121,14 @@ public class CaseNode extends Node {
 
   /**
    * Returns true if code that might have side effects, such as a guard or a deconstruction pattern,
-   * may have run between the evaluation of the switch selector expression and this node. If so, the
+   * can run between the evaluation of the switch selector expression and this node. If so, the
    * selector expression (the right-hand side of {@link #getSwitchOperand()}) might no longer denote
    * the value that the switch tests, for example if it is a field that a guard reassigned. The
    * synthetic variable (the left-hand side of {@link #getSwitchOperand()}) always denotes that
    * value.
    *
-   * @return true if code that might have side effects may have run between the evaluation of the
-   *     switch selector expression and this node
+   * @return true if code that might have side effects can run between the evaluation of the switch
+   *     selector expression and this node
    */
   public boolean codeRanSinceSelector() {
     return codeRanSinceSelector;

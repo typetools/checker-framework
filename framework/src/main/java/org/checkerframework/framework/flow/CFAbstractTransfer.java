@@ -1352,14 +1352,15 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    AssignmentNode assign = n.getSwitchOperand();
+    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
               finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      if (selectorExpressionDenotesSwitchValue(n)) {
+      if (refineSelectorExpression) {
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
@@ -1394,7 +1395,7 @@ public abstract class CFAbstractTransfer<
    * Returns true if the switch selector expression (the right-hand side of {@code
    * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
    * If this returns false, a transfer function must not refine the selector expression at {@code
-   * n}, but it may refine the synthetic variable (the left-hand side of {@code
+   * n}, but it is permitted to refine the synthetic variable (the left-hand side of {@code
    * n.getSwitchOperand()}).
    *
    * <p>The selector expression might not denote the tested value if code with side effects, such as
