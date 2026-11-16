@@ -1467,12 +1467,12 @@ public abstract class CFAbstractTransfer<
    */
   protected void refineBindingVariable(
       S store, JavaExpression bindingExpr, AnnotatedTypeMirror matchedType) {
-    AnnotationMirrorSet annos =
+    AnnotationMirrorSet limitedAnnos =
         analysis
             .atypeFactory
             .getQualifierUpperBounds()
             .limitToBound(bindingExpr.getType(), matchedType.getAnnotations());
-    for (AnnotationMirror anno : annos) {
+    for (AnnotationMirror anno : limitedAnnos) {
       store.insertOrRefine(bindingExpr, anno);
     }
   }

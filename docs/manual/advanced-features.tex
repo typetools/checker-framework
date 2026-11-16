@@ -384,8 +384,9 @@ locations.
 
 Variables defaulted to top include local variables, resource variables in the
 try-with-resources construct, variables in \<for> statements, pattern
-variables such as \<s> in \<o instanceof String s>, and \<catch>
-arguments (known as exception parameters in the Java Language Specification).
+variables such as \<s> in \<o instanceof String s> (but not pattern variables
+nested in a record pattern), and \<catch> arguments (known as exception
+parameters in the Java Language Specification).
 
 Exception parameters default to the top type because they might catch an
 exception thrown anywhere in the program.
