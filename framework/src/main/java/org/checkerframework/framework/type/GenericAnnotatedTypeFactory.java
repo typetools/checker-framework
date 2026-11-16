@@ -1217,10 +1217,23 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the regular store for a given block.
    *
-   * @param block a block whose regular store to return
+   * @param block a block whose regular store to return; this factory's dataflow analysis must
+   *     already have reached it
    * @return the regular store of {@code block}
    */
   public Store getRegularStore(Block block) {
+    return getInput(block).getRegularStore();
+  }
+
+  /**
+   * Returns the transfer input of the given block: from the analysis if it is running, or else from
+   * the result of the analysis.
+   *
+   * @param block a block whose transfer input to return; this factory's dataflow analysis must
+   *     already have reached it
+   * @return the transfer input of {@code block}
+   */
+  public TransferInput<Value, Store> getInput(Block block) {
     TransferInput<Value, Store> input;
     if (!analysis.isRunning()) {
       assert flowResult != null : "@AssumeAssertion(nullness): dataflow analysis has completed";
@@ -1229,8 +1242,7 @@ public abstract class GenericAnnotatedTypeFactory<
       input = analysis.getInput(block);
     }
     assert input != null : "@AssumeAssertion(nullness): block was analyzed";
-
-    return input.getRegularStore();
+    return input;
   }
 
   /**
