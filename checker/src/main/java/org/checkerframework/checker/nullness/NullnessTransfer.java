@@ -521,7 +521,7 @@ public class NullnessTransfer
                 || super.visitNewClass(tree, p);
           }
 
-          /**
+          /*
            * Returns true if assigning the given variable might reassign the receiver.
            *
            * @param variable the left-hand side of an assignment
@@ -535,7 +535,7 @@ public class NullnessTransfer
             return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
           }
 
-          /**
+          /*
            * Returns true if invoking the given method or constructor might reassign the receiver.
            *
            * @param executable a method or constructor
