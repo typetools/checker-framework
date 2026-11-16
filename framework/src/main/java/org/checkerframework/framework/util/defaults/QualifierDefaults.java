@@ -365,6 +365,16 @@ public class QualifierDefaults {
   }
 
   /**
+   * Discards the memoized results of {@link #defaultsAt}. Call this when the {@code
+   * DefaultQualifier} annotations that {@link AnnotatedTypeFactory#getDeclAnnotation} returns may
+   * have changed, such as when the type factory starts processing a new compilation unit whose
+   * ajava file supplies different annotations.
+   */
+  public void clearDefaultsAtCache() {
+    defaultsAtCache.clear();
+  }
+
+  /**
    * Throws an exception if the given location is not a valid location for an unchecked code
    * default.
    *
