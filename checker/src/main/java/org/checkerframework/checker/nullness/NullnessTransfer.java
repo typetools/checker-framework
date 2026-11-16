@@ -513,16 +513,12 @@ public class NullnessTransfer
           @Override
           public Boolean visitUnary(UnaryTree tree, Void p) {
             switch (tree.getKind()) {
-              case PREFIX_INCREMENT:
-              case PREFIX_DECREMENT:
-              case POSTFIX_INCREMENT:
-              case POSTFIX_DECREMENT:
+              case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
                 if (assignsReceiver(tree.getExpression())) {
                   return true;
                 }
-                break;
-              default:
-                break;
+              }
+              default -> {}
             }
             return super.visitUnary(tree, p);
           }
