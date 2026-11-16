@@ -1,8 +1,15 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -430,12 +437,17 @@ public class NullnessTransfer
     // MethodAccessNode.  A call tests its receiver for nullness after evaluating its arguments, so
     // neither the arguments nor a handler for the call's NullPointerException may assume that the
     // receiver is non-null.
-    if (!n.getTarget().isStatic()
-        && (nonNullAssumptionAfterInvocation
-            || isMethodSideEffectFree
-            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
-      // Make receiver non-null.
-      makeNonNull(result, receiver);
+    // Because the refinement happens after the arguments are evaluated, it is skipped if evaluating
+    // the arguments might change the value of the receiver expression, as in `x.equals(x = null)`.
+    if (!n.getTarget().isStatic()) {
+      JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+      if ((nonNullAssumptionAfterInvocation
+              || isMethodSideEffectFree
+              || !receiverExpr.isAssignableByOtherCode())
+          && !argumentsMayChangeReceiver(tree.getArguments(), receiverExpr)) {
+        // Make receiver non-null.
+        makeNonNull(result, receiver);
+      }
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
@@ -474,6 +486,123 @@ public class NullnessTransfer
     }
 
     return result;
+  }
+
+  /**
+   * Returns true if evaluating the given arguments of a method invocation might change the value
+   * of the invocation's receiver expression, as in {@code x.equals(x = null)}. This is
+   * conservative: it may return true even if the arguments do not change the receiver.
+   *
+   * @param arguments the arguments of a method invocation
+   * @param receiverExpr the receiver of the method invocation
+   * @return true if evaluating {@code arguments} might change the value of {@code receiverExpr}
+   */
+  private boolean argumentsMayChangeReceiver(
+      List<? extends ExpressionTree> arguments, JavaExpression receiverExpr) {
+    if (arguments.isEmpty()) {
+      return false;
+    }
+    TreeScanner<Boolean, Void> scanner =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean reduce(Boolean r1, Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+
+          @Override
+          public Boolean visitAssignment(AssignmentTree node, Void p) {
+            return isAssignedReceiverDependency(node.getVariable())
+                || super.visitAssignment(node, p);
+          }
+
+          @Override
+          public Boolean visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+            return isAssignedReceiverDependency(node.getVariable())
+                || super.visitCompoundAssignment(node, p);
+          }
+
+          @Override
+          public Boolean visitUnary(UnaryTree node, Void p) {
+            switch (node.getKind()) {
+              case PREFIX_INCREMENT:
+              case PREFIX_DECREMENT:
+              case POSTFIX_INCREMENT:
+              case POSTFIX_DECREMENT:
+                if (isAssignedReceiverDependency(node.getExpression())) {
+                  return true;
+                }
+                break;
+              default:
+                break;
+            }
+            return super.visitUnary(node, p);
+          }
+
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            return mayChangeReceiver(TreeUtils.elementFromUse(node))
+                || super.visitMethodInvocation(node, p);
+          }
+
+          @Override
+          public Boolean visitNewClass(NewClassTree node, Void p) {
+            return mayChangeReceiver(TreeUtils.elementFromUse(node))
+                || super.visitNewClass(node, p);
+          }
+
+          // The bodies of lambdas and anonymous classes are not executed when the arguments are
+          // evaluated.  A call that executes them is handled by visitMethodInvocation and
+          // visitNewClass.
+
+          @Override
+          public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            return false;
+          }
+
+          @Override
+          public Boolean visitClass(ClassTree node, Void p) {
+            return false;
+          }
+
+          /**
+           * Returns true if assigning to the given variable might change the value of the
+           * receiver.
+           *
+           * @param variable the left-hand side of an assignment
+           * @return true if assigning to {@code variable} might change the value of the receiver
+           */
+          private boolean isAssignedReceiverDependency(ExpressionTree variable) {
+            JavaExpression assigned = JavaExpression.fromTree(variable);
+            if (assigned instanceof LocalVariable) {
+              return receiverExpr.containsSyntacticEqualJavaExpression(assigned);
+            }
+            // A field or array element assignment can change only a receiver that contains a
+            // field or array access that is assignable.
+            return receiverExpr.isAssignableByOtherCode();
+          }
+
+          /**
+           * Returns true if invoking the given method or constructor might change the value of the
+           * receiver.
+           *
+           * @param invoked the invoked method or constructor, or null if it is unknown
+           * @return true if invoking {@code invoked} might change the value of the receiver
+           */
+          private boolean mayChangeReceiver(@Nullable ExecutableElement invoked) {
+            if (nonNullAssumptionAfterInvocation || !receiverExpr.isAssignableByOtherCode()) {
+              return false;
+            }
+            return invoked == null
+                || !(atypeFactory.isSideEffectFree(invoked)
+                    || PurityUtils.isSideEffectFree(atypeFactory, invoked));
+          }
+        };
+    for (ExpressionTree argument : arguments) {
+      if (Boolean.TRUE.equals(scanner.scan(argument, null))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

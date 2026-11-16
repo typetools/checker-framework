@@ -326,14 +326,17 @@ public class MustCallConsistencyAnalyzer {
      * <p>The must-call methods of a resource alias that has a value in the store come from that
      * value, or from the alias's declaration (see {@link #getMustCallValue}).
      *
-     * <p>A resource alias that has no value in the store gets the must-call methods of the
-     * resource, which is the union of the must-call methods of the resource aliases that have a
-     * value in the store. For example, the store has no value for a resource alias that is
-     * unassigned on some path to the store's program point, such as a variable that is assigned the
-     * result of a {@code @MustCallAlias} method that might throw an exception. The declared type of
-     * such a resource alias might be {@code @MustCall({})}, as for a variable of type {@code
-     * Iterator}; using that type would make the obligation trivially satisfied. If no resource
-     * alias has a value in the store, then each one gets the must-call methods of its declaration.
+     * <p>A resource alias that has no value in the store gets the must-call methods of its
+     * declaration, if those are non-empty; they may differ from the resource's, as for a {@code
+     * MustCallAlias} wrapper whose must-call method differs from the wrapped resource's. Otherwise,
+     * it gets the must-call methods of the resource, which is the union of the must-call methods of
+     * the resource aliases that have a value in the store. For example, the store has no value for
+     * a resource alias that is unassigned on some path to the store's program point, such as a
+     * variable that is assigned the result of a {@code @MustCallAlias} method that might throw an
+     * exception. The declared type of such a resource alias might be {@code @MustCall({})}, as for
+     * a variable of type {@code Iterator}; using that type would make the obligation trivially
+     * satisfied. If no resource alias has a value in the store, then each one gets the must-call
+     * methods of its declaration.
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis, or null. If
@@ -382,7 +385,22 @@ public class MustCallConsistencyAnalyzer {
         }
         List<String> resourceMustCallMethodsList = new ArrayList<>(resourceMustCallMethods);
         for (ResourceAlias alias : this.resourceAliases) {
-          result.putIfAbsent(alias, resourceMustCallMethodsList);
+          if (result.containsKey(alias)) {
+            continue;
+          }
+          // Prefer the alias's declared must-call methods, which may differ from the resource's
+          // (e.g., a @MustCallAlias wrapper whose must-call method differs from the wrapped
+          // resource's).
+          List<String> declaredMustCallMethods =
+              getMustCallMethodsOfAlias(alias, mcStore, mustCallAnnotatedTypeFactory, rlAtf);
+          if (declaredMustCallMethods == null) {
+            return null;
+          }
+          result.put(
+              alias,
+              declaredMustCallMethods.isEmpty()
+                  ? resourceMustCallMethodsList
+                  : declaredMustCallMethods);
         }
       }
       return result;
