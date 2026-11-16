@@ -6,6 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.Map;
@@ -507,6 +508,23 @@ public class NullnessTransfer
           @Override
           public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
             return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean visitUnary(UnaryTree tree, Void p) {
+            switch (tree.getKind()) {
+              case PREFIX_INCREMENT:
+              case PREFIX_DECREMENT:
+              case POSTFIX_INCREMENT:
+              case POSTFIX_DECREMENT:
+                if (assignsReceiver(tree.getExpression())) {
+                  return true;
+                }
+                break;
+              default:
+                break;
+            }
+            return super.visitUnary(tree, p);
           }
 
           @Override
