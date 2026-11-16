@@ -323,8 +323,24 @@ public class AnnotationFileElementTypes {
     for (String path : annotationFiles) {
       File location = AnnotationFileUtil.findFileSystemLocation(path);
       if (location != null) {
+        if (location.isFile()
+            && !AnnotationFileUtil.isJar(location.getName())
+            && !AnnotationFileUtil.hasAnnotationFileExtension(location.getName(), fileType)) {
+          warnUnusableNamedFile(path, fileType);
+          continue;
+        }
         AnnotationFileUtil.forEachAnnotationFile(
-            location, fileType, resource -> parseAnnotationFileResource(resource, parseType));
+            location,
+            fileType,
+            resource -> parseAnnotationFileResource(resource, parseType),
+            archive ->
+                checker.message(
+                    Diagnostic.Kind.NOTE,
+                    "Not reading archive "
+                        + archive
+                        + ", which is within directory "
+                        + location
+                        + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top
@@ -426,6 +442,27 @@ public class AnnotationFileElementTypes {
               Diagnostic.Kind.WARNING,
               "Could not read annotation resource: " + resource.getDescription() + ": " + e);
     }
+  }
+
+  /**
+   * Issues a warning that a file that the user named is being ignored, because it is not an archive
+   * and its name does not end with the file name extension of its file type.
+   *
+   * @param path the file's name, as the user supplied it
+   * @param fileType the type of annotation file that the user supplied
+   */
+  private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
+    String reason;
+    if (fileType.isStub() && path.endsWith(".ajava")) {
+      reason = ", which is an ajava file; supply it via -Aajava";
+    } else if (!fileType.isStub() && path.endsWith(".astub")) {
+      reason = ", which is a stub file; supply it via -Astubs";
+    } else if (fileType.isStub()) {
+      reason = ": the name of a stub file must end with .astub";
+    } else {
+      reason = ": the name of an ajava file must end with .ajava";
+    }
+    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**

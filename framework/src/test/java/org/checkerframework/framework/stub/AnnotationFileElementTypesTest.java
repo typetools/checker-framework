@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -96,6 +99,33 @@ public class AnnotationFileElementTypesTest {
       }
     }
     Assert.fail("No diagnostic starts with \"" + prefix + "\"; diagnostics: " + diagnostics);
+  }
+
+  /** Tests that a named file whose name does not suit its file type yields a warning. */
+  @Test
+  public void unusableNamedFile() throws IOException {
+    File stub = write(new File(tmp.getRoot(), "Foo.stub"), "package p;");
+    assertHasDiagnostic(
+        "WARNING: Ignoring " + stub.getPath() + ": the name of a stub file must end with .astub",
+        diagnostics(stub.getPath()));
+
+    File ajava = write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
+    assertHasDiagnostic(
+        "WARNING: Ignoring " + ajava.getPath() + ", which is an ajava file; supply it via -Aajava",
+        diagnostics(ajava.getPath()));
+  }
+
+  /** Tests that an archive within a named directory yields a note. */
+  @Test
+  public void archiveInDirectory() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File jar = new File(dir, "lib.jar");
+    try (OutputStream os = Files.newOutputStream(jar.toPath());
+        ZipOutputStream zos = new ZipOutputStream(os)) {
+      zos.putNextEntry(new ZipEntry("A.astub"));
+      zos.closeEntry();
+    }
+    assertHasDiagnostic("NOTE: Not reading archive " + jar, diagnostics(dir.getPath()));
   }
 
   /** Tests that a named archive that cannot be opened yields a warning. */
