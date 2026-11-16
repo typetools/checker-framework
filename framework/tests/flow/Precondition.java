@@ -1,4 +1,3 @@
-import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.test.*;
@@ -160,8 +159,4 @@ public class Precondition {
     // :: error: [flowexpr.parse.error]
     error2();
   }
-
-  // :: warning: [contracts.toptype]
-  @RequiresQualifier(expression = "f1", qualifier = Unqualified.class)
-  void noOpForTesting() {}
 }

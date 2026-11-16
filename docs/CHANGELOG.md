@@ -7,6 +7,11 @@
 
 ### User-visible changes
 
+Under `-AwarnRedundantAnnotations`, the Checker Framework warns, with message
+key `contracts.toptype`, when a pre- or post-condition annotation (such as
+`@RequiresQualifier`, `@EnsuresQualifier`, or a contract annotation defined via
+`@PreconditionAnnotation`) uses the top qualifier, which has no effect.
+
 ### Changes for type system implementers
 
 ### Closed issues
@@ -14,11 +19,6 @@
 ## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
-
-The Checker Framework warns, with message key `contracts.toptype`, when a pre-
-or post-condition annotation (such as `@RequiresQualifier`, `@EnsuresQualifier`,
-or a contract annotation defined via `@PreconditionAnnotation`) uses the top
-qualifier, which has no effect.
 
 A method with a purity annotation can call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter

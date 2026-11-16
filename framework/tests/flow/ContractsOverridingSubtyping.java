@@ -12,7 +12,6 @@ public class ContractsOverridingSubtyping {
     @RequiresQualifier(expression = "f", qualifier = Odd.class)
     void requiresOdd() {}
 
-    // :: warning: [contracts.toptype]
     @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
     void requiresUnqual() {}
 
@@ -21,7 +20,6 @@ public class ContractsOverridingSubtyping {
       f = g;
     }
 
-    // :: warning: [contracts.toptype]
     @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
     void ensuresUnqual() {}
 
@@ -31,7 +29,6 @@ public class ContractsOverridingSubtyping {
       return true;
     }
 
-    // :: warning: [contracts.toptype]
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
     boolean ensuresIfUnqual() {
       return true;
@@ -41,7 +38,6 @@ public class ContractsOverridingSubtyping {
   static class Derived extends Base {
 
     @Override
-    // :: warning: [contracts.toptype]
     @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
     void requiresOdd() {}
 
@@ -51,7 +47,6 @@ public class ContractsOverridingSubtyping {
     void requiresUnqual() {}
 
     @Override
-    // :: warning: [contracts.toptype]
     @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
     // :: error: [contracts.postcondition.override]
     void ensuresOdd() {
@@ -65,7 +60,6 @@ public class ContractsOverridingSubtyping {
     }
 
     @Override
-    // :: warning: [contracts.toptype]
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
     // :: error: [contracts.conditional.postcondition.true.override]
     boolean ensuresIfOdd() {

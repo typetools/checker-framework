@@ -214,26 +214,28 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}. Might return null.
+   * contractAnno}.
    *
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @return the type annotation specified in {@code contractAnno.qualifier}
+   * @return the type annotation specified in {@code contractAnno.qualifier}, or null if the
+   *     qualifier could not be loaded or is not a supported qualifier of the type system
    */
-  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}, with elements/arguments taken from {@code argumentAnno}. Might return null.
+   * contractAnno}, with elements/arguments taken from {@code argumentAnno}.
    *
    * @param contractAnno a contract meta-annotation, such as {@code @PreconditionAnnotation}
    * @param argumentAnno a contract annotation that is meta-annotated by {@code contractAnno}; it
    *     supplies the elements/fields in the return value
-   * @return the type annotation specified in {@code contractAnno.qualifier}
+   * @return the type annotation specified in {@code contractAnno.qualifier}, or null if the
+   *     qualifier could not be loaded or is not a supported qualifier of the type system
    */
-  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
     Map<String, String> argumentRenaming =
@@ -268,8 +270,8 @@ public class ContractsFromMethod {
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
 
     AnnotationMirror anno;
-    if (argumentAnno == null || argumentRenaming == null || argumentRenaming.isEmpty()) {
-      // If there are no arguments, use factory method that allows caching.
+    if (argumentAnno == null || argumentRenaming.isEmpty()) {
+      // If there are no arguments, use factory method that allows caching
       anno = AnnotationBuilder.fromName(factory.getElementUtils(), c);
     } else {
       AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
