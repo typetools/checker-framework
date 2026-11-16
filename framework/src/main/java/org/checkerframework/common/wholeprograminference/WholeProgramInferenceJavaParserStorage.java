@@ -996,7 +996,7 @@ public class WholeProgramInferenceJavaParserStorage
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
       if (fieldAnnos.type != null
           && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
-        wpiDefaults.removeRedundantPrimaryAnnotations(
+        wpiDefaults.removeRedundantAnnotations(
             fieldAnnos.type, wpiDefaults.defaultedType(fieldAnnos.element));
       }
     }
@@ -1010,28 +1010,28 @@ public class WholeProgramInferenceJavaParserStorage
       CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
       wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
       // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
-      removeRedundantPrimaryAnnotations(methodAnnos);
+      removeRedundantAnnotations(methodAnnos);
     }
   }
 
   /**
    * Removes, from the inferred types in the signature of the given method or constructor, each
-   * primary annotation that would be redundant, because the type has it even when no annotation is
-   * written on it.
+   * annotation that would be redundant, because the type has it even when no annotation is written
+   * on it.
    *
    * @param methodAnnos annotations for a method or constructor, which this method side-effects
    */
-  private void removeRedundantPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+  private void removeRedundantAnnotations(CallableDeclarationAnnos methodAnnos) {
     ExecutableElement methodElt = methodAnnos.element;
     // A declaration annotation on a method that is an alias for a type qualifier applies to the
     // method's return type.
     if (methodAnnos.returnType != null
         && !containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
-      wpiDefaults.removeRedundantPrimaryAnnotations(
+      wpiDefaults.removeRedundantAnnotations(
           methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
     }
     if (methodAnnos.receiverType != null) {
-      wpiDefaults.removeRedundantPrimaryAnnotations(
+      wpiDefaults.removeRedundantAnnotations(
           methodAnnos.receiverType, wpiDefaults.defaultedReceiverType(methodElt));
     }
     if (methodAnnos.parameterTypes != null) {
@@ -1041,7 +1041,7 @@ public class WholeProgramInferenceJavaParserStorage
         if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
           // The parameter's own element is used, rather than the method's type, so that a
           // `@DefaultQualifier` annotation written on the parameter declaration is respected.
-          wpiDefaults.removeRedundantPrimaryAnnotations(
+          wpiDefaults.removeRedundantAnnotations(
               paramType, wpiDefaults.defaultedType(paramElts.get(i)));
         }
       }

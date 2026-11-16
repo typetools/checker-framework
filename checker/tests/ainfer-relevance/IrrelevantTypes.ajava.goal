@@ -8,7 +8,7 @@ public class IrrelevantTypes {
 
     static double doubleField;
 
-    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType String[] arrayField;
+    static String[] arrayField;
 
     static java.util.Date dateField;
 
@@ -25,7 +25,7 @@ public class IrrelevantTypes {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType String[] arrayReturn() {
+    static String[] arrayReturn() {
         return arrayField;
     }
 }
