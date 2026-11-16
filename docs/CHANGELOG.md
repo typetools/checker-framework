@@ -24,6 +24,9 @@ earlier guard or a record accessor might have changed the selector expression;
 then, `visitCase()` refines only the synthetic variable that holds the
 selector's value.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

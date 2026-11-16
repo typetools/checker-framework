@@ -930,8 +930,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1174,7 +1174,7 @@ public abstract class CFAbstractTransfer<
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+        JavaExpression expr = JavaExpression.fromNode(node.getOperand());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           store.insertOrRefine(expr, anno);
         }
