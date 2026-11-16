@@ -2015,8 +2015,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * enhanced for loop over an {@code Iterable}.
    *
    * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
-   * @param variableElement the loop variable of the enhanced for loop; the new variable has the
-   *     same enclosing element
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new iterator variable
    */
   protected VariableTree createEnhancedForLoopIteratorVariable(
@@ -2039,8 +2039,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param expression an array expression of an enhanced for loop, which initializes the new
    *     variable
-   * @param variableElement the loop variable of the enhanced for loop; the new variable has the
-   *     same enclosing element
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new array variable
    */
   protected VariableTree createEnhancedForLoopArrayVariable(
