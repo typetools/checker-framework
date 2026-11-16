@@ -9,20 +9,20 @@
 
 ### Changes for type system implementers
 
-The `CaseNode` constructor takes a new `labelsUntested` argument, and the new
-method `CaseNode.labelsUntested()` returns it.  It is true for the last case of
-an exhaustive switch.  For a `CaseNode` whose `labelsUntested()` is true, the CFG
-does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
-store.
+The `CaseNode` constructor takes two new boolean arguments, `labelsUntested`
+and then `codeRanSinceSelector`, which the new methods
+`CaseNode.labelsUntested()` and `CaseNode.codeRanSinceSelector()` return.
 
-The `CaseNode` constructor takes a new `codeRanSinceSelector` argument, and the
-new method `CaseNode.codeRanSinceSelector()` returns it.  It is true if a guard
-or a deconstruction pattern may have run since the switch evaluated its selector
-expression.  The new method
-`CFAbstractTransfer.selectorExpressionDenotesSwitchValue()` returns false if an
-earlier guard or a record accessor might have changed the selector expression;
-then, `visitCase()` refines only the synthetic variable that holds the
-selector's value.
+* `labelsUntested` is true for the last case of an exhaustive switch.  For such
+  a `CaseNode`, the CFG does not test the labels, and
+  `CFAbstractTransfer.visitCase()` returns a regular store.
+* `codeRanSinceSelector` is true if a guard or a deconstruction pattern that
+  might have side effects can run between the evaluation of the switch's
+  selector expression and the `CaseNode`.  The new method
+  `CFAbstractTransfer.selectorExpressionDenotesSwitchValue()` returns false if
+  an earlier guard or a record accessor might have changed the selector
+  expression; then, `visitCase()` refines only the synthetic variable that
+  holds the selector's value.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
