@@ -427,7 +427,10 @@ public class AnnotationFileUtil {
    * within the directory or archive is hidden (see {@link #isHidden}). An example of a hidden file
    * is the {@code ._Foo.astub} metadata file that macOS adds to archives and to non-Mac file
    * systems. An archive within a directory is not opened; it is passed to {@code
-   * ignoredArchiveAction} instead.
+   * ignoredArchiveAction} instead. If an archive cannot be opened or a directory cannot be listed,
+   * then {@code action} is passed a resource whose {@link AnnotationFileResource#getInputStream}
+   * throws an exception, so the client reports the error rather than treating the archive or
+   * directory as empty.
    *
    * @param location a file or directory that the user named
    * @param fileType type of annotation files to pass to {@code action}
@@ -503,15 +506,15 @@ public class AnnotationFileUtil {
   /**
    * Returns the contents of an entry in an archive.
    *
-   * @param archive an open JAR or ZIP archive
-   * @param entry an entry in {@code archive}
+   * @param jarFile an open JAR or ZIP archive
+   * @param entry an entry in {@code jarFile}
    * @return the contents of {@code entry}
    * @throws IOException if the entry cannot be read
    */
-  private static byte[] readEntry(JarFile archive, JarEntry entry) throws IOException {
-    try (InputStream in = archive.getInputStream(entry)) {
+  private static byte[] readEntry(JarFile jarFile, JarEntry entry) throws IOException {
+    try (InputStream in = jarFile.getInputStream(entry)) {
       if (in == null) {
-        throw new IOException("no entry " + entry.getName() + " in " + archive.getName());
+        throw new IOException("no entry " + entry.getName() + " in " + jarFile.getName());
       }
       return in.readAllBytes();
     }
@@ -524,13 +527,15 @@ public class AnnotationFileUtil {
    * archive's other entries.
    *
    * @param archive a JAR or ZIP archive
-   * @param file {@code archive}, open
+   * @param jarFile {@code archive}, open
    * @param entry an entry in {@code archive}
    * @return an annotation file resource for {@code entry}
    */
-  private static AnnotationFileResource archiveEntry(File archive, JarFile file, JarEntry entry) {
+  private static AnnotationFileResource archiveEntry(
+      File archive, JarFile jarFile, JarEntry entry) {
     try {
-      return new JarEntryAnnotationFileResource(archive, entry.getName(), readEntry(file, entry));
+      return new JarEntryAnnotationFileResource(
+          archive, entry.getName(), readEntry(jarFile, entry));
     } catch (IOException e) {
       return unreadableResource(archive.getPath() + "!" + entry.getName(), e);
     }
@@ -587,7 +592,8 @@ public class AnnotationFileUtil {
     if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       if (directoryContents == null) {
-        System.err.println("AnnotationFileUtil: could not list directory: " + location);
+        action.accept(
+            unreadableResource(location.getPath(), new IOException("could not list directory")));
         return;
       }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
@@ -620,19 +626,19 @@ public class AnnotationFileUtil {
    */
   private static void forEachArchiveEntry(
       File archive, AnnotationFileType fileType, Consumer<AnnotationFileResource> action) {
-    JarFile file;
+    JarFile jarFile;
     try {
-      file = new JarFile(archive);
+      jarFile = new JarFile(archive);
     } catch (IOException e) {
       action.accept(unreadableResource(archive.getPath(), e));
       return;
     }
-    try (file) {
-      Iterator<JarEntry> entries = file.entries().asIterator();
+    try (jarFile) {
+      Iterator<JarEntry> entries = jarFile.entries().asIterator();
       while (entries.hasNext()) {
         JarEntry entry = entries.next();
         if (isArchiveEntryAnnotationFile(entry.getName(), fileType)) {
-          action.accept(archiveEntry(archive, file, entry));
+          action.accept(archiveEntry(archive, jarFile, entry));
         }
       }
     } catch (IOException e) {
