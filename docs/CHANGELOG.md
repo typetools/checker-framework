@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+An annotation file that cannot be read yields a warning rather than a note.
+
 ### Changes for type system implementers
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
