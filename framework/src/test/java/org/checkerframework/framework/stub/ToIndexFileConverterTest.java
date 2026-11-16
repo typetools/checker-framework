@@ -939,6 +939,49 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand does not make available an inaccessible member type, so the member type
+   * does not shadow a type in {@code java.lang}.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Integer i) {}",
+            "  void o(Pub x) {}",
+            "}",
+            "package p;",
+            "public class Outer {",
+            "  private static class String {}",
+            "  static class Integer {}",
+            "  public static class Pub {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    // A package-private member type is not accessible in another package.
+    assertMethod(jaif, "C", "n(Ljava/lang/Integer;)V");
+    assertMethod(jaif, "C", "o(Lp/Outer$Pub;)V");
+
+    // A package-private member type is accessible in its own package, but a private one is not.
+    jaif =
+        convert(
+            "package p;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Integer i) {}",
+            "}",
+            "class Outer {",
+            "  private static class String {}",
+            "  static class Integer {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    assertMethod(jaif, "C", "n(Lp/Outer$Integer;)V");
+  }
+
+  /**
    * A member type that a type inherits from a supertype in another compilation unit of the stub
    * file is found.
    */

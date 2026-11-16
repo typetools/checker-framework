@@ -1412,8 +1412,53 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     String[] identifiers = className.split("\\.", -1);
-    return memberChainBinaryName(
-        firstDeclarationAt(prefixDecl, identifiers, false, true), identifiers);
+    Object first = firstDeclarationAt(prefixDecl, identifiers, false, true);
+    // An import on demand makes available only the accessible member types (JLS 7.5.2).  An
+    // inaccessible one does not shadow a type that a later import on demand makes available.
+    if (!isImportAccessible(first, cu)) {
+      return null;
+    }
+    return memberChainBinaryName(first, identifiers);
+  }
+
+  /**
+   * Returns true if a member type is accessible to an import on demand in the given compilation
+   * unit, as javac determines it: a public member type, or a member type of an interface or
+   * annotation interface, is accessible; a private member type is not; a protected or
+   * package-private member type is accessible only in its own package.
+   *
+   * @param member a member type: a {@link TypeDeclaration} of the stub file, a {@link Class} on the
+   *     classpath, or null
+   * @param cu the stub file's compilation unit in which the import is written
+   * @return true if {@code member} is non-null and accessible to an import in {@code cu}
+   */
+  private boolean isImportAccessible(@Nullable Object member, CompilationUnit cu) {
+    String cuPkgName = importContext(cu).pkgName();
+    String cuPackage = cuPkgName == null ? "" : cuPkgName;
+    if (member instanceof TypeDeclaration<?> memberDecl) {
+      Node parent = memberDecl.getParentNode().orElse(null);
+      if ((parent instanceof ClassOrInterfaceDeclaration classDecl && classDecl.isInterface())
+          || parent instanceof AnnotationDeclaration
+          || memberDecl.isPublic()) {
+        return true;
+      }
+      if (memberDecl.isPrivate()) {
+        return false;
+      }
+      return stubPackage(memberDecl).equals(cuPackage);
+    } else if (member instanceof Class<?> memberClass) {
+      Class<?> declaringClass = memberClass.getDeclaringClass();
+      int modifiers = memberClass.getModifiers();
+      if ((declaringClass != null && declaringClass.isInterface())
+          || java.lang.reflect.Modifier.isPublic(modifiers)) {
+        return true;
+      }
+      if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
+        return false;
+      }
+      return memberClass.getPackageName().equals(cuPackage);
+    }
+    return false;
   }
 
   /**
