@@ -61,6 +61,26 @@ public class ReceiverRefinementInCatch {
     return null;
   }
 
+  // The argument increments the index of the receiver, so afterward a[i] denotes a different
+  // array element.
+  void argumentIncrementsReceiverIndex(@Nullable ReceiverRefinementInCatch[] a, int i) {
+    if (a[i] == null) {
+      return;
+    }
+    a[i].sefAccept(i++);
+    // :: error: (dereference.of.nullable)
+    a[i].toString();
+  }
+
+  void argumentDecrementsReceiverIndex(@Nullable ReceiverRefinementInCatch[] a, int i) {
+    if (a[i] == null) {
+      return;
+    }
+    a[i].sefAccept(--i);
+    // :: error: (dereference.of.nullable)
+    a[i].toString();
+  }
+
   void argumentDoesNotReassignReceiver(@Nullable Object o, @Nullable Object other) {
     // :: error: (dereference.of.nullable)
     o.equals(other = null);
