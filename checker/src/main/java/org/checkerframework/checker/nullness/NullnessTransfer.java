@@ -1,8 +1,12 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -419,10 +423,15 @@ public class NullnessTransfer
     // MethodAccessNode.  A call tests its receiver for nullness after evaluating its arguments, so
     // neither the arguments nor a handler for the call's NullPointerException may assume that the
     // receiver is non-null.
+    // The refinement applies to the receiver expression, not to the value that was evaluated
+    // before the arguments, so it is skipped if evaluating the arguments might reassign the
+    // receiver expression, as in `r.m(r = null)`.
+    JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
     if (!n.getTarget().isStatic()
         && (nonNullAssumptionAfterInvocation
             || isMethodSideEffectFree
-            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
+            || !receiverExpr.isAssignableByOtherCode())
+        && !argumentsMayReassign(tree.getArguments(), receiverExpr)) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
     }
@@ -463,6 +472,88 @@ public class NullnessTransfer
     }
 
     return result;
+  }
+
+  /**
+   * Returns true if evaluating the given method arguments might reassign the given receiver
+   * expression or a subexpression of it. This is conservative. It returns true if an argument
+   * assigns any part of the receiver expression. If the receiver expression is assignable by other
+   * code, it also returns true if an argument assigns a non-local variable or (unless {@link
+   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
+   * side-effect-free.
+   *
+   * @param arguments the arguments of a method invocation
+   * @param receiverExpr the receiver of the method invocation
+   * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
+   */
+  private boolean argumentsMayReassign(
+      List<? extends ExpressionTree> arguments, JavaExpression receiverExpr) {
+    if (arguments.isEmpty()) {
+      return false;
+    }
+    boolean receiverAssignableByOtherCode = receiverExpr.isAssignableByOtherCode();
+    TreeScanner<Boolean, Void> scanner =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean reduce(Boolean r1, Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+
+          @Override
+          public Boolean visitAssignment(AssignmentTree tree, Void p) {
+            return assignsReceiver(tree.getVariable()) || super.visitAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+            return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+            return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
+                || super.visitMethodInvocation(tree, p);
+          }
+
+          @Override
+          public Boolean visitNewClass(NewClassTree tree, Void p) {
+            return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
+                || super.visitNewClass(tree, p);
+          }
+
+          /*
+           * Returns true if assigning the given variable might reassign the receiver.
+           *
+           * @param variable the left-hand side of an assignment
+           * @return true if assigning {@code variable} might reassign the receiver
+           */
+          private boolean assignsReceiver(ExpressionTree variable) {
+            JavaExpression assigned = JavaExpression.fromTree(variable);
+            if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
+              return true;
+            }
+            return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
+          }
+
+          /*
+           * Returns true if invoking the given method or constructor might reassign the receiver.
+           *
+           * @param executable a method or constructor
+           * @return true if invoking {@code executable} might reassign the receiver
+           */
+          private boolean mayHaveSideEffect(ExecutableElement executable) {
+            return receiverAssignableByOtherCode
+                && !nonNullAssumptionAfterInvocation
+                && !atypeFactory.isSideEffectFree(executable)
+                && !PurityUtils.isSideEffectFree(atypeFactory, executable);
+          }
+        };
+    for (ExpressionTree argument : arguments) {
+      if (Boolean.TRUE.equals(scanner.scan(argument, null))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
