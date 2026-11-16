@@ -95,13 +95,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -129,8 +126,17 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private static final DataKey<Boolean> IS_DECLARATION_ANNOTATION = new DataKey<Boolean>() {};
 
+  /**
+   * Marks a receiver parameter that whole-program inference added to a method declaration, as
+   * opposed to one that is written in the source code. Cloning a JavaParser node copies this mark.
+   */
+  private static final DataKey<Boolean> IS_ADDED_RECEIVER = new DataKey<Boolean>() {};
+
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
+
+  /** Determines which inferred qualifiers are redundant. */
+  private final WholeProgramInferenceDefaults wpiDefaults;
 
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
@@ -237,6 +243,7 @@ public class WholeProgramInferenceJavaParserStorage
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
+    this.wpiDefaults = new WholeProgramInferenceDefaults(atypeFactory);
     this.elements = atypeFactory.getElementUtils();
     this.types = atypeFactory.getProcessingEnv().getTypeUtils();
     try {
@@ -993,9 +1000,9 @@ public class WholeProgramInferenceJavaParserStorage
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
-      if (fieldAnnos.type != null
-          && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
-        removeDefaultedPrimaryAnnotations(fieldAnnos.type, defaultedType(fieldAnnos.element));
+      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+        wpiDefaults.removeRedundantPrimaryAnnotations(
+            fieldAnnos.type, wpiDefaults.defaultedType(fieldAnnos.element));
       }
     }
 
@@ -1008,67 +1015,49 @@ public class WholeProgramInferenceJavaParserStorage
       CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
       wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
       // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
-      removeDefaultedPrimaryAnnotations(methodAnnos);
+      removeRedundantPrimaryAnnotations(methodAnnos);
     }
   }
 
   /**
-   * Removes, from the inferred types in the signature of the given method or constructor, each
-   * primary annotation that the type has even when no annotation is written on it. Writing such an
-   * annotation would be redundant.
+   * Removes, from the inferred types in the signature of a method or constructor, each primary
+   * annotation that would be redundant, because the type has it even when no annotation is written
+   * on it.
    *
-   * @param methodAnnos the method or constructor annotations to modify
+   * @param methodAnnos annotations for a method or constructor, which this method side-effects
    */
-  private void removeDefaultedPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+  private void removeRedundantPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
     ExecutableElement methodElt = methodAnnos.element;
-    if (methodAnnos.returnType != null || methodAnnos.receiverType != null) {
-      AnnotatedExecutableType defaultedMethodType =
-          (AnnotatedExecutableType) defaultedType(methodElt);
-      // A declaration annotation on a method that is an alias for a type qualifier applies to the
-      // method's return type.
-      if (!containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
-        removeDefaultedPrimaryAnnotations(
-            methodAnnos.returnType, defaultedMethodType.getReturnType());
-      }
-      removeDefaultedPrimaryAnnotations(
-          methodAnnos.receiverType, defaultedMethodType.getReceiverType());
+    // A declaration annotation on a method that is an alias for a type qualifier applies to the
+    // method's return type.
+    if (methodAnnos.returnType != null
+        && !containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
+      wpiDefaults.removeRedundantPrimaryAnnotations(
+          methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
+    }
+    if (methodAnnos.receiverType != null) {
+      wpiDefaults.removeRedundantPrimaryAnnotations(
+          methodAnnos.receiverType, wpiDefaults.defaultedReceiverType(methodElt));
     }
     if (methodAnnos.parameterTypes != null) {
       List<? extends VariableElement> paramElts = methodElt.getParameters();
       for (int i = 0; i < methodAnnos.parameterTypes.size() && i < paramElts.size(); i++) {
-        AnnotatedTypeMirror paramType = methodAnnos.parameterTypes.get(i);
-        if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
           // The parameter's own element is used, rather than the method's type, so that a
           // `@DefaultQualifier` annotation written on the parameter declaration is respected.
-          removeDefaultedPrimaryAnnotations(paramType, defaultedType(paramElts.get(i)));
+          wpiDefaults.removeRedundantPrimaryAnnotations(
+              methodAnnos.parameterTypes.get(i), wpiDefaults.defaultedType(paramElts.get(i)));
         }
       }
     }
   }
 
   /**
-   * Returns the type that {@code elt} has when no annotation is written on it: its Java type, with
-   * the annotations that the type factory computes for it, such as the defaults that
-   * {@code @DefaultQualifier} and {@code @DefaultFor} annotations specify.
-   *
-   * @param elt a field, method, constructor, or formal parameter
-   * @return the type that {@code elt} has when no annotation is written on it
-   */
-  private AnnotatedTypeMirror defaultedType(Element elt) {
-    AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(elt.asType(), atypeFactory, false);
-    if (result instanceof AnnotatedExecutableType methodType) {
-      methodType.setElement((ExecutableElement) elt);
-    }
-    atypeFactory.addComputedTypeAnnotations(elt, result);
-    return result;
-  }
-
-  /**
-   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
+   * Returns true if whole-program inference inferred, for a formal parameter, a declaration
    * annotation that is an alias for a type qualifier.
    *
-   * @param methodAnnos the method or constructor annotations
-   * @param index1based the 1-based index of a formal parameter
+   * @param methodAnnos annotations for a method or constructor
+   * @param index1based the 1-based index of one of its formal parameters
    * @return true if the formal parameter has a declaration annotation that is an alias for a type
    *     qualifier
    */
@@ -1079,8 +1068,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
       if (paramDeclAnno.index1based() == index1based
-          && WholeProgramInferenceScenesStorage.isAliasForTypeQualifier(
-              paramDeclAnno.annotation(), atypeFactory)) {
+          && wpiDefaults.isAliasForTypeQualifier(paramDeclAnno.annotation())) {
         return true;
       }
     }
@@ -1102,38 +1090,11 @@ public class WholeProgramInferenceJavaParserStorage
       return false;
     }
     for (AnnotationMirror anno : declarationAnnotations) {
-      if (WholeProgramInferenceScenesStorage.isAliasForTypeQualifier(anno, atypeFactory)) {
+      if (wpiDefaults.isAliasForTypeQualifier(anno)) {
         return true;
       }
     }
     return false;
-  }
-
-  /**
-   * Removes from {@code atm} each primary annotation that {@code defaulted} also has. Writing such
-   * an annotation would be redundant.
-   *
-   * <p>Does nothing if {@code atm} is a type variable or a wildcard. A primary annotation on a use
-   * of a type variable or wildcard overrides its bounds, so it is never redundant.
-   *
-   * @param atm a type to modify, or null
-   * @param defaulted the type that the location of {@code atm} has when no annotation is written
-   *     there, or null if it has none
-   */
-  private void removeDefaultedPrimaryAnnotations(
-      @Nullable AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
-    if (atm == null
-        || defaulted == null
-        || atm.getKind() == TypeKind.TYPEVAR
-        || atm.getKind() == TypeKind.WILDCARD) {
-      return;
-    }
-    for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
-      AnnotationMirror defaultedAnno = defaulted.getPrimaryAnnotationInHierarchy(anno);
-      if (defaultedAnno != null && AnnotationUtils.areSame(anno, defaultedAnno)) {
-        atm.removePrimaryAnnotation(anno);
-      }
-    }
   }
 
   /**
@@ -1474,9 +1435,10 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // Some annotations should not be printed.  They are removed from the AST, rather than
-      // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
-      // whitespace that would have separated an annotation from what follows it.  The compilation
+      // Some annotations and receiver parameters should not be printed.  They are removed from
+      // the AST, rather than suppressed in the pretty-printer, to prevent the pretty-printer from
+      // outputting the whitespace that would have separated an annotation from what follows it.
+      // The compilation
       // unit is cloned first, because removal side-effects it and the same AST is printed more
       // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
       // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
@@ -1487,9 +1449,9 @@ public class WholeProgramInferenceJavaParserStorage
           omitIrrelevantAnnotations
               && atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf
               && gatf.relevantJavaTypes != null;
-      if (hasUnprintedAnnotations(omitIrrelevant)) {
+      if (hasUnprinted(compilationUnit, omitIrrelevant)) {
         compilationUnit = compilationUnit.clone();
-        removeUnprintedAnnotations(compilationUnit, omitIrrelevant);
+        removeUnprinted(compilationUnit, omitIrrelevant);
       }
 
       DefaultPrettyPrinter prettyPrinter =
@@ -1533,32 +1495,39 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
-   * false, then the caller need not clone the compilation unit before printing it.
+   * Returns true if {@link #removeUnprinted} might remove a node from {@code compilationUnit}. If
+   * it returns false, then the caller need not clone the compilation unit before printing it.
    *
+   * @param compilationUnit a compilation unit that is about to be printed
    * @param omitIrrelevantAnnotations if true, annotations that are irrelevant where they appear are
    *     also removed
-   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   * @return true if {@link #removeUnprinted} might remove a node from {@code compilationUnit}
    */
-  private boolean hasUnprintedAnnotations(boolean omitIrrelevantAnnotations) {
-    return omitIrrelevantAnnotations || !getInvisibleQualifierNames().isEmpty();
+  private boolean hasUnprinted(CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+    return omitIrrelevantAnnotations
+        || !getInvisibleQualifierNames().isEmpty()
+        || compilationUnit
+            .findFirst(
+                ReceiverParameter.class, receiver -> receiver.containsData(IS_ADDED_RECEIVER))
+            .isPresent();
   }
 
   /**
-   * Removes from the given compilation unit the annotations that an ajava file should not contain,
+   * Removes from the given compilation unit the nodes that an ajava file should not contain,
    * because they would clutter it:
    *
    * <ul>
    *   <li>invisible qualifiers
    *   <li>irrelevant qualifiers, if {@code omitIrrelevantAnnotations} is true
+   *   <li>receiver parameters that whole-program inference added and that, after the above
+   *       removals, have no annotations
    * </ul>
    *
    * @param compilationUnit the compilation unit to side-effect
    * @param omitIrrelevantAnnotations if true, also remove annotations that are irrelevant where
    *     they appear
    */
-  private void removeUnprintedAnnotations(
-      CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+  private void removeUnprinted(CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
     Set<String> invisibleQualifierNames = getInvisibleQualifierNames();
     Predicate<AnnotationExpr> shouldRemove =
         anno ->
@@ -1575,6 +1544,16 @@ public class WholeProgramInferenceJavaParserStorage
             param.getVarArgsAnnotations().removeIf(shouldRemove);
           }
         });
+    // A receiver parameter that has no annotations is redundant.  A receiver parameter that is
+    // written in the source code is retained, because the ajava file must match the source code.
+    for (ReceiverParameter receiver :
+        compilationUnit.findAll(
+            ReceiverParameter.class,
+            receiver ->
+                receiver.containsData(IS_ADDED_RECEIVER)
+                    && receiver.findFirst(AnnotationExpr.class).isEmpty())) {
+      receiver.remove();
+    }
   }
 
   // TODO: Move these two routines to StringUtils.
@@ -1622,28 +1601,6 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Returns true if {@link #transferAnnotations} would write at least one annotation for {@code
-   * type}: that is, if {@code type} or one of its type arguments, at any depth, has a primary
-   * annotation.
-   *
-   * @param type a type whose annotations might be written
-   * @return true if {@code type} or one of its type arguments has a primary annotation
-   */
-  private static boolean hasTransferableAnnotation(AnnotatedTypeMirror type) {
-    if (!type.getPrimaryAnnotations().isEmpty()) {
-      return true;
-    }
-    if (type instanceof AnnotatedDeclaredType declaredType) {
-      for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
-        if (hasTransferableAnnotation(typeArg)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
    * Adds an explicit receiver type to a JavaParser method declaration. Does nothing if the method
    * is not declared in a {@code TypeDeclaration}; this is not an error, because a method of an
    * anonymous class has an {@code ObjectCreationExpr} parent, and such a method cannot be given an
@@ -1677,7 +1634,9 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    methodDeclaration.setReceiverParameter(new ReceiverParameter(receiver, "this"));
+    ReceiverParameter receiverParameter = new ReceiverParameter(receiver, "this");
+    receiverParameter.setData(IS_ADDED_RECEIVER, true);
+    methodDeclaration.setReceiverParameter(receiverParameter);
   }
 
   /**
@@ -2299,8 +2258,7 @@ public class WholeProgramInferenceJavaParserStorage
             returnType, declaration.asMethodDeclaration().getType());
       }
 
-      // An explicit receiver parameter that has no annotations would be redundant.
-      if (receiverType != null && hasTransferableAnnotation(receiverType)) {
+      if (receiverType != null) {
         addExplicitReceiver(declaration.asMethodDeclaration());
         // The receiver won't be present for an anonymous class.
         if (declaration.getReceiverParameter().isPresent()) {
