@@ -76,8 +76,11 @@ import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -2055,7 +2058,12 @@ public class MustCallConsistencyAnalyzer {
                 + " with exception type "
                 + exceptionType;
     // Computed outside the Obligation loop for efficiency.
-    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = cmAtf.getRegularStore(successor);
+    // The CM and MC stores for the CFG edge from currentBlock to successor, when currentBlock has
+    // no nodes.  Computed at most once, in the Obligation loop, and only if a consistency check
+    // needs them.
+    AccumulationStore cmStoreForEdgeFromEmptyBlock = null;
+    CFStore mcStoreForEdgeFromEmptyBlock = null;
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -2124,16 +2132,8 @@ public class MustCallConsistencyAnalyzer {
         // like to use the store propagated along the CFG edge from currentBlock to
         // successor.  But, there are special cases to consider.  The rules are:
         // 1. if the current block has no nodes, it is either a ConditionalBlock or a
-        //    SpecialBlock.
-        //    For the called-methods store, we obtain the exact CFG edge store that we need
-        //    (see getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API
-        //    limitations, we use the following heuristics:
-        //    1a. if there is information about any alias in the resource alias set
-        //        in the successor store, use the successor's MC store, which
-        //        contains whatever information is true after this block finishes.
-        //    1b. if there is not any information about any alias in the resource alias
-        //        set in the successor store, use the current block's MC store,
-        //        which contain whatever information is true before this (empty) block.
+        //    SpecialBlock.  Use the CM store and the MC store for the CFG edge (see
+        //    getStoreForEdgeFromEmptyBlock()).
         // 2. if the current block has one or more nodes, always use the CM store after
         //    the last node. To decide which MC store to use:
         //    2a. if the last node in the block is the invocation of an
@@ -2149,18 +2149,16 @@ public class MustCallConsistencyAnalyzer {
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
-          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
-          // For the Must Call Checker, we currently apply a less precise handling and do
-          // not get the store for the specific CFG edge from currentBlock to successor.
-          // We do not believe this will impact precision except in convoluted and
-          // uncommon cases.  If we find that we need more precision, we can revisit this,
-          // but it will require additional API support in the AnalysisResult type to get
-          // the information that we need.
-          mcStore =
-              mcAtf.getStoreForBlock(
-                  obligationGoesOutOfScopeBeforeSuccessor,
-                  currentBlock, // 1a. (MC)
-                  successor); // 1b. (MC)
+          if (cmStoreForEdgeFromEmptyBlock == null) {
+            cmStoreForEdgeFromEmptyBlock =
+                getStoreForEdgeFromEmptyBlock(cmAtf, currentBlock, successor); // 1. (CM)
+          }
+          if (mcStoreForEdgeFromEmptyBlock == null) {
+            mcStoreForEdgeFromEmptyBlock =
+                getStoreForEdgeFromEmptyBlock(mcAtf, currentBlock, successor); // 1. (MC)
+          }
+          cmStore = cmStoreForEdgeFromEmptyBlock;
+          mcStore = mcStoreForEdgeFromEmptyBlock;
         } else {
           // In this case, current block has at least one node.
           // Use the called-methods store immediately after the last node in
@@ -2209,28 +2207,33 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the store propagated by the {@link RLCCalledMethodsAnalysis} (containing called methods
-   * information) along a particular CFG edge during local type inference. The source {@link Block}
-   * of the edge must contain no {@link Node}s.
+   * Returns the store that the given type factory's dataflow analysis propagates along the given
+   * CFG edge. The source {@link Block} of the edge must contain no {@link Node}s.
    *
+   * @param <V> the abstract value type of the analysis
+   * @param <S> the store type of the analysis
+   * @param atf a type factory, such as that of the Called Methods Checker or of the Must Call
+   *     Checker
    * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
    * @param successor target block of the CFG edge
-   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge
+   * @return the store that the dataflow analysis of {@code atf} propagates along the CFG edge
    */
-  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
+  private static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
+      S getStoreForEdgeFromEmptyBlock(
+          GenericAnnotatedTypeFactory<V, S, ?, ?> atf, Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {
       case CONDITIONAL_BLOCK -> {
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
         if (condBlock.getThenSuccessor().equals(successor)) {
-          return cmAtf.getInput(currentBlock).getThenStore();
+          return atf.getInput(currentBlock).getThenStore();
         } else if (condBlock.getElseSuccessor().equals(successor)) {
-          return cmAtf.getInput(currentBlock).getElseStore();
+          return atf.getInput(currentBlock).getElseStore();
         } else {
           throw new BugInCF("successor not found");
         }
       }
       case SPECIAL_BLOCK -> {
-        return cmAtf.getInput(successor).getRegularStore();
+        return atf.getRegularStore(currentBlock);
       }
       default -> throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
