@@ -970,9 +970,11 @@ public final class TypesUtils {
    * Returns true if an expression of type {@code a} and an expression of type {@code b} might
    * evaluate to the same object, judging by the types: that is, true if some erased bound of {@code
    * a} is a subtype or a supertype of some erased bound of {@code b}. The erased bounds of a type
-   * variable or wildcard are those of its upper bound; of an intersection type, those of each of
-   * its bounds; of a union type, those of each of its alternatives; of an array type, an array of
-   * each erased bound of its component type; and of any other type, its erasure.
+   * variable are those of its upper bound; of a wildcard, those of its extends bound and those of
+   * the type parameter that it is a type argument for (or {@code Object}, if neither is known); of
+   * an intersection type, those of each of its bounds; of a union type, those of each of its
+   * alternatives; of an array type, an array of each erased bound of its component type; and of any
+   * other type, its erasure.
    *
    * <p>The answer is not conservative when an interface type is involved. One object can have two
    * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
@@ -989,6 +991,11 @@ public final class TypesUtils {
    * erasure of such a type is the erasure of only its first bound. For example, a {@code T[]} where
    * {@code T extends Number & Comparable<T>} can be the same array as a {@code Comparable<T>[]},
    * though {@code Number[]} and {@code Comparable[]} are unrelated.
+   *
+   * <p>It compares the bounds of the type parameter that a wildcard is a type argument for, because
+   * a value of the wildcard has those types too. For example, if {@code Box} is declared as {@code
+   * class Box<T extends Number & Runnable>}, then the {@code ?} in {@code Box<?>} or in {@code
+   * Box<? super Integer>} can be the same object as a {@code Runnable}.
    *
    * <p>It compares every alternative of a union type, because the erasure of a union type is the
    * erasure of the first bound of the alternatives' least upper bound, which is less precise. For
@@ -1034,25 +1041,47 @@ public final class TypesUtils {
    * @return the erased bounds of {@code type}
    */
   private static List<TypeMirror> erasedBounds(TypeMirror type, Types types) {
-    TypeMirror upperBound = upperBound(type);
-    switch (upperBound.getKind()) {
+    switch (type.getKind()) {
+      case TYPEVAR -> {
+        TypeMirror upperBound = ((TypeVariable) type).getUpperBound();
+        if (upperBound == null) {
+          return List.of(types.erasure(type));
+        }
+        return erasedBounds(upperBound, types);
+      }
+      case WILDCARD -> {
+        List<TypeMirror> result = new ArrayList<>();
+        TypeMirror extendsBound = ((WildcardType) type).getExtendsBound();
+        if (extendsBound != null) {
+          result.addAll(erasedBounds(extendsBound, types));
+        }
+        // The type parameter is null if the wildcard is from bytecode.
+        TypeVariable typeParameter = ((Type.WildcardType) type).bound;
+        if (typeParameter != null) {
+          result.addAll(erasedBounds(typeParameter, types));
+        }
+        if (result.isEmpty()) {
+          result.add(types.erasure(type));
+        }
+        return result;
+      }
       case INTERSECTION -> {
         List<TypeMirror> result = new ArrayList<>();
-        for (TypeMirror bound : ((IntersectionType) upperBound).getBounds()) {
+        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
           result.addAll(erasedBounds(bound, types));
         }
         return result;
       }
       case UNION -> {
         List<TypeMirror> result = new ArrayList<>();
-        for (TypeMirror alternative : ((UnionType) upperBound).getAlternatives()) {
+        for (TypeMirror alternative : ((UnionType) type).getAlternatives()) {
           result.addAll(erasedBounds(alternative, types));
         }
         return result;
       }
       case ARRAY -> {
         List<TypeMirror> componentBounds =
-            erasedBounds(((ArrayType) upperBound).getComponentType(), types);
+            erasedBounds(((ArrayType) type).getComponentType(), types);
         List<TypeMirror> result = new ArrayList<>(componentBounds.size());
         for (TypeMirror componentBound : componentBounds) {
           result.add(types.getArrayType(componentBound));
@@ -1060,24 +1089,37 @@ public final class TypesUtils {
         return result;
       }
       default -> {
-        return List.of(types.erasure(upperBound));
+        return List.of(types.erasure(type));
       }
     }
   }
 
   /**
-   * Returns true if the only erased bound of the given type is its erasure.
+   * Returns true if {@link #erasedBounds} returns only the erasure of the given type. A false
+   * result means that it might return something else.
    *
    * @param type a type
    * @return true if {@link #erasedBounds} returns only the erasure of {@code type}
    */
   private static boolean hasOneErasedBound(TypeMirror type) {
-    TypeMirror upperBound = upperBound(type);
-    while (upperBound.getKind() == TypeKind.ARRAY) {
-      upperBound = upperBound(((ArrayType) upperBound).getComponentType());
+    while (true) {
+      switch (type.getKind()) {
+        case TYPEVAR -> {
+          TypeMirror upperBound = ((TypeVariable) type).getUpperBound();
+          if (upperBound == null) {
+            return true;
+          }
+          type = upperBound;
+        }
+        case ARRAY -> type = ((ArrayType) type).getComponentType();
+        case WILDCARD, INTERSECTION, UNION -> {
+          return false;
+        }
+        default -> {
+          return true;
+        }
+      }
     }
-    TypeKind kind = upperBound.getKind();
-    return kind != TypeKind.INTERSECTION && kind != TypeKind.UNION;
   }
 
   /**
