@@ -16,11 +16,19 @@ public class OmitDefaultQualifier {
     return field;
   }
 
+  // Like `InScopeOfDefaultQualifier`, but declared before the method that calls it.  Whole-program
+  // inference processes this class, and writes this file, before it processes that method.
+  @DefaultQualifier(AinferTop.class)
+  static class DeclaredBeforeClient {
+    static void take(CharSequence cs) {}
+  }
+
   static void client(CharSequence cs) {
     OmitDefaultQualifier o = new OmitDefaultQualifier();
     o.setField(cs);
     o.getField();
     InScopeOfDefaultQualifier.take(cs);
+    DeclaredBeforeClient.take(cs);
   }
 
   // In the scope of `@DefaultQualifier(AinferTop.class)`, the qualifier of an unannotated type is

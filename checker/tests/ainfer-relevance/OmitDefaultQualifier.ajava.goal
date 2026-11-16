@@ -10,13 +10,22 @@ public class OmitDefaultQualifier {
     CharSequence field;
 
     @org.checkerframework.dataflow.qual.Impure
-    void setField(OmitDefaultQualifier this, CharSequence cs) {
+    void setField(CharSequence cs) {
         field = cs;
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    CharSequence getField(OmitDefaultQualifier this) {
+    CharSequence getField() {
         return field;
+    }
+
+    // Like `InScopeOfDefaultQualifier`, but declared before the method that calls it.  Whole-program
+    // inference processes this class, and writes this file, before it processes that method.
+    static class DeclaredBeforeClient {
+
+        @org.checkerframework.dataflow.qual.SideEffectFree
+        static void take(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence cs) {
+        }
     }
 
     @org.checkerframework.dataflow.qual.Impure
@@ -25,6 +34,7 @@ public class OmitDefaultQualifier {
         o.setField(cs);
         o.getField();
         InScopeOfDefaultQualifier.take(cs);
+        DeclaredBeforeClient.take(cs);
     }
 
     // In the scope of `@DefaultQualifier(AinferTop.class)`, the qualifier of an unannotated type is

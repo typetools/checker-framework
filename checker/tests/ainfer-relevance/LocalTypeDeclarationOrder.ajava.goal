@@ -25,17 +25,17 @@ public class LocalTypeDeclarationOrder {
         class Foo implements CharSequence {
 
             @org.checkerframework.dataflow.qual.Pure
-            public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(Foo this) {
+            public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length() {
                 return 0;
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            public char charAt(Foo this, int index) {
+            public char charAt(int index) {
                 return ' ';
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            public CharSequence subSequence(Foo this, int start, int end) {
+            public CharSequence subSequence(int start, int end) {
                 return this;
             }
         }

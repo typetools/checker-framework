@@ -586,27 +586,8 @@ public class WholeProgramInferenceScenesStorage
       return true;
     }
 
-    return isDefaultFor(am, location, atm, atypeFactory);
-  }
-
-  /**
-   * Returns true if {@code am} is the qualifier that {@code location} would have if {@code am} were
-   * not written there. If that cannot be determined, returns false, because writing out an
-   * annotation is never unsound.
-   *
-   * @param am an annotation
-   * @param location where {@code am} would be written
-   * @param atm the type that {@code am} would be written on; its underlying Java type is used to
-   *     determine if {@code am} is the default for that type or for that kind of type
-   * @param atypeFactory the type factory whose qualifiers are considered
-   * @return true if {@code am} is the default for {@code location}
-   */
-  /*package-private*/ static boolean isDefaultFor(
-      AnnotationMirror am,
-      TypeUseLocation location,
-      AnnotatedTypeMirror atm,
-      AnnotatedTypeFactory atypeFactory) {
-    Element elt = am.getAnnotationType().asElement();
+    // Checks if am is the qualifier that this location would have if am were not written out.
+    // If that cannot be determined, then am is written out, which is never unsound.
     if (isDeclaredDefaultFor(
         elt.getAnnotation(DefaultQualifier.class),
         elt.getAnnotation(DefaultFor.class),
@@ -621,8 +602,9 @@ public class WholeProgramInferenceScenesStorage
       // @Signed is the default for the hierarchy, but @Unsigned is the default for char, so
       // omitting an inferred @Signed from a char would give it the type @Unsigned instead.
       return !existsMoreSpecificDefault(
-          AnnotationUtils.annotationName(am), location, atm.getUnderlyingType(), atypeFactory);
+          AnnotationUtils.annotationName(am), location, atm.getUnderlyingType());
     }
+
     return false;
   }
 
@@ -756,14 +738,10 @@ public class WholeProgramInferenceScenesStorage
    *     hierarchy
    * @param location the location where the qualifier would be written
    * @param type the type that the qualifier would be written on
-   * @param atypeFactory the type factory whose qualifiers are considered
    * @return true if a more specific default overrides the hierarchy-wide default
    */
-  private static boolean existsMoreSpecificDefault(
-      String qualName,
-      TypeUseLocation location,
-      TypeMirror type,
-      AnnotatedTypeFactory atypeFactory) {
+  private boolean existsMoreSpecificDefault(
+      String qualName, TypeUseLocation location, TypeMirror type) {
     for (Class<? extends java.lang.annotation.Annotation> clazz :
         atypeFactory.getSupportedTypeQualifiers()) {
       if (qualName.equals(clazz.getCanonicalName())) {

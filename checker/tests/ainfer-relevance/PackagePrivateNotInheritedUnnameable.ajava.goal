@@ -59,11 +59,11 @@ public class PackagePrivateNotInheritedUnnameable {
             }
 
             @org.checkerframework.dataflow.qual.SideEffectFree
-            void expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Local this, List l) {
+            void expectsSibling1(List l) {
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            List getSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Local this) {
+            List getSibling1() {
                 return null;
             }
         }

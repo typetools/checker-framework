@@ -70,7 +70,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -96,6 +95,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
@@ -846,7 +847,7 @@ public class WholeProgramInferenceJavaParserStorage
               enclosingClass.callableDeclarations.put(
                   executableSignature,
                   new CallableDeclarationAnnos(
-                      javacClass.getSimpleName().toString(), javaParserNode));
+                      javacClass.getSimpleName().toString(), javaParserNode, element));
             }
           }
 
@@ -909,7 +910,7 @@ public class WholeProgramInferenceJavaParserStorage
             }
             String fieldName = javacTree.getName().toString();
             if (!enclosingClass.fields.containsKey(fieldName)) {
-              enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
+              enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode, elt));
             }
           }
         };
@@ -992,9 +993,9 @@ public class WholeProgramInferenceJavaParserStorage
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
-      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)
-          && !isInScopeOfDefaultQualifier(fieldAnnos.declaration)) {
-        removeDefaultPrimaryAnnotations(fieldAnnos.type, TypeUseLocation.FIELD);
+      if (fieldAnnos.type != null
+          && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+        removeDefaultedPrimaryAnnotations(fieldAnnos.type, defaultedType(fieldAnnos.element));
       }
     }
 
@@ -1007,113 +1008,59 @@ public class WholeProgramInferenceJavaParserStorage
       CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
       wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
       // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
-      removeDefaultPrimaryAnnotations(methodAnnos);
+      removeDefaultedPrimaryAnnotations(methodAnnos);
     }
   }
 
   /**
-   * Removes, from the types in the signature of the given method or constructor, each primary
-   * annotation that is the default for its location. Writing such an annotation would be redundant.
-   *
-   * <p>Removes nothing if the method or constructor is in the scope of a {@code @DefaultQualifier}
-   * annotation, which might make a different qualifier the default.
+   * Removes, from the inferred types in the signature of the given method or constructor, each
+   * primary annotation that the type has even when no annotation is written on it. Writing such an
+   * annotation would be redundant.
    *
    * @param methodAnnos the method or constructor annotations to modify
    */
-  private void removeDefaultPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
-    if (isInScopeOfDefaultQualifier(methodAnnos.declaration)) {
-      return;
+  private void removeDefaultedPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+    ExecutableElement methodElt = methodAnnos.element;
+    if (methodAnnos.returnType != null || methodAnnos.receiverType != null) {
+      AnnotatedExecutableType defaultedMethodType =
+          (AnnotatedExecutableType) defaultedType(methodElt);
+      // A declaration annotation on a method that is an alias for a type qualifier applies to the
+      // method's return type.
+      if (!containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
+        removeDefaultedPrimaryAnnotations(
+            methodAnnos.returnType, defaultedMethodType.getReturnType());
+      }
+      removeDefaultedPrimaryAnnotations(
+          methodAnnos.receiverType, defaultedMethodType.getReceiverType());
     }
-    // A declaration annotation on a method that is an alias for a type qualifier applies to the
-    // method's return type.
-    if (!containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
-      removeDefaultPrimaryAnnotations(
-          methodAnnos.returnType,
-          methodAnnos.declaration.isConstructorDeclaration()
-              ? TypeUseLocation.CONSTRUCTOR_RESULT
-              : TypeUseLocation.RETURN);
-    }
-    removeDefaultPrimaryAnnotations(methodAnnos.receiverType, TypeUseLocation.RECEIVER);
     if (methodAnnos.parameterTypes != null) {
-      for (int i = 0; i < methodAnnos.parameterTypes.size(); i++) {
-        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)
-            && !hasDefaultQualifierAnnotation(methodAnnos.declaration.getParameter(i))) {
-          removeDefaultPrimaryAnnotations(
-              methodAnnos.parameterTypes.get(i), TypeUseLocation.PARAMETER);
+      List<? extends VariableElement> paramElts = methodElt.getParameters();
+      for (int i = 0; i < methodAnnos.parameterTypes.size() && i < paramElts.size(); i++) {
+        AnnotatedTypeMirror paramType = methodAnnos.parameterTypes.get(i);
+        if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+          // The parameter's own element is used, rather than the method's type, so that a
+          // `@DefaultQualifier` annotation written on the parameter declaration is respected.
+          removeDefaultedPrimaryAnnotations(paramType, defaultedType(paramElts.get(i)));
         }
       }
     }
   }
 
   /**
-   * Returns true if {@code node} is in the scope of a {@code @DefaultQualifier} annotation: that
-   * is, if such an annotation is written on {@code node}, on a declaration that encloses it, or on
-   * its package. In that case, the qualifier that a location has when no qualifier is written there
-   * might differ from the default that {@link WholeProgramInferenceScenesStorage#isDefaultFor}
-   * computes, so removing an inferred qualifier might change the meaning of the output.
+   * Returns the type that {@code elt} has when no annotation is written on it: its Java type, with
+   * the annotations that the type factory computes for it, such as the defaults that
+   * {@code @DefaultQualifier} and {@code @DefaultFor} annotations specify.
    *
-   * <p>This is conservative: it does not check which hierarchies or locations the
-   * {@code @DefaultQualifier} annotations affect.
-   *
-   * @param node a JavaParser node for a declaration
-   * @return true if {@code node} is in the scope of a {@code @DefaultQualifier} annotation
+   * @param elt a field, method, constructor, or formal parameter
+   * @return the type that {@code elt} has when no annotation is written on it
    */
-  private boolean isInScopeOfDefaultQualifier(Node node) {
-    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
-      if (hasDefaultQualifierAnnotation(n)) {
-        return true;
-      }
-      if (n instanceof CompilationUnit cu) {
-        // A package's annotations are written in its package-info.java file, not in this
-        // compilation unit.
-        String packageName =
-            cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse("");
-        PackageElement packageElt = elements.getPackageElement(packageName);
-        if (packageElt != null) {
-          for (AnnotationMirror anno : packageElt.getAnnotationMirrors()) {
-            if (isDefaultQualifierName(AnnotationUtils.annotationName(anno))) {
-              return true;
-            }
-          }
-        }
-      }
+  private AnnotatedTypeMirror defaultedType(Element elt) {
+    AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(elt.asType(), atypeFactory, false);
+    if (result instanceof AnnotatedExecutableType methodType) {
+      methodType.setElement((ExecutableElement) elt);
     }
-    return false;
-  }
-
-  /**
-   * Returns true if {@code node} is written with a {@code @DefaultQualifier} annotation (or the
-   * container annotation for repeated {@code @DefaultQualifier} annotations).
-   *
-   * @param node a JavaParser node
-   * @return true if {@code node} is written with a {@code @DefaultQualifier} annotation
-   */
-  private static boolean hasDefaultQualifierAnnotation(Node node) {
-    if (node instanceof NodeWithAnnotations<?> nodeWithAnnos) {
-      for (AnnotationExpr anno : nodeWithAnnos.getAnnotations()) {
-        if (isDefaultQualifierName(anno.getNameAsString())) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if {@code name} is the name of {@code @DefaultQualifier} or of its container
-   * annotation {@code @DefaultQualifier.List}. Because a name written in source code might be
-   * simple, partially qualified, or fully qualified, this is conservative: it matches any name that
-   * ends with {@code DefaultQualifier} or {@code DefaultQualifier.List}, and also the simple name
-   * {@code List}.
-   *
-   * @param name an annotation name, as written in source code or as a canonical name
-   * @return true if {@code name} might be the name of {@code @DefaultQualifier} or its container
-   */
-  private static boolean isDefaultQualifierName(String name) {
-    return name.equals("DefaultQualifier")
-        || name.endsWith(".DefaultQualifier")
-        || name.equals("List") // might be the simple name of DefaultQualifier.List
-        || name.endsWith("DefaultQualifier.List");
+    atypeFactory.addComputedTypeAnnotations(elt, result);
+    return result;
   }
 
   /**
@@ -1163,22 +1110,27 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Removes from {@code atm} each primary annotation that is the default for {@code location}.
-   * Writing such an annotation would be redundant.
+   * Removes from {@code atm} each primary annotation that {@code defaulted} also has. Writing such
+   * an annotation would be redundant.
    *
    * <p>Does nothing if {@code atm} is a type variable or a wildcard. A primary annotation on a use
    * of a type variable or wildcard overrides its bounds, so it is never redundant.
    *
    * @param atm a type to modify, or null
-   * @param location the location of {@code atm}
+   * @param defaulted the type that the location of {@code atm} has when no annotation is written
+   *     there, or null if it has none
    */
-  private void removeDefaultPrimaryAnnotations(
-      @Nullable AnnotatedTypeMirror atm, TypeUseLocation location) {
-    if (atm == null || atm.getKind() == TypeKind.TYPEVAR || atm.getKind() == TypeKind.WILDCARD) {
+  private void removeDefaultedPrimaryAnnotations(
+      @Nullable AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
+    if (atm == null
+        || defaulted == null
+        || atm.getKind() == TypeKind.TYPEVAR
+        || atm.getKind() == TypeKind.WILDCARD) {
       return;
     }
     for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
-      if (WholeProgramInferenceScenesStorage.isDefaultFor(anno, location, atm, atypeFactory)) {
+      AnnotationMirror defaultedAnno = defaulted.getPrimaryAnnotationInHierarchy(anno);
+      if (defaultedAnno != null && AnnotationUtils.areSame(anno, defaultedAnno)) {
         atm.removePrimaryAnnotation(anno);
       }
     }
@@ -1670,6 +1622,28 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if {@link #transferAnnotations} would write at least one annotation for {@code
+   * type}: that is, if {@code type} or one of its type arguments, at any depth, has a primary
+   * annotation.
+   *
+   * @param type a type whose annotations might be written
+   * @return true if {@code type} or one of its type arguments has a primary annotation
+   */
+  private static boolean hasTransferableAnnotation(AnnotatedTypeMirror type) {
+    if (!type.getPrimaryAnnotations().isEmpty()) {
+      return true;
+    }
+    if (type instanceof AnnotatedDeclaredType declaredType) {
+      for (AnnotatedTypeMirror typeArg : declaredType.getTypeArguments()) {
+        if (hasTransferableAnnotation(typeArg)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Adds an explicit receiver type to a JavaParser method declaration. Does nothing if the method
    * is not declared in a {@code TypeDeclaration}; this is not an error, because a method of an
    * anonymous class has an {@code ObjectCreationExpr} parent, and such a method cannot be given an
@@ -1947,6 +1921,9 @@ public class WholeProgramInferenceJavaParserStorage
     /** Wrapped method or constructor declaration. */
     public final CallableDeclaration<?> declaration;
 
+    /** The element for the method or constructor. */
+    public final ExecutableElement element;
+
     /**
      * Inferred annotations for the return type, if the declaration represents a method. Initialized
      * on first usage.
@@ -2001,21 +1978,34 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @param className the class that contains the method, for diagnostics only
      * @param declaration method or constructor declaration to wrap
+     * @param element the element for the method or constructor
      */
-    public CallableDeclarationAnnos(String className, CallableDeclaration<?> declaration) {
+    public CallableDeclarationAnnos(
+        String className, CallableDeclaration<?> declaration, ExecutableElement element) {
       this.className = className;
       this.declaration = declaration;
+      this.element = element;
     }
 
     @Override
     public CallableDeclarationAnnos deepCopy() {
-      CallableDeclarationAnnos result = new CallableDeclarationAnnos(className, declaration);
-      result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
-      result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
-      if (parameterTypes != null) {
-        result.parameterTypes = CollectionsP.deepCopy(this.parameterTypes);
+      CallableDeclarationAnnos result =
+          new CallableDeclarationAnnos(className, declaration, element);
+      if (this.returnType != null) {
+        result.returnType = this.returnType.deepCopy();
       }
-      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      if (this.receiverType != null) {
+        result.receiverType = this.receiverType.deepCopy();
+      }
+      if (parameterTypes != null) {
+        @SuppressWarnings("nullness:type.argument") // CollectionsP.deepCopy permits null elements
+        List<@Nullable AnnotatedTypeMirror> parameterTypesCopy =
+            CollectionsP.deepCopy(this.parameterTypes);
+        result.parameterTypes = parameterTypesCopy;
+      }
+      if (this.declarationAnnotations != null) {
+        result.declarationAnnotations = this.declarationAnnotations.deepCopy();
+      }
 
       if (this.paramsDeclAnnos != null) {
         result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
@@ -2309,7 +2299,8 @@ public class WholeProgramInferenceJavaParserStorage
             returnType, declaration.asMethodDeclaration().getType());
       }
 
-      if (receiverType != null) {
+      // An explicit receiver parameter that has no annotations would be redundant.
+      if (receiverType != null && hasTransferableAnnotation(receiverType)) {
         addExplicitReceiver(declaration.asMethodDeclaration());
         // The receiver won't be present for an anonymous class.
         if (declaration.getReceiverParameter().isPresent()) {
@@ -2392,6 +2383,9 @@ public class WholeProgramInferenceJavaParserStorage
     /** Wrapped field declaration. */
     public final VariableDeclarator declaration;
 
+    /** The element for the field. */
+    public final VariableElement element;
+
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
 
@@ -2402,16 +2396,22 @@ public class WholeProgramInferenceJavaParserStorage
      * Creates a wrapper for the given field declaration.
      *
      * @param declaration field declaration to wrap
+     * @param element the element for the field
      */
-    public FieldAnnos(VariableDeclarator declaration) {
+    public FieldAnnos(VariableDeclarator declaration, VariableElement element) {
       this.declaration = declaration;
+      this.element = element;
     }
 
     @Override
     public FieldAnnos deepCopy() {
-      FieldAnnos result = new FieldAnnos(declaration);
-      result.type = DeepCopyable.deepCopyOrNull(this.type);
-      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      FieldAnnos result = new FieldAnnos(declaration, element);
+      if (this.type != null) {
+        result.type = this.type.deepCopy();
+      }
+      if (this.declarationAnnotations != null) {
+        result.declarationAnnotations = this.declarationAnnotations.deepCopy();
+      }
       return result;
     }
 

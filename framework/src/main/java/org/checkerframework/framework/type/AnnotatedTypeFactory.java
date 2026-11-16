@@ -1940,7 +1940,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param elt an element
    * @param type the type obtained from {@code elt}
    */
-  protected void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     // Pass.
   }
 
