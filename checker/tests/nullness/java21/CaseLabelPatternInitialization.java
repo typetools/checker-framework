@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
@@ -33,7 +33,8 @@ public class CaseLabelPatternInitialization {
     }
   }
 
-  // A binding variable nested in a record pattern is not yet defaulted to top.  See #7032.
+  // A binding variable nested in a record pattern is not yet defaulted to top.  See
+  // https://github.com/typetools/checker-framework/issues/7032 .
   void nested(Box b) {
     if (b instanceof Box(String s)) {
       s.length();

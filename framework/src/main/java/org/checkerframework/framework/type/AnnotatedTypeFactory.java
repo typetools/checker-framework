@@ -3877,17 +3877,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     record pattern
    */
   public boolean isNestedBindingVariable(Element elt) {
-    // TODO: Once dataflow refines a nested binding variable by its record component (follow-up
-    // pull request), default nested binding variables to top as well and remove this method.
-    // See #7032.
+    // TODO: Once #8521 refines a nested binding variable by its record component, default nested
+    // binding variables to top as well, and remove this method and the special cases that call
+    // it.  See #7032.
     if (elt.getKind() != ElementKind.BINDING_VARIABLE) {
       return false;
     }
     Tree decl = declarationFromElement(elt);
-    TreePath path = decl == null ? null : getPath(decl);
+    if (decl == null) {
+      return false;
+    }
+    TreePath path = getPath(decl);
+    if (path == null) {
+      return false;
+    }
     // The parent of the variable is a binding pattern, whose parent might be a record pattern.
-    TreePath bindingPattern = path == null ? null : path.getParentPath();
-    TreePath enclosing = bindingPattern == null ? null : bindingPattern.getParentPath();
+    TreePath bindingPattern = path.getParentPath();
+    if (bindingPattern == null) {
+      return false;
+    }
+    TreePath enclosing = bindingPattern.getParentPath();
     return enclosing != null && TreeUtils.isDeconstructionPatternTree(enclosing.getLeaf());
   }
 
