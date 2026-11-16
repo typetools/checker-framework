@@ -928,8 +928,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1172,7 +1172,7 @@ public abstract class CFAbstractTransfer<
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+        JavaExpression expr = JavaExpression.fromNode(node.getOperand());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           store.insertOrRefine(expr, anno);
         }
@@ -1358,12 +1358,12 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    AssignmentNode assign = n.getSwitchOperand();
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
               finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
       if (canRefineSelector) {
         result =
@@ -1455,7 +1455,7 @@ public abstract class CFAbstractTransfer<
    * Returns true if the switch selector expression (the right-hand side of {@code
    * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
    * If this returns false, a transfer function must not refine the selector expression at {@code
-   * n}, but it may refine the synthetic variable (the left-hand side of {@code
+   * n}, but it is permitted to refine the synthetic variable (the left-hand side of {@code
    * n.getSwitchOperand()}).
    *
    * <p>The selector expression might not denote the tested value if code with side effects, such as
