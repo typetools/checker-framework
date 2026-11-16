@@ -2833,10 +2833,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param p the value to pass to calls to {@code scan}
-   * @param primaryExceptionPending true if the try block threw an exception (the primary
-   *     exception) that propagates after the call to {@code close}. Then, any exception that {@code
-   *     close} throws is suppressed (JLS 14.20.3.1), and the primary exception propagates even if
-   *     {@code close} terminates execution.
+   * @param primaryExceptionPending true if the try block threw an exception (the primary exception)
+   *     that propagates after the call to {@code close}. Then, any exception that {@code close}
+   *     throws is suppressed (JLS 14.20.3.1), and the primary exception propagates even if {@code
+   *     close} terminates execution.
    */
   private void addCloseCallForResource(
       Tree resourceDeclarationTree, Void p, boolean primaryExceptionPending) {
