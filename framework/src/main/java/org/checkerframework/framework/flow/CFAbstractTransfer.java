@@ -24,7 +24,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -83,7 +82,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
@@ -1131,6 +1129,12 @@ public abstract class CFAbstractTransfer<
       // lacks the qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
       V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
       resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), operandValue));
+    } else if (n.isBoxing()) {
+      // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
+      // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
+      // of `x`, the value being boxed.
+      V operandValue = in.getValueOfSubNode(n.getArgument(0));
+      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
     }
 
     store.updateForMethodCall(n, resValue);
@@ -1550,30 +1554,46 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
-   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedType}. This is
-   * only called at an unboxing conversion.
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
+   * This is only called at an unboxing conversion.
    *
    * @param type the primitive type to unbox to
-   * @param annotatedValue a value to unbox, whose type is a boxed primitive type or a type variable
-   *     or wildcard whose upper bound is one
+   * @param annotatedValue a value to unbox
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
-   *     lacks an annotation in some hierarchy
+   *     lacks an annotation in some hierarchy, as a value whose type is a type variable can
    */
   @SideEffectFree
   protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }
-    // Use the boxed class of `type`, not the type of `annotatedValue`, which might be a type
-    // variable.
-    TypeElement boxedClass = analysis.getTypes().boxedClass((PrimitiveType) type);
-    AnnotatedDeclaredType boxedType =
-        (AnnotatedDeclaredType)
-            AnnotatedTypeMirror.createType(boxedClass.asType(), analysis.atypeFactory, false);
-    boxedType.addAnnotations(annotatedValue.getAnnotations());
-    AnnotatedPrimitiveType unboxedType = analysis.atypeFactory.getUnboxedType(boxedType);
-    return analysis.createAbstractValue(unboxedType.getPrimaryAnnotations(), type);
+    AnnotationMirrorSet unboxedAnnos =
+        analysis.atypeFactory.getUnboxedAnnotations(
+            annotatedValue.getAnnotations(), type.getKind());
+    return analysis.createAbstractValue(unboxedAnnos, type);
+  }
+
+  /**
+   * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations}. This
+   * is only called at a boxing conversion.
+   *
+   * @param type the boxed primitive type to box to, such as {@code Integer}
+   * @param annotatedValue a value to box
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy
+   */
+  @SideEffectFree
+  protected @Nullable V getBoxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet boxedAnnos =
+        analysis.atypeFactory.getBoxedAnnotations(
+            annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
+    return analysis.createAbstractValue(boxedAnnos, type);
   }
 
   @Override
