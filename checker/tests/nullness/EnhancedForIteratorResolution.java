@@ -93,9 +93,14 @@ public class EnhancedForIteratorResolution {
 
   // `AbstractOverrider.iterator()` overrides the concrete `ConcreteOverridden.iterator()`, so the
   // latter is not a member of `OverriderSubclass` and does not take precedence over
-  // `APureIterable.iterator()`.  (The closure of `OverriderSubclass` visits `AbstractOverrider`,
-  // then `APureIterable`, then `ConcreteOverridden`.)
-  interface APureIterable extends Iterable<String> {
+  // `APureIterable.iterator()`.  `APureIterable` extends a chain of interfaces so that the closure
+  // of `OverriderSubclass`, which lists a type before the types that are closer to `Object`, visits
+  // `APureIterable`, then `AbstractOverrider`, then `ConcreteOverridden`.
+  interface DerivedIterable extends Iterable<String> {}
+
+  interface DoublyDerivedIterable extends DerivedIterable {}
+
+  interface APureIterable extends DoublyDerivedIterable {
     @Override
     @SideEffectFree
     PureIterator iterator();
@@ -103,7 +108,7 @@ public class EnhancedForIteratorResolution {
 
   static class ConcreteOverridden implements Iterable<String> {
     @Override
-    public Iterator<String> iterator() {
+    public PureIterator iterator() {
       throw new UnsupportedOperationException();
     }
   }
@@ -111,7 +116,7 @@ public class EnhancedForIteratorResolution {
   abstract static class AbstractOverrider extends ConcreteOverridden {
     @Override
     @SideEffectFree
-    public abstract Iterator<String> iterator();
+    public abstract PureIterator iterator();
   }
 
   abstract static class OverriderSubclass extends AbstractOverrider implements APureIterable {}

@@ -1151,7 +1151,7 @@ public final class ElementUtils {
       MethodSymbol interfaceMethod = isInterface1 ? m1 : m2;
       if (!isAbstract(classMethod)
           || classMethod.owner.isSubClass(interfaceMethod.owner, javacTypes)) {
-        return classMethod == m1;
+        return !isInterface1;
       }
     }
     boolean isAbstract1 = isAbstract(m1);
