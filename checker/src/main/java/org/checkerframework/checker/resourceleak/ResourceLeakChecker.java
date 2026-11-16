@@ -6,9 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
@@ -76,9 +74,10 @@ public class ResourceLeakChecker extends AggregateChecker {
 
   /**
    * The number of must-call-related errors issued. The count of verified must-call expressions is
-   * the difference between this and {@link #numMustCall}.
+   * the difference between this and {@link #numMustCall}. Incremented only if the {@link
+   * #COUNT_MUST_CALL} command-line option was supplied.
    */
-  private int numMustCallFailed = 0;
+  /*package-private*/ int numMustCallFailed = 0;
 
   @Override
   protected Set<Class<? extends SourceChecker>> getSupportedCheckers() {
@@ -86,20 +85,6 @@ public class ResourceLeakChecker extends AggregateChecker {
     checkers.add(CollectionOwnershipChecker.class);
 
     return checkers;
-  }
-
-  @Override
-  public void reportError(
-      @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
-    if (messageKey.equals("required.method.not.called")) {
-      // This is safe because of the message key.
-      String qualifiedTypeName = (String) args[1];
-      // Only count classes in the JDK, not user-defined classes.
-      if (MustCallConsistencyAnalyzer.isJdkClass(qualifiedTypeName)) {
-        numMustCallFailed++;
-      }
-    }
-    super.reportError(source, messageKey, args);
   }
 
   /**
