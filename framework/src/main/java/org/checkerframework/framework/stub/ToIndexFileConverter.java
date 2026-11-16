@@ -1566,7 +1566,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that a type declaration of the stub file
-   * inherits from its supertypes.
+   * inherits from its supertypes. The member types of a supertype that the stub file declares
+   * include the ones that its classpath counterpart declares, even if the stub file omits them.
    *
    * @param declaration a type declaration in the stub file
    * @param identifier the simple name of a member type
@@ -1625,6 +1626,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
             continue;
           }
+          // The stub file often omits a member type that the classpath counterpart of
+          // `superTypeDecl` declares.
+          Class<?> counterpartMember = counterpartMemberClass(superTypeDecl, identifier);
+          if (counterpartMember != null) {
+            if (isInheritedClasspathMemberType(counterpartMember, declaration)) {
+              return counterpartMember;
+            }
+            continue;
+          }
           // `superTypeDecl` inherits `inherited`; checking that `declaration` inherits it too, at
           // each step, checks every class on the inheritance path.
           Object inherited = inheritedMemberType(superTypeDecl, identifier);
@@ -1638,11 +1648,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               return inheritedDecl;
             }
           } else if (inherited instanceof Class<?> inheritedClass) {
-            Class<?> declaringClass = inheritedClass.getDeclaringClass();
-            // A member type of an interface is implicitly public.
-            if (declaringClass != null
-                && (declaringClass.isInterface()
-                    || isAccessible(inheritedClass, stubPackage(declaration)))) {
+            if (isInheritedClasspathMemberType(inheritedClass, declaration)) {
               return inheritedClass;
             }
           }
@@ -1689,6 +1695,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return member.isPublic()
         || member.isProtected()
         || stubPackage(member).equals(stubPackage(subtype));
+  }
+
+  /**
+   * Returns true if a type declaration of the stub file inherits a member type, on the classpath,
+   * that a supertype declares or inherits. As for {@link #isInheritedStubMemberType}, a member type
+   * is inherited only if it is accessible in the subtype (JLS 8.5).
+   *
+   * @param member a member type on the classpath
+   * @param subtype a type declaration of the stub file whose direct supertype declares or inherits
+   *     {@code member}
+   * @return true if {@code subtype} inherits {@code member}
+   */
+  private boolean isInheritedClasspathMemberType(Class<?> member, TypeDeclaration<?> subtype) {
+    Class<?> declaringClass = member.getDeclaringClass();
+    // A member type of an interface is implicitly public.
+    return declaringClass != null
+        && (declaringClass.isInterface() || isAccessible(member, stubPackage(subtype)));
   }
 
   /**

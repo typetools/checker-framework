@@ -924,6 +924,16 @@ public class ToIndexFileConverterTest {
             "class Use { void m(C.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
 
+    // The stub file declares Middle but omits its private member type, which its classpath
+    // counterpart declares.  Base and I are on the classpath.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Middle extends Base {}",
+            "class C extends Middle implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
     // A private member type that the stub file declares hides a member type of a classpath
     // supertype.
     jaif =
@@ -934,6 +944,31 @@ public class ToIndexFileConverterTest {
             "class C extends B implements I {}",
             "class Use { void m(C.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+  }
+
+  /**
+   * A name that refers to member types of two supertypes is ambiguous, and javac rejects it. The
+   * converter resolves it to the member type of the first supertype, whether or not the stub file
+   * declares that supertype. A member type that the classpath counterpart of a stub-declared
+   * supertype declares is a member type of that supertype, even if the stub file omits it.
+   */
+  @Test
+  public void testAmbiguousInheritedMemberType() throws Exception {
+    // Base and I are on the classpath, and both declare a member type N.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class C extends Base implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
+
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Base {}",
+            "class C extends Base implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
   }
 
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
@@ -1376,6 +1411,44 @@ public class ToIndexFileConverterTest {
             "  void myMethod(SimpleEntry e) {}",
             "}");
     assertMethod(jaif, "MyMap", "myMethod(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * A member type that the stub file omits from a supertype that the stub file declares, but that
+   * the supertype's classpath counterpart declares, is inherited. It hides the member types of the
+   * same name in the supertypes of that supertype.
+   */
+  @Test
+  public void testOmittedMemberTypeOfStubSupertypeHidesInheritedMemberType() throws Exception {
+    // PublicMiddle declares a member type N that hides Base.N.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class PublicMiddle extends Base {}",
+            "class C extends PublicMiddle {",
+            "  void m(N n) {}",
+            "}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "C", "m(Lorg/checkerframework/framework/stub/hiding/PublicMiddle$N;)V");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PublicMiddle$N;)V");
+
+    // A subclass in another package inherits the public PublicMiddle.N, but not the private
+    // Middle.N.
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.PublicMiddle {}",
+            "class D extends org.checkerframework.framework.stub.hiding.Middle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use {",
+            "  void m(C.N n) {}",
+            "  void m(D.N n) {}",
+            "}",
+            "package org.checkerframework.framework.stub.hiding;",
+            "public class PublicMiddle extends Base {}",
+            "public class Middle extends Base {}");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PublicMiddle$N;)V");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
   }
 
   /**
