@@ -30,6 +30,12 @@ To refine an operand of a comparison, an override of
 `CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method
 `CFAbstractTransfer.insertValueForNodesWithValueOf`.
 
+`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
+the new method `CFAbstractAnalysis.canAlias` instead.
+
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

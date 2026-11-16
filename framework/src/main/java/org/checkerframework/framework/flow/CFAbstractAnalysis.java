@@ -527,6 +527,10 @@ public abstract class CFAbstractAnalysis<
    * types. See {@link TypesUtils#canAlias} for details, including the cases in which the answer is
    * not conservative.
    *
+   * <p>{@link CFAbstractStore#canAlias} calls this method, and so does code that has no store. A
+   * checker that changes the aliasing judgment overrides this method, not {@link
+   * CFAbstractStore#canAlias}.
+   *
    * @param a an expression
    * @param b another expression
    * @return true if {@code a} and {@code b} might evaluate to the same object
