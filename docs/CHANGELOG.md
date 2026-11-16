@@ -11,10 +11,7 @@
 
 `TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
 
-New overridable methods `BaseTypeVisitor.checkInstanceofPattern()` and
-`BaseTypeVisitor.instanceofPatternMatchedType()` check the binding variable of
-an `instanceof` type pattern.  New overridable methods
-`CFAbstractTransfer.refineBindingVariable()` and
+New overridable methods `CFAbstractTransfer.refineBindingVariable()` and
 `CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input

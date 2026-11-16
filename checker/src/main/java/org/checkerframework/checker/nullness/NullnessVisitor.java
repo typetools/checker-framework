@@ -6,7 +6,6 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -432,9 +431,6 @@ public class NullnessVisitor
         }
       }
     }
-    if (tree.getPattern() instanceof BindingPatternTree bindingPattern) {
-      checkInstanceofPattern(tree, bindingPattern.getVariable());
-    }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, validate the reference type and scan the expression and the pattern or type.
     Tree patternTree = tree.getPattern();
@@ -444,25 +440,6 @@ public class NullnessVisitor
     super.scan(tree.getExpression(), p);
     super.scan(patternTree != null ? patternTree : refTypeTree, p);
     return null;
-  }
-
-  @Override
-  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
-    return withNonNull(expType);
-  }
-
-  /**
-   * Returns a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}.
-   *
-   * @param type the type of a value that a type pattern is matched against
-   * @return a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}
-   */
-  private AnnotatedTypeMirror withNonNull(AnnotatedTypeMirror type) {
-    // A type pattern that is not unconditional does not match null, so the nullness qualifier of
-    // the matched value does not restrict the binding variable.
-    AnnotatedTypeMirror copy = type.deepCopy();
-    copy.replaceAnnotation(NONNULL);
-    return copy;
   }
 
   /**
