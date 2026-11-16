@@ -41,10 +41,8 @@ import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -587,20 +585,5 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
     return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
-  }
-
-  /**
-   * Fetches the transfer input for the given block, either from the flowResult, if the analysis is
-   * not running, or else from the analysis itself, if it is still running.
-   *
-   * @param block a block
-   * @return the appropriate TransferInput from the results of running dataflow
-   */
-  public TransferInput<AccumulationValue, AccumulationStore> getInput(Block block) {
-    if (!analysis.isRunning()) {
-      return flowResult.getInput(block);
-    } else {
-      return analysis.getInput(block);
-    }
   }
 }
