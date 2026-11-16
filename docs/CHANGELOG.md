@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
+the new method `CFAbstractAnalysis.canAlias` instead.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
