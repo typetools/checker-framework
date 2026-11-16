@@ -142,27 +142,26 @@ public class QualifierUpperBounds {
   }
 
   /**
-   * Returns the qualifiers of a value with qualifiers {@code annos} that is cast to {@code type}:
-   * {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound of {@code
-   * type} replaced by that bound.
+   * Returns {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
+   * of {@code type} in the same hierarchy replaced by that bound.
    *
-   * @param type the type that the value is cast to
-   * @param annos the qualifiers of the value
+   * @param type the type whose qualifier upper bounds limit {@code annos}
+   * @param annos the qualifiers to limit
    * @return {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
-   *     of {@code type} replaced by that bound
+   *     of {@code type} in the same hierarchy replaced by that bound
    */
   public AnnotationMirrorSet limitToBound(TypeMirror type, Set<? extends AnnotationMirror> annos) {
     AnnotationMirrorSet boundAnnos = getBoundQualifiers(type);
-    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    AnnotationMirrorSet limitedAnnos = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annos) {
       AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
-      if (bound != null && !qualHierarchy.isSubtypeShallow(anno, type, bound, type)) {
-        result.add(bound);
-      } else {
-        result.add(anno);
+      if (bound == null) {
+        throw new BugInCF(
+            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
       }
+      limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
     }
-    return result;
+    return limitedAnnos;
   }
 
   /**
