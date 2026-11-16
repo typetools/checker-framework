@@ -36,10 +36,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -452,24 +450,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   protected QualifierHierarchy createQualifierHierarchy() {
     return new MustCallQualifierHierarchy(
         this.getSupportedTypeQualifiers(), this.getProcessingEnv(), this);
-  }
-
-  /**
-   * Fetches the store from the results of dataflow for {@code firstBlock}. If {@code
-   * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
-   * afterFirstStore} is false, the store before {@code succBlock} is returned.
-   *
-   * @param afterFirstStore if true, use the store after {@code firstBlock}; if false, use the store
-   *     before its successor, {@code succBlock}
-   * @param firstBlock a CFG block
-   * @param succBlock {@code firstBlock}'s successor
-   * @return the appropriate CFStore, populated with MustCall annotations, from the results of
-   *     running dataflow
-   */
-  public CFStore getStoreForBlock(boolean afterFirstStore, Block firstBlock, Block succBlock) {
-    return afterFirstStore
-        ? flowResult.getStoreAfter(firstBlock)
-        : flowResult.getStoreBefore(succBlock);
   }
 
   /**

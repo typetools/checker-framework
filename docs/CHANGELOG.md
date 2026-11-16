@@ -12,6 +12,9 @@
 New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
 qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
