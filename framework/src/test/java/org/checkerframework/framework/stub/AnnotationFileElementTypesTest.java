@@ -131,9 +131,9 @@ public class AnnotationFileElementTypesTest {
   /** Tests that a named archive that cannot be opened yields a warning. */
   @Test
   public void corruptArchive() throws IOException {
-    File zip = write(new File(tmp.getRoot(), "stubs.zip"), "not a zip file");
+    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
     assertHasDiagnostic(
-        "WARNING: Could not read annotation resource: " + zip.getPath(),
-        diagnostics(zip.getPath()));
+        "WARNING: Could not read annotation resource: " + jar.getPath(),
+        diagnostics(jar.getPath()));
   }
 }

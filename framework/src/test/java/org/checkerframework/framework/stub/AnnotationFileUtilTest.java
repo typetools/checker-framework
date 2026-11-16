@@ -120,13 +120,13 @@ public class AnnotationFileUtilTest {
    */
   @Test
   public void corruptArchive() throws IOException {
-    File zip = write(new File(tmp.getRoot(), "stubs.zip"), "not a zip file");
+    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(zip.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
+        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertNotNull(resources);
     Assert.assertEquals(1, resources.size());
-    Assert.assertEquals(zip.getPath(), resources.get(0).getDescription());
+    Assert.assertEquals(jar.getPath(), resources.get(0).getDescription());
     Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());
   }
 
@@ -170,14 +170,14 @@ public class AnnotationFileUtilTest {
   /** Tests that hidden files, such as macOS metadata files, are not used. */
   @Test
   public void hiddenFilesAreNotUsed() throws IOException {
-    File zip =
+    File jar =
         writeZip(
-            new File(tmp.getRoot(), "stubs.zip"),
+            new File(tmp.getRoot(), "stubs.jar"),
             "java/lang/String.astub",
             "__MACOSX/java/lang/._String.astub");
     Assert.assertEquals(
-        Arrays.asList(zip.getPath() + "!java/lang/String.astub"),
-        descriptions(zip, AnnotationFileType.COMMAND_LINE_STUB));
+        Arrays.asList(jar.getPath() + "!java/lang/String.astub"),
+        descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
 
     File dir = tmp.newFolder("stubdir");
     File a = write(new File(dir, "A.astub"), "package p;");
@@ -197,14 +197,14 @@ public class AnnotationFileUtilTest {
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
 
-    File zip =
+    File jar =
         writeZip(
-            new File(tmp.getRoot(), "stubs.zip"),
+            new File(tmp.getRoot(), "stubs.jar"),
             "java/lang/String.astub",
             ".backup/java/lang/String.astub");
     Assert.assertEquals(
-        Arrays.asList(zip.getPath() + "!java/lang/String.astub"),
-        descriptions(zip, AnnotationFileType.COMMAND_LINE_STUB));
+        Arrays.asList(jar.getPath() + "!java/lang/String.astub"),
+        descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
   /** Tests that a hidden directory that is named explicitly is searched. */
