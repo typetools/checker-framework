@@ -1154,7 +1154,9 @@ public abstract class CFAbstractTransfer<
     S store = in.getRegularStore();
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+    // A binding variable nested in a record pattern holds a record component, not the value that
+    // `node` tests, so only the binding variable of a top-level type pattern is refined.
+    if (node.getPatternNode() instanceof LocalVariableNode bindingVar) {
       refineBindingVariable(store, JavaExpression.fromNode(bindingVar), expType);
     }
 
