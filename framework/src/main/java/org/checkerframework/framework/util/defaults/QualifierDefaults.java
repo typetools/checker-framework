@@ -1623,7 +1623,7 @@ public class QualifierDefaults {
        * @param boundedType the type variable or wildcard whose bounds to visit
        * @param upperBound the upper bound of {@code boundedType}
        * @param lowerBound the lower bound of {@code boundedType}
-       * @param qual the qualifier to apply to the bounds
+       * @param p the visitor parameter (always null)
        */
       protected void visitBounds(
           AnnotatedTypeMirror boundedType,
