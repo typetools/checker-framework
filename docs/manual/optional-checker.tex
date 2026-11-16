@@ -73,7 +73,7 @@ These qualifiers make up the Optional type system:
 % never to use the term "absent", and it's nice parallelism to have
 % "Present" in the names of all the annotations.
 \item[\refqualclass{checker/optional/qual}{MaybePresent}]
-  The annotated \<Optional> container may or may not contain a value.
+  The annotated \<Optional> container might or might not contain a value.
   This is the default type, so programmers do not have to write it.
 
 \item[\refqualclass{checker/optional/qual}{Present}]
@@ -131,7 +131,7 @@ More specifically, the Optional Checker will issue an error if you call
 \sunjavadoc{java.base/java/util/Optional.html\#get()}{get}
 or
 \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow()}
-on a \<@MaybePresent Optional> receiver, because the receiver may be absent and
+on a \<@MaybePresent Optional> receiver, because the receiver might be absent and
 each of these methods throws a \<NoSuchElementException> if the receiver is
 empty at run time.
 

@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SignednessUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a SignednessUncheckedDefaultsTest.
+   * Creates a SignednessUncheckedDefaultsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

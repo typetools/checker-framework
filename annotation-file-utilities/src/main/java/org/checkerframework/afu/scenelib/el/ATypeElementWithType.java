@@ -92,11 +92,11 @@ public class ATypeElementWithType extends ATypeElement {
   }
 
   /**
-   * A map with {@link ATypeElementWithType}s as values. When {@link VivifyingMap#getVivify(Object)}
-   * method is called, a new {@code ATypeElementWithType} is constructed with the parameter to
-   * {@code vivify} passed to {@code ATypeElementWithType}'s constructor. This parameter is also
-   * used as the key into the map. This is used to map {@link ASTPath}s to their corresponding
-   * {@code ATypeElementWithType}.
+   * A map with {@link ATypeElementWithType}s as values. When the {@link
+   * VivifyingMap#getVivify(Object)} method is called, a new {@code ATypeElementWithType} is
+   * constructed with the parameter to {@code vivify} passed to {@code ATypeElementWithType}'s
+   * constructor. This parameter is also used as the key into the map. This is used to map {@link
+   * ASTPath}s to their corresponding {@code ATypeElementWithType}.
    *
    * <p>{@code ATEWT} stands for {@code ATypeElementWithType}.
    */

@@ -19,7 +19,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 public class CharacterLiteralNode extends ValueLiteralNode {
 
   /**
-   * Create a new CharacterLiteralNode.
+   * Creates a new CharacterLiteralNode.
    *
    * @param t the character literal
    */

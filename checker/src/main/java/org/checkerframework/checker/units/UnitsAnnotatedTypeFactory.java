@@ -58,7 +58,7 @@ import org.plumelib.reflection.Signatures;
 /**
  * Annotated type factory for the Units Checker.
  *
- * <p>Handles multiple names for the same unit, with different prefixes, e.g. @kg is the same
+ * <p>Handles multiple names for the same unit, with different prefixes, e.g., @kg is the same
  * as @g(Prefix.kilo).
  *
  * <p>Supports relations between units. If {@code m} is a variable of type "@m" and {@code s} is a
@@ -208,7 +208,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return qualSet;
   }
 
-  /** Loads all the externnal units specified on the command line. */
+  /** Loads all the external units specified on the command line. */
   private void loadAllExternalUnits() {
     // load external individually named units
     for (String qualName : checker.getStringsOption("units", ',')) {
@@ -307,7 +307,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Returns the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
-   * return null.
+   * returns null.
    *
    * @param anno the annotation to examine
    * @return the annotation's name, if it is meta-annotated with UnitsMultiple; otherwise null
@@ -342,7 +342,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
 
   /**
-   * Look for an @UnitsRelations annotation on the qualifier and add it to the list of
+   * Looks for an @UnitsRelations annotation on the qualifier and adds it to the list of
    * UnitsRelations.
    *
    * @param qual the qualifier to investigate
@@ -423,7 +423,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
-  /** A class for adding annotations based on tree. */
+  /** A class for adding annotations based on a tree. */
   private class UnitsTreeAnnotator extends TreeAnnotator {
 
     /**
@@ -554,7 +554,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
-  /** Set the Bottom qualifier as the bottom of the hierarchy. */
+  /** Sets the Bottom qualifier as the bottom of the hierarchy. */
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
     return new UnitsQualifierHierarchy();

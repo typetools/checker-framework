@@ -18,7 +18,7 @@ Framework from reporting this particular warning to you.  (Changing the
 code to fix a bug is another way to prevent the Checker Framework from
 issuing a warning, but it is not what this chapter is about.)
 
-You may wish to suppress checker warnings because of unannotated libraries
+You might wish to suppress checker warnings because of unannotated libraries
 or unannotated portions of your own code, because of application
 invariants that are beyond the capabilities of the type system, because of
 checker limitations, because you are interested in only some of the
@@ -88,11 +88,11 @@ argument string.
 \end{sloppypar}
 
 A \sunjavadocanno{java.base/java/lang/SuppressWarnings.html}{SuppressWarnings}
-annotation may be placed on program declarations such as a local
+annotation can be placed on program declarations such as a local
 variable declaration, a method, or a class.  It suppresses all warnings
 within that program element.
 Section~\ref{suppresswarnings-annotation-locations} discusses where the
-annotation may be written in source code.
+annotation can be written in source code.
 
 Section~\ref{suppresswarnings-best-practices} gives best practices for
 writing \<@SuppressWarnings> annotations.
@@ -141,7 +141,7 @@ example, to suppress a warning with message key
 \<@SuppressWarnings("lock.expression")>,
 \<@SuppressWarnings("not.final")>, or other variants.
 We recommend using
-the longest possible message key; a short message might suppress more
+the longest possible message key; a short message key might suppress more
 warnings than you expect.
 
 The checkername \<"allcheckers"> means all checkers.  Using this is not
@@ -184,7 +184,7 @@ warnings.
 
 \subsectionAndLabel{Where \code{@SuppressWarnings} can be written}{suppresswarnings-annotation-locations}
 
-\<@SuppressWarnings> is a declaration annotation, so it may be placed on
+\<@SuppressWarnings> is a declaration annotation, so it can be placed on
 program declarations such as a local variable declaration, a method, or a
 class.
 
@@ -248,7 +248,7 @@ prefer one on a method to one on a class.
 \<@SuppressWarnings> on a local variable declaration applies only to the
 declaration (including its initializer if any), not to all uses of the variable.
 
-You may be able to suppress a warning about a use of an expression by
+You might be able to suppress a warning about a use of an expression by
 writing \<@AssumeAssertion> for the expression, before the use.  See
 Section~\ref{assumeassertion}.
 
@@ -272,7 +272,7 @@ declaration.  See Section~\ref{suppresswarnings-annotation-locations}.
 It is best to use the most specific possible message key to suppress just a
 specific error that you know to be a false positive.  The checker outputs
 this message key when it issues an error.  If you use a broader
-\<@SuppressWarnings> annotation, then it may mask other errors that you
+\<@SuppressWarnings> annotation, then it might mask other errors that you
 needed to know about.
 
 Any of the following would have suppressed the warning in
@@ -343,7 +343,7 @@ corresponding issue on the
 tracker}, or create a new issue.  This helps the Checker Framework
 maintainers to prioritize their work.
 If you reference the issue URL in your warning suppression, then you can
-later follow the URL to check whether an issue has been fixed (though the
+later follow the URL to check whether the issue has been fixed (though the
 \<-AwarnUnneededSuppressions> command-line option also serves this
 purpose).
 
@@ -461,7 +461,7 @@ Guava's \<verifyNotNull> and \<checkNotNull> are
 similar to assertions.  Just as for assertions, their intended use is as
 debugging aids, they might fail at run time, and the Checker Framework
 warns if that might happen.
-Some programmers may use assert methods as documentation of facts
+Some programmers use assertion methods as documentation of facts
 that the programmer has verified in some other manner.
 If you know that a particular codebase always uses
 an assertion method not for defensive programming but to indicate
@@ -558,14 +558,14 @@ You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs}, \code{-AonlyDefs}, \code{-AskipFiles}, or \code{-AonlyFiles}
-command-line option; see Section~\ref{askipdefs}).
+command-line option; see Section~\ref{askipdefs}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
-regular expression that matches fully-qualified class names (not file names) for which warnings and errors
+regular expression that matches fully qualified class names (not file names) for which warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
-regular expression that matches fully-qualified class names (not file names) for which warnings and errors
+regular expression that matches fully qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
 The regular expressions are unanchored, unless you anchor them yourself
 with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
@@ -574,7 +574,7 @@ For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}.  Then the checkers will suppress all warnings related to
-classes whose fully-qualified name starts with \codesize\verb|java.|, such
+classes whose fully qualified name starts with \codesize\verb|java.|, such
 as all warnings relating to invalid arguments and all warnings relating to
 incorrect use of the return value.
 
@@ -593,7 +593,7 @@ Warning:  Use the \code{-AonlyUses} command-line option with care,
 because it can have unexpected results.  For example, if the
 given regular expression does not match classes in the JDK, then the
 Checker Framework will suppress every warning that involves a JDK class
-such as \<Object> or \<String>.  The meaning of \code{-AonlyUses} may be
+such as \<Object> or \<String>.  The meaning of \code{-AonlyUses} might be
 refined in the future.  Often, \code{-AskipUses} is more useful.
 
 % The desired meaning of -AonlyUses is tricky, because what is a "use"?
@@ -614,10 +614,10 @@ see Section~\ref{askipuses}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
-regular expression that matches fully-qualified class names (not file names) in whose definition warnings and errors
+regular expression that matches fully qualified class names (not file names) in whose definition warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
-regular expression that matches fully-qualified class names (not file names) whose
+regular expression that matches fully qualified class names (not file names) whose
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
@@ -630,20 +630,20 @@ For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the definitions of
-classes whose fully-qualified name starts with \codesize\verb|mypackage.|
+classes whose fully qualified name starts with \codesize\verb|mypackage.|
 will not be checked.
 
 If you supply both \code{-AskipDefs} and \code{-AonlyDefs}, then
 \code{-AskipDefs} takes precedence.
 
 Another way not to type-check a file is not to pass it on the compiler
-command-line:  the Checker Framework type-checks only files that are passed
+command line:  the Checker Framework type-checks only files that are passed
 to the compiler on the command line, and does not type-check any file that
 is not passed to the compiler.  The \code{-AskipDefs} and \code{-AonlyDefs}
 command-line options
 are intended for situations in which the build system is hard to understand
-or change.  In such a situation, a programmer may find it easier to supply
-an extra command-line argument, than to change the set of files that is
+or change.  In such a situation, a programmer might find it easier to supply
+an extra command-line argument than to change the set of files that is
 compiled.
 
 A common scenario for using these options is when you are starting out by
@@ -687,7 +687,7 @@ one of which has a name that corresponds to the file name.
 The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.
 Each of the distributed checkers supports at least the following lint
-options (and possibly more, see the checker's documentation):
+options (and possibly more; see the checker's documentation):
 
 % For the current list of lint options supported by all checkers, see
 % method BaseTypeChecker.getSupportedLintOptions().

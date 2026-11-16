@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
- * Indicates a method precondition: the specified expressions, each of which may be a {@link
+ * Indicates a method precondition: the specified expressions, each of which can be a {@link
  * java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link java.lang.Iterable
  * iterable}, or {@link java.util.Map map}, must be non-empty when the annotated method is invoked.
  *

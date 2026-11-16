@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class I18nFormatterUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create an I18nFormatterUncheckedDefaultsTest.
+   * Creates an I18nFormatterUncheckedDefaultsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
