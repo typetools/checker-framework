@@ -1879,16 +1879,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the type declaration, at or within {@code declaration}, whose binary name without its
    * package is {@code nameInPackage}. Each {@code $} in {@code nameInPackage} at or after {@code
-   * start} may separate a member type from its enclosing type or may be part of an identifier;
-   * this method tries each possibility.
+   * start} may separate a member type from its enclosing type or may be part of an identifier; this
+   * method tries each possibility.
    *
    * @param declaration a type declaration in a stub file, whose binary name without its package is
    *     {@code nameInPackage.substring(0, start)}
    * @param nameInPackage a binary name without its package
    * @param start the index in {@code nameInPackage} just after the name of {@code declaration};
    *     either the length of {@code nameInPackage} or the index of a {@code $}
-   * @return the type declaration whose binary name without its package is {@code nameInPackage},
-   *     or null if there is none
+   * @return the type declaration whose binary name without its package is {@code nameInPackage}, or
+   *     null if there is none
    */
   private @Nullable TypeDeclaration<?> memberDeclarationOfBinaryName(
       TypeDeclaration<?> declaration, String nameInPackage, int start) {

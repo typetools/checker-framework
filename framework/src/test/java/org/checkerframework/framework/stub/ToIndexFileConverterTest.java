@@ -1002,8 +1002,8 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A {@code $} within the name of a supertype declared in the stub file is part of the name, not
-   * a nesting separator.
+   * A {@code $} within the name of a supertype declared in the stub file is part of the name, not a
+   * nesting separator.
    */
   @Test
   public void testInheritedMemberTypeOfSupertypeWithDollarInName() throws Exception {
