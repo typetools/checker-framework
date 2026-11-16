@@ -18,12 +18,12 @@ import org.plumelib.util.StringsP;
 
 /**
  * Manages a set of bounds. Bounds are stored in the variable to which they apply, except for
- * capture bounds which are stored in this class.
+ * capture bounds, which are stored in this class.
  */
 public class BoundSet implements ReductionResult {
   /**
-   * Max number of incorporation loops. Use same constant as {@link
-   * com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS}
+   * Max number of incorporation loops. Uses the same constant as {@link
+   * com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS}.
    */
   public static final int MAX_INCORPORATION_STEPS = 10000;
 
@@ -44,7 +44,7 @@ public class BoundSet implements ReductionResult {
   /** The error message to report to users. */
   public String errorMsg = "";
 
-  /** True if this bounds set contains the false bound. */
+  /** True if this bound set contains the false bound. */
   private boolean containsFalse;
 
   /**
@@ -84,7 +84,7 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Save the current state of the variables so they can be restored if the first attempt at
+   * Saves the current state of the variables so they can be restored if the first attempt at
    * resolution fails.
    */
   public void saveBounds() {
@@ -94,7 +94,7 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Restore the bounds to the last saved state. This method is called if the first attempt at
+   * Restores the bounds to the last saved state. This method is called if the first attempt at
    * resolution fails.
    */
   public void restore() {
@@ -206,8 +206,8 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)} for
-   * any variable in {@code as}?
+   * Returns true if the bound set contains a bound of the form {@code G<..., ai, ...> =
+   * capture(G<...>)} for any variable in {@code as}.
    *
    * @param as a collection of variables
    * @return true if the bound set contains a bound of the form {@code G<..., ai, ...> =
@@ -258,9 +258,9 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Resolve all inference variables mentioned in any bound.
+   * Resolves all inference variables mentioned in any bound.
    *
-   * @return a list of resolved variables in this bounds set
+   * @return a list of resolved variables in this bound set
    */
   public List<Variable> resolve() {
     BoundSet b = Resolution.resolve(new ArrayList<>(variables), this, context);
@@ -366,10 +366,10 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Incorporates {@code newBounds} into this bounds set.
+   * Incorporates {@code newBounds} into this bound set.
    *
-   * <p>Incorporation creates new constraints that are then reduced to a bound set which is further
-   * incorporated into this bound set. Incorporation terminates when the bounds set has reached a
+   * <p>Incorporation creates new constraints that are then reduced to a bound set, which is further
+   * incorporated into this bound set. Incorporation terminates when the bound set has reached a
    * fixed point. <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.3">JLS 18.3</a>
    * defines this fixed point and further explains incorporation.
@@ -427,7 +427,7 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Remove any capture bound that mentions any variable in {@code as}.
+   * Removes any capture bound that mentions any variable in {@code as}.
    *
    * @param as a set of variables
    */

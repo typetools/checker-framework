@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.WeakIdentityHashMap;
 
 /**
- * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
+ * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactories (and therefore all
  * annotated types).
  *
  * @see org.checkerframework.framework.type.AnnotatedTypeFormatter
@@ -91,9 +91,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
    * Such javac output is misleading because it looks like the two printed representations refer to
    * the same variable.
    *
-   * <p>This map contains type variables that have been formatted. Therefore, the numbers may differ
-   * between Checker Framework runs if the different runs print different values (say, one of them
-   * prints more type variables than the other).
+   * <p>This map contains type variables that have been formatted. Therefore, the numbers might
+   * differ between Checker Framework runs if the different runs print different values (say, one of
+   * them prints more type variables than the other).
    */
   protected static final Map<TypeVariable, Integer> captureConversionIds =
       new WeakIdentityHashMap<>();
@@ -137,9 +137,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     protected final boolean defaultInvisiblesSetting;
 
     /**
-     * For a given call to format, this setting specifies whether or not to printInvisibles. If a
-     * user did not specify a printInvisible parameter in the call to format then this value will
-     * equal DefaultAnnotatedTypeFormatter.defaultInvisiblesSetting for this object
+     * For a given call to format, true if invisible annotations should be printed. If a user did
+     * not specify a printInvisible parameter in the call to format, then this value will equal
+     * DefaultAnnotatedTypeFormatter.defaultInvisiblesSetting for this object.
      */
     protected boolean currentPrintInvisibleSetting;
 
@@ -174,20 +174,24 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       this.currentlyPrintingRaw = false;
     }
 
-    /** Set the current verbose settings to use while printing. */
+    /**
+     * Sets the current verbose settings to use while printing.
+     *
+     * @param printVerbose true if invisible annotations and verbose generics should be printed
+     */
     protected void setVerboseSettings(boolean printVerbose) {
       this.currentPrintInvisibleSetting = printVerbose;
       this.currentPrintVerboseGenerics = printVerbose;
     }
 
-    /** Set verbose settings to the default. */
+    /** Sets verbose settings to the default. */
     protected void resetPrintVerboseSettings() {
       this.currentPrintInvisibleSetting = defaultInvisiblesSetting;
       this.currentPrintVerboseGenerics = defaultPrintVerboseGenerics;
     }
 
     /**
-     * Print, to sb, {@code keyWord} followed by {@code field}. NULL types are substituted with
+     * Prints, to sb, {@code keyWord} followed by {@code field}. NULL types are substituted with
      * their annotations followed by " Void".
      */
     @SideEffectFree

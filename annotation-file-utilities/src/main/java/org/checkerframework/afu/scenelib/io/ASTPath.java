@@ -215,9 +215,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     }
 
     /**
-     * Checks that this Entry has an argument.
+     * Returns true if this entry has an argument.
      *
-     * @return if this entry has an argument
+     * @return true if this entry has an argument
      */
     public boolean hasArgument() {
       return argument == null ? false : argument >= 0 ? true : negativeAllowed();
@@ -299,7 +299,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   /**
-   * Extend with `new T[]` statement, with the given depth.
+   * Extends with a `new T[]` statement, with the given depth.
    *
    * @param depth the depth for the array
    * @return the path to the new statement
@@ -309,7 +309,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   /**
-   * Add a `new T[]` statement, with the given depth.
+   * Adds a `new T[]` statement, with the given depth.
    *
    * @param depth the depth for the array
    * @return the path to the new statement
@@ -344,7 +344,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   /**
-   * Create a new {@code ASTPath} from a formatted string description.
+   * Creates a new {@code ASTPath} from a formatted string description.
    *
    * @param s formatted string as in JAIF {@code insert-\{cast,annotation\}}
    * @return the corresponding {@code ASTPath}
@@ -1133,14 +1133,13 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     }
 
     /**
-     * Determines if the given kinds match, false otherwise. Two kinds match if they're exactly the
-     * same or if the two kinds are both compound assignments, unary operators, binary operators or
-     * wildcards.
+     * Returns true if the given kinds match. Two kinds match if they're exactly the same or if the
+     * two kinds are both compound assignments, unary operators, binary operators or wildcards.
      *
      * <p>This is necessary because in the JAIF file these kinds are represented by their general
-     * types (i.e. BinaryOperator, CompoundOperator, etc.) rather than their kind (i.e. PLUS, MINUS,
-     * PLUS_ASSIGNMENT, XOR_ASSIGNMENT, etc.). Internally, a single kind is used to represent each
-     * general type (i.e. PLUS is used for BinaryOperator, PLUS_ASSIGNMENT is used for
+     * types (e.g., BinaryOperator, CompoundOperator, etc.) rather than their kind (e.g., PLUS,
+     * MINUS, PLUS_ASSIGNMENT, XOR_ASSIGNMENT, etc.). Internally, a single kind is used to represent
+     * each general type (e.g., PLUS is used for BinaryOperator, PLUS_ASSIGNMENT is used for
      * CompoundAssignment, etc.). Yet, the actual source nodes have the correct kind. So if an AST
      * path entry has a PLUS kind, that really means it could be any BinaryOperator, resulting in
      * PLUS matching any other BinaryOperator.

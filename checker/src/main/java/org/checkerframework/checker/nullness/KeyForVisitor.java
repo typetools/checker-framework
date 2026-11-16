@@ -57,7 +57,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
      * @param overriderTree the AST node of the overriding method or method reference
      * @param overrider the type of the overriding method
      * @param overriderType the type enclosing the overrider method, usually an
-     *     AnnotatedDeclaredType; for Method References may be something else
+     *     AnnotatedDeclaredType; for method references, might be something else
      * @param overriderReturnType the return type of the overriding method
      * @param overridden the type of the overridden method
      * @param overriddenType the declared type enclosing the overridden method

@@ -116,7 +116,7 @@ public final class Source {
   }
 
   /**
-   * Parse the input file, returning a set of Tree API roots (as {@code CompilationUnitTree}s).
+   * Parses the input file, returning a set of Tree API roots (as {@code CompilationUnitTree}s).
    *
    * @return the Tree API roots for the input file
    */

@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -30,7 +31,7 @@ public class DiagMessage {
   private final Object[] args;
 
   /**
-   * Create a DiagMessage.
+   * Creates a DiagMessage.
    *
    * @param kind the kind of message
    * @param messageKey the message key
@@ -56,7 +57,7 @@ public class DiagMessage {
   }
 
   /**
-   * Create a DiagMessage with kind ERROR.
+   * Creates a DiagMessage with kind ERROR.
    *
    * @param messageKey the message key
    * @param args the arguments that will be interpolated into the localized message
@@ -127,8 +128,8 @@ public class DiagMessage {
    * @param list2 a list of DiagMessage, or null
    * @return the concatenation of the lists
    */
-  public static @Nullable List<DiagMessage> mergeLists(
-      @Nullable List<DiagMessage> list1, @Nullable List<DiagMessage> list2) {
+  public static @PolyNull List<DiagMessage> mergeLists(
+      @PolyNull List<DiagMessage> list1, @PolyNull List<DiagMessage> list2) {
     if (list1 == null || list1.isEmpty()) {
       return list2;
     } else if (list2 == null || list2.isEmpty()) {

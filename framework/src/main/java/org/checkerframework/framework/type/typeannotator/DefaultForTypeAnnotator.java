@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * Adds annotations to a type based on the use of a type. This class applies annotations specified
  * by {@link DefaultFor}; it is designed to be used in a {@link ListTypeAnnotator} constructed in
- * {@link GenericAnnotatedTypeFactory#createTypeAnnotator()} ()}
+ * {@link GenericAnnotatedTypeFactory#createTypeAnnotator()}.
  *
  * <p>{@link DefaultForTypeAnnotator} traverses types deeply.
  *
@@ -58,7 +58,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
    */
   private final ListOfNameRegexes listOfNameRegexes;
 
-  /** {@link QualifierHierarchy} */
+  /** The {@link QualifierHierarchy}. */
   private final QualifierHierarchy qualHierarchy;
 
   /**
@@ -112,7 +112,12 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     return TypeKind.valueOf(typeKind.name());
   }
 
-  /** Add default qualifier, {@code theQual}, for the given TypeKind. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given TypeKind.
+   *
+   * @param typeKind the TypeKind
+   * @param theQual the default qualifier for {@code typeKind}
+   */
   public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
@@ -126,7 +131,12 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     }
   }
 
-  /** Add default qualifier, {@code theQual}, for the given {@link AnnotatedTypeMirror} class. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given {@link AnnotatedTypeMirror} class.
+   *
+   * @param typeClass the AnnotatedTypeMirror class
+   * @param theQual the default qualifier for {@code typeClass}
+   */
   public void addAtmClass(
       Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
     boolean res = qualHierarchy.updateMappingToMutableSet(atmClasses, typeClass, theQual);
@@ -141,7 +151,12 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     }
   }
 
-  /** Add default qualifier, {@code theQual}, for the given type. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given type.
+   *
+   * @param clazz the type
+   * @param theQual the default qualifier for {@code clazz}
+   */
   public void addTypes(Class<?> clazz, AnnotationMirror theQual) {
     String typeNameString = clazz.getCanonicalName();
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
@@ -211,7 +226,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Apply defaults based on a variable name to a type.
+   * Applies defaults based on a variable name to a type.
    *
    * @param type a type to apply defaults to
    * @param name the name of the variable that has type {@code type}, or the name of the method
@@ -261,7 +276,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     ListOfNameRegexes() {}
 
     /**
-     * Update this list from the {@code names} and {@code namesExceptions} fields of a @DefaultFor
+     * Updates this list from the {@code names} and {@code namesExceptions} fields of a @DefaultFor
      * annotation.
      *
      * @param theQual the qualifier that a @DefaultFor annotation is written on

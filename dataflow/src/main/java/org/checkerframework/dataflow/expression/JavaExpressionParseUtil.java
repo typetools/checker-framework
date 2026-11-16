@@ -104,7 +104,7 @@ public final class JavaExpressionParseUtil {
   }
 
   /**
-   * If {@code s} is exactly a formal parameter, return its 1-based index. Returns -1 otherwise.
+   * If {@code s} is exactly a formal parameter, returns its 1-based index. Returns -1 otherwise.
    *
    * @param s a Java expression
    * @return the 1-based index of the formal parameter that {@code s} represents, or -1

@@ -501,7 +501,7 @@ public class WholeProgramInferenceScenesStorageTest {
    * Returns a {@code @MinLen} annotation, which the Constant Value Checker treats as an alias for
    * the type qualifier {@code @ArrayLenRange}. {@link
    * WholeProgramInferenceScenesStorage#addMethodDeclarationAnnotation} does not check where its
-   * argument may be written, only whether it is an alias for a type qualifier.
+   * argument can be written, only whether it is an alias for a type qualifier.
    *
    * @return a {@code @MinLen} annotation
    */
