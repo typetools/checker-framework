@@ -1869,14 +1869,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
-      extendWithNode(nextCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(nextCall), nextCallNode);
 
       AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+          translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      // If the return type of next() is a boxed primitive type and the loop variable is a
+      // primitive, the assignment unboxes the result of next().  Save the iterable expression in
+      // the unboxing conversion, too.
+      setLoopOfBoxingConversion(assignNode.getExpression(), nextCallNode, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1971,18 +1971,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
-        boxingNode.setIterableExpression(expression);
-        boxingNode.setEnhancedForLoop(tree);
-      }
+      // If the loop variable's type and the array's component type differ by a boxing or
+      // unboxing conversion, treat that conversion as an iterator.
+      setLoopOfBoxingConversion(arrayAccessAssignNode.getExpression(), arrayAccessNode, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -2026,6 +2017,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
+  /**
+   * Returns the declaration of a new, uniquely named variable that is initialized to the iterator
+   * of an enhanced for loop.
+   *
+   * @param iteratorCall the call to {@code iterator()} on the iterable expression of an enhanced
+   *     for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
+   * @return the declaration of the new iterator variable
+   */
   protected VariableTree createEnhancedForLoopIteratorVariable(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
     TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
@@ -2040,6 +2041,40 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return iteratorVariable;
   }
 
+  /**
+   * Records the given enhanced for loop, and its iterable expression, in the boxing or unboxing
+   * conversion of the loop's element within the expression that is assigned to the loop variable.
+   * Does nothing if that expression contains no such conversion. For example, if {@code array} is
+   * an {@code Integer[]}, then in {@code for (long x : array)}, the expression that is assigned to
+   * {@code x} widens the unboxing conversion of the array access.
+   *
+   * @param assignedExpression the expression assigned to the loop's variable
+   * @param element the loop's element, before any conversion: a call to {@code next()} or an array
+   *     access
+   * @param loop an enhanced for loop
+   */
+  @SuppressWarnings("interning:not.interned") // identity comparison of nodes
+  private static void setLoopOfBoxingConversion(
+      Node assignedExpression, Node element, EnhancedForLoopTree loop) {
+    Node unwidened =
+        assignedExpression instanceof WideningConversionNode widening
+            ? widening.getOperand()
+            : assignedExpression;
+    if (unwidened != element && unwidened instanceof MethodInvocationNode conversion) {
+      conversion.setIterableExpression(loop.getExpression());
+      conversion.setEnhancedForLoop(loop);
+    }
+  }
+
+  /**
+   * Returns the declaration of a new, uniquely named variable that is initialized to the array of
+   * an enhanced for loop.
+   *
+   * @param expression the array expression of an enhanced for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
+   * @return the declaration of the new array variable
+   */
   protected VariableTree createEnhancedForLoopArrayVariable(
       ExpressionTree expression, VariableElement variableElement) {
     TypeMirror arrayType = TreeUtils.typeOf(expression);
@@ -2169,8 +2204,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /**
      * True if the CFG built so far contains code that might have side effects, such as the guard of
      * some case of {@link #switchTree} or a record accessor that a deconstruction pattern invokes,
-     * after the evaluation of the selector expression. If so, the selector expression might no
-     * longer denote the value that the switch tests.
+     * that calls a method that is not side-effect-free, after the evaluation of the selector
+     * expression. If so, the selector expression might no longer denote the value that the switch
+     * tests.
      */
     private boolean codeRanSinceSelector = false;
 
@@ -2468,10 +2504,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
-          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+          if (mightHaveSideEffects(exprTree)) {
             // Matching a record pattern invokes record accessors, which might have side effects,
-            // even if the match fails.  (Nested record patterns occur only within a record
-            // pattern.)
+            // even if the match fails.  mightHaveSideEffects also examines nested record patterns.
             codeRanSinceSelector = true;
           }
         }
@@ -2509,7 +2544,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          codeRanSinceSelector = true;
+          if (mightHaveSideEffects(guardTree)) {
+            codeRanSinceSelector = true;
+          }
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
@@ -4480,6 +4517,121 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
     extendWithNode(dcpN);
     return dcpN;
+  }
+
+  /**
+   * Returns true if evaluating {@code tree} might have a side effect, such as an assignment or a
+   * call to a method that is not side-effect-free. Evaluating a lambda expression or a class
+   * declaration does not run its body, so this method does not examine the body.
+   *
+   * @param tree an expression or a pattern
+   * @return true if evaluating {@code tree} might have a side effect
+   */
+  private boolean mightHaveSideEffects(Tree tree) {
+    SideEffectScanner scanner = new SideEffectScanner();
+    scanner.scan(tree, null);
+    return scanner.mightHaveSideEffects;
+  }
+
+  /**
+   * Determines whether evaluating a tree might have a side effect. A method or constructor has a
+   * side effect unless {@link #annotationProvider} considers it side-effect-free, which is the same
+   * test that a store uses when deciding whether a call undoes flow-sensitive refinement.
+   */
+  private class SideEffectScanner extends TreeScanner<Void, Void> {
+
+    /** True if a scanned tree might have a side effect. */
+    boolean mightHaveSideEffects = false;
+
+    /** Creates a SideEffectScanner. */
+    SideEffectScanner() {}
+
+    @Override
+    public Void scan(Tree tree, Void p) {
+      if (tree != null && TreeUtils.isDeconstructionPatternTree(tree)) {
+        // Matching a deconstruction pattern calls the record's accessor methods.
+        TypeElement recordElt = TypesUtils.getTypeElement(TreeUtils.typeOf(tree));
+        if (recordElt == null) {
+          mightHaveSideEffects = true;
+        } else {
+          for (RecordComponentElement component : recordElt.getRecordComponents()) {
+            ExecutableElement accessor = component.getAccessor();
+            if (accessor == null || !annotationProvider.isSideEffectFree(accessor)) {
+              mightHaveSideEffects = true;
+            }
+          }
+        }
+      }
+      return super.scan(tree, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      if (!annotationProvider.isSideEffectFree(TreeUtils.elementFromUse(tree))) {
+        mightHaveSideEffects = true;
+      }
+      return super.visitMethodInvocation(tree, p);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, Void p) {
+      // The initializers of an anonymous class run when it is instantiated.
+      if (tree.getClassBody() != null
+          || !annotationProvider.isSideEffectFree(TreeUtils.elementFromUse(tree))) {
+        mightHaveSideEffects = true;
+      }
+      return super.visitNewClass(tree, p);
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      mightHaveSideEffects = true;
+      return super.visitAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+      mightHaveSideEffects = true;
+      return super.visitCompoundAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, Void p) {
+      switch (tree.getKind()) {
+        case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT ->
+            mightHaveSideEffects = true;
+        default -> {}
+      }
+      return super.visitUnary(tree, p);
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+      // A loop over an Iterable calls iterator(), hasNext(), and next().
+      mightHaveSideEffects = true;
+      return super.visitEnhancedForLoop(tree, p);
+    }
+
+    @Override
+    public Void visitTry(TryTree tree, Void p) {
+      if (!tree.getResources().isEmpty()) {
+        // A try-with-resources statement calls close().
+        mightHaveSideEffects = true;
+      }
+      return super.visitTry(tree, p);
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+      // Evaluating a lambda expression does not run its body.
+      return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree tree, Void p) {
+      // A class declaration runs no code.
+      return null;
+    }
   }
 
   @Override
