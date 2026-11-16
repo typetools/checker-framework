@@ -66,7 +66,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -933,10 +932,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      Node unboxed =
+      MethodInvocationNode unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
+      unboxed.setUnboxing();
 
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
@@ -1801,8 +1801,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       Node expressionNode = scan(expression, p);
 
+      MethodAccessNode iteratorAccessNode =
+          new MethodAccessNode((MemberSelectTree) iteratorCall.getMethodSelect(), expressionNode);
+      iteratorAccessNode.setInSource(false);
+      extendWithNode(iteratorAccessNode, mayBeNull(expressionNode));
       MethodInvocationNode iteratorCallNode =
-          extendWithArtificialCall(iteratorCall, expressionNode, NullReceiver.THROWS);
+          new MethodInvocationNode(
+              iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
+      iteratorCallNode.setInSource(false);
+      // The iterator() call gets exceptional successors only if it terminates execution.
+      // Exceptional successors in general would cause Resource Leak Checker false positives:  on
+      // an exceptional successor of iterator(), the iterator variable is unassigned, and where
+      // that path merges with one on which the iterator variable is a @MustCallAlias of the
+      // Iterable (such as an exceptional successor of hasNext() or next()), the checker cannot
+      // determine the iterator variable's must-call type.  If iterator() terminates execution,
+      // then hasNext() and next() are unreachable, so no such merge occurs.
+      if (annotationProvider.getDeclAnnotation(
+              iteratorCallNode.getTarget().getMethod(), TerminatesExecution.class)
+          != null) {
+        extendWithMethodInvocationNode(iteratorCallNode);
+      } else {
+        extendWithNode(iteratorCallNode);
+      }
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1856,7 +1876,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setEnhancedForLoop(tree);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
-      setIterableExpressionOnBoxingCalls(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1951,7 +1970,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      setIterableExpressionOnBoxingCalls(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1993,30 +2011,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
-  }
-
-  /**
-   * Sets the iterable expression and the enhanced for loop of each boxing or unboxing call that
-   * assignment conversion applied to {@code element}, so that the type of each call is the element
-   * type of the iterable expression. Assignment conversion boxes or unboxes the element in, for
-   * example, {@code for (int x : listOfInteger)} and {@code for (Integer x : arrayOfInt)}.
-   *
-   * @param element the node for the element, before conversion
-   * @param expression the iterable expression of the enhanced for loop
-   * @param tree the enhanced for loop
-   */
-  private void setIterableExpressionOnBoxingCalls(
-      Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
-    Set<Node> converted = treeToImplicitlyConvertedCfgNodes.get(element.getTree());
-    if (converted == null) {
-      return;
-    }
-    for (Node node : converted) {
-      if (node instanceof MethodInvocationNode conversion) {
-        conversion.setIterableExpression(expression);
-        conversion.setEnhancedForLoop(tree);
-      }
-    }
   }
 
   /**
@@ -2115,9 +2109,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Returns the declaration of a new, uniquely named variable that holds the iterator of an
    * enhanced for loop over an {@code Iterable}.
    *
-   * @param iteratorCall the call to {@code iterator()}, which initializes the new variable
-   * @param variableElement the loop variable of the enhanced for loop; the new variable has the
-   *     same enclosing element
+   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new iterator variable
    */
   protected VariableTree createIteratorVariableForEnhancedForLoop(
@@ -2138,10 +2132,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
    * for loop over an array.
    *
-   * @param expression the array expression of the enhanced for loop, which initializes the new
+   * @param expression an array expression of an enhanced for loop, which initializes the new
    *     variable
-   * @param variableElement the loop variable of the enhanced for loop; the new variable has the
-   *     same enclosing element
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new array variable
    */
   protected VariableTree createArrayVariableForEnhancedForLoop(
@@ -2907,7 +2901,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
-   * call to {@code iterator()} in an enhanced for loop.
+   * call to {@code hasNext()} in an enhanced for loop.
    *
    * @param call the call
    * @param receiver the receiver of the call
@@ -2925,7 +2919,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
-    extendWithMethodInvocationNode(TreeUtils.elementFromUse(call), callNode);
+    extendWithMethodInvocationNode(callNode);
     return callNode;
   }
 
@@ -3547,34 +3541,42 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    extendWithMethodInvocationNode(method, node);
+    extendWithMethodInvocationNode(node);
     return node;
   }
 
   /**
-   * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
-   * invocation. If the method is annotated {@link TerminatesExecution}, the invocation terminates
-   * execution.
+   * Extends the CFG with the given MethodInvocationNode, accounting for potential exceptions thrown
+   * by the invocation. If the invoked method (the method of {@code node}'s target) is annotated
+   * {@link TerminatesExecution}, the invocation terminates execution.
    *
-   * @param method the invoked method
-   * @param node the invocation
-   * @return an ExtendedNode representing the invocation and its possible thrown exceptions
+   * @param node an invocation
    */
-  private ExtendedNode extendWithMethodInvocationNode(
-      ExecutableElement method, MethodInvocationNode node) {
-    List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
+  private void extendWithMethodInvocationNode(MethodInvocationNode node) {
+    extendWithInvocationNode(node, node.getTarget().getMethod());
+  }
+
+  /**
+   * Extends the CFG with the given node, which invokes the given method or constructor, accounting
+   * for potential exceptions thrown by the invocation. If {@code executable} is annotated {@link
+   * TerminatesExecution}, the invocation terminates execution.
+   *
+   * @param node a method invocation or object creation
+   * @param executable the method or constructor that {@code node} invokes
+   */
+  private void extendWithInvocationNode(Node node, ExecutableElement executable) {
+    List<? extends TypeMirror> thrownTypes = executable.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
 
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
-    if (annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
+    if (annotationProvider.getDeclAnnotation(executable, TerminatesExecution.class) != null) {
       extendedNode.setTerminatesExecution(true);
     }
-    return extendedNode;
   }
 
   @Override
@@ -3617,15 +3619,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Node node =
         new ObjectCreationNode(tree, enclosingExprNode, constructorNode, arguments, classbody);
-    List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
-    Set<TypeMirror> thrownSet =
-        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
-    // Add exceptions explicitly mentioned in the throws clause.
-    thrownSet.addAll(thrownTypes);
-    // Add types to account for unchecked exceptions
-    thrownSet.addAll(uncheckedExceptionTypes);
-
-    extendWithNodeWithExceptions(node, thrownSet);
+    extendWithInvocationNode(node, constructor);
 
     return node;
   }

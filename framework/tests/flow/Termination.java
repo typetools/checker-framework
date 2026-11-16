@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
@@ -26,9 +27,9 @@ public class Termination {
     }
   }
 
-  // The desugared call to close() does not terminate execution, because a try-with-resources
-  // statement does not call close() if the resource is null.
-  void t3(@Odd String p1, String p2, boolean b1, TerminatingCloseable c) {
+  // The desugared call to close() does not unconditionally terminate execution, because a
+  // try-with-resources statement does not call close() if the resource is null.
+  void t2(@Odd String p1, String p2, boolean b1, TerminatingCloseable c) {
     String l1 = p2;
     if (b1) {
       l1 = p1;
@@ -40,7 +41,7 @@ public class Termination {
   }
 
   // The desugared call to close() terminates execution, because the resource is not null.
-  void t4(@Odd String p1, String p2, boolean b1) {
+  void t3(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
       l1 = p1;
@@ -56,7 +57,7 @@ public class Termination {
   }
 
   // The desugared call to close() returns normally.
-  void t4Returning(@Odd String p1, String p2, boolean b1) {
+  void t4(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
       l1 = p1;
@@ -67,21 +68,24 @@ public class Termination {
     @Odd String l3 = l1;
   }
 
-  static class TerminatingIterable implements Iterable<String> {
-    @Override
-    @TerminatesExecution
-    public java.util.Iterator<String> iterator() {
-      throw new Error();
-    }
-  }
+  static class CheckedException extends Exception {}
 
-  // The desugared call to iterator() terminates execution.
-  void t6(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+  static void throwChecked() throws CheckedException {}
+
+  // The desugared call to close() on the path for a break statement terminates execution, so the
+  // loop never exits.
+  void t5(@Odd String p1, String p2, boolean b1, boolean b2) {
     String l1 = p2;
     if (b1) {
       l1 = p1;
     } else {
-      for (String s : it) {}
+      while (true) {
+        try (TerminatingCloseable c = new TerminatingCloseable()) {
+          if (b2) {
+            break;
+          }
+        }
+      }
     }
     @Odd String l3 = l1;
   }
@@ -97,5 +101,102 @@ public class Termination {
       }
       @Odd String l3 = l1;
     }
+  }
+
+  // The desugared call to close() on the exceptional path terminates execution, so the catch
+  // clause is unreachable.
+  void t6(@Odd String p1, String p2, boolean b1) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try {
+        try (TerminatingCloseable c = new TerminatingCloseable()) {
+          throwChecked();
+        }
+      } catch (CheckedException e) {
+      }
+    }
+    @Odd String l3 = l1;
+  }
+
+  // Like t6, but the desugared call to close() returns normally, so the catch clause is reachable.
+  void t6Returning(@Odd String p1, String p2, boolean b1) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try {
+        try (ReturningCloseable c = new ReturningCloseable()) {
+          throwChecked();
+        }
+      } catch (CheckedException e) {
+      }
+    }
+    // :: error: [assignment]
+    @Odd String l3 = l1;
+  }
+
+  static class TerminatingIterable implements Iterable<Object> {
+    @Override
+    @TerminatesExecution
+    public Iterator<Object> iterator() {
+      throw new Error();
+    }
+  }
+
+  // The desugared call to iterator() terminates execution.
+  void t7(@Odd String p1, String p2, boolean b1) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      for (Object o : new TerminatingIterable()) {}
+    }
+    @Odd String l3 = l1;
+  }
+
+  // The desugared call to iterator() on a parameter terminates execution.
+  void t8(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      for (Object o : it) {}
+    }
+    @Odd String l3 = l1;
+  }
+
+  // The desugared call to iterator() can throw an exception that a catch clause handles.
+  void t9(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try {
+        for (Object o : it) {}
+      } catch (Error e) {
+      }
+    }
+    // :: error: [assignment]
+    @Odd String l3 = l1;
+  }
+
+  static class TerminatingConstructor {
+    @TerminatesExecution
+    TerminatingConstructor() {
+      throw new Error();
+    }
+  }
+
+  // The constructor invocation terminates execution.
+  void t10(@Odd String p1, String p2, boolean b1) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      new TerminatingConstructor();
+    }
+    @Odd String l3 = l1;
   }
 }
