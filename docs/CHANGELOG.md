@@ -13,6 +13,9 @@ A checker can report a diagnostic whose message key only a subchecker's
 `messages.properties` file defines; the diagnostic uses the subchecker's message
 text.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
