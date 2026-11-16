@@ -159,7 +159,8 @@ public class CaseNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), labelsUntested, codeRanSinceSelector);
+    return Objects.hash(
+        getSwitchOperand(), getCaseOperands(), labelsUntested, codeRanSinceSelector);
   }
 
   @Override

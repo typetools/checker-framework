@@ -22,6 +22,9 @@ expression.  The new method
 `CFAbstractTransfer.selectorExpressionDenotesSwitchValue()` indicates whether a
 transfer function may refine the selector expression at a `CaseNode`.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

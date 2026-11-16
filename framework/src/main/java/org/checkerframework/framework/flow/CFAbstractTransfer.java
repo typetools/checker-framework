@@ -1168,7 +1168,7 @@ public abstract class CFAbstractTransfer<
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+        JavaExpression expr = JavaExpression.fromNode(node.getOperand());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           store.insertOrRefine(expr, anno);
         }
@@ -1408,8 +1408,7 @@ public abstract class CFAbstractTransfer<
       return true;
     }
     // Code in a guard cannot assign a local variable that is declared outside the guard.
-    return !JavaExpression.fromNode(n.getSwitchOperand().getExpression())
-        .isAssignableByOtherCode();
+    return !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
   }
 
   // /**
