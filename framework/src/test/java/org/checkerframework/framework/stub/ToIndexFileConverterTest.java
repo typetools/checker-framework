@@ -543,6 +543,51 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * A member type that the stub file does not declare, of a type that another compilation unit of
+   * the stub file declares, gets the binary name that it would get if the same compilation unit
+   * declared that type.
+   */
+  @Test
+  public void testUndeclaredMemberOfTypeInOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Outer;",
+            "class MyClass {",
+            "  void myMethod(Outer.Missing m, q.Outer.Missing n, B.Missing o) {}",
+            "}",
+            "package q;",
+            "class Outer {}",
+            "package p;",
+            "class B {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer$Missing;Lq/Outer$Missing;Lp/B$Missing;)V");
+  }
+
+  /**
+   * Searching for a member type in a deep hierarchy of interfaces whose supertypes form diamonds
+   * takes time that is linear, not exponential, in the depth of the hierarchy, even for a name,
+   * such as {@code String}, that no type in the hierarchy declares.
+   */
+  @Test(timeout = 60_000)
+  public void testInheritedMemberTypeInDiamondHierarchy() throws Exception {
+    int depth = 30;
+    List<String> lines = new ArrayList<>();
+    lines.add("package p;");
+    lines.add("class MyClass implements A0 {");
+    lines.add("  void myMethod(Member m, String s) {}");
+    lines.add("}");
+    for (int i = 0; i < depth; i++) {
+      String supertypes = "A" + (i + 1) + ", B" + (i + 1);
+      lines.add("interface A" + i + " extends " + supertypes + " {}");
+      lines.add("interface B" + i + " extends " + supertypes + " {}");
+    }
+    lines.add("interface A" + depth + " { class Member {} }");
+    lines.add("interface B" + depth + " {}");
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "MyClass", "myMethod(Lp/A" + depth + "$Member;Ljava/lang/String;)V");
+  }
+
+  /**
    * In package {@code p}, the name {@code q.Outer} does not refer to a type in subpackage {@code
    * p.q}, even if the stub file declares one.
    */
@@ -940,8 +985,8 @@ public class ToIndexFileConverterTest {
 
   /**
    * A package-private member type of a supertype in another package is not inherited, so it does
-   * not hide a member type of a later supertype. A member type of an interface is implicitly public,
-   * so it is inherited from another package.
+   * not hide a member type of a later supertype. A member type of an interface is implicitly
+   * public, so it is inherited from another package.
    */
   @Test
   public void testInaccessibleInheritedMemberTypeOfStubSupertype() throws Exception {
