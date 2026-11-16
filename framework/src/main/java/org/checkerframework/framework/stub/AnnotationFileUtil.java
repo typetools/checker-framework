@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -419,16 +420,16 @@ public class AnnotationFileUtil {
    * entry's contents just before passing it, so an archive's entries need not all be in memory at
    * once.
    *
-   * <p>If {@code location} is a file, then it is used if it is a jarfile or if its name ends with
-   * the extension of {@code fileType} ({@code .astub} for a stub file or {@code .ajava} for an
-   * ajava file). If {@code location} is a directory or archive, then a file or entry within it is
-   * used if its name ends with that extension and no component of its path within the directory or
-   * archive is hidden (starts with "."). An example of a hidden file is the {@code ._Foo.astub}
-   * metadata file that macOS adds to archives and to non-Mac file systems. An archive within a
-   * directory is not opened; it is passed to {@code ignoredArchiveAction} instead.
+   * <p>If {@code location} is a file, then it is used if it is an archive (see {@link #isArchive})
+   * or if its name ends with the extension of {@code fileType} ({@code .astub} for a stub file or
+   * {@code .ajava} for an ajava file). If {@code location} is a directory or archive, then a file
+   * or entry within it is used if its name ends with that extension and no component of its path
+   * within the directory or archive is hidden (see {@link #isHidden}). An example of a hidden file
+   * is the {@code ._Foo.astub} metadata file that macOS adds to archives and to non-Mac file
+   * systems. An archive within a directory is not opened; it is passed to {@code
+   * ignoredArchiveAction} instead.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory, that
-   *     the user named
+   * @param location a file or directory that the user named
    * @param fileType type of annotation files to pass to {@code action}
    * @param action the operation to perform on each annotation file
    * @param ignoredArchiveAction the operation to perform on each archive within the directory
@@ -457,13 +458,14 @@ public class AnnotationFileUtil {
 
   /**
    * Returns true if {@code name} is the name of a hidden file or directory: one whose name starts
-   * with ".".
+   * with ".", such as {@code .git} or {@code ._Foo.astub}. The special names {@code .} and {@code
+   * ..}, which denote the current and parent directory, are not hidden.
    *
    * @param name the name of a file or directory, without any directory component
    * @return true if {@code name} is the name of a hidden file or directory
    */
   private static boolean isHidden(String name) {
-    return name.startsWith(".");
+    return name.startsWith(".") && !name.equals(".") && !name.equals("..");
   }
 
   /**
@@ -487,13 +489,15 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns true if {@code name} is the name of a JAR archive file.
+   * Returns true if {@code name} is the name of a JAR or ZIP archive file: one whose name ends with
+   * {@code .jar} or {@code .zip}, ignoring case.
    *
    * @param name a file name
-   * @return true if {@code name} is the name of a JAR file
+   * @return true if {@code name} is the name of a JAR or ZIP archive file
    */
-  static boolean isJar(String name) {
-    return name.endsWith(".jar");
+  static boolean isArchive(String name) {
+    String lowercaseName = name.toLowerCase(Locale.ROOT);
+    return lowercaseName.endsWith(".jar") || lowercaseName.endsWith(".zip");
   }
 
   /**
@@ -560,7 +564,8 @@ public class AnnotationFileUtil {
    * {@code action}, as described in {@link #forEachAnnotationFile(File, AnnotationFileType,
    * Consumer, Consumer)}.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory
+   * @param location a file or directory that the user named, or that was found by searching a
+   *     directory
    * @param fileType type of annotation files to pass to {@code action}
    * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)
    *     rather than being found by searching a directory. A hidden file or directory found by
@@ -591,7 +596,7 @@ public class AnnotationFileUtil {
       }
     } else if (location.isFile()) {
       String name = location.getName();
-      if (isJar(name)) {
+      if (isArchive(name)) {
         if (isUserSupplied) {
           forEachArchiveEntry(location, fileType, action);
         } else {

@@ -164,6 +164,36 @@ public class AnnotationFileUtilTest {
         descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
+  /** Tests that a "." or ".." component of an archive entry's name does not make it hidden. */
+  @Test
+  public void currentDirectoryComponentIsNotHidden() throws IOException {
+    File jar =
+        writeZip(
+            new File(tmp.getRoot(), "stubs.jar"),
+            "./java/lang/String.astub",
+            "java/./lang/../lang/Integer.astub",
+            "./java/.hidden/Long.astub");
+    Assert.assertEquals(
+        Arrays.asList(
+            jar.getPath() + "!./java/lang/String.astub",
+            jar.getPath() + "!java/./lang/../lang/Integer.astub"),
+        descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
+  /** Tests that a ZIP archive, or an archive whose name is in upper case, is read. */
+  @Test
+  public void zipAndUpperCaseArchivesAreRead() throws IOException {
+    File zip = writeZip(new File(tmp.getRoot(), "stubs.zip"), "java/lang/String.astub");
+    Assert.assertEquals(
+        Arrays.asList(zip.getPath() + "!java/lang/String.astub"),
+        descriptions(zip, AnnotationFileType.COMMAND_LINE_STUB));
+
+    File upperJar = writeZip(new File(tmp.getRoot(), "STUBS.JAR"), "java/lang/String.astub");
+    Assert.assertEquals(
+        Arrays.asList(upperJar.getPath() + "!java/lang/String.astub"),
+        descriptions(upperJar, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
   /** Tests that a hidden directory that is named explicitly is searched. */
   @Test
   public void explicitHiddenDirectoryIsSearched() throws IOException {
@@ -181,11 +211,12 @@ public class AnnotationFileUtilTest {
     write(new File(dir, "A.astub"), "package p;");
     File backup = writeZip(new File(dir, "backup.jar"), "A.astub");
     File lib = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
+    File zip = writeZip(new File(dir, "sub/stubs.zip"), "C.astub");
 
     List<File> ignoredArchives = new ArrayList<>();
     AnnotationFileUtil.forEachAnnotationFile(
         dir, AnnotationFileType.COMMAND_LINE_STUB, resource -> {}, ignoredArchives::add);
-    Assert.assertEquals(Arrays.asList(backup, lib), ignoredArchives);
+    Assert.assertEquals(Arrays.asList(backup, lib, zip), ignoredArchives);
   }
 
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */

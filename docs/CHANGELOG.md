@@ -17,6 +17,9 @@ hidden files and directories (whose names start with `.`), such as the
 A file named in `-Astubs` or `-Aajava` that is not an archive and does not have
 the expected extension (`.astub` or `.ajava`) yields a warning.
 
+The `-Astubs` command-line option accepts a `.zip` archive as well as a `.jar`
+archive.
+
 ### Changes for type system implementers
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input

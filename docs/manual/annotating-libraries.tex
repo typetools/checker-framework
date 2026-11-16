@@ -479,16 +479,16 @@ original library classes.  For example:
 \end{myxsmall}
 
 Each stub path entry is a stub file (ending with
-\<.astub>), a directory, or a \<.jar> archive.
+\<.astub>), a directory, or an archive (ending with \<.jar> or \<.zip>).
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
-\code{.astub}.  An archive within a directory is not read; the Checker
-Framework issues a note about it.  A hidden file or directory (one whose
-name starts with ``\<.>'') within a directory or archive is not read; an
-example is the \<.\_Foo.astub> metadata file that macOS adds to archives and
-to non-Mac file systems.  The Checker Framework issues a warning about, and
-does not read, a stub path entry that is a file whose name ends with neither
-\<.astub> nor \<.jar>.
+\code{.astub}, with two exceptions.  First, an archive within a directory
+is not read; the Checker Framework issues a note about it.  Second, a
+hidden file or directory (one whose name starts with ``\<.>'') within a
+directory or archive is not read; an example is the \<.\_Foo.astub>
+metadata file that macOS adds to archives and to non-Mac file systems.
+The Checker Framework issues a warning about, and does not read, a stub
+path entry that is a file but is neither a stub file nor an archive.
 The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
@@ -999,10 +999,10 @@ in stub files.)
 \subsectionAndLabel{Using an Ajava file}{ajava-using}
 
 The \code{-Aajava} command-line argument works like \code{-Astubs} (see
-Section~\ref{stub-using}). It takes a colon-separated list of
-ajava files (which end in the \code{.ajava} extension) and directories and
-\<.jar> archives containing ajava files.  Any non-ajava files
-in the directory or archive, including archives within a directory, are ignored.
+Section~\ref{stub-using}), with ajava files (which end in the \code{.ajava}
+extension) in place of stub files, except that \code{-Aajava} does not
+support archives.  It takes a colon-separated list of
+ajava files and directories containing ajava files.
 
 For example:
 
