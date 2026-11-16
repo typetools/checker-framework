@@ -10,6 +10,12 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Collection Ownership type system.
  *
+ * <p>Only one reference to a collection may be owning at a time. So if the argument of a method
+ * that returns {@code @PolyOwningCollection}, such as {@code Iterable.iterator()}, is
+ * {@code @OwningCollection} or {@code @OwningCollectionWithoutObligation}, the return value is
+ * {@code @NotOwningCollection}. If the argument's elements are not resources, as in {@code
+ * List<String>}, the argument and the return value are both {@link OwningCollectionBottom}.
+ *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  * @see NotOwningCollection
