@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
   /**
    * Creates a new WholeProgramInferenceDefaults.
    *
-   * @param atypeFactory the type factory whose qualifiers and defaults are used
+   * @param atypeFactory a type factory, whose qualifiers and defaults are used
    */
   /*package-private*/ WholeProgramInferenceDefaults(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;

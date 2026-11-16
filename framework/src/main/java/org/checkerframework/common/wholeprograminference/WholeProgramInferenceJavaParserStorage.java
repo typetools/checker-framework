@@ -1000,7 +1000,8 @@ public class WholeProgramInferenceJavaParserStorage
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
-      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+      if (fieldAnnos.type != null
+          && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
         wpiDefaults.removeRedundantPrimaryAnnotations(
             fieldAnnos.type, wpiDefaults.defaultedType(fieldAnnos.element));
       }
@@ -1020,9 +1021,9 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Removes, from the inferred types in the signature of a method or constructor, each primary
-   * annotation that would be redundant, because the type has it even when no annotation is written
-   * on it.
+   * Removes, from the inferred types in the signature of the given method or constructor, each
+   * primary annotation that would be redundant, because the type has it even when no annotation is
+   * written on it.
    *
    * @param methodAnnos annotations for a method or constructor, which this method side-effects
    */
@@ -1042,18 +1043,19 @@ public class WholeProgramInferenceJavaParserStorage
     if (methodAnnos.parameterTypes != null) {
       List<? extends VariableElement> paramElts = methodElt.getParameters();
       for (int i = 0; i < methodAnnos.parameterTypes.size() && i < paramElts.size(); i++) {
-        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+        AnnotatedTypeMirror paramType = methodAnnos.parameterTypes.get(i);
+        if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
           // The parameter's own element is used, rather than the method's type, so that a
           // `@DefaultQualifier` annotation written on the parameter declaration is respected.
           wpiDefaults.removeRedundantPrimaryAnnotations(
-              methodAnnos.parameterTypes.get(i), wpiDefaults.defaultedType(paramElts.get(i)));
+              paramType, wpiDefaults.defaultedType(paramElts.get(i)));
         }
       }
     }
   }
 
   /**
-   * Returns true if whole-program inference inferred, for a formal parameter, a declaration
+   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
    * annotation that is an alias for a type qualifier.
    *
    * @param methodAnnos annotations for a method or constructor
@@ -1438,9 +1440,9 @@ public class WholeProgramInferenceJavaParserStorage
       // Some annotations and receiver parameters should not be printed.  They are removed from
       // the AST, rather than suppressed in the pretty-printer, to prevent the pretty-printer from
       // outputting the whitespace that would have separated an annotation from what follows it.
-      // The compilation
-      // unit is cloned first, because removal side-effects it and the same AST is printed more
-      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
+      // The compilation unit is cloned first, because removal side-effects it and the same AST is
+      // printed more than once:  it is shared by every CompilationUnitAnnos for the source file,
+      // and under
       // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
       CompilationUnit compilationUnit = root.compilationUnit;
       // Unless the checker declares `@RelevantJavaTypes`, `annotationIsRelevant` returns true for

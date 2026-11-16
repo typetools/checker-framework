@@ -57,7 +57,6 @@ public class WholeProgramInferenceScenesStorageTest {
           "public class Outer {",
           "  int aField;",
           "  String aStringField;",
-          "  StringBuffer aStringBufferField;",
           "  Outer(int ctorParam) {",
           "    int ctorLocal = ctorParam;",
           "  }",

@@ -781,6 +781,9 @@ public class WholeProgramInferenceScenesStorage
     // Therefore, it is not a problem to remove all annotations before inserting the new
     // annotations.
     typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
+    // Whether an annotation is redundant depends on its value, so the annotations that were
+    // redundant in an earlier update are not necessarily redundant now.
+    annosToIgnore.remove(typeToUpdate);
 
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
