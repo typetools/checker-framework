@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
@@ -62,8 +63,8 @@ public class TypesUtilsCanAliasTest {
   /**
    * Returns the intersection of the given types.
    *
-   * @param first the first bound of the intersection type
-   * @param second the second bound of the intersection type
+   * @param first a type, which becomes the first bound of the intersection type
+   * @param second another type, which becomes the second bound of the intersection type
    * @return the intersection type {@code first & second}
    */
   private static Type intersection(Type first, Type second) {
@@ -73,8 +74,8 @@ public class TypesUtilsCanAliasTest {
   /**
    * Returns the union of the given types, which is the type of a multi-catch exception parameter.
    *
-   * @param first the first alternative of the union type
-   * @param second the second alternative of the union type
+   * @param first an exception type, which becomes the first alternative of the union type
+   * @param second another exception type, which becomes the second alternative of the union type
    * @return the union type {@code first | second}
    */
   private static TypeMirror union(Type first, Type second) {
@@ -139,12 +140,64 @@ public class TypesUtilsCanAliasTest {
     assertCanAlias(false, typeVariable, type("java.lang.String"));
   }
 
-  /** A wildcard can alias a type that is related to any bound of its upper bound. */
+  /**
+   * A wildcard whose extends bound is a type variable can alias a type that is related to any bound
+   * of the type variable.
+   */
   @Test
-  public void wildcardWithIntersectionBound() {
+  public void wildcardExtendingTypeVariableWithIntersectionBound() {
     TypeMirror wildcard = types.getWildcardType(numberAndRunnableTypeVariable(), null);
     assertCanAlias(true, wildcard, type("java.lang.Runnable"));
     assertCanAlias(true, wildcard, type("java.lang.Integer"));
+    assertCanAlias(false, wildcard, type("java.lang.String"));
+  }
+
+  /**
+   * Returns a wildcard that is a type argument for a type parameter {@code T extends Number &
+   * Runnable}, as the {@code ?} in {@code Box<?>} is if {@code Box} is declared as {@code class
+   * Box<T extends Number & Runnable>}.
+   *
+   * @param kind a kind of wildcard
+   * @param bound the extends bound or super bound of the wildcard, or {@code Object} if {@code
+   *     kind} is {@link BoundKind#UNBOUND}
+   * @return a wildcard whose type parameter's upper bound is {@code Number & Runnable}
+   */
+  private static TypeMirror wildcardForNumberAndRunnableTypeParameter(BoundKind kind, Type bound) {
+    return new Type.WildcardType(bound, kind, symtab.boundClass, numberAndRunnableTypeVariable());
+  }
+
+  /**
+   * A wildcard that has no extends bound can alias a type that is related to any bound of the type
+   * parameter that the wildcard is a type argument for.
+   */
+  @Test
+  public void wildcardWithoutExtendsBoundForTypeParameterWithIntersectionBound() {
+    TypeMirror unbounded =
+        wildcardForNumberAndRunnableTypeParameter(BoundKind.UNBOUND, symtab.objectType);
+    TypeMirror superInteger =
+        wildcardForNumberAndRunnableTypeParameter(BoundKind.SUPER, type("java.lang.Integer"));
+    for (TypeMirror wildcard : new TypeMirror[] {unbounded, superInteger}) {
+      assertCanAlias(true, wildcard, type("java.lang.Runnable"));
+      assertCanAlias(true, wildcard, type("java.lang.Integer"));
+      assertCanAlias(false, wildcard, type("java.lang.String"));
+    }
+  }
+
+  /**
+   * A wildcard that has an extends bound can alias only a type that can alias both the extends
+   * bound and the type parameter that the wildcard is a type argument for.
+   */
+  @Test
+  public void wildcardWithExtendsBoundForTypeParameterWithIntersectionBound() {
+    TypeMirror wildcard =
+        wildcardForNumberAndRunnableTypeParameter(
+            BoundKind.EXTENDS, type("java.lang.CharSequence"));
+    assertCanAlias(true, wildcard, type("java.lang.CharSequence"));
+    assertCanAlias(true, wildcard, type("java.lang.Runnable"));
+    // Integer is final and does not implement CharSequence.
+    assertCanAlias(false, wildcard, type("java.lang.Integer"));
+    assertCanAlias(false, wildcard, type("java.lang.Boolean"));
+    // String implements CharSequence, but it is not a Number.
     assertCanAlias(false, wildcard, type("java.lang.String"));
   }
 

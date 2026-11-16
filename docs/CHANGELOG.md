@@ -29,6 +29,12 @@ previously required one type to be a subtype of the other, so it returned false
 for some values that can be the same object, such as values whose types are two
 different type variables, or two interfaces.
 
+`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
+the new method `CFAbstractAnalysis.canAlias` instead.
+
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
