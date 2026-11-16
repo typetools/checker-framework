@@ -20,6 +20,12 @@ enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
 result can be empty.  A subclass that overrides `splitAssignments()` must
 override `nodesWithValueOf()` instead.
 
+`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
+the new method `CFAbstractAnalysis.canAlias` instead.
+
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
