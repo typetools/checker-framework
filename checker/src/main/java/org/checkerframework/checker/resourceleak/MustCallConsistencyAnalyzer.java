@@ -375,6 +375,7 @@ public class MustCallConsistencyAnalyzer {
       }
 
       if (result.size() < this.resourceAliases.size()) {
+        // At least one alias has a store value, and at least one does not.
         Set<String> resourceMustCallMethods = new LinkedHashSet<>();
         for (List<String> mustCallMethods : result.values()) {
           resourceMustCallMethods.addAll(mustCallMethods);
