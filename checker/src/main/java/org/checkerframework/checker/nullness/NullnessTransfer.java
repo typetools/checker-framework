@@ -525,16 +525,12 @@ public class NullnessTransfer
           @Override
           public Boolean visitUnary(UnaryTree node, Void p) {
             switch (node.getKind()) {
-              case PREFIX_INCREMENT:
-              case PREFIX_DECREMENT:
-              case POSTFIX_INCREMENT:
-              case POSTFIX_DECREMENT:
+              case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
                 if (isAssignedReceiverDependency(node.getExpression())) {
                   return true;
                 }
-                break;
-              default:
-                break;
+              }
+              default -> {}
             }
             return super.visitUnary(node, p);
           }
@@ -565,7 +561,7 @@ public class NullnessTransfer
             return false;
           }
 
-          /**
+          /*
            * Returns true if assigning to the given variable might change the value of the receiver.
            *
            * @param variable the left-hand side of an assignment
@@ -584,7 +580,7 @@ public class NullnessTransfer
             return receiverExpr.isAssignableByOtherCode();
           }
 
-          /**
+          /*
            * Returns true if invoking the given method or constructor might change the value of the
            * receiver.
            *
