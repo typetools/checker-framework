@@ -888,11 +888,14 @@ public abstract class CFAbstractTransfer<
    * @return true if the element is {@code Boolean.booleanValue()}
    */
   private static boolean isBooleanValueMethod(Element elt) {
-    return elt instanceof ExecutableElement method
+    if (!(elt instanceof ExecutableElement method
         && !ElementUtils.isStatic(method)
         && method.getParameters().isEmpty()
-        && method.getSimpleName().contentEquals("booleanValue")
-        && ElementUtils.enclosingTypeElement(method) instanceof TypeElement enclosingType
+        && method.getSimpleName().contentEquals("booleanValue"))) {
+      return false;
+    }
+    TypeElement enclosingType = ElementUtils.enclosingTypeElement(method);
+    return enclosingType != null
         && enclosingType.getQualifiedName().contentEquals("java.lang.Boolean");
   }
 
