@@ -187,6 +187,50 @@ public class AnnotationFileUtilTest {
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
+  /** Tests that the files in a hidden directory, or under a hidden archive entry, are not used. */
+  @Test
+  public void hiddenDirectoriesAreNotSearched() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File a = write(new File(dir, "A.astub"), "package p;");
+    write(new File(dir, ".history/A_20231010.astub"), "package p;");
+    Assert.assertEquals(
+        Arrays.asList(a.getAbsolutePath()),
+        descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
+
+    File zip =
+        writeZip(
+            new File(tmp.getRoot(), "stubs.zip"),
+            "java/lang/String.astub",
+            ".backup/java/lang/String.astub");
+    Assert.assertEquals(
+        Arrays.asList(zip.getPath() + "!java/lang/String.astub"),
+        descriptions(zip, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
+  /** Tests that a hidden directory that is named explicitly is searched. */
+  @Test
+  public void explicitHiddenDirectoryIsSearched() throws IOException {
+    File dir = tmp.newFolder(".stubdir");
+    File a = write(new File(dir, "A.astub"), "package p;");
+    Assert.assertEquals(
+        Arrays.asList(a.getAbsolutePath()),
+        descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
+  /** Tests that each archive within a directory is passed to the ignored-archive action. */
+  @Test
+  public void archiveInDirectoryIsReported() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    write(new File(dir, "A.astub"), "package p;");
+    File zip = writeZip(new File(dir, "backup.zip"), "A.astub");
+    File jar = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
+
+    List<File> ignoredArchives = new ArrayList<>();
+    AnnotationFileUtil.forEachAnnotationFile(
+        dir, AnnotationFileType.COMMAND_LINE_STUB, resource -> {}, ignoredArchives::add);
+    Assert.assertEquals(Arrays.asList(zip, jar), ignoredArchives);
+  }
+
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
   @Test
   public void explicitHiddenFileIsUsed() throws IOException {
