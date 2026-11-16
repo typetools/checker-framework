@@ -437,8 +437,9 @@ public class NullnessTransfer
     // MethodAccessNode.  A call tests its receiver for nullness after evaluating its arguments, so
     // neither the arguments nor a handler for the call's NullPointerException may assume that the
     // receiver is non-null.
-    // Because the refinement happens after the arguments are evaluated, it is skipped if evaluating
-    // the arguments might change the value of the receiver expression, as in `x.equals(x = null)`.
+    // The refinement applies to the receiver expression, not to the value that was evaluated
+    // before the arguments, so it is skipped if evaluating the arguments might change the value of
+    // the receiver expression, as in `x.equals(x = null)`.
     if (!n.getTarget().isStatic()) {
       JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
       if ((nonNullAssumptionAfterInvocation
@@ -489,9 +490,9 @@ public class NullnessTransfer
   }
 
   /**
-   * Returns true if evaluating the given arguments of a method invocation might change the value
-   * of the invocation's receiver expression, as in {@code x.equals(x = null)}. This is
-   * conservative: it may return true even if the arguments do not change the receiver.
+   * Returns true if evaluating the given arguments of a method invocation might change the value of
+   * the invocation's receiver expression, as in {@code x.equals(x = null)}. This is conservative:
+   * it may return true even if the arguments do not change the receiver.
    *
    * @param arguments the arguments of a method invocation
    * @param receiverExpr the receiver of the method invocation
@@ -565,16 +566,18 @@ public class NullnessTransfer
           }
 
           /**
-           * Returns true if assigning to the given variable might change the value of the
-           * receiver.
+           * Returns true if assigning to the given variable might change the value of the receiver.
            *
            * @param variable the left-hand side of an assignment
            * @return true if assigning to {@code variable} might change the value of the receiver
            */
           private boolean isAssignedReceiverDependency(ExpressionTree variable) {
             JavaExpression assigned = JavaExpression.fromTree(variable);
+            if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
+              return true;
+            }
             if (assigned instanceof LocalVariable) {
-              return receiverExpr.containsSyntacticEqualJavaExpression(assigned);
+              return false;
             }
             // A field or array element assignment can change only a receiver that contains a
             // field or array access that is assignable.

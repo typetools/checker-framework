@@ -13,9 +13,9 @@ public class UnboxingRefinement {
     @Untainted int k = j;
   }
 
-  void arithmetic(@Untainted Integer i, @Untainted Integer i2) {
-    int j = i + i2;
-    @Untainted int k = j;
+  void widening(@Untainted Integer i) {
+    long j = i;
+    @Untainted long k = j;
   }
 
   void enhancedForArray(@Untainted Integer[] array) {
@@ -26,7 +26,7 @@ public class UnboxingRefinement {
 
   void tainted(Integer i) {
     int j = i;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Untainted int k = j;
   }
 }

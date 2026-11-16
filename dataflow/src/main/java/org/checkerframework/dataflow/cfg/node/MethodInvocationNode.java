@@ -60,17 +60,31 @@ public class MethodInvocationNode extends Node {
    */
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
-  /**
-   * True if this MethodInvocationNode is an unboxing conversion that the CFG builder inserted, such
-   * as the call to {@code intValue()} in {@code int i = anInteger;}. The receiver of such a call is
-   * the value being unboxed.
-   *
-   * <p>Is set by {@link #setUnboxing}.
-   */
-  protected boolean unboxing = false;
+  /** A kind of boxing conversion that a method invocation can perform. */
+  public enum BoxingConversion {
+    /**
+     * The method invocation is not a boxing or unboxing conversion that the CFG builder inserted.
+     */
+    NONE,
+    /**
+     * The method invocation is a boxing conversion that the CFG builder inserted, such as the call
+     * to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument of such a call
+     * is the value being boxed.
+     */
+    BOXING,
+    /**
+     * The method invocation is an unboxing conversion that the CFG builder inserted, such as the
+     * call to {@code intValue()} in {@code int i = anInteger;}. The receiver of such a call is the
+     * value being unboxed.
+     */
+    UNBOXING
+  }
+
+  /** The boxing or unboxing conversion that this MethodInvocationNode performs, if any. */
+  protected final BoxingConversion boxingConversion;
 
   /**
-   * Creates a MethodInvocationNode.
+   * Creates a MethodInvocationNode that is not a boxing or unboxing conversion.
    *
    * @param tree the tree for the method invocation
    * @param target the MethodAccessNode for the method being invoked
@@ -82,11 +96,31 @@ public class MethodInvocationNode extends Node {
       MethodAccessNode target,
       List<Node> arguments,
       TreePath treePath) {
+    this(tree, target, arguments, treePath, BoxingConversion.NONE);
+  }
+
+  /**
+   * Creates a MethodInvocationNode.
+   *
+   * @param tree the tree for the method invocation
+   * @param target the MethodAccessNode for the method being invoked
+   * @param arguments arguments of the method invocation
+   * @param treePath path to the method invocation
+   * @param boxingConversion the boxing or unboxing conversion that the method invocation performs,
+   *     if the CFG builder inserted it as one
+   */
+  public MethodInvocationNode(
+      @Nullable MethodInvocationTree tree,
+      MethodAccessNode target,
+      List<Node> arguments,
+      TreePath treePath,
+      BoxingConversion boxingConversion) {
     super(tree != null ? TreeUtils.typeOf(tree) : target.getMethod().getReturnType());
     this.tree = tree;
     this.target = target;
     this.arguments = arguments;
     this.treePath = treePath;
+    this.boxingConversion = boxingConversion;
   }
 
   public MethodInvocationNode(MethodAccessNode target, List<Node> arguments, TreePath treePath) {
@@ -154,6 +188,17 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
+   * Returns true if this MethodInvocationNode is a boxing conversion that the CFG builder inserted,
+   * such as the call to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument
+   * of such a call is the value being boxed.
+   *
+   * @return true if this is a boxing conversion that the CFG builder inserted
+   */
+  public boolean isBoxing() {
+    return boxingConversion == BoxingConversion.BOXING;
+  }
+
+  /**
    * Returns true if this MethodInvocationNode is an unboxing conversion that the CFG builder
    * inserted, such as the call to {@code intValue()} in {@code int i = anInteger;}. The receiver of
    * such a call is the value being unboxed.
@@ -161,16 +206,7 @@ public class MethodInvocationNode extends Node {
    * @return true if this is an unboxing conversion that the CFG builder inserted
    */
   public boolean isUnboxing() {
-    return unboxing;
-  }
-
-  /**
-   * Marks this MethodInvocationNode as an unboxing conversion that the CFG builder inserted.
-   *
-   * @see #isUnboxing()
-   */
-  public void setUnboxing() {
-    this.unboxing = true;
+    return boxingConversion == BoxingConversion.UNBOXING;
   }
 
   @Override

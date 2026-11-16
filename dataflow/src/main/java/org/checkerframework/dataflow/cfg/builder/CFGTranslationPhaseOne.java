@@ -61,6 +61,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -136,6 +137,7 @@ import org.checkerframework.dataflow.cfg.node.LongLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode.BoxingConversion;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
@@ -898,7 +900,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(valueOfCall);
       Node boxed =
           new MethodInvocationNode(
-              valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
+              valueOfCall,
+              valueOfAccess,
+              Collections.singletonList(node),
+              getCurrentPath(),
+              BoxingConversion.BOXING);
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
@@ -932,11 +938,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      MethodInvocationNode unboxed =
+      Node unboxed =
           new MethodInvocationNode(
-              primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
+              primValueCall,
+              primValueAccess,
+              Collections.emptyList(),
+              getCurrentPath(),
+              BoxingConversion.UNBOXING);
       unboxed.setInSource(false);
-      unboxed.setUnboxing();
 
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
@@ -1170,8 +1179,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         unboxedVarKind == TypeKind.BYTE
             || unboxedVarKind == TypeKind.SHORT
             || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+    return isLeftNarrowableTo && isCompileTimeConstant(node);
+  }
+
+  /**
+   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
+   * {@code 1 + 2}, or a use of a constant variable.
+   *
+   * @param node a node
+   * @return true if the node is a compile-time constant expression
+   */
+  private static boolean isCompileTimeConstant(Node node) {
+    if (node instanceof ValueLiteralNode) {
+      return true;
+    }
+    Tree tree = node.getTree();
+    if (!(tree instanceof ExpressionTree)) {
+      return false;
+    }
+    Type type = ((JCTree) tree).type;
+    return type != null && type.constValue() != null;
   }
 
   /**
@@ -2555,7 +2582,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = scan(resultExpression, null);
+      // Convert the result to the type of the switch expression, as by boxing `1` in
+      // `Object o = switch (x) { default -> 1; };`.
+      Node resultExprNode =
+          assignConvert(scan(resultExpression, null), switchExprVarUseNode.getType());
       someResultMayBeNull |= mayBeNull(resultExprNode);
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
@@ -2708,6 +2738,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           finallyLabel,
           exceptionalFinallyLabel,
           () -> scan(finallyBlock, p),
+          () -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
           oldBreakLabels,
@@ -2805,7 +2836,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         doneLabel,
         finallyLabel,
         exceptionalFinallyLabel,
-        () -> addCloseCallForResource(resourceDeclarationTree, p),
+        () -> addCloseCallForResource(resourceDeclarationTree, p, false),
+        () -> addCloseCallForResource(resourceDeclarationTree, p, true),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2822,8 +2854,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param p the value to pass to calls to {@code scan}
+   * @param primaryExceptionPending true if the try block threw an exception (the primary exception)
+   *     that propagates after the call to {@code close}. Then, any exception that {@code close}
+   *     throws is suppressed (JLS 14.20.3.1), and the primary exception propagates even if {@code
+   *     close} terminates execution.
    */
-  private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+  private void addCloseCallForResource(
+      Tree resourceDeclarationTree, Void p, boolean primaryExceptionPending) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
     Node receiverNode;
@@ -2880,7 +2917,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+    if (primaryExceptionPending) {
+      // Any exception that close() throws is suppressed, and control continues to the code that
+      // rethrows the primary exception.  Model that by catching every exception that close()
+      // throws and continuing after the call.  If close() terminates execution, it has no normal
+      // successor, but its exceptional successors still reach the rethrow of the primary
+      // exception.
+      Label suppressedLabel = new Label();
+      tryStack.pushFrame(
+          new TryCatchFrame(
+              types,
+              Collections.singletonList(
+                  new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
+      extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+      tryStack.popFrame();
+      addLabelForNextNode(suppressedLabel);
+    } else {
+      extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+    }
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2934,7 +2988,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param finallyLabel label for the entry of the finally block for the normal case
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
-   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, for each
+   *     path except the one on which the try block throws an exception
+   * @param exceptionalFinallyBlockCFGGenerator generates CFG nodes and edges for the finally block,
+   *     for the path on which the try block throws an exception
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
@@ -2952,6 +3009,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Label finallyLabel,
       Label exceptionalFinallyLabel,
       Runnable finallyBlockCFGGenerator,
+      Runnable exceptionalFinallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -2989,7 +3047,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      finallyBlockCFGGenerator.run();
+      exceptionalFinallyBlockCFGGenerator.run();
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithException(
