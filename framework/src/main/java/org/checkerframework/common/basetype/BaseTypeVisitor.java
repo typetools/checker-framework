@@ -61,6 +61,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
@@ -2072,12 +2073,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private boolean isParameter(@Nullable ExpressionTree tree) {
       return tree != null
           && TreeUtils.withoutParens(tree) instanceof IdentifierTree identifier
-          && parameter.equals(TreeUtils.elementFromTree(identifier));
+          && Objects.equals(parameter, TreeUtils.elementFromTree(identifier));
     }
 
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
-      if (parameter.equals(TreeUtils.elementFromTree(tree))) {
+      if (Objects.equals(parameter, TreeUtils.elementFromTree(tree))) {
         found = true;
       }
       return null;
