@@ -501,7 +501,7 @@ public class NullnessTransfer
             return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
           }
 
-          /**
+          /*
            * Returns true if assigning the given variable may reassign the receiver.
            *
            * @param variable the left-hand side of an assignment
