@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 
 /**
  * A simple checker used for testing the Checker Framework. It treats the {@code @Odd} and
- * {@code @Even} annotations as a subtype-style qualifiers with no special semantics.
+ * {@code @Even} annotations as subtype-style qualifiers with no special semantics.
  *
  * <p>This checker should only be used for testing the framework.
  */

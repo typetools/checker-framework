@@ -54,7 +54,7 @@ public class AssignmentNode extends Node {
   protected boolean desugaredFromEnhancedArrayForLoop;
 
   /**
-   * Create a (non-synthetic) AssignmentNode.
+   * Creates a (non-synthetic) AssignmentNode.
    *
    * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
    * @param target the lhs of {@code tree}
@@ -65,7 +65,7 @@ public class AssignmentNode extends Node {
   }
 
   /**
-   * Create an AssignmentNode.
+   * Creates an AssignmentNode.
    *
    * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
    * @param target the lhs of {@code tree}
@@ -115,7 +115,7 @@ public class AssignmentNode extends Node {
   }
 
   /**
-   * Check if the assignment node is synthetic, e.g. the synthetic assignment in a ternary
+   * Returns true if the assignment node is synthetic, e.g., the synthetic assignment in a ternary
    * expression.
    *
    * @return true if the assignment node is synthetic
@@ -125,7 +125,7 @@ public class AssignmentNode extends Node {
   }
 
   /**
-   * Check if the assignment node is desugared from an enhanced-for-loop over an array.
+   * Returns true if the assignment node is desugared from an enhanced-for-loop over an array.
    *
    * @return true if the assignment node is desugared
    */
@@ -133,7 +133,7 @@ public class AssignmentNode extends Node {
     return desugaredFromEnhancedArrayForLoop;
   }
 
-  /** set the assignment node as desugared from an enhanced-for-loop over an array */
+  /** Sets the assignment node as desugared from an enhanced-for-loop over an array. */
   public void setDesugaredFromEnhancedArrayForLoop() {
     desugaredFromEnhancedArrayForLoop = true;
   }

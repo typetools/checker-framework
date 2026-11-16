@@ -32,7 +32,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
 
   /**
    * Shadowed because we must dispatch to the Resource Leak Checker's version of
-   * getTypefactoryOfSubchecker to get the correct MustCallAnnotatedTypeFactory.
+   * getTypeFactoryOfSubchecker to get the correct MustCallAnnotatedTypeFactory.
    */
   private final RLCCalledMethodsAnnotatedTypeFactory rlTypeFactory;
 

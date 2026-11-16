@@ -105,8 +105,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * checks that any created must-call obligation has a declared type with a non-empty
-   * {@code @MustCall} obligation
+   * Checks that any created must-call obligation has a declared type with a non-empty
+   * {@code @MustCall} obligation.
    *
    * @param tree the method
    * @param mcAtf the type factory
@@ -213,7 +213,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
   /**
    * If a {@code @MustCallAlias} annotation appears in a method declaration, it must appear as an
-   * annotation on both the return type, and a parameter type.
+   * annotation on both the return type and a parameter type.
    *
    * <p>The return type is checked if it is annotated with {@code @PolyMustCall} because the Must
    * Call Checker treats {@code @MustCallAlias} as an alias of {@code @PolyMustCall}.
@@ -266,8 +266,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * {@code @MustCallAlias}. In the case of a constructor, which has no return type, a
    * {@code @MustCallAlias} annotation must appear on its declaration.
    *
-   * @param paramWithMustCallAliasAnno a parameter with a {@code @MustCallAlias} annotation, null if
-   *     there are none
+   * @param paramWithMustCallAliasAnno a parameter with a {@code @MustCallAlias} annotation, or null
+   *     if there are none
    * @param isMustCallAliasAnnoOnMethodOrConstructorDecl true if and only if a
    *     {@code @MustCallAlias} annotation appears on a method or constructor declaration
    * @param tree the method or constructor declaration
@@ -299,8 +299,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * null.
    *
    * @param tree the method declaration
-   * @return the first parameter that is annotated with {@code @MustCallAlias}, otherwise return
-   *     null
+   * @return the first parameter that is annotated with {@code @MustCallAlias}, or null if there is
+   *     none
    */
   private @Nullable Element getParameterWithMustCallAliasAnno(MethodTree tree) {
     VariableTree receiverParameter = tree.getReceiverParameter();
@@ -324,7 +324,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * Returns the {@link CreatesMustCallFor#value} element/argument of the given @CreatesMustCallFor
    * annotation, or "this" if there is none.
    *
-   * <p>Does not vipewpoint-adaptation.
+   * <p>Does no viewpoint-adaptation.
    *
    * @param createsMustCallFor an @CreatesMustCallFor annotation
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
@@ -428,7 +428,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
   /**
    * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the
-   * type of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing class of
+   * type of {@code field} is {@code @MustCall("m")}. This method checks that the enclosing class of
    * {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that {@code
    * m2} has an annotation {@code @EnsuresCalledMethods(value = "this.field", methods = "m")},
    * guaranteeing that the {@code @MustCall} obligation of the field will be satisfied.
@@ -581,14 +581,14 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
+   * @return true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;
   }
 
   /**
-   * Formats a list of must-call method post-conditions to be printed in an error message.
+   * Formats a list of must-call method postconditions to be printed in an error message.
    *
    * @param field the value whose methods must be called
    * @param mustCallVal the list of must-call strings
@@ -614,7 +614,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Format a must-call post-condition to be printed in an error message.
+   * Format a must-call postcondition to be printed in an error message.
    *
    * @param exitKind the kind of method exit
    * @return the name of the annotation

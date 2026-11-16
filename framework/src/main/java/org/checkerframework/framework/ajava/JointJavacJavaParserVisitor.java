@@ -178,10 +178,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>To perform an action on a particular tree type, override one of the methods starting with
  * "process". For each javac tree type JavacType, and for each possible JavaParser node type
- * JavaParserNode that it may be matched to, this class contains a method {@code
+ * JavaParserNode that it can be matched to, this class contains a method {@code
  * processJavacType(JavacTypeTree javacTree, JavaParserNode javaParserNode)}. These are named after
  * the visit methods in {@code com.sun.source.tree.TreeVisitor}, but for each javac tree type there
- * may be multiple process methods for each possible node type it could be matched to.
+ * can be multiple process methods for each possible node type it could be matched to.
  *
  * <p>The {@code process} methods are called in pre-order. That is, process methods for a parent are
  * called before its children.
@@ -408,7 +408,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit a switch expression.
+   * Visits a switch expression.
    *
    * @param javacTree switch expression tree
    * @param javaParserNode a JavaParser node
@@ -619,7 +619,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * Visits the members of an anonymous class body.
    *
    * <p>In normal classes, javac inserts a synthetic no-argument constructor if no constructor is
-   * explicitly defined, which is skipped when visiting members. Anonymous class bodies may
+   * explicitly defined, which is skipped when visiting members. Anonymous class bodies can
    * introduce constructors that take arguments if the constructor invocation that created them was
    * passed arguments. For example, if {@code MyClass} has a constructor taking a single integer
    * argument, then writing {@code new MyClass(5) { }} expands to the javac tree
@@ -634,7 +634,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    *
    * <p>This method skips these synthetic constructors.
    *
-   * @param javacBody body of an anonymous class body
+   * @param javacBody the body of an anonymous class
    * @param javaParserMembers list of members for the anonymous class body of an {@code
    *     ObjectCreationExpr}
    */
@@ -1135,7 +1135,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visits a method declaration in the case where the matched JavaParser node was a {@code
+   * Visits a method declaration in the case where the matched JavaParser node was an {@code
    * AnnotationMemberDeclaration}.
    *
    * @param javacTree method declaration to visit
@@ -1574,7 +1574,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Process an {@code AnnotationTree} with multiple key-value pairs like {@code @MyAnno(a=5,
+   * Processes an {@code AnnotationTree} with multiple key-value pairs like {@code @MyAnno(a=5,
    * b=10)}.
    *
    * @param javacTree tree to process
@@ -1584,7 +1584,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       AnnotationTree javacTree, NormalAnnotationExpr javaParserNode);
 
   /**
-   * Process an {@code AnnotationTree} with no arguments like {@code @MyAnno}.
+   * Processes an {@code AnnotationTree} with no arguments like {@code @MyAnno}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1593,7 +1593,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       AnnotationTree javacTree, MarkerAnnotationExpr javaParserNode);
 
   /**
-   * Process an {@code AnnotationTree} with a single argument like {@code MyAnno(5)}.
+   * Processes an {@code AnnotationTree} with a single argument like {@code @MyAnno(5)}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1602,10 +1602,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode);
 
   /**
-   * Process an {@code AnnotatedTypeTree}.
+   * Processes an {@code AnnotatedTypeTree}.
    *
    * <p>In javac, a type with an annotation is represented as an {@code AnnotatedTypeTree} with a
-   * nested tree for the base type whereas in JavaParser the annotations are store directly on the
+   * nested tree for the base type, whereas in JavaParser the annotations are stored directly on the
    * node for the base type. As a result, the JavaParser base type node will be processed twice,
    * once with the {@code AnnotatedTypeTree} and once with the tree for the base type.
    *
@@ -1615,7 +1615,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode);
 
   /**
-   * Process an {@code ArrayAccessTree}.
+   * Processes an {@code ArrayAccessTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1624,7 +1624,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode);
 
   /**
-   * Process an {@code ArrayTypeTree}.
+   * Processes an {@code ArrayTypeTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1632,7 +1632,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processArrayType(ArrayTypeTree javacTree, ArrayType javaParserNode);
 
   /**
-   * Process an {@code AssertTree}.
+   * Processes an {@code AssertTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1640,7 +1640,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processAssert(AssertTree javacTree, AssertStmt javaParserNode);
 
   /**
-   * Process an {@code AssignmentTree}.
+   * Processes an {@code AssignmentTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1648,7 +1648,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processAssignment(AssignmentTree javacTree, AssignExpr javaParserNode);
 
   /**
-   * Process a {@code BinaryTree}.
+   * Processes a {@code BinaryTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1656,7 +1656,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode);
 
   /**
-   * Process a {@code BindingPatternTree}.
+   * Processes a {@code BindingPatternTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1664,7 +1664,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processBindingPattern(Tree javacTree, PatternExpr javaParserNode);
 
   /**
-   * Process a {@code BlockTree}.
+   * Processes a {@code BlockTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1672,7 +1672,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processBlock(BlockTree javacTree, BlockStmt javaParserNode);
 
   /**
-   * Process a {@code BreakTree}.
+   * Processes a {@code BreakTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1680,7 +1680,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processBreak(BreakTree javacTree, BreakStmt javaParserNode);
 
   /**
-   * Process a {@code CaseTree}.
+   * Processes a {@code CaseTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1688,7 +1688,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processCase(CaseTree javacTree, SwitchEntry javaParserNode);
 
   /**
-   * Process a {@code CatchTree}.
+   * Processes a {@code CatchTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1696,7 +1696,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processCatch(CatchTree javacTree, CatchClause javaParserNode);
 
   /**
-   * Process a {@code ClassTree} representing an annotation declaration.
+   * Processes a {@code ClassTree} representing an annotation declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1704,7 +1704,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode);
 
   /**
-   * Process a {@code ClassTree} representing a class or interface declaration.
+   * Processes a {@code ClassTree} representing a class or interface declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1713,7 +1713,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode);
 
   /**
-   * Process a {@code ClassTree} representing a record declaration.
+   * Processes a {@code ClassTree} representing a record declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1721,7 +1721,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processClass(ClassTree javacTree, RecordDeclaration javaParserNode);
 
   /**
-   * Process a {@code ClassTree} representing an enum declaration.
+   * Processes a {@code ClassTree} representing an enum declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1729,7 +1729,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processClass(ClassTree javacTree, EnumDeclaration javaParserNode);
 
   /**
-   * Process a {@code CompilationUnitTree}.
+   * Processes a {@code CompilationUnitTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1738,7 +1738,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       CompilationUnitTree javacTree, CompilationUnit javaParserNode);
 
   /**
-   * Process a {@code ConditionalExpressionTree}.
+   * Processes a {@code ConditionalExpressionTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1747,7 +1747,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ConditionalExpressionTree javacTree, ConditionalExpr javaParserNode);
 
   /**
-   * Process a {@code ContinueTree}.
+   * Processes a {@code ContinueTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1755,7 +1755,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processContinue(ContinueTree javacTree, ContinueStmt javaParserNode);
 
   /**
-   * Process a {@code DoWhileLoopTree}.
+   * Processes a {@code DoWhileLoopTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1763,7 +1763,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processDoWhileLoop(DoWhileLoopTree javacTree, DoStmt javaParserNode);
 
   /**
-   * Process an {@code EmptyStatementTree}.
+   * Processes an {@code EmptyStatementTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1772,7 +1772,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       EmptyStatementTree javacTree, EmptyStmt javaParserNode);
 
   /**
-   * Process an {@code EnhancedForLoopTree}.
+   * Processes an {@code EnhancedForLoopTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1781,7 +1781,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       EnhancedForLoopTree javacTree, ForEachStmt javaParserNode);
 
   /**
-   * Process an {@code ExportsTree}.
+   * Processes an {@code ExportsTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1789,7 +1789,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processExports(ExportsTree javacTree, ModuleExportsDirective javaParserNode);
 
   /**
-   * Process an {@code ExpressionStatementTree}.
+   * Processes an {@code ExpressionStatementTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1798,7 +1798,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ExpressionStatementTree javacTree, ExpressionStmt javaParserNode);
 
   /**
-   * Process a {@code ForLoopTree}.
+   * Processes a {@code ForLoopTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1806,7 +1806,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processForLoop(ForLoopTree javacTree, ForStmt javaParserNode);
 
   /**
-   * Process an {@code IdentifierTree} representing a class or interface type.
+   * Processes an {@code IdentifierTree} representing a class or interface type.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1815,7 +1815,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       IdentifierTree javacTree, ClassOrInterfaceType javaParserNode);
 
   /**
-   * Process an {@code IdentifierTree} representing a name that may contain dots.
+   * Processes an {@code IdentifierTree} representing a name that can contain dots.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1823,7 +1823,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processIdentifier(IdentifierTree javacTree, Name javaParserNode);
 
   /**
-   * Process an {@code IdentifierTree} representing an expression that evaluates to the value of a
+   * Processes an {@code IdentifierTree} representing an expression that evaluates to the value of a
    * variable.
    *
    * @param javacTree tree to process
@@ -1832,7 +1832,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processIdentifier(IdentifierTree javacTree, NameExpr javaParserNode);
 
   /**
-   * Process an {@code IdentifierTree} representing a name without dots.
+   * Processes an {@code IdentifierTree} representing a name without dots.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1840,7 +1840,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processIdentifier(IdentifierTree javacTree, SimpleName javaParserNode);
 
   /**
-   * Process an {@code IdentifierTree} representing a {@code super} expression like the {@code
+   * Processes an {@code IdentifierTree} representing a {@code super} expression like the {@code
    * super} in {@code super.myMethod()} or {@code MyClass.super.myMethod()}.
    *
    * @param javacTree tree to process
@@ -1849,8 +1849,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processIdentifier(IdentifierTree javacTree, SuperExpr javaParserNode);
 
   /**
-   * Process an {@code IdentifierTree} representing a {@code this} expression like the {@code this}
-   * in {@code MyClass = this}, {@code this.myMethod()}, or {@code MyClass.this.myMethod()}.
+   * Processes an {@code IdentifierTree} representing a {@code this} expression like the {@code
+   * this} in {@code MyClass = this}, {@code this.myMethod()}, or {@code MyClass.this.myMethod()}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1858,7 +1858,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processIdentifier(IdentifierTree javacTree, ThisExpr javaParserNode);
 
   /**
-   * Process an {@code IfTree}.
+   * Processes an {@code IfTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1866,7 +1866,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processIf(IfTree javacTree, IfStmt javaParserNode);
 
   /**
-   * Process an {@code ImportTree}.
+   * Processes an {@code ImportTree}.
    *
    * <p>Wildcards are stored differently between the two. In a statement like {@code import a.*;},
    * the name is stored as a {@code MemberSelectTree} with {@code a} and {@code *}. In JavaParser
@@ -1878,7 +1878,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processImport(ImportTree javacTree, ImportDeclaration javaParserNode);
 
   /**
-   * Process an {@code InstanceOfTree}.
+   * Processes an {@code InstanceOfTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1886,7 +1886,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processInstanceOf(InstanceOfTree javacTree, InstanceOfExpr javaParserNode);
 
   /**
-   * Process an {@code IntersectionType}.
+   * Processes an {@code IntersectionType}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1895,7 +1895,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       IntersectionTypeTree javacTree, IntersectionType javaParserNode);
 
   /**
-   * Process a {@code LabeledStatement}.
+   * Processes a {@code LabeledStatement}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1904,7 +1904,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       LabeledStatementTree javacTree, LabeledStmt javaParserNode);
 
   /**
-   * Process a {@code LambdaExpressionTree}.
+   * Processes a {@code LambdaExpressionTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1913,7 +1913,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       LambdaExpressionTree javacTree, LambdaExpr javaParserNode);
 
   /**
-   * Process a {@code LiteralTree} for a String literal defined using concatenation.
+   * Processes a {@code LiteralTree} for a String literal defined using concatenation.
    *
    * <p>For an expression like {@code "a" + "b"}, javac stores a single String literal {@code "ab"}
    * but JavaParser stores it as an operation with two operands.
@@ -1924,7 +1924,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode);
 
   /**
-   * Process a {@code LiteralTree} for a literal expression prefixed with {@code +} or {@code -}
+   * Processes a {@code LiteralTree} for a literal expression prefixed with {@code +} or {@code -}
    * like {@code +5} or {@code -2}.
    *
    * @param javacTree tree to process
@@ -1933,7 +1933,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode);
 
   /**
-   * Process a {@code LiteralTree}.
+   * Processes a {@code LiteralTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1941,7 +1941,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode);
 
   /**
-   * Process a {@code MemberReferenceTree}.
+   * Processes a {@code MemberReferenceTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1950,7 +1950,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode);
 
   /**
-   * Process a {@code MemberSelectTree} for a class expression like {@code MyClass.class}.
+   * Processes a {@code MemberSelectTree} for a class expression like {@code MyClass.class}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1958,7 +1958,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode);
 
   /**
-   * Process a {@code MemberSelectTree} for a type with a name containing dots, like {@code
+   * Processes a {@code MemberSelectTree} for a type with a name containing dots, like {@code
    * mypackage.MyClass}.
    *
    * @param javacTree tree to process
@@ -1968,7 +1968,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode);
 
   /**
-   * Process a {@code MemberSelectTree} for a field access expression like {@code myObj.myField}.
+   * Processes a {@code MemberSelectTree} for a field access expression like {@code myObj.myField}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1977,7 +1977,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MemberSelectTree javacTree, FieldAccessExpr javaParserNode);
 
   /**
-   * Process a {@code MemberSelectTree} for a name that contains dots.
+   * Processes a {@code MemberSelectTree} for a name that contains dots.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -1985,7 +1985,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode);
 
   /**
-   * Process a {@code MemberSelectTree} for a this expression with a class like {@code
+   * Processes a {@code MemberSelectTree} for a this expression with a class like {@code
    * MyClass.this}.
    *
    * @param javacTree tree to process
@@ -1994,8 +1994,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode);
 
   /**
-   * Process a {@code MemberSelectTree} for a super expression with a class like {@code
-   * super.MyClass}.
+   * Processes a {@code MemberSelectTree} for a super expression with a class like {@code
+   * MyClass.super}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2003,7 +2003,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode);
 
   /**
-   * Process a {@code MethodTree} representing a regular method declaration.
+   * Processes a {@code MethodTree} representing a regular method declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2011,7 +2011,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode);
 
   /**
-   * Process a {@code MethodTree} representing a constructor declaration.
+   * Processes a {@code MethodTree} representing a constructor declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2019,7 +2019,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode);
 
   /**
-   * Process a {@code MethodTree} representing a compact constructor declaration.
+   * Processes a {@code MethodTree} representing a compact constructor declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2028,7 +2028,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MethodTree javacTree, CompactConstructorDeclaration javaParserNode);
 
   /**
-   * Process a {@code MethodTree} representing a value field for an annotation.
+   * Processes a {@code MethodTree} representing a value field for an annotation.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2037,7 +2037,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MethodTree javacTree, AnnotationMemberDeclaration javaParserNode);
 
   /**
-   * Process a {@code MethodInvocationTree} representing a constructor invocation.
+   * Processes a {@code MethodInvocationTree} representing a constructor invocation.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2046,7 +2046,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MethodInvocationTree javacTree, ExplicitConstructorInvocationStmt javaParserNode);
 
   /**
-   * Process a {@code MethodInvocationTree} representing a regular method invocation.
+   * Processes a {@code MethodInvocationTree} representing a regular method invocation.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2055,7 +2055,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       MethodInvocationTree javacTree, MethodCallExpr javaParserNode);
 
   /**
-   * Process a {@code ModuleTree}.
+   * Processes a {@code ModuleTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2063,7 +2063,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processModule(ModuleTree javacTree, ModuleDeclaration javaParserNode);
 
   /**
-   * Process a {@code NewClassTree}.
+   * Processes a {@code NewClassTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2071,7 +2071,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processNewClass(NewClassTree javacTree, ObjectCreationExpr javaParserNode);
 
   /**
-   * Process an {@code OpensTree}.
+   * Processes an {@code OpensTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2079,7 +2079,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processOpens(OpensTree javacTree, ModuleOpensDirective javaParserNode);
 
   /**
-   * Process a {@code Tree} that isn't an instance of any specific tree class.
+   * Processes a {@code Tree} that isn't an instance of any specific tree class.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2087,7 +2087,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processOther(Tree javacTree, Node javaParserNode);
 
   /**
-   * Process a {@code PackageTree}.
+   * Processes a {@code PackageTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2095,7 +2095,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processPackage(PackageTree javacTree, PackageDeclaration javaParserNode);
 
   /**
-   * Process a {@code ParameterizedTypeTree}.
+   * Processes a {@code ParameterizedTypeTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2104,7 +2104,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ParameterizedTypeTree javacTree, ClassOrInterfaceType javaParserNode);
 
   /**
-   * Process a {@code ParenthesizedTree}.
+   * Processes a {@code ParenthesizedTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2113,7 +2113,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ParenthesizedTree javacTree, EnclosedExpr javaParserNode);
 
   /**
-   * Process a {@code PrimitiveTypeTree}.
+   * Processes a {@code PrimitiveTypeTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2122,7 +2122,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       PrimitiveTypeTree javacTree, PrimitiveType javaParserNode);
 
   /**
-   * Process a {@code PrimitiveTypeTree} representing a void type.
+   * Processes a {@code PrimitiveTypeTree} representing a void type.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2130,7 +2130,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processPrimitiveType(PrimitiveTypeTree javacTree, VoidType javaParserNode);
 
   /**
-   * Process a {@code ProvidesTree}.
+   * Processes a {@code ProvidesTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2139,7 +2139,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       ProvidesTree javacTree, ModuleProvidesDirective javaParserNode);
 
   /**
-   * Process a {@code RequiresTree}.
+   * Processes a {@code RequiresTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2148,7 +2148,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       RequiresTree javacTree, ModuleRequiresDirective javaParserNode);
 
   /**
-   * Process a {@code ReturnTree}.
+   * Processes a {@code ReturnTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2156,7 +2156,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processReturn(ReturnTree javacTree, ReturnStmt javaParserNode);
 
   /**
-   * Process a {@code SwitchTree}.
+   * Processes a {@code SwitchTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2164,7 +2164,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode);
 
   /**
-   * Process a {@code SwitchExpressionTree}.
+   * Processes a {@code SwitchExpressionTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2172,7 +2172,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processSwitchExpression(Tree javacTree, SwitchExpr javaParserNode);
 
   /**
-   * Process a {@code SynchronizedTree}.
+   * Processes a {@code SynchronizedTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2181,7 +2181,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       SynchronizedTree javacTree, SynchronizedStmt javaParserNode);
 
   /**
-   * Process a {@code ThrowTree}.
+   * Processes a {@code ThrowTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2189,7 +2189,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processThrow(ThrowTree javacTree, ThrowStmt javaParserNode);
 
   /**
-   * Process a {@code TryTree}.
+   * Processes a {@code TryTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2197,7 +2197,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processTry(TryTree javacTree, TryStmt javaParserNode);
 
   /**
-   * Process a {@code TypeCastTree}.
+   * Processes a {@code TypeCastTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2205,7 +2205,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processTypeCast(TypeCastTree javacTree, CastExpr javaParserNode);
 
   /**
-   * Process a {@code TypeParameterTree}.
+   * Processes a {@code TypeParameterTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2214,7 +2214,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       TypeParameterTree javacTree, TypeParameter javaParserNode);
 
   /**
-   * Process a {@code UnaryTree}.
+   * Processes a {@code UnaryTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2222,7 +2222,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processUnary(UnaryTree javacTree, UnaryExpr javaParserNode);
 
   /**
-   * Process a {@code UnionTypeTree}.
+   * Processes a {@code UnionTypeTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2230,7 +2230,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processUnionType(UnionTypeTree javacTree, UnionType javaParserNode);
 
   /**
-   * Process a {@code UsesTree}.
+   * Processes a {@code UsesTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2238,7 +2238,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processUses(UsesTree javacTree, ModuleUsesDirective javaParserNode);
 
   /**
-   * Process a {@code VariableTree} representing an enum constant declaration. In an enum like
+   * Processes a {@code VariableTree} representing an enum constant declaration. In an enum like
    * {@code enum MyEnum { MY_CONSTANT }}, javac expands {@code MY_CONSTANT} as a constant variable.
    *
    * @param javacTree tree to process
@@ -2248,7 +2248,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       VariableTree javacTree, EnumConstantDeclaration javaParserNode);
 
   /**
-   * Process a {@code VariableTree} representing a parameter to a method or constructor.
+   * Processes a {@code VariableTree} representing a parameter to a method or constructor.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2256,7 +2256,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processVariable(VariableTree javacTree, Parameter javaParserNode);
 
   /**
-   * Process a {@code VariableTree} representing the receiver parameter of a method.
+   * Processes a {@code VariableTree} representing the receiver parameter of a method.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2264,7 +2264,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processVariable(VariableTree javacTree, ReceiverParameter javaParserNode);
 
   /**
-   * Process a {@code VariableTree} representing a regular variable declaration.
+   * Processes a {@code VariableTree} representing a regular variable declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2272,7 +2272,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processVariable(VariableTree javacTree, VariableDeclarator javaParserNode);
 
   /**
-   * Process a {@code WhileLoopTree}.
+   * Processes a {@code WhileLoopTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2280,7 +2280,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processWhileLoop(WhileLoopTree javacTree, WhileStmt javaParserNode);
 
   /**
-   * Process a {@code WhileLoopTree}.
+   * Processes a {@code WildcardTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2288,15 +2288,15 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processWildcard(WildcardTree javacTree, WildcardType javaParserNode);
 
   /**
-   * Process a {@code YieldTree}.
+   * Processes a {@code YieldTree}.
    *
    * @param javacTree tree to process
-   * @param javaParserNode corresponding Javaparser node
+   * @param javaParserNode corresponding JavaParser node
    */
   public abstract void processYield(Tree javacTree, YieldStmt javaParserNode);
 
   /**
-   * Process a {@code CompoundAssignmentTree}.
+   * Processes a {@code CompoundAssignmentTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2306,7 +2306,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   /**
    * Given a list of javac trees and a list of JavaParser nodes, where the elements of the lists
-   * correspond to each other, visit each javac tree along with its corresponding JavaParser node.
+   * correspond to each other, visits each javac tree along with its corresponding JavaParser node.
    *
    * <p>The two lists must be of the same length and elements at corresponding positions must match.
    *
@@ -2330,7 +2330,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit an optional syntax construct. Iff the javac tree is non-null, the JavaParser optional is
+   * Visits an optional syntax construct. Iff the javac tree is non-null, the JavaParser optional is
    * present.
    *
    * @param javacTree a javac tree or null
@@ -2347,14 +2347,14 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Cast {@code javaParserNode} to type {@code type} and return it.
+   * Casts {@code javaParserNode} to type {@code type} and returns it.
    *
    * @param <T> the type of {@code type}
    * @param type the type to cast to
    * @param javaParserNode the object to cast
    * @param javacTree the javac tree that corresponds to {@code javaParserNode}; used only for error
    *     reporting
-   * @return javaParserNode, casted to {@code type}
+   * @return javaParserNode, cast to {@code type}
    */
   public <T> T castNode(Class<T> type, Node javaParserNode, Tree javacTree) {
     if (type.isInstance(javaParserNode)) {
@@ -2410,7 +2410,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit a YieldTree.
+   * Visits a YieldTree.
    *
    * @param tree a YieldTree, typed as Tree to be backward-compatible
    * @param node a YieldStmt, typed as Node to be backward-compatible

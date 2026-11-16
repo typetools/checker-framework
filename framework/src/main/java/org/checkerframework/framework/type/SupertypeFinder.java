@@ -212,7 +212,7 @@ final class SupertypeFinder {
 
     /**
      * Creates a mapping from a type parameter to its corresponding annotated type argument for all
-     * type parameters of {@code type}, its enclosing types, and all super types of all {@code
+     * type parameters of {@code type}, its enclosing types, and all supertypes of all {@code
      * type}'s enclosing types.
      *
      * <p>It does not get the type parameters of the supertypes of {@code type} because the result
@@ -253,7 +253,7 @@ final class SupertypeFinder {
     /**
      * Adds a mapping from a type parameter to its corresponding annotated type argument for all
      * type parameters of {@code enclosing} and its enclosing types. This method recurs on all the
-     * super types of {@code enclosing}.
+     * supertypes of {@code enclosing}.
      *
      * @param mapping type variable to type argument map; side-effected by this method
      * @param enclosing a type
@@ -359,7 +359,7 @@ final class SupertypeFinder {
      *
      * @param type annotated type of an enum
      * @param elem element corresponding to {@code type}
-     * @return enum super type
+     * @return enum supertype
      */
     private AnnotatedDeclaredType createEnumSuperType(
         AnnotatedDeclaredType type, TypeElement elem) {
