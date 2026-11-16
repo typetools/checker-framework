@@ -84,7 +84,7 @@ public class Resolver {
   /**
    * Method for new Log.DiscardDiagnosticHandler. Before JDK 25, DiscardDiagnosticHandler was a
    * static inner class of Log and an instance of log was passed as the first argument. Starting
-   * with JDK 25, DiscardDiagnosticHandler is an inner class of log.
+   * with JDK 25, DiscardDiagnosticHandler is an inner class of Log.
    */
   private static final Constructor<DiscardDiagnosticHandler> NEW_DIAGNOSTIC_HANDLER;
 
@@ -181,7 +181,7 @@ public class Resolver {
   }
 
   /**
-   * Determine the environment for the given path.
+   * Returns the environment for the given path.
    *
    * @param path the tree path to the local scope
    * @return the corresponding attribution environment
@@ -436,7 +436,7 @@ public class Resolver {
   }
 
   /**
-   * Build an instance of {@code Resolve$MethodResolutionContext}.
+   * Builds an instance of {@code Resolve$MethodResolutionContext}.
    *
    * @return a MethodResolutionContext
    * @throws ClassNotFoundException if there is trouble constructing the instance
@@ -467,7 +467,7 @@ public class Resolver {
   }
 
   /**
-   * Reflectively set a field.
+   * Reflectively sets a field.
    *
    * @param receiver the receiver in which to set the field
    * @param fieldName name of field to set
@@ -486,7 +486,15 @@ public class Resolver {
     f.set(receiver, value);
   }
 
-  /** Reflectively get the value of a field. */
+  /**
+   * Reflectively gets the value of a field.
+   *
+   * @param receiver the object whose field is read
+   * @param fieldName the name of the field to read
+   * @return the value of the field
+   * @throws NoSuchFieldException if the receiver's class has no field with the given name
+   * @throws IllegalAccessException if the field is inaccessible
+   */
   private @Nullable Object getField(Object receiver, String fieldName)
       throws NoSuchFieldException, IllegalAccessException {
     Field f = receiver.getClass().getDeclaredField(fieldName);
@@ -508,9 +516,9 @@ public class Resolver {
   }
 
   /**
-   * Invoke the given method on the {@code resolve} field.
+   * Invokes the given method on the {@code resolve} field.
    *
-   * @param method the method to called
+   * @param method the method to call
    * @param args the arguments to the call
    * @return the result of invoking the method on {@code resolve} (as the receiver) and the
    *     arguments
@@ -520,11 +528,11 @@ public class Resolver {
   }
 
   /**
-   * Invoke a method reflectively. This is like {@code Method.invoke()}, but it throws no checked
+   * Invokes a method reflectively. This is like {@code Method.invoke()}, but it throws no checked
    * exceptions.
    *
    * @param receiver the receiver
-   * @param method the method to called
+   * @param method the method to call
    * @param args the arguments to the call
    * @return the result of invoking the method on the receiver and arguments
    */

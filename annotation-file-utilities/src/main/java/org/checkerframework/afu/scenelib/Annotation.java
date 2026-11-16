@@ -36,7 +36,7 @@ public final class Annotation {
   /** An unmodifiable copy of the passed map of field values. */
   public final Map<String, Object> fieldValues;
 
-  /** Check the representation, throw assertion failure if it is violated. */
+  /** Checks the representation; throws an assertion failure if it is violated. */
   public void checkRep() {
     assert fieldValues != null;
     assert fieldValues.keySet() != null;
@@ -97,7 +97,7 @@ public final class Annotation {
 
   // TODO make sure the field values are valid?
   /**
-   * Constructs a {@link Annotation} with the given definition and field values. Make sure that the
+   * Constructs an {@link Annotation} with the given definition and field values. Make sure that the
    * field values obey the rules given on {@link Annotation#getFieldValue} and that subannotations
    * are also {@link Annotation}s; this constructor does not validate the values.
    *
@@ -111,7 +111,7 @@ public final class Annotation {
   }
 
   /**
-   * Construct an Annotation for the given java.lang.annotation.Annotation.
+   * Constructs an Annotation for the given java.lang.annotation.Annotation.
    *
    * @param ja the java.lang.annotation.Annotation to make an Annotation for
    * @param adefs a cache from which to look up (or insert into) AnnotationDefs
@@ -217,7 +217,7 @@ public final class Annotation {
   /**
    * Returns true if this annotation equals {@code o}; a slightly faster variant of {@link
    * #equals(Object)} for when the argument is statically known to be another nonnull {@link
-   * Annotation}. Subclasses may wish to override this with a hard-coded "&amp;&amp;" of field
+   * Annotation}. Subclasses might wish to override this with a hard-coded "&amp;&amp;" of field
    * comparisons to improve performance.
    *
    * @param o the {@code Annotation} to compare to this
@@ -229,7 +229,7 @@ public final class Annotation {
 
   /**
    * Returns the hash code of this annotation as defined on {@link Annotation#hashCode}. Subclasses
-   * may wish to override this with a hard-coded XOR/addition of fields to improve performance.
+   * might wish to override this with a hard-coded XOR/addition of fields to improve performance.
    */
   @Override
   public int hashCode() {

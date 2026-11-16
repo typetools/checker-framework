@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.UserError;
 @SuppressWarningsPrefix({"calledmethods", "rlccalledmethods", "resourceleak"})
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
 
-  /** Creates a RLCCalledMethodsChecker. */
+  /** Creates an RLCCalledMethodsChecker. */
   public RLCCalledMethodsChecker() {}
 
   /** The parent resource leak checker. */

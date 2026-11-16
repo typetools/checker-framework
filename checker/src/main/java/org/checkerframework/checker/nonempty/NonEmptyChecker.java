@@ -22,7 +22,7 @@ import org.checkerframework.framework.source.SourceChecker;
 //  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 public class NonEmptyChecker extends BaseTypeChecker {
 
-  /** A cached instance of {@link OptionalImplVisitor} */
+  /** A cached instance of {@link OptionalImplVisitor}. */
   private OptionalImplVisitor optionalImplVisitor;
 
   /** Creates a NonEmptyChecker. */

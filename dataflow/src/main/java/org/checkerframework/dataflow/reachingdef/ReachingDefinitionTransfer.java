@@ -15,8 +15,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
  * The reaching definition transfer function. The transfer function processes the
- * ReachingDefinitionNode in ReachingDefinitionStore, killing the node with same LHS and putting new
- * generated node into the store. See dataflow manual for more details.
+ * ReachingDefinitionNode in ReachingDefinitionStore, killing the node with the same LHS and putting
+ * the newly generated node into the store. See the dataflow manual for more details.
  */
 public class ReachingDefinitionTransfer
     extends AbstractNodeVisitor<
@@ -24,7 +24,7 @@ public class ReachingDefinitionTransfer
         TransferInput<UnusedAbstractValue, ReachingDefinitionStore>>
     implements ForwardTransferFunction<UnusedAbstractValue, ReachingDefinitionStore> {
 
-  /** Create a new ReachingDefinitionTransfer. */
+  /** Creates a new ReachingDefinitionTransfer. */
   public ReachingDefinitionTransfer() {}
 
   @Override
@@ -50,7 +50,7 @@ public class ReachingDefinitionTransfer
   }
 
   /**
-   * Update a reaching definition node in the store from an assignment statement.
+   * Updates a reaching definition node in the store from an assignment statement.
    *
    * @param def the definition that should be put into the store
    * @param store the reaching definition store

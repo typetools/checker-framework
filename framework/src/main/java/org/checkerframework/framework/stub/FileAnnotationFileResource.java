@@ -11,7 +11,7 @@ public class FileAnnotationFileResource implements AnnotationFileResource {
   private final File file;
 
   /**
-   * Constructs a {@code AnnotationFileResource} for the specified annotation file (stub file or
+   * Constructs an {@code AnnotationFileResource} for the specified annotation file (stub file or
    * ajava file).
    *
    * @param file the annotation file
