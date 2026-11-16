@@ -48,7 +48,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
   }
 
   /**
-   * Set a basic block as the successor of this block.
+   * Sets a basic block as the successor of this block.
    *
    * @param successor the block that will be the successor of this
    */

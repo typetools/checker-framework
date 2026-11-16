@@ -21,13 +21,17 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
   /** Set of exceptional successors. */
   protected final Map<TypeMirror, Set<Block>> exceptionalSuccessors;
 
-  /** Create an empty exceptional block. */
+  /** Creates an empty exceptional block. */
   public ExceptionBlockImpl() {
     super(BlockType.EXCEPTION_BLOCK);
     exceptionalSuccessors = new ArrayMap<>(2);
   }
 
-  /** Set the node. */
+  /**
+   * Sets the node.
+   *
+   * @param c the node that this block contains
+   */
   public void setNode(Node c) {
     node = c;
     c.setBlock(this);
@@ -57,7 +61,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
   }
 
   /**
-   * Add an exceptional successor.
+   * Adds an exceptional successor.
    *
    * @param b the successor
    * @param cause the exception type that leads to the given block

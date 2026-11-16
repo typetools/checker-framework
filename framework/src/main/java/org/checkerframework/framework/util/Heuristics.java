@@ -141,7 +141,7 @@ public class Heuristics {
     private final Matcher matcher;
 
     /**
-     * Create a new Within matcher.
+     * Creates a new Within matcher.
      *
      * @param matcher the matcher that {@code Within.match} will try, on every parent of the path it
      *     is given
@@ -170,11 +170,13 @@ public class Heuristics {
    * if the leaf is within the "else" of a negated condition that matches the supplied matcher.
    */
   public static class WithinTrueBranch extends Matcher {
-    /** conditionMatcher for the condition */
+    /** The matcher for the condition. */
     private final Matcher matcher;
 
     /**
-     * @param conditionMatcher for the condition
+     * Creates a new WithinTrueBranch matcher.
+     *
+     * @param conditionMatcher the matcher for the condition
      */
     public WithinTrueBranch(Matcher conditionMatcher) {
       this.matcher = conditionMatcher;

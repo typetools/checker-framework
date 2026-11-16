@@ -13,7 +13,7 @@ import org.checkerframework.checker.modifiability.qual.Replaceable;
 
 /**
  * An {@code AElement} represents a Java element and the annotations it carries. Some {@code
- * AElements} may contain others; for example, an {@link AClass} may contain {@link AMethod}s. Every
+ * AElements} can contain others; for example, an {@link AClass} can contain {@link AMethod}s. Every
  * {@code AElement} usually belongs directly or indirectly to an {@link AScene}. Each subclass of
  * {@code AElement} represents one kind of annotatable element; its name should make this clear.
  *
@@ -47,7 +47,7 @@ public class AElement implements Cloneable {
   public Object description;
 
   /**
-   * Create a new element with the given description.
+   * Creates a new element with the given description.
    *
    * @param description the description of the element, used for debugging and diagnostic messages
    */
@@ -93,7 +93,7 @@ public class AElement implements Cloneable {
    *
    * <ul>
    *   <li>While subelement collections usually remember the order in which subelements were added
-   *       and regurgitate them in this order, two {@link AElement}s are equal even if order of
+   *       and regurgitate them in this order, two {@link AElement}s are equal even if the order of
    *       subelements differs.
    *   <li>Two {@link AElement}s are unequal if one has a subelement that the other does not, even
    *       if the tree of elements rooted at the subelement contains no annotations. Thus, if you
@@ -163,7 +163,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns the top-level annotation on this that has the given name. Return null if no such
+   * Returns the top-level annotation on this that has the given name. Returns null if no such
    * annotation exists.
    *
    * @param name the fully-qualified type name of the annotation to search for
@@ -179,7 +179,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Append the top-level annotations on this element, to {@code sb}.
+   * Appends the top-level annotations on this element to {@code sb}.
    *
    * @param sb where to output the formatted annotations
    */

@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declares that the field may not be accessed if the receiver is of the specified qualifier type
+ * Declares that the field must not be accessed if the receiver is of the specified qualifier type
  * (or any supertype).
  *
  * <p>This property is verified by the checker that type-checks the {@code when} element value
@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface Unused {
   /**
-   * The field that is annotated with @Unused may not be accessed via a receiver that is annotated
+   * The field that is annotated with @Unused must not be accessed via a receiver that is annotated
    * with the "when" annotation.
    */
   Class<? extends Annotation> when();

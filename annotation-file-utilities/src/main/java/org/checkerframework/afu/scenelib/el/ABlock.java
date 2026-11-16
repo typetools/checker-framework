@@ -7,7 +7,7 @@ import org.checkerframework.checker.modifiability.qual.Shrinkable;
 
 /**
  * ABlock has local variables in scope. We currently directly use them only for static initializer
- * blocks, which are not methods, but can declare local variables.
+ * blocks, which are not methods but can declare local variables.
  */
 public class ABlock extends AExpression {
   // Currently we don't validate the local locations (e.g., that no two

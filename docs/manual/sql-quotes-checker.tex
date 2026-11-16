@@ -12,7 +12,7 @@ unsafe for SQL query use, because their quoting is unknown; the program
 must \emph{sanitize} or \emph{validate} all such values before concatenating
 them to a SQL query for execution. Sanitization can be done by quoting user
 input as necessary to ensure special characters are properly escaped.  The
-SQL Quotes Checker follows the ANSI standard and considers two consecutive
+SQL Quotes Checker follows the ANSI standard and treats two consecutive
 single quote characters as one escaped single quote.  (Some databases
 support the use of the backslash as an escape character for single quotes.
 The SQL Quotes Checker does not support that syntax because it is not safe
@@ -24,8 +24,8 @@ queries written by the code author are safe for execution; e.g., the
 checker will not warn at compile time about syntax errors or improper uses
 of \code{DELETE} or \code{DROP} statements.
 
-When possible, it is better code style to use a prepared statement or other mechanisms
-that automatically handle quoting without the need for the programmer to do
+When possible, it is better code style to use a prepared statement or another mechanism
+that automatically handles quoting without the need for the programmer to do
 any work.  The SQL Quotes Checker is useful for the large quantity of code
 that still uses string concatenation to create SQL queries.
 
@@ -84,7 +84,7 @@ and \code{@SqlEvenQuotes} Strings is most narrowly typed as follows:
 \sectionAndLabel{Library annotations}{sql-quotes-library-annotations}
 
 The programmer needs to write trusted annotations on SQL-related methods.
-This is already done for you, for commonly-used libraries such as
+This is already done for you, for commonly used libraries such as
 \<java.sql> and
 \<org.springframework.security.crypto.bcrypt>.
 (If you annotate other libraries, please contribute them to the Checker

@@ -46,11 +46,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * and is used as a subchecker by the Index Checker's components.
  *
  * <p>This type factory adds extra expressions to @SameLen annotations when necessary. For example,
- * if the full version of the type {@code @SameLen({"a","b"})} should include "a", "b", and whatever
- * is in the @SameLen types for "a" and for "b".
+ * the full version of the type {@code @SameLen({"a","b"})} should include "a", "b", and whatever is
+ * in the @SameLen types for "a" and for "b".
  *
  * <p>Also, every sequence s should have type @SameLen("s"). However, sometimes the sequence has
- * no @SameLen annotation, and users may write the annotation without the variable itself, as in
+ * no @SameLen annotation, and users might write the annotation without the variable itself, as in
  *
  * <pre>{@code @SameLen("b") String a;}</pre>
  *
@@ -141,7 +141,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return atm;
   }
 
-  /** Returns true if the given expression may appear in a @SameLen annotation. */
+  /**
+   * Returns true if the given expression can appear in a @SameLen annotation.
+   *
+   * @param expr an expression
+   * @return true if {@code expr} can appear in a @SameLen annotation
+   */
   public static boolean mayAppearInSameLen(JavaExpression expr) {
     return !expr.containsUnknown()
         && !(expr instanceof ArrayCreation)
@@ -155,10 +160,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * The qualifier hierarchy for the SameLen type system. Most types are distinct and at the same
-   * level: for instance @SameLen("a") and @SameLen("b) have nothing in common. However, if one type
-   * includes even one overlapping name, then the types have to be the same:
-   * so @SameLen({"a","b","c"} and @SameLen({"c","f","g"} are actually the same type -- both should
-   * usually be replaced by a SameLen with the union of the lists of names.
+   * level: for instance @SameLen("a") and @SameLen("b") have nothing in common. However, if one
+   * type includes even one overlapping name, then the types have to be the same:
+   * so @SameLen({"a","b","c"}) and @SameLen({"c","f","g"}) are actually the same type -- both
+   * should usually be replaced by a SameLen with the union of the lists of names.
    */
   private final class SameLenQualifierHierarchy extends ElementQualifierHierarchy {
 
@@ -382,8 +387,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Generates a SameLen that includes each expression, as well as everything in the annotations2,
-   * if they are SameLen annotations.
+   * Generates a SameLen that includes each expression, as well as everything in {@code annos}, if
+   * they are SameLen annotations.
    *
    * @param exprs a list of expressions representing arrays to be included in the combined
    *     annotation

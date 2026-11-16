@@ -16,7 +16,7 @@ import org.objectweb.asm.TypePath;
  * on each AST node and its corresponding {@link AElement}. Then, pass the root of your AST and the
  * corresponding {@link ATypeElement} from your annotation scene to {@link #traverse}.
  *
- * <p>{@link TypeASTMapper} itself saves no state, but subclasses may save state if they wish.
+ * <p>{@link TypeASTMapper} itself saves no state, but subclasses can save state if they wish.
  *
  * <p>{@link ATypeElement} objects that will be traversed
  *
@@ -40,8 +40,8 @@ public abstract class TypeASTMapper<N> {
    *
    * <p>If a node of the AST has no corresponding inner type in {@code aslRoot}, an inner type
    * {@link AElement} is vivified to hold any annotations that {@link #map} might wish to store in
-   * it. Thus, a call to {@link #traverse} may write to {@code aslRoot} even if {@link #map} does
-   * not write to its {@link AElement} argument. You may wish to {@linkplain AElement#prune prune}
+   * it. Thus, a call to {@link #traverse} might write to {@code aslRoot} even if {@link #map} does
+   * not write to its {@link AElement} argument. You might wish to {@linkplain AElement#prune prune}
    * {@code aslRoot} after traversal.
    */
   public void traverse(N tastRoot, ATypeElement aslRoot) {
@@ -117,7 +117,7 @@ public abstract class TypeASTMapper<N> {
   protected abstract N getTypeArgument(N n, int index);
 
   /**
-   * Signals to the client that {@code n} corresponds to {@code e}. The client may, for example, set
+   * Signals to the client that {@code n} corresponds to {@code e}. The client can, for example, set
    * flags in {@code n} based on the annotations in <code>
    * e.{@link AElement#tlAnnotationsHere tlAnnotationsHere}</code>. The {@link TypeASTMapper} calls
    * {@link #map} on {@code n} before it calls {@link #map} on sub-nodes of {@code n} but not

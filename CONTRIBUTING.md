@@ -31,7 +31,7 @@ Do you want to contribute to the project, but you are not sure what issue
 to fix or what feature to add?  Use the tool in your daily work, and when
 you encounter a limitation that bothers you, fix that one.  The ["help
 wanted"](https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
-label marks issues that require less deep knowledge and may be appropriate
+label marks issues that require less deep knowledge and might be appropriate
 for a newcomer to the codebase.
 
 ## License

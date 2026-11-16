@@ -32,7 +32,7 @@ you have an array whose length is \<Integer.MAX\_VALUE>.)
 
 The programmer can write annotations that indicate which expressions are
 indices for which sequences.  The Index Checker prohibits any operation that
-may violate these properties, and the Index Checker takes advantage of
+might violate these properties, and the Index Checker takes advantage of
 these properties when verifying indexing operations.
 %
 Typically, a programmer writes few annotations, because the Index Checker
@@ -154,7 +154,7 @@ annotations, each from a different type system:
    sequences. In the implementation, this type aliases
    \refqualclass{checker/index/qual}{IndexOrHigh}, so writing it
    only adds documentation (although future versions of the Index Checker
-   may use it to improve precision).
+   might use it to improve precision).
 
  \item[\refqualclasswithparams{checker/index/qual}{IndexOrLow}{String[] names}]
    The value is -1 or is a valid index for
@@ -210,7 +210,7 @@ qualifiers:
   The value is 0 or greater, so it is not too low to be used as an index.
 \item[\refqualclass{checker/index/qual}{GTENegativeOne}]
   The value is -1 or greater.
-  It may not be used as an index for a sequence, because it might be too low.
+  It cannot be used as an index for a sequence, because it might be too low.
   (``\<GTE>'' stands for ``Greater Than or Equal to''.)
 \item[\refqualclass{checker/index/qual}{PolyLowerBound}]
   indicates qualifier polymorphism.
@@ -218,7 +218,7 @@ qualifiers:
   Section~\ref{method-qualifier-polymorphism}.
 \item[\refqualclass{checker/index/qual}{LowerBoundUnknown}]
   There is no information about the value.
-  It may not be used as an index for a sequence, because it might be too low.
+  It cannot be used as an index for a sequence, because it might be too low.
 \item[\refqualclass{checker/index/qual}{LowerBoundBottom}]
     There are no values of this type. This is the bottom type, which
     should never need to be written by the programmer.
@@ -239,7 +239,7 @@ qualifiers:
     system.
     % Using "\\" works for some but not all installations of LaTeX.
     \newline
-    In the Upper Bound type system, subtyping rules depend on both the
+    In the Upper Bound type system, subtyping rules depend both on the
     array name (\<"myArray">, in the figure) and on the offset (which is 0,
     the default, in the figure).  Another qualifier is
     \refqualclass{checker/index/qual}{UpperBoundLiteral}, whose subtyping
@@ -268,7 +268,7 @@ qualifiers:
 \item[\refqualclasswithparams{checker/index/qual}{LTLengthOf}{String[] names, String[] offset}]
   An expression with this type
   has value less than the length of each sequence listed in \<names>.
-  The expression may be used as an index into any of those sequences,
+  The expression can be used as an index into any of those sequences,
   if it is non-negative.
   For example, an expression of type \code{@LTLengthOf("a") int} might be
   used as an index to \<a>.
@@ -287,7 +287,7 @@ qualifiers:
 \item[\refqualclasswithparams{checker/index/qual}{LTEqLengthOf}{String[] names}]
   An expression with this type
   has value less than or equal to the length of each sequence listed in \<names>.
-  It may not be used as an index for these sequences, because it might be too high.
+  It cannot be used as an index for these sequences, because it might be too high.
   \code{@LTEqLengthOf(\{"a", "b"\})} is a subtype of both
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
   (``\<LTEq>'' stands for ``Less Than or Equal to''.)
@@ -299,7 +299,7 @@ qualifiers:
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
   has value at least 2 less than the length of each sequence listed in \<names>.
-  It may always be used as an index for a sequence listed in \<names>, if it is
+  It can always be used as an index for a sequence listed in \<names>, if it is
   non-negative.
 
   This type exists to allow the checker to infer the safety of loops of
@@ -334,7 +334,7 @@ qualifiers:
 
 \item[\refqualclass{checker/index/qual}{UpperBoundUnknown}]
   There is no information about the upper bound on the value of an expression with this type.
-  It may not be used as an index for a sequence, because it might be too high.
+  It cannot be used as an index for a sequence, because it might be too high.
   This type is the top type, and should never need to be written by the
   programmer.
 
@@ -446,7 +446,7 @@ can establish the minimum length of a sequence:
 \item[\refqualclasswithparams{common/value/qual}{MinLen}{int value}]
   The value of an expression of this type is a sequence with at least
   \code{value} elements.  The default annotation is
-  \code{@MinLen(0)}, and it may be applied to non-sequences.
+  \code{@MinLen(0)}, and it can be applied to non-sequences.
   \code{@MinLen(\textit{x})} is a subtype of \code{@MinLen(\textit{x}-1)}.
   A \code{@MinLen} annotation is treated internally as an
   \refqualclass{common/value/qual}{ArrayLenRange} with only its
@@ -727,7 +727,7 @@ The Index Checker estimates which expressions' values are less than other expres
 
 \item[\refqualclasswithparams{checker/index/qual}{LessThan}{String[] values}]
   An expression with this type has a value that is less than the value of each
-  expression listed in \<values>. The expressions in values must be composed of
+  expression listed in \<values>. The expressions in \<values> must be composed of
   final or effectively final variables and constants.
 
 \item[\refqualclass{checker/index/qual}{LessThanUnknown}]
@@ -742,7 +742,7 @@ The Index Checker estimates which expressions' values are less than other expres
 
 \sectionAndLabel{Annotating your own fixed-size datatypes}{index-annotating-fixed-size}
 
-The Index Checker has built-in support for Strings and arrays.
+The Index Checker has built-in support for strings and arrays.
 You can add support for additional fixed-size data structures by writing
 annotations.
 This allows the Index Checker to type-check the data structure's
@@ -869,17 +869,17 @@ a sequence might shrink.
 \end{Verbatim}
 
 \item[\refqualclass{checker/index/qual}{CanShrink}]
-  The length of the sequence may be increased or decreased, via methods such as
+  The length of the sequence can be increased or decreased, via methods such as
   \<add()>, \<remove()>, and \<clear()>.
 
 \item[\refqualclass{checker/index/qual}{UncheckedCanShrink}]
-  For the purposes of the Grow-Only Checker, this is treated exactly like
+  For the purposes of the Grow-only Checker, this is treated exactly like
   \<@CanShrink>. It indicates that the collection can shrink. (Its special
   properties related to opting out of index checking are not relevant to the
-  Grow-Only Checker).
+  Grow-only Checker.)
 
 \item[\refqualclass{checker/index/qual}{PolyGrowShrink}]
-  is the polymorphic annotation for the Grow-Only type system.
+  is the polymorphic annotation for the Grow-only type system.
   For a description of polymorphic qualifiers, see
   Section~\ref{method-qualifier-polymorphism}.
 

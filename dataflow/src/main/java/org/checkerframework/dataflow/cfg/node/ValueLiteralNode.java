@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for a literals that have some form of value:
+ * A node for literals that have some form of value:
  *
  * <ul>
  *   <li>integer literal

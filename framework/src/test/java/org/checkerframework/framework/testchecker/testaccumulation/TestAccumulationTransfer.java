@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 public class TestAccumulationTransfer extends AccumulationTransfer {
 
   /**
-   * default constructor
+   * Default constructor.
    *
    * @param analysis the analysis
    */

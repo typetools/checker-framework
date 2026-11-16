@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessSkipDefsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessSkipDefsTest.
+   * Creates a NullnessSkipDefsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

@@ -21,7 +21,7 @@ public class Dependencies {
   private final Map<Variable, LinkedHashSet<Variable>> map = new LinkedHashMap<>();
 
   /**
-   * Add {@code value} as a dependency of {@code key}.
+   * Adds {@code value} as a dependency of {@code key}.
    *
    * @param key a key to add
    * @param value a value to add
@@ -32,7 +32,7 @@ public class Dependencies {
   }
 
   /**
-   * Add {@code values} as dependencies of {@code key}.
+   * Adds {@code values} as dependencies of {@code key}.
    *
    * @param key a key to add
    * @param values values to add
@@ -43,7 +43,7 @@ public class Dependencies {
   }
 
   /**
-   * Calculate and add transitive dependencies.
+   * Calculates and adds transitive dependencies.
    *
    * <p>JLS 18.4 "An inference variable alpha depends on the resolution of an inference variable
    * beta if there exists an inference variable gamma such that alpha depends on the resolution of
@@ -79,15 +79,15 @@ public class Dependencies {
    * {alpha}}. That case arises only for a variable that is absent from the bound set that created
    * this object, because {@code BoundSet.getDependencies} records every variable of the bound set
    * as a dependency of itself. For such a variable, {@code {alpha}} is a lower bound on its true
-   * dependencies: any dependency arising from its bounds is unknown to this object, so a caller may
-   * treat {@code alpha} as resolvable earlier or more independently than JLS 18.4 permits.
+   * dependencies: any dependency arising from its bounds is unknown to this object, so a caller
+   * might treat {@code alpha} as resolvable earlier or more independently than JLS 18.4 permits.
    * Computing more than {@code {alpha}} here is not possible, because the transitive closure that
    * {@code BoundSet.getDependencies} computes needs the whole bound set. {@code
    * Resolution.getSmallestDependencySet} and {@code ConstraintSet.getClosedSubset} both query
    * variables that the bound set does not necessarily contain, and letting such a variable depend
    * on only itself lets inference proceed rather than crashing.
    *
-   * <p>The result is a new, mutable set; the caller may modify it.
+   * <p>The result is a new, mutable set; the caller can modify it.
    *
    * @param alpha a variable
    * @return the set of dependencies of {@code alpha}
@@ -106,7 +106,7 @@ public class Dependencies {
    * {@code variables} is in the result; a variable to which no dependency has been added
    * contributes only itself. See {@link #get(Variable)}.
    *
-   * <p>The result is a new, mutable set; the caller may modify it.
+   * <p>The result is a new, mutable set; the caller can modify it.
    *
    * @param variables list of variables
    * @return the set of dependencies for all variables in {@code variables}

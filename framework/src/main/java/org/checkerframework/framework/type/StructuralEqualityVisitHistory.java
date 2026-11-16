@@ -13,14 +13,14 @@ public class StructuralEqualityVisitHistory {
   /**
    * Types in this history are structurally equal. (Use {@link SubtypeVisitHistory} because it
    * implements a map from a pair of {@code AnnotatedTypeMirror}s to an {@code
-   * AnnotationMirrorSet}).
+   * AnnotationMirrorSet}.)
    */
   private final SubtypeVisitHistory trueHistory;
 
   /**
    * Types in this history are not structurally equal. (Use {@link SubtypeVisitHistory} because it
    * implements a map from a pair of {@code AnnotatedTypeMirror}s to an {@code
-   * AnnotationMirrorSet}).
+   * AnnotationMirrorSet}.)
    */
   private final SubtypeVisitHistory falseHistory;
 
@@ -31,8 +31,8 @@ public class StructuralEqualityVisitHistory {
   }
 
   /**
-   * Put result of comparing {@code type1} and {@code type2} for structural equality for the given
-   * hierarchy.
+   * Puts the result of comparing {@code type1} and {@code type2} for structural equality for the
+   * given hierarchy.
    *
    * @param type1 the first type
    * @param type2 the second type
@@ -76,7 +76,7 @@ public class StructuralEqualityVisitHistory {
   }
 
   /**
-   * Remove the result of comparing {@code type1} and {@code type2} for structural equality for the
+   * Removes the result of comparing {@code type1} and {@code type2} for structural equality for the
    * given hierarchy.
    *
    * @param type1 the first type

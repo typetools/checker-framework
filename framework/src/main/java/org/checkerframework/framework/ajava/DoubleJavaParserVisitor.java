@@ -110,18 +110,18 @@ import java.util.List;
  * A visitor that visits two JavaParser ASTs simultaneously that almost match. When calling a visit
  * method, the secondary argument must be another JavaParser {@code Node} that represents an AST
  * identical to the first argument except for the exceptions allowed between an ajava file and its
- * corresponding Java file, see the linked section of the manual.
+ * corresponding Java file; see the linked section of the manual.
  *
  * <p>To use this class, extend it and override {@link #defaultAction(Node, Node)}. This method will
  * be called on every pair of nodes in the two ASTs. This class does not visit annotations, since
- * those may differ between the two ASTs.
+ * those might differ between the two ASTs.
  *
- * @checker_framework.manual #ajava-contents ways in which the two visited ASTs may differ
+ * @checker_framework.manual #ajava-contents ways in which the two visited ASTs can differ
  */
 @SuppressWarnings("optional:method.invocation") // parallel structure of two data structures
 public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
 
-  /** Create a DoubleJavaParserVisitor. */
+  /** Creates a DoubleJavaParserVisitor. */
   public DoubleJavaParserVisitor() {}
 
   /**

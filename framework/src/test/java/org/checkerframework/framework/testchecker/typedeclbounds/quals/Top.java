@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Toy type system for testing impact of implicit java type conversion.
+ * Toy type system for testing impact of implicit Java type conversion.
  *
  * @see Bottom
  */

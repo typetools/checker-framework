@@ -27,11 +27,11 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  * <p>The Lower Bound Checker depends only on the Value Checker. It uses the Value Checker to:
  *
  * <ul>
- *   <li>give appropriate types to compile time constants. For example, the type of 7 is Positive, 0
+ *   <li>give appropriate types to compile-time constants. For example, the type of 7 is Positive, 0
  *       is NonNegative, etc.
  *   <li>in a subtraction expression of the form {@code a.length - x}, if x is a compile-time
  *       constant, and if the minimum length of a &gt; x, the resulting expression is non-negative.
- *   <li>when typing an array length (i.e. {@code a.length}), if the minimum length of the array is
+ *   <li>when typing an array length (i.e., {@code a.length}), if the minimum length of the array is
  *       &ge; 1, then the type is @Positive; if its MinLen is zero, then the type is @NonNegative.
  * </ul>
  *
@@ -50,7 +50,7 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  *       of the index. If that fails, it checks if the index is a compile-time constant. If it is,
  *       then it queries the Value Checker to determine if the array is guaranteed to be longer than
  *       the value of the constant. If it is, the access is safe.
- *   <li>When compile time constants would improve the precision of reasoning about arithmetic, the
+ *   <li>When compile-time constants would improve the precision of reasoning about arithmetic, the
  *       UBC queries the Value Checker for their values. For instance, dividing a value with type
  *       LTLengthOf by a compile-time constant of 1 is guaranteed to result in another LTLengthOf
  *       for the same arrays.
@@ -65,7 +65,7 @@ import org.checkerframework.checker.index.upperbound.UpperBoundChecker;
  *       annotation is checked to see if it is valid for any of the arrays in question.
  * </ul>
  *
- * <p>Lower Bound dependencies in UBC:
+ * <p>Lower Bound dependencies in the UBC:
  *
  * <ul>
  *   <li>When an array is created with length equal to the sum of two quantities, if one of the
