@@ -34,11 +34,11 @@ public class StaticImportNotAccessible {
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
-    void expectsSibling1MemberType(MemberType m) {
+    void expectsSibling1MemberType(StaticImportNotAccessible this, MemberType m) {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    MemberType getSibling1MemberType() {
+    MemberType getSibling1MemberType(StaticImportNotAccessible this) {
         return null;
     }
 }

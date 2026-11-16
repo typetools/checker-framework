@@ -30,11 +30,11 @@ public class OnDemandImportPackagePrivateType {
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
-    void expectsSibling1Region(Region r) {
+    void expectsSibling1Region(OnDemandImportPackagePrivateType this, Region r) {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    Region getSibling1Region() {
+    Region getSibling1Region(OnDemandImportPackagePrivateType this) {
         return null;
     }
 }

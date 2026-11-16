@@ -10,12 +10,12 @@ public class OmitDefaultQualifier {
     CharSequence field;
 
     @org.checkerframework.dataflow.qual.Impure
-    void setField(CharSequence cs) {
+    void setField(OmitDefaultQualifier this, CharSequence cs) {
         field = cs;
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    CharSequence getField() {
+    CharSequence getField(OmitDefaultQualifier this) {
         return field;
     }
 
