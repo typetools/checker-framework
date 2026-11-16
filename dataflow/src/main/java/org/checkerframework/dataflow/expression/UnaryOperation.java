@@ -19,7 +19,7 @@ public class UnaryOperation extends JavaExpression {
   protected final JavaExpression operand;
 
   /**
-   * Create a unary operation.
+   * Creates a unary operation.
    *
    * @param type the type of the result
    * @param operationKind the operator
@@ -32,7 +32,7 @@ public class UnaryOperation extends JavaExpression {
   }
 
   /**
-   * Create a unary operation.
+   * Creates a unary operation.
    *
    * @param node the unary operation node
    * @param operand the operand

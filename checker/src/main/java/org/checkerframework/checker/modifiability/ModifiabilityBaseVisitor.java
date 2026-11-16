@@ -40,10 +40,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>This class contains logic shared across all the sub-checkers:
  *
  * <ul>
- *   <li>Suppressing the "constructor result must be TOP" check, since collection constructors may
+ *   <li>Suppressing the "constructor result must be TOP" check, since collection constructors can
  *       legitimately produce {@code @Modifiable}.
  *   <li>Suppressing the rule that relates a constructor's result to that of the {@code this()} or
- *       {@code super()} call within it, since a class may declare a different modifiability than
+ *       {@code super()} call within it, since a class can declare a different modifiability than
  *       its superclass does.
  *   <li>Requiring all the constructors of a class to declare the same result qualifier, and
  *       requiring the body of each method that requires the capability -- either on its own
@@ -71,8 +71,8 @@ public class ModifiabilityBaseVisitor
    * Suppresses the framework's rule that a constructor's result type must be a supertype of the
    * result of the {@code this()} or {@code super()} call within it.
    *
-   * <p>A collection class may legitimately declare a different modifiability than its superclass
-   * does; for example, a class whose constructors are {@code @Ungrowable} may extend {@code
+   * <p>A collection class can legitimately declare a different modifiability than its superclass
+   * does; for example, a class whose constructors are {@code @Ungrowable} can extend {@code
    * AbstractList}, whose constructor is {@code @Growable}, and override every grow method to throw
    * {@link UnsupportedOperationException}. The framework's rule would reject every such class,
    * including at the implicit {@code super()} call of a constructor that has no explicit one.

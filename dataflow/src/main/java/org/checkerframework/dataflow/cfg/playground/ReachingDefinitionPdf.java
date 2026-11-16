@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.reachingdef.ReachingDefinitionStore;
 import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
 
 /**
- * Run reaching definition analysis on a file and create a PDF of the CFG.
+ * Runs reaching definition analysis on a file and creates a PDF of the CFG.
  *
  * <p>As an example, try {@code dataflow/manual/examples/ReachSimple.java}.
  */
@@ -21,7 +21,7 @@ public final class ReachingDefinitionPdf {
   }
 
   /**
-   * Run reaching definition analysis on a file and create a PDF of the CFG.
+   * Runs reaching definition analysis on a file and creates a PDF of the CFG.
    *
    * @param args input arguments
    */

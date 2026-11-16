@@ -88,7 +88,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       TreeUtils.getMethod(
           "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
 
-  /** Create an InterningVisitor. */
+  /**
+   * Creates an InterningVisitor.
+   *
+   * @param checker the checker that uses this visitor
+   */
   public InterningVisitor(BaseTypeChecker checker) {
     super(checker);
   }
@@ -202,7 +206,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * If lint option "dotequals" is specified, warn if the .equals method is used where reference
+   * If lint option "dotequals" is specified, warns if the .equals method is used where reference
    * equality is safe.
    */
   @Override
@@ -364,7 +368,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * Issue an error if {@code newInternedObject} is not immediately interned.
+   * Issues an error if {@code newInternedObject} is not immediately interned.
    *
    * @param newInternedObject call to a constructor of an interned class
    * @param constructor declared type of the constructor
@@ -429,7 +433,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * that overrides {@link Object#equals(Object)}.
    *
    * @param tree a method invocation tree
-   * @return true iff {@code tree} is a invocation of {@code equals()}
+   * @return true iff {@code tree} is an invocation of {@code equals()}
    */
   public static boolean isInvocationOfEquals(MethodInvocationTree tree) {
     ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -441,7 +445,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
   /**
    * Pattern matches particular comparisons to avoid common false positives in the {@link
-   * Comparable#compareTo(Object)} and {@link Object#equals(Object)}.
+   * Comparable#compareTo(Object)} and {@link Object#equals(Object)} methods.
    *
    * <p>Specifically, this method tests if: the comparison is a == comparison, it is the test of an
    * if statement that's the first statement in the method, and one of the following is true:

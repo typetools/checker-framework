@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * multiple {@code DefaultQualifier} annotations are in scope, the innermost one takes precedence.
  * DefaultQualifier takes precedence over {@link DefaultQualifierInHierarchy}.
  *
- * <p>You may write multiple {@code @DefaultQualifier} annotations (for unrelated type systems, or
+ * <p>You can write multiple {@code @DefaultQualifier} annotations (for unrelated type systems, or
  * with different {@code locations} fields) at the same location. For example:
  *
  * <pre>

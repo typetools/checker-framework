@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods like {@code Class.getMethod} and {@code Class.getDeclaredMethod}, whose
  * signature is: <br>
- * {@code @}{@link MethodVal}{@code (classname=c, methodname=m, params=p) Method
+ * {@code @}{@link MethodVal}{@code (className=c, methodName=m, params=p) Method
  * getMyMethod(Class<c> this, String m, Object... params)}
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution

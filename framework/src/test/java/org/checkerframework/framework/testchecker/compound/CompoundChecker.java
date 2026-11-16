@@ -9,7 +9,7 @@ import org.checkerframework.framework.source.SourceChecker;
 
 /**
  * Used to test the compound checker design pattern. AliasingChecker and AnotherCompoundChecker are
- * subcheckers of this checker AnotherCompoundChecker relies on the Aliasing Checker, too. This is
+ * subcheckers of this checker. AnotherCompoundChecker relies on the Aliasing Checker, too. This is
  * so that the order of subcheckers is tested.
  */
 public class CompoundChecker extends BaseTypeChecker {

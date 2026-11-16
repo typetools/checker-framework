@@ -125,7 +125,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   private static final String nonDelimSlash = "/(?=[^*/])";
 
   /**
-   * Returns regular expression matching "anything but" {@code c}: a single comment, character or
+   * Returns a regular expression matching "anything but" {@code c}: a single comment, character or
    * string literal, or non-{@code c} character.
    *
    * @param c a character not to match
@@ -154,8 +154,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   }
 
   /**
-   * If this code location is not an array type, return null. Otherwise, starting at an array type,
-   * walk up the AST as long as still an array, and stop at the largest containing array (with
+   * If this code location is not an array type, returns null. Otherwise, starting at an array type,
+   * walks up the AST as long as still an array, and stops at the largest containing array (with
    * nothing but arrays in between).
    *
    * @param p a tree path
@@ -783,7 +783,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     }
 
     /**
-     * Returns the number of array levels in the given tree, which may be 0.
+     * Returns the number of array levels in the given tree, which can be 0.
      *
      * @param node a tree
      * @return the number of array levels in the given tree
@@ -840,7 +840,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     }
 
     /**
-     * Find position in source code where annotation is to be inserted.
+     * Returns the position in source code where the annotation is to be inserted.
      *
      * @param start beginning of range to be matched
      * @param end end of range to be matched
@@ -893,8 +893,9 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   }
 
   /**
-   * Determine the insertion position for declaration annotations on various elements. For instance,
-   * method declaration annotations should be placed before all the other modifiers and annotations.
+   * Determines the insertion position for declaration annotations on various elements. For
+   * instance, method declaration annotations should be placed before all the other modifiers and
+   * annotations.
    */
   private static final class DeclarationPositionFinder extends TreeScanner<Integer, Void> {
 
@@ -1176,7 +1177,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   }
 
   /**
-   * Find insertion position for Insertion whose criteria matched the given TreePath.
+   * Returns the insertion position for an Insertion whose criteria matched the given TreePath.
    *
    * @param path a path
    * @param i an insertion that matches the path
@@ -1379,8 +1380,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   }
 
   /**
-   * Find insertion position for Insertion whose criteria (including one for the ASTPath) matched
-   * the given TreePath.
+   * Returns the insertion position for an Insertion whose criteria (including one for the ASTPath)
+   * matched the given TreePath.
    *
    * @param astPath an AST path
    * @param path a tree path
@@ -1792,7 +1793,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * Reports an error inserting an insertion to {@code System.err}.
    *
    * @param i the insertion that caused the error
-   * @param e the error. If there's a message it will be printed.
+   * @param e the error. If there's a message, it will be printed.
    */
   public static void reportInsertionError(Insertion i, Throwable e) {
     System.err.println("Error processing insertion:");

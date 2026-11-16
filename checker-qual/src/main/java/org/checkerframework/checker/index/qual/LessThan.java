@@ -35,7 +35,7 @@ public @interface LessThan {
   /**
    * The annotated expression's value is less than this expression.
    *
-   * <p>The expressions in {@code value} may be addition/subtraction of any number of Java
+   * <p>The expressions in {@code value} can be addition/subtraction of any number of Java
    * expressions. For example, {@code @LessThan(value = "x + y + 2")}.
    *
    * <p>The expression in {@code value} must be final or constant, or the addition/subtraction of
