@@ -17,6 +17,9 @@ an `instanceof` type pattern.  New overridable methods
 `CFAbstractTransfer.refineBindingVariable()` and
 `CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
