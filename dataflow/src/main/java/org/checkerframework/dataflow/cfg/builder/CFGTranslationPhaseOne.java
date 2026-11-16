@@ -61,6 +61,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -136,6 +137,7 @@ import org.checkerframework.dataflow.cfg.node.LongLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode.BoxingConversion;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
@@ -898,7 +900,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(valueOfCall);
       Node boxed =
           new MethodInvocationNode(
-              valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
+              valueOfCall,
+              valueOfAccess,
+              Collections.singletonList(node),
+              getCurrentPath(),
+              BoxingConversion.BOXING);
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
@@ -932,11 +938,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      MethodInvocationNode unboxed =
+      Node unboxed =
           new MethodInvocationNode(
-              primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
+              primValueCall,
+              primValueAccess,
+              Collections.emptyList(),
+              getCurrentPath(),
+              BoxingConversion.UNBOXING);
       unboxed.setInSource(false);
-      unboxed.setUnboxing();
 
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
@@ -1170,8 +1179,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         unboxedVarKind == TypeKind.BYTE
             || unboxedVarKind == TypeKind.SHORT
             || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+    return isLeftNarrowableTo && isCompileTimeConstant(node);
+  }
+
+  /**
+   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
+   * {@code 1 + 2}, or a use of a constant variable.
+   *
+   * @param node a node
+   * @return true if the node is a compile-time constant expression
+   */
+  private static boolean isCompileTimeConstant(Node node) {
+    if (node instanceof ValueLiteralNode) {
+      return true;
+    }
+    Tree tree = node.getTree();
+    if (!(tree instanceof ExpressionTree)) {
+      return false;
+    }
+    Type type = ((JCTree) tree).type;
+    return type != null && type.constValue() != null;
   }
 
   /**
@@ -2534,7 +2561,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = scan(resultExpression, null);
+      // Convert the result to the type of the switch expression, as by boxing `1` in
+      // `Object o = switch (x) { default -> 1; };`.
+      Node resultExprNode =
+          assignConvert(scan(resultExpression, null), switchExprVarUseNode.getType());
       someResultMayBeNull |= mayBeNull(resultExprNode);
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
