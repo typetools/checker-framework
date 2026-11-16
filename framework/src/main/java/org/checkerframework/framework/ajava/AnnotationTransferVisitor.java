@@ -18,7 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
- * A visitor that adds all annotations from a {@code AnnotatedTypeMirror} to the corresponding
+ * A visitor that adds all annotations from an {@code AnnotatedTypeMirror} to the corresponding
  * JavaParser type, including nested types like array components.
  *
  * <p>The {@code AnnotatedTypeMirror} is passed as the secondary parameter to the visit methods.

@@ -38,7 +38,7 @@ public final class Criteria {
   }
 
   /**
-   * Add a {@code Criterion} to this {@code Criteria}.
+   * Adds a {@code Criterion} to this {@code Criteria}.
    *
    * @param c the criterion to add
    */
@@ -50,7 +50,7 @@ public final class Criteria {
   }
 
   /**
-   * Add a {@code Criterion} to this {@code Criteria}, permitting replacement.
+   * Adds a {@code Criterion} to this {@code Criteria}, permitting replacement.
    *
    * @param c the criterion to add
    */
@@ -246,7 +246,7 @@ public final class Criteria {
    * Returns true if this is the criteria on a variable declaration: a local variable or a field
    * declaration, but not a formal parameter declaration.
    *
-   * @return true iff this is the criteria on a local variable
+   * @return true iff this is the criteria on a variable declaration
    */
   public boolean isOnVariableDeclaration() {
     // Could fuse the loops for efficiency, but is it important to do so?
@@ -254,7 +254,7 @@ public final class Criteria {
   }
 
   /**
-   * Gives the AST path specified in the criteria, if any.
+   * Returns the AST path specified in the criteria, if any.
    *
    * @return AST path from {@link ASTPathCriterion}, or null if none present
    */

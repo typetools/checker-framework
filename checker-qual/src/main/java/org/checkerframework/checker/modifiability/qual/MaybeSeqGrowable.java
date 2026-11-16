@@ -9,10 +9,10 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top qualifier in the sequenced-grow hierarchy. The collection or map may or may not support
- * positional operations such as {@code addFirst}, {@code addLast}, {@code putFirst}, and {@code
- * putLast}. The checker conservatively issues an error wherever a sequenced-grow operation is
- * called on a {@code @MaybeSeqGrowable} expression.
+ * The top qualifier in the sequenced-grow hierarchy. The collection or map might or might not
+ * support positional operations such as {@code addFirst}, {@code addLast}, {@code putFirst}, and
+ * {@code putLast}. The checker conservatively issues an error wherever a sequenced-grow operation
+ * is called on a {@code @MaybeSeqGrowable} expression.
  *
  * <p>This is the default qualifier for unannotated types in the sequenced-grow hierarchy.
  *

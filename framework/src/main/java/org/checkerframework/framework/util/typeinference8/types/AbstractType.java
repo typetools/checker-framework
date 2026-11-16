@@ -194,8 +194,8 @@ public abstract class AbstractType {
 
   /**
    * Assuming the type is a declared type, this method returns the upper bounds of its type
-   * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
-   * they are proper types.)
+   * parameters. (A type parameter of a declared type can't refer to any type being inferred, so the
+   * bounds are proper types.)
    *
    * <p>This implementation always returns a list. The return type is {@code @Nullable} only because
    * {@link UseOfVariable#getTypeParameterBounds()} returns null.
@@ -226,11 +226,11 @@ public abstract class AbstractType {
   }
 
   /**
-   * If {@code superType} is a super type of this type, then this method returns the super type of
-   * this type that is the same class as {@code superType}. Otherwise, it returns null
+   * If {@code superType} is a supertype of this type, then this method returns the supertype of
+   * this type that is the same class as {@code superType}. Otherwise, it returns null.
    *
-   * @param superType a type, need not be a super type of this type
-   * @return super type of this type that is the same class as {@code superType} or null if one
+   * @param superType a type; need not be a supertype of this type
+   * @return supertype of this type that is the same class as {@code superType}, or null if one
    *     doesn't exist
    */
   public @Nullable AbstractType asSuper(TypeMirror superType) {
@@ -276,8 +276,8 @@ public abstract class AbstractType {
    * If this {@link AbstractType} is a functional interface type, then its function type is
    * returned. Otherwise, returns null.
    *
-   * @return this {@link AbstractType} is a functional interface type, then its function type is
-   *     returned; otherwise, returns null
+   * @return the function type of this {@link AbstractType} if it is a functional interface type;
+   *     otherwise, null
    */
   @Nullable AnnotatedExecutableType getFunctionType() {
     if (functionType == null && TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
@@ -361,9 +361,9 @@ public abstract class AbstractType {
    * If this type is a functional interface, then this method returns the parameter types of the
    * function type of that functional interface. Otherwise, it returns null.
    *
-   * <p>Each call returns a new list, which the caller may modify.
+   * <p>Each call returns a new list, which the caller can modify.
    *
-   * @return the parameter types of the function type of this type or null if no function type
+   * @return the parameter types of the function type of this type, or null if no function type
    *     exists
    */
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
@@ -381,9 +381,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Make {@code type} ground, which is basically changing any wildcards to their bounds. <a
+   * Makes {@code type} ground, which basically changes any wildcards to their bounds. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.27.3">JLS section
-   * 15.27.3</a>
+   * 15.27.3</a>.
    *
    * <p>This method implements the non-wildcard parameterization of <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
@@ -480,10 +480,10 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the most specific array type that is a super type of this type or null if one doesn't
+   * Returns the most specific array type that is a supertype of this type, or null if one doesn't
    * exist.
    *
-   * @return the most specific array type that is a super type of this type or null if one doesn't
+   * @return the most specific array type that is a supertype of this type, or null if one doesn't
    *     exist
    */
   public @Nullable AbstractType getMostSpecificArrayType() {
@@ -501,7 +501,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the most specific array type, that is the first super type of {@code type} that is an
+   * Returns the most specific array type, that is, the first supertype of {@code type} that is an
    * array.
    *
    * @param type annotated type mirror
@@ -534,30 +534,28 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns assuming type is an intersection type, this method returns the bounds in this type.
+   * Assuming this type is an intersection type, returns the bounds in this type.
    *
-   * @return assuming type is an intersection type, this method returns the bounds in this type
+   * @return the bounds in this type, assuming it is an intersection type
    */
   public List<AbstractType> getIntersectionBounds() {
     return create(getAnnotatedType().directSupertypes(), ignoreAnnotations);
   }
 
   /**
-   * Returns assuming this type is a type variable, this method returns the upper bound of this
-   * type.
+   * Assuming this type is a type variable, returns the upper bound of this type.
    *
-   * @return assuming this type is a type variable, this method returns the upper bound of this type
+   * @return the upper bound of this type, assuming it is a type variable
    */
   public AbstractType getTypeVarUpperBound() {
     return create(((AnnotatedTypeVariable) getAnnotatedType()).getUpperBound(), ignoreAnnotations);
   }
 
   /**
-   * Returns assuming this type is a type variable that has a lower bound, this method returns the
-   * lower bound of this type.
+   * Assuming this type is a type variable that has a lower bound, returns the lower bound of this
+   * type.
    *
-   * @return assuming this type is a type variable that has a lower bound, this method returns the
-   *     lower bound of this type
+   * @return the lower bound of this type, assuming it is a type variable that has a lower bound
    */
   public AbstractType getTypeVarLowerBound() {
     return create(((AnnotatedTypeVariable) getAnnotatedType()).getLowerBound(), ignoreAnnotations);
@@ -584,11 +582,11 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns this type's type arguments or null if this type isn't a declared type. For an inner
+   * Returns this type's type arguments, or null if this type isn't a declared type. For an inner
    * class type such as {@code Outer<String>.Inner}, the result does not include the type arguments
    * of the enclosing type; use {@link #getEnclosingType} to reach those.
    *
-   * @return this type's type arguments or null if this type isn't a declared type
+   * @return this type's type arguments, or null if this type isn't a declared type
    */
   public @Nullable List<AbstractType> getTypeArguments() {
     AnnotatedTypeMirror atm = getAnnotatedType();
@@ -680,7 +678,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns new type whose Java type is the erasure of this type.
+   * Returns a new type whose Java type is the erasure of this type.
    *
    * @return a new type whose Java type is the erasure of this type
    */
@@ -689,9 +687,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the array component type of this type or null if one does not exist.
+   * Returns the array component type of this type, or null if one does not exist.
    *
-   * @return the array component type of this type or null if one does not exist
+   * @return the array component type of this type, or null if one does not exist
    */
   public final @Nullable AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {
