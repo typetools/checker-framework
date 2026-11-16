@@ -259,7 +259,7 @@ public final class TreePathUtil {
   }
 
   /**
-   * Returns the end position of the given tree, see {@link
+   * Returns the end position of the given tree; see {@link
    * SourcePositions#getEndPosition(CompilationUnitTree, Tree)}.
    *
    * @param tree an AST node

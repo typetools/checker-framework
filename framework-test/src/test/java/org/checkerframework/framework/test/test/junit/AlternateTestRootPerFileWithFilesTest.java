@@ -17,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class AlternateTestRootPerFileWithFilesTest extends CheckerFrameworkPerFileTest {
 
   /**
-   * @param testFile the files containing test code, which will be type-checked
+   * @param testFile the file containing test code, which will be type-checked
    */
   public AlternateTestRootPerFileWithFilesTest(File testFile) {
     super(testFile, ValueChecker.class, "");

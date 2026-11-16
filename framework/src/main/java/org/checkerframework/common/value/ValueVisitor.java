@@ -93,7 +93,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   /**
-   * Returns types for methods that are annotated with {@code @IntRangeFromX} annotations need to be
+   * Return types for methods that are annotated with {@code @IntRangeFromX} annotations need to be
    * replaced with {@code @UnknownVal}. See the documentation on {@link
    * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String, Object[])
    * commonAssignmentCheck}.
@@ -120,8 +120,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * Replaces any {@code IntRangeFromX} annotations with {@code @UnknownVal}. This is used to
    * prevent these annotations from being required on the left-hand side of assignments.
    *
-   * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which will
-   *     be used on the lhs of an assignment or pseudo-assignment
+   * @param varType an annotated type mirror that might contain IntRangeFromX annotations, which
+   *     will be used on the lhs of an assignment or pseudo-assignment
    */
   private void replaceSpecialIntRangeAnnotations(AnnotatedTypeMirror varType) {
     AnnotatedTypeScanner<Void, Void> replaceSpecialIntRangeAnnotations =
@@ -441,7 +441,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   /**
-   * Issue an error if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
+   * Issues an error if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
    * are performed in {@link #visitAnnotation(AnnotationTree, Void)}.
    *
    * <p>{@inheritDoc}

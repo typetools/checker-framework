@@ -176,7 +176,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     super.addComputedTypeAnnotations(element, type);
   }
 
-  /** A class for adding annotations based on tree. */
+  /** A class for adding annotations based on a tree. */
   private class InterningTreeAnnotator extends TreeAnnotator {
 
     InterningTreeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
@@ -253,8 +253,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Unbox type and replace any interning type annotations with @Interned since all primitives can
-   * safely use ==. See case 4 in the class comments.
+   * Unboxes the type and replaces any interning type annotations with @Interned, since all
+   * primitives can safely use ==. See case 4 in the class comments.
    *
    * <p>{@inheritDoc}
    */

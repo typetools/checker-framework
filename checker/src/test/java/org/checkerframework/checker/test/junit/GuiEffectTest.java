@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class GuiEffectTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a GuiEffectTest.
+   * Creates a GuiEffectTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

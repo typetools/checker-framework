@@ -22,7 +22,7 @@ public class BinaryOperation extends JavaExpression {
   protected final JavaExpression right;
 
   /**
-   * Create a binary operation.
+   * Creates a binary operation.
    *
    * @param type the result type
    * @param operationKind the operator
@@ -38,7 +38,7 @@ public class BinaryOperation extends JavaExpression {
   }
 
   /**
-   * Create a binary operation.
+   * Creates a binary operation.
    *
    * @param node the binary operation node
    * @param left the left operand
@@ -172,7 +172,7 @@ public class BinaryOperation extends JavaExpression {
   /**
    * Returns the Java source code representation of the given operation.
    *
-   * @param operationKind an unary operation kind
+   * @param operationKind a binary operation kind
    * @return the Java source code representation of the given operation
    */
   private String operationKindToString(Tree.Kind operationKind) {

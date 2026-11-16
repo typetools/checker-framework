@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class ConditionalNotNode extends UnaryOperationNode {
 
   /**
-   * Create a new ConditionalNotNode.
+   * Creates a new ConditionalNotNode.
    *
    * @param tree the logical-complement tree for this node
    * @param operand the boolean expression being negated

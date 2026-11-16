@@ -156,8 +156,8 @@ public final class AnnotationFileParser {
    * <p>For a built-in stub file,
    *
    * <ul>
-   *   <li>private declarations are ignored,
-   *   <li>some warning messages are not issued, and
+   *   <li>private declarations are ignored, and
+   *   <li>some warning messages are not issued.
    * </ul>
    */
   private final AnnotationFileType fileType;
@@ -170,7 +170,7 @@ public final class AnnotationFileParser {
 
   /**
    * If true, print warnings about types/members that were not found. The warning states that a
-   * class/field in the file is not found on the user's real classpath. Since the file may contain
+   * class/field in the file is not found on the user's real classpath. Since the file might contain
    * packages that are not on the classpath, this can be OK, so default to false.
    */
   private final boolean warnIfNotFound;
@@ -250,7 +250,7 @@ public final class AnnotationFileParser {
 
   /**
    * The name of the type that is currently being parsed. After processing a package declaration but
-   * before processing a type declaration, the type part of this may be null.
+   * before processing a type declaration, the type part of this might be null.
    *
    * <p>It is used both for resolving symbols and for error messages.
    */
@@ -340,9 +340,9 @@ public final class AnnotationFileParser {
     }
 
     /**
-     * Returns the annotated types for the parameters to the canonical constructor. This is either
-     * from explicit annotations on the constructor in the stubs, otherwise it's taken from the
-     * annotations on the record components in the stubs.
+     * Returns the annotated types for the parameters to the canonical constructor. These come from
+     * explicit annotations on the constructor in the stubs if there are any; otherwise, they come
+     * from the annotations on the record components in the stubs.
      *
      * @return the annotated types for the parameters to the canonical constructor
      */
@@ -357,8 +357,8 @@ public final class AnnotationFileParser {
 
   /**
    * Information about a record component: its type, and whether there was an accessor in the stubs
-   * for that component. That is, for a component "foo" was there a method named exactly "foo()" in
-   * the stubs. If so, annotations on that accessor will take precedence over annotations that would
+   * for that component. That is, for a component "foo", was there a method named exactly "foo()" in
+   * the stubs? If so, annotations on that accessor will take precedence over annotations that would
    * otherwise be copied from the component in the stubs to the accessor.
    */
   public static class RecordComponentStub {
@@ -366,13 +366,13 @@ public final class AnnotationFileParser {
     public final AnnotatedTypeMirror type;
 
     /**
-     * The set of all annotations on the declaration of the record component. If applicable these
+     * The set of all annotations on the declaration of the record component. If applicable, these
      * will be copied to the corresponding field, accessor method, and compact canonical constructor
      * parameter.
      */
     private final AnnotationMirrorSet allAnnotations;
 
-    /** True if this component has an accessor of exactly the same name in the stubs file. */
+    /** True if this component has an accessor of exactly the same name in the stub file. */
     private boolean hasAccessorInStubs = false;
 
     /**
@@ -416,7 +416,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Create a new AnnotationFileParser object, which will parse and extract annotations from the
+   * Creates a new AnnotationFileParser object, which will parse and extract annotations from the
    * given file.
    *
    * @param filename name of annotation file, used only for diagnostic messages
@@ -471,8 +471,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * All annotations defined in the package (but not those nested within classes in the package).
-   * Keys are both fully-qualified and simple names.
+   * Returns all annotations defined in the package (but not those nested within classes in the
+   * package). Keys are both fully-qualified and simple names.
    *
    * @param packageElement a package
    * @return a map from annotation name to TypeElement
@@ -482,8 +482,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * All annotations declared (directly) within a class. Keys are both fully-qualified and simple
-   * names.
+   * Returns all annotations declared (directly) within a class. Keys are both fully-qualified and
+   * simple names.
    *
    * @param typeElement a type
    * @return a map from annotation name to TypeElement
@@ -493,7 +493,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * All annotations declared within any of the given elements.
+   * Returns all annotations declared within any of the given elements.
    *
    * @param typeElements the elements whose annotations to retrieve
    * @return a map from annotation names (both fully-qualified and simple names) to TypeElement
@@ -511,7 +511,7 @@ public final class AnnotationFileParser {
 
   /**
    * Returns all members of a Type that are importable in an annotation file. Currently these are
-   * values of enums, or compile time constants.
+   * values of enums, or compile-time constants.
    *
    * @param typeElement the type whose members to return
    * @return a list of fully-qualified member names
@@ -648,7 +648,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Handle wildcard imports by adding, to {@link #importedTypes}, every enclosed type.
+   * Handles wildcard imports by adding, to {@link #importedTypes}, every enclosed type.
    *
    * @param element an element for a type or package
    */
@@ -820,7 +820,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
+   * Processes {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
    * means copying annotations from Stub Parser data structures to argument {@code
    * annotationFileAnnos}.
    *
@@ -833,7 +833,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process the given StubUnit: copy its annotations to {@code this.annotationFileAnnos}.
+   * Processes the given StubUnit: copies its annotations to {@code this.annotationFileAnnos}.
    *
    * @param su the StubUnit to process
    */
@@ -844,7 +844,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process the given CompilationUnit: copy its annotations to {@code #annotationFileAnnos}.
+   * Processes the given CompilationUnit: copies its annotations to {@code #annotationFileAnnos}.
    *
    * @param cu the CompilationUnit to process
    */
@@ -881,7 +881,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process the given package declaration: copy its annotations to {@code #annotationFileAnnos}.
+   * Processes the given package declaration: copies its annotations to {@code
+   * #annotationFileAnnos}.
    *
    * @param packDecl the package declaration to process
    */
@@ -932,7 +933,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the string representation of {@code n}, one one line, truncated to {@code length}
+   * Returns the string representation of {@code n}, on one line, truncated to {@code length}
    * characters.
    *
    * @param n a JavaParser node
@@ -974,7 +975,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
+   * Processes a type declaration: copies its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
    * processing an ajava file, where traversal is handled externally by a {@link
@@ -985,7 +986,7 @@ public final class AnnotationFileParser {
    * @param outerTypeName the name of the enclosing class, when processing a nested class; otherwise
    *     null
    * @param classTree the tree corresponding to typeDecl if processing an ajava file, null otherwise
-   * @return a list of types variables for {@code typeDecl}. Only non-null if processing an ajava
+   * @return a list of type variables for {@code typeDecl}. Only non-null if processing an ajava
    *     file, in which case the contents should be removed from {@link #typeParameters} after
    *     processing the type declaration's members
    */
@@ -1193,8 +1194,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process the type's declaration: copy its annotations to {@code #annotationFileAnnos}. Does not
-   * process any of its members. Returns the type's type parameter declarations.
+   * Processes the type's declaration: copies its annotations to {@code #annotationFileAnnos}. Does
+   * not process any of its members. Returns the type's type parameter declarations.
    *
    * @param decl a type declaration
    * @param elt the type's element
@@ -1264,8 +1265,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process an enum: copy its annotations to {@code #annotationFileAnnos}. Returns the enum's type
-   * parameter declarations.
+   * Processes an enum: copies its annotations to {@code #annotationFileAnnos}. Returns the enum's
+   * type parameter declarations.
    *
    * @param decl enum declaration
    * @param elt element representing enum
@@ -1333,7 +1334,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process a method or constructor declaration: copy its annotations to {@code
+   * Processes a method or constructor declaration: copies its annotations to {@code
    * #annotationFileAnnos}.
    *
    * @param decl a method or constructor declaration, as read from an annotation file
@@ -1460,8 +1461,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process the parameters of a method or constructor declaration: copy their annotations to {@code
-   * #annotationFileAnnos}.
+   * Processes the parameters of a method or constructor declaration: copies their annotations to
+   * {@code #annotationFileAnnos}.
    *
    * @param method a method or constructor declaration
    * @param elt the element for {@code method}
@@ -1500,7 +1501,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Clear (remove) existing annotations on the type.
+   * Clears (removes) existing annotations on the type.
    *
    * <p>Stub files override annotations read from .class files. Using {@code replaceAnnotation}
    * usually achieves this; however, for annotations on type variables, it is sometimes necessary to
@@ -1529,7 +1530,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Add the annotations from {@code type} to {@code atype}. Type annotations that parsed as
+   * Adds the annotations from {@code type} to {@code atype}. Type annotations that parsed as
    * declaration annotations (i.e., type annotations in {@code declAnnos}) are applied to the
    * innermost component type.
    *
@@ -1584,7 +1585,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Add to formal parameter {@code atype}:
+   * Adds to formal parameter {@code atype}:
    *
    * <ol>
    *   <li>the annotations from {@code typeDef}, and
@@ -1705,7 +1706,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process the field declaration in decl: copy its annotations to {@code #annotationFileAnnos}.
+   * Processes the field declaration in decl: copies its annotations to {@code
+   * #annotationFileAnnos}.
    *
    * @param decl the declaration in the annotation file
    * @param elt the element representing that same declaration
@@ -1765,7 +1767,7 @@ public final class AnnotationFileParser {
    * Adds the annotations present on the declaration of an enum constant to the ATM of that
    * constant.
    *
-   * @param decl the enum constant, in Javaparser AST form (the source of annotations)
+   * @param decl the enum constant, in JavaParser AST form (the source of annotations)
    * @param elt the enum constant declaration, as an element (the destination for annotations)
    */
   private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
@@ -1789,7 +1791,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Annotate the type with the given type annotations, removing any existing annotations from the
+   * Annotates the type with the given type annotations, removing any existing annotations from the
    * same qualifier hierarchies.
    *
    * @param type the type to annotate
@@ -1821,7 +1823,7 @@ public final class AnnotationFileParser {
    * {@code elt} is a field declaration, the type annotation will be ignored.
    *
    * @param elt the element to be annotated
-   * @param annotations the set of annotations that may be applicable to elt
+   * @param annotations the set of annotations that might be applicable to elt
    * @param astNode where to report errors
    */
   private void recordDeclAnnotation(
@@ -2093,13 +2095,13 @@ public final class AnnotationFileParser {
    * an interface.
    *
    * <p>As with regular overrides, the parameter types must be exact matches; contravariance is not
-   * permitted. A formal parameter type in the stub file may be written with a fully-qualified,
-   * partially-qualified, or simple name, and its type arguments may be omitted; see {@link
+   * permitted. A formal parameter type in the stub file can be written with a fully-qualified,
+   * partially-qualified, or simple name, and its type arguments can be omitted; see {@link
    * #sameType}.
    *
    * @param typeElt the type in which the method appears
    * @param methodDecl the method declaration that does not correspond to an element
-   * @return the methods that the given method declaration would override, or null if none
+   * @return the method that the given method declaration would override, or null if none
    */
   private @Nullable ExecutableElement fakeOverriddenMethod(
       TypeElement typeElt, MethodDeclaration methodDecl) {
@@ -2178,9 +2180,9 @@ public final class AnnotationFileParser {
   /**
    * Returns true if the two types are the same.
    *
-   * <p>The JavaParser type comes from a stub file, so it is written leniently. Its name may be
+   * <p>The JavaParser type comes from a stub file, so it is written leniently. Its name can be
    * fully qualified, partially qualified (as in {@code Map.Entry}), or simple (as in {@code
-   * Entry}). Its type arguments may be omitted, in which case the javac type's type arguments are
+   * Entry}). Its type arguments can be omitted, in which case the javac type's type arguments are
    * ignored; but if type arguments are written, then they must match the javac type's.
    *
    * @param javacType type in javac form
@@ -2321,7 +2323,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the two wildcard bounds, each of which may be absent, are the same.
+   * Returns true if the two wildcard bounds, each of which might be absent, are the same.
    *
    * @param javacBound a wildcard bound in javac form, or null if the wildcard has no such bound
    * @param javaParserBound a wildcard bound in JavaParser form, or null if the wildcard has no such
@@ -2337,7 +2339,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Process a fake override: copy its annotations to the fake overrides part of {@code
+   * Processes a fake override: copies its annotations to the fake overrides part of {@code
    * #annotationFileAnnos}.
    *
    * @param element a real element
@@ -2403,14 +2405,14 @@ public final class AnnotationFileParser {
 
   /**
    * Looks for the nested type element in the typeElt and returns it if the element has the same
-   * name as provided type declaration. In case nested element is not found it returns null.
+   * name as the provided type declaration. If the nested element is not found, returns null.
    *
    * @param typeElt an element where nested type element should be looked for
-   * @param nestedTypeDecl type declaration which name should be found among nested elements of the
+   * @param nestedTypeDecl type declaration whose name should be found among nested elements of the
    *     typeElt
    * @param kind the kind of {@code nestedTypeDecl}, for use in a diagnostic message
-   * @return nested in typeElt element with the name of the type declaration, or null if nested
-   *     element is not found
+   * @return the element nested in typeElt with the name of the type declaration, or null if the
+   *     nested element is not found
    */
   private @Nullable Element findElement(
       TypeElement typeElt, TypeDeclaration<?> nestedTypeDecl, String kind) {
@@ -2433,7 +2435,7 @@ public final class AnnotationFileParser {
 
   /**
    * Looks for an enum constant element in the typeElt and returns it if the element has the same
-   * name as provided. In case enum constant element is not found it returns null.
+   * name as provided. If the enum constant element is not found, returns null.
    *
    * @param typeElt type element where enum constant element should be looked for
    * @param enumConstDecl the declaration of the enum constant
@@ -2505,7 +2507,7 @@ public final class AnnotationFileParser {
 
   /**
    * Looks for a constructor element in the typeElt and returns it if the element has the same
-   * signature as provided constructor declaration. In case constructor element is not found it
+   * signature as the provided constructor declaration. If the constructor element is not found,
    * returns null.
    *
    * @param typeElt type element where constructor element should be looked for
@@ -2553,7 +2555,7 @@ public final class AnnotationFileParser {
 
   /**
    * Looks for a field element in the typeElt and returns it if the element has the same name as
-   * provided. In case field element is not found it returns null.
+   * provided. If the field element is not found, returns null.
    *
    * @param typeElt type element where field element should be looked for
    * @param fieldName field name that should be found
@@ -2579,8 +2581,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Given a fully-qualified type name, return a TypeElement for it, or null if none exists. Also
-   * cache in importedTypes.
+   * Given a fully-qualified type name, returns a TypeElement for it, or null if none exists. Also
+   * caches it in importedTypes.
    *
    * @param name a fully-qualified type name
    * @return a TypeElement for the name, or null
@@ -2595,8 +2597,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the type element for the given fully-qualified type name. If none is found, issue a
-   * warning and return null.
+   * Returns the type element for the given fully-qualified type name. If none is found, issues a
+   * warning and returns null.
    *
    * @param typeName a type name
    * @param msg a warning message to issue if the type element for {@code typeName} cannot be found
@@ -2629,11 +2631,11 @@ public final class AnnotationFileParser {
 
   /**
    * Returns true if one of the annotations is {@link AnnotatedFor} and this checker is in its list
-   * of checkers. If none of the annotations are {@code AnnotatedFor}, then also return true.
+   * of checkers. If none of the annotations are {@code AnnotatedFor}, then also returns true.
    *
    * @param annotations a list of JavaParser annotations
-   * @return true if one of the annotations is {@link AnnotatedFor} and its list of checkers does
-   *     not contain this checker
+   * @return true if one of the annotations is {@link AnnotatedFor} and its list of checkers
+   *     contains this checker, or if none of the annotations is {@code AnnotatedFor}
    */
   private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
     if (fileType == AnnotationFileType.JDK_STUB) {
@@ -2654,7 +2656,7 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Convert {@code annotation} into an AnnotationMirror. Returns null if the annotation isn't
+   * Converts {@code annotation} into an AnnotationMirror. Returns null if the annotation isn't
    * supported by the checker or if some error occurred while converting it.
    *
    * @param annotation syntax tree for an annotation
@@ -2908,7 +2910,7 @@ public final class AnnotationFileParser {
 
   /**
    * Converts {@code number} to {@code expectedKind}. The value converted is multiplied by -1 if
-   * {@code negate} is true
+   * {@code negate} is true.
    *
    * @param number a Number value to be converted
    * @param expectedKind one of type {byte, short, int, long, char, float, double}
@@ -3036,8 +3038,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Cast to non-array values so that correct the correct AnnotationBuilder#setValue method is
-   * called. (Different types of values are handled differently.)
+   * Casts to non-array values so that the correct AnnotationBuilder#setValue method is called.
+   * (Different types of values are handled differently.)
    *
    * @param builder the builder to side-effect
    * @param name the element name
@@ -3199,8 +3201,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * If the key is already in the {@code annotationFileAnnos.declAnnos} map, then add the annos to
-   * the map value. Otherwise put the key and the annos in the map.
+   * If the key is already in the {@code annotationFileAnnos.declAnnos} map, then adds the annos to
+   * the map value. Otherwise puts the key and the annos in the map.
    *
    * @param key a name (actually declaration element string)
    * @param annos the set of declaration annotations on it, as written in the annotation file; is
@@ -3543,7 +3545,7 @@ public final class AnnotationFileParser {
     private static final long serialVersionUID = 20201222;
 
     /**
-     * Create a new AnnotationFileParserException.
+     * Creates a new AnnotationFileParserException.
      *
      * @param message a description of the problem
      */

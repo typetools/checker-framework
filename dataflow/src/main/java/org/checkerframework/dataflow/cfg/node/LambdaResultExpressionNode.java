@@ -41,7 +41,7 @@ public class LambdaResultExpressionNode extends Node {
 
   /**
    * Returns the {@link ExpressionTree} corresponding to the body of a lambda expression with an
-   * expression body (e.g. X for ({@code o -> X}) where X is an expression and not a {...} block).
+   * expression body (e.g., X for ({@code o -> X}) where X is an expression and not a {...} block).
    *
    * @return the {@link ExpressionTree} corresponding to the body of a lambda expression with an
    *     expression body

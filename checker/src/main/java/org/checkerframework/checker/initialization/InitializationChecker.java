@@ -17,7 +17,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  */
 public abstract class InitializationChecker extends BaseTypeChecker {
 
-  /** Create a new InitializationChecker. */
+  /** Creates a new InitializationChecker. */
   protected InitializationChecker() {}
 
   @Override

@@ -105,7 +105,7 @@ The repository also contains the following directories:
   depends on
   the <a href="https://github.com/typetools/jdk"><code>typetools/jdk</code></a> project
   and the <a href="https://github.com/typetools/stubparser"><code>stubparser</code></a> project.
-When making changes to one of these projects, you may also need to make changes to one or more of the others.
+When making changes to one of these projects, you might also need to make changes to one or more of the others.
 </p>
 
 <p>
@@ -157,7 +157,7 @@ wrapper</a>.
 </p>
 
 <p>
-Frequently-used tasks:
+Frequently used tasks:
 </p>
 <ul>
   <li> <code>assemble</code>: builds all artifacts, including jars and Javadoc jars.
@@ -173,7 +173,7 @@ Frequently-used tasks:
 <p>
 If you run a task from the main directory, then it will run that task in all
 subprojects with a task by that name. So, if you run <code>./gradlew
-allTests</code> that runs all tests everywhere. But <code>(cd
+allTests</code>, then it runs all tests everywhere. But <code>(cd
 framework &amp;&amp; ../gradlew allTests)</code> only runs tests in
 the <code>framework</code> project.
 Alternatively, running <code>:framework:allTests</code> from the
@@ -347,7 +347,7 @@ Ernst's advice about creating GitHub pull requests</a>.
 </p>
 
 <p>
-  You may need to make changes to multiple repositories.
+  You might need to make changes to multiple repositories.
   See <a href="#Related_repositories">"Related repositories"</a> above.
 </p>
 
@@ -439,7 +439,7 @@ CircleCI and/or GitHub Actions on each push to GitHub.
 <p>
   Continuous integration type-checks external projects such as the daikon and
   plume-lib libraries.  If you change the Checker Framework, then you might need
-  to change code being type-checked &mdash; for example, to fix a newly-revealed
+  to change code being type-checked &mdash; for example, to fix a newly revealed
   defect (bug) or to remove a warning suppression that is no longer necessary.
 </p>
 
@@ -467,7 +467,7 @@ CircleCI and/or GitHub Actions on each push to GitHub.
   </li>
   <li>
     Edit the description of pull request #2222 to refer back to the
-    newly-created pull request:  "Merge with
+    newly created pull request:  "Merge with
     https://github.com/<em>UPSTREAM_ORG</em>/<em>PROJECT</em>/pull/<em>NNN</em>".
   </li>
 </ol>
@@ -475,7 +475,7 @@ CircleCI and/or GitHub Actions on each push to GitHub.
 <p>
   When CI runs for the new pull request, it will use your fork and branch of the
   Checker Framework.  When CI runs for your Checker Framework pull request, it
-  will type-check the newly-created branch.  When all the CI runs pass, merge all
+  will type-check the newly created branch.  When all the CI runs pass, merge all
   the branches in quick succession &mdash; that is, click the squash-and-merge
   buttons one after another.
 </p>
@@ -497,8 +497,8 @@ file <a href="https://github.com/typetools/checker-framework/blob/master/.circle
 </p>
 
 <p>
-Sometimes, CI tests for your pull request may fail even though the same command
-passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
+Sometimes, CI tests for your pull request might fail even though the same command
+passed locally.  First, ensure that you are using the same JDK.  Second, all CI tests
 are run in a Docker container, and you can use that container if necessary.  The
 container names are in
 file <a href="https://github.com/typetools/checker-framework/blob/master/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
@@ -646,7 +646,7 @@ done
 <h2 id="Counting_annotations">Counting annotations</h2>
 
 <p>
-After you have annotated a project, you may wish to count the annotations that you have written.
+After you have annotated a project, you might wish to count the annotations that you have written.
 These programs will help you do that:
 </p>
 
@@ -682,7 +682,7 @@ Here are <b>general rules</b>:
 If the Checker Framework version is a commit on branch B with date D, then use
 the commits on other repositories' branch B (or <code>master</code>, if branch B
 does not exist) that precede D.  (This isn't quite right, because the commits
-may have been made earlier but all pushed at the same time, so you might need to
+might have been made earlier but all pushed at the same time, so you might need to
 look at commits that are relatively soon after D.)  To obtain these, view the
 GitHub history and click on the pull request to see the commits that were merged
 into it.  You cannot obtain these from the Git history, because after a pull

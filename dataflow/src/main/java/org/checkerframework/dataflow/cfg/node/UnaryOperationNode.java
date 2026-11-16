@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for a postfix or an unary expression.
+ * A node for a postfix or a unary expression.
  *
  * <p>For example:
  *
