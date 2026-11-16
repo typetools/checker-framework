@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.List;
 import org.checkerframework.framework.testchecker.util.*;
 
@@ -37,6 +38,24 @@ public class EnhancedForConversion {
   <T extends @Odd Integer> void unboxTypeVariableList(List<T> list) {
     for (int x : list) {
       @Odd int y = x;
+    }
+  }
+
+  // The return type of iterator() is Iterator<@Odd Integer>, so next() returns an @Odd Integer.
+  abstract static class OddIntegers implements Iterable<@Odd Integer> {
+    @Override
+    public abstract Iterator<@Odd Integer> iterator();
+  }
+
+  void unboxIterable(OddIntegers odds) {
+    for (int x : odds) {
+      @Odd int y = x;
+    }
+  }
+
+  void unboxAndWidenIterable(OddIntegers odds) {
+    for (long x : odds) {
+      @Odd long y = x;
     }
   }
 
