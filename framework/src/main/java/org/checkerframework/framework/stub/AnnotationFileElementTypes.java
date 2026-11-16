@@ -240,8 +240,13 @@ public class AnnotationFileElementTypes {
       }
     } catch (IOException e) {
       checker.message(
-          Diagnostic.Kind.NOTE,
-          "Could not read annotation resource from " + checkerClass + ": " + stubFileName);
+          Diagnostic.Kind.WARNING,
+          "Could not read annotation resource from "
+              + checkerClass
+              + ": "
+              + stubFileName
+              + ": "
+              + e);
     }
   }
 
@@ -285,7 +290,8 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+      checker.message(
+          Diagnostic.Kind.WARNING, "Could not read ajava file: " + ajavaPath + ": " + e);
     } finally {
       parsing = false;
     }
@@ -310,34 +316,32 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.stubDebugStatic(
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
+    // We use parseStubFile here even for ajava files because at this stage ajava files are parsed
+    // as stub files. The extra annotation data in an ajava file is parsed when type-checking the
+    // ajava file's corresponding Java file.
+    AnnotationFileType parseType =
+        fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType;
     for (String path : annotationFiles) {
-      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
-      if (allFiles != null) {
-        for (AnnotationFileResource resource : allFiles) {
-          try (BufferedInputStream annotationFileStream =
-              new BufferedInputStream(resource.getInputStream())) {
-            // Is it necessary to also skip files that consist only of Java comments?
-            Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-            if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-              continue;
-            }
-            // We use parseStubFile here even for ajava files because at this stage
-            // ajava files are parsed as stub files. The extra annotation data in an
-            // ajava file is parsed when type-checking the ajava file's corresponding
-            // Java file.
-            AnnotationFileParser.parseStubFile(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
-          } catch (IOException e) {
-            checker.message(
-                Diagnostic.Kind.WARNING,
-                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
-          }
+      File location = AnnotationFileUtil.findFileSystemLocation(path);
+      if (location != null) {
+        if (location.isFile()
+            && !AnnotationFileUtil.isJarOrZip(location.getName())
+            && !AnnotationFileUtil.hasAnnotationFileExtension(location.getName(), fileType)) {
+          warnUnusableNamedFile(path, fileType);
+          continue;
         }
+        AnnotationFileUtil.forEachAnnotationFile(
+            location,
+            fileType,
+            resource -> parseAnnotationFileResource(resource, parseType),
+            archive ->
+                checker.message(
+                    Diagnostic.Kind.NOTE,
+                    "Not reading archive "
+                        + archive
+                        + ", which is within directory "
+                        + location
+                        + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top
@@ -348,7 +352,7 @@ public class AnnotationFileElementTypes {
         try (InputStream in = checker.getClass().getResourceAsStream(path)) {
           if (in != null) {
             AnnotationFileParser.parseStubFile(
-                path, in, factory, processingEnv, annotationFileAnnos, fileType);
+                path, in, factory, processingEnv, annotationFileAnnos, parseType);
           } else {
             // Didn't find the file.  Issue a warning.
 
@@ -403,10 +407,63 @@ public class AnnotationFileElementTypes {
             }
           }
         } catch (IOException e) {
-          checker.message(Diagnostic.Kind.NOTE, "Could not read annotation resource: " + path);
+          checker.message(
+              Diagnostic.Kind.WARNING, "Could not read annotation resource: " + path + ": " + e);
         }
       }
     }
+  }
+
+  /**
+   * Parses the given annotation file as a stub file. Issues a warning if it cannot be read.
+   *
+   * @param resource an annotation file
+   * @param parseType the file type to parse {@code resource} as; a stub file type
+   */
+  private void parseAnnotationFileResource(
+      AnnotationFileResource resource, AnnotationFileType parseType) {
+    try (BufferedInputStream annotationFileStream =
+        new BufferedInputStream(resource.getInputStream())) {
+      // Is it necessary to also skip files that consist only of Java comments?
+      Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+      if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+        return;
+      }
+      AnnotationFileParser.parseStubFile(
+          resource.getDescription(),
+          annotationFileStream,
+          factory,
+          factory.getProcessingEnv(),
+          annotationFileAnnos,
+          parseType);
+    } catch (IOException e) {
+      factory
+          .getChecker()
+          .message(
+              Diagnostic.Kind.WARNING,
+              "Could not read annotation resource: " + resource.getDescription() + ": " + e);
+    }
+  }
+
+  /**
+   * Issues a warning that a file that the user named is being ignored, because it is not an archive
+   * and its name does not end with the file name extension of its file type.
+   *
+   * @param path the file's name, as the user supplied it
+   * @param fileType the type of annotation file that the user supplied
+   */
+  private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
+    String reason;
+    if (fileType.isStub() && path.endsWith(".ajava")) {
+      reason = ", which is an ajava file; supply it via -Aajava";
+    } else if (!fileType.isStub() && path.endsWith(".astub")) {
+      reason = ", which is a stub file; supply it via -Astubs";
+    } else if (fileType.isStub()) {
+      reason = ": the name of a stub file must end with .astub";
+    } else {
+      reason = ": the name of an ajava file must end with .ajava";
+    }
+    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**

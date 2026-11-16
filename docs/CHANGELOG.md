@@ -10,8 +10,13 @@
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
 addition to `.jar` archives and directories.  An archive is read only if it is
 named in the option; an archive within a directory that is named in the option
-is ignored.  Within a directory or archive, hidden files (whose names start with
-`.`), such as the `._Foo.astub` files that macOS creates, are ignored.
+is ignored, with a note.  Within a directory or archive, hidden files and
+directories (whose names start with `.`), such as the `._Foo.astub` files that
+macOS creates, are ignored.
+
+A file named in `-Astubs` or `-Aajava` that is not an archive and does not have
+the expected extension (`.astub` or `.ajava`) yields a warning.  An annotation
+file that cannot be read yields a warning rather than a note.
 
 ### Changes for type system implementers
 
