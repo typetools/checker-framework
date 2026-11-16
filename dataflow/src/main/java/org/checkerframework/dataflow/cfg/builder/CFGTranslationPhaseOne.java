@@ -2882,8 +2882,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    extendWithArtificialCall(
-        closeCall, receiverNode, NullReceiver.IMPOSSIBLE, !isExceptionalPath);
+    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE, !isExceptionalPath);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
