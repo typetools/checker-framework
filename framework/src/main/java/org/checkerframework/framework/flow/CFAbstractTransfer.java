@@ -1535,7 +1535,8 @@ public abstract class CFAbstractTransfer<
   private TransferResult<V, S> visitUnboxingCall(MethodInvocationNode n, TransferInput<V, S> in) {
     ExecutableElement method = n.getTarget().getMethod();
     // The CFG builds a tree for each unboxing call, but a custom CFG might not.  Handle a missing
-    // tree as visitMethodInvocation does.
+    // tree as visitMethodInvocation does.  (JavaExpression.fromNode, which the store lookups and
+    // updates below use, does not require a tree.)
     ExpressionTree unboxingTree = n.getTree();
 
     S thenStore = in.getThenStore();
