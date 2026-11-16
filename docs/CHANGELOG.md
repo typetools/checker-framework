@@ -9,8 +9,7 @@
 
 A pattern variable, such as `s` in `o instanceof String s`, now defaults to the
 top qualifier, like a local variable, and is refined to the qualifiers of the
-value that the pattern matches.  This does not apply to a pattern variable
-nested in a record pattern.
+value that the pattern matches.
 
 The qualifiers of a record pattern's type are inferred from the type that the
 pattern is matched against, in the same way that javac infers its type
@@ -27,9 +26,8 @@ assignment if the pattern is unconditional for that type, and like an
 
 ### Changes for type system implementers
 
-`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables that are not
-nested in a record pattern.  `ElementUtils.isLocalVariable()` returns true for
-pattern variables.
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
+`ElementUtils.isLocalVariable()` returns true for pattern variables.
 
 New overridable method `BaseTypeVisitor.checkInstanceOfPattern()` checks the
 pattern variable of an `instanceof` type pattern.  A subclass can override the
@@ -37,12 +35,7 @@ new method `BaseTypeVisitor.instanceOfPatternMatchedType()` to exclude values
 that `instanceof` never matches, such as null.
 
 New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
-pattern variable.  New method `AnnotatedTypeFactory.isNestedBindingVariable()`
-returns true for a pattern variable nested in a record pattern.
-
-New method `QualifierPolymorphism.resolveWithReceiver()`.  A class that
-implements `QualifierPolymorphism` directly, rather than extending
-`AbstractQualifierPolymorphism`, must implement it.
+pattern variable.
 
 New overridable methods `BaseTypeVisitor.checkRecordPatternTypeInference()`,
 `BaseTypeVisitor.checkNestedBindingPatterns()`, and

@@ -2535,11 +2535,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    // A binding variable nested in a record pattern is not defaulted to top, so it keeps its
-    // type-based default.
-    if (element != null
-        && ElementUtils.isLocalVariable(element)
-        && !isNestedBindingVariable(element)) {
+    if (element != null && ElementUtils.isLocalVariable(element)) {
       // It's a local variable.
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary
