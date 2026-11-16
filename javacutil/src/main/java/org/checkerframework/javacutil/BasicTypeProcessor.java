@@ -7,7 +7,7 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
- * Process the types in an AST in a trivial manner, with hooks for derived classes to actually do
+ * Processes the types in an AST in a trivial manner, with hooks for derived classes to actually do
  * something.
  */
 public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
@@ -18,14 +18,14 @@ public abstract class BasicTypeProcessor extends AbstractTypeProcessor {
   public BasicTypeProcessor() {}
 
   /**
-   * Create a TreePathScanner at the given root.
+   * Creates a TreePathScanner at the given root.
    *
    * @param root where to start the tree traversal
    * @return a TreePathScanner at the given root
    */
   protected abstract TreePathScanner<?, ?> createTreePathScanner(CompilationUnitTree root);
 
-  /** Visit the tree path for the type element. */
+  /** Visits the tree path for the type element. */
   @Override
   public void typeProcess(TypeElement e, TreePath p) {
     currentRoot = p.getCompilationUnit();

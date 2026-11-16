@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * An expression of type {@code @MustCall({"m1", "m2"})} may be obligated to call {@code m1()}
+ * An expression of type {@code @MustCall({"m1", "m2"})} might be obligated to call {@code m1()}
  * and/or {@code m2()} before it is deallocated, but it is not obligated to call any other methods.
  *
  * <p>This annotation can be enforced by running the Resource Leak Checker. It enforces that the

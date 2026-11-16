@@ -50,7 +50,7 @@ public class LambdaBodyConstraint extends TypeConstraint {
   }
 
   /**
-   * Returns whether the constraints produced by the body of {@code lambda} must be deferred,
+   * Returns true if the constraints produced by the body of {@code lambda} must be deferred,
    * because the lambda's parameters do not have types yet.
    *
    * <p>This is the case when {@code lambda} is implicitly typed and either the target type {@code
@@ -59,7 +59,7 @@ public class LambdaBodyConstraint extends TypeConstraint {
    *
    * @param lambda a lambda expression that is an argument of an invocation under inference
    * @param t the target type of {@code lambda}
-   * @return whether the constraints produced by the body of {@code lambda} must be deferred
+   * @return true if the constraints produced by the body of {@code lambda} must be deferred
    */
   public static boolean mustDefer(LambdaExpressionTree lambda, AbstractType t) {
     if (!TreeUtils.isImplicitlyTypedLambda(lambda)) {

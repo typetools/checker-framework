@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public interface UnitsRelations {
   /**
-   * Initialize the object. Needs to be called before any other method.
+   * Initializes the object. Needs to be called before any other method.
    *
    * @param env the ProcessingEnvironment to use
    * @return a reference to "this"

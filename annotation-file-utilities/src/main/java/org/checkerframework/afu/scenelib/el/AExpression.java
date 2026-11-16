@@ -30,20 +30,20 @@ public class AExpression extends AElement {
 
   /**
    * A method invocation's annotated type arguments; map key is the offset of the invokestatic
-   * bytecode
+   * bytecode.
    */
   public final @Modifiable VivifyingMap<RelativeLocation, ATypeElement> calls =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /**
    * A member reference's annotated type parameters; map key is the offset of the invokestatic
-   * bytecode
+   * bytecode.
    */
   public final @Modifiable VivifyingMap<RelativeLocation, ATypeElement> refs =
       ATypeElement.<RelativeLocation>newVivifyingLHMap_ATE();
 
   /**
-   * The method's annotated lambda expressions; map key is the offset of the invokedynamic bytecode
+   * The method's annotated lambda expressions; map key is the offset of the invokedynamic bytecode.
    */
   @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
   // is the top qualifier, so it does not propagate the backing map's @Modifiable type.

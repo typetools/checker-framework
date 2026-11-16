@@ -25,7 +25,7 @@ public class ValueLiteral extends JavaExpression {
    * Creates a ValueLiteral from the node with the given type.
    *
    * @param type type of the literal
-   * @param node the literal represents by this {@link
+   * @param node the literal represented by this {@link
    *     org.checkerframework.dataflow.expression.ValueLiteral}
    */
   public ValueLiteral(TypeMirror type, ValueLiteralNode node) {
@@ -34,7 +34,7 @@ public class ValueLiteral extends JavaExpression {
   }
 
   /**
-   * Creates a ValueLiteral where the value is {@code value} that has the given type.
+   * Creates a ValueLiteral whose value is {@code value} and that has the given type.
    *
    * @param type type of the literal
    * @param value the literal value
@@ -60,7 +60,7 @@ public class ValueLiteral extends JavaExpression {
   }
 
   /**
-   * Negate a boxed primitive.
+   * Negates a boxed primitive.
    *
    * @param o a boxed primitive
    * @return a boxed primitive that is the negation of the argument

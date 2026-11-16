@@ -21,7 +21,7 @@ public interface OptionConfiguration {
    * Returns true if the given option is provided.
    *
    * <p>Note that {@link #getOption} can still return null even if {@code hasOption} returns true:
-   * this happens e.g. for {@code -Amyopt}
+   * this happens, for example, for {@code -Amyopt}.
    *
    * @param name the name of the option to check
    * @return true if the option name was provided, false otherwise
@@ -32,7 +32,7 @@ public interface OptionConfiguration {
    * Determines the value of the option with the given name.
    *
    * <p>Note that {@code getOption} can still return null even if {@link #hasOption} returns true:
-   * this happens e.g. for {@code -Amyopt}
+   * this happens, for example, for {@code -Amyopt}.
    *
    * @param name the name of the option to check
    * @return the value of the option with the given name
@@ -41,8 +41,8 @@ public interface OptionConfiguration {
   @Nullable String getOption(String name);
 
   /**
-   * Determines the boolean value of the option with the given name. Returns {@code defaultValue} if
-   * the option is not set.
+   * Determines the value of the option with the given name. Returns {@code defaultValue} if the
+   * option is not set.
    *
    * @param name the name of the option to check
    * @param defaultValue the default value to return if the option is not set
@@ -117,7 +117,7 @@ public interface OptionConfiguration {
   public List<String> getStringsOption(String name, String separator, List<String> defaultValue);
 
   /**
-   * Map the Checker Framework version of {@link SupportedOptions} to the standard annotation
+   * Maps the Checker Framework version of {@link SupportedOptions} to the standard annotation
    * provided version {@link javax.annotation.processing.SupportedOptions}.
    *
    * @return the supported options

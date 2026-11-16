@@ -19,11 +19,11 @@ public class ConstructorInsertion extends TypedInsertion {
   private @Growable Set<Insertion> declarationInsertions = new LinkedHashSet<>();
 
   /**
-   * Construct a ConstructorInsertion.
+   * Constructs a ConstructorInsertion.
    *
-   * <p>To insert the annotation and the constructor (for example, {@code @Anno Type this}) the name
-   * should be set to the type to insert. This can either be done before calling this constructor,
-   * or by modifying the return value of {@link #getType()}.
+   * <p>To insert the annotation and the constructor (for example, {@code @Anno Type this}), the
+   * name should be set to the type to insert. This can either be done before calling this
+   * constructor, or by modifying the return value of {@link #getType()}.
    *
    * @param type the type to use when inserting the constructor
    * @param criteria where to insert the text

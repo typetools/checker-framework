@@ -76,8 +76,11 @@ import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -92,9 +95,9 @@ import org.plumelib.util.CollectionsP;
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
  * detecting resource leaks. For any expression <em>e</em> the analyzer ensures that when <em>e</em>
  * goes out of scope, there exists a resource alias <em>r</em> of <em>e</em> (which might be
- * <em>e</em> itself) such that the must-call methods of <em>r</em> (i.e. the values of <em>r</em>'s
- * MustCall type) are contained in the value of <em>r</em>'s CalledMethods type. For any <em>e</em>
- * for which this property does not hold, the analyzer reports a {@code
+ * <em>e</em> itself) such that the must-call methods of <em>r</em> (i.e., the values of
+ * <em>r</em>'s MustCall type) are contained in the value of <em>r</em>'s CalledMethods type. For
+ * any <em>e</em> for which this property does not hold, the analyzer reports a {@code
  * "required.method.not.called"} error, indicating a possible resource leak.
  *
  * <p>Mechanically, the analysis does two tasks.
@@ -103,14 +106,14 @@ import org.plumelib.util.CollectionsP;
  *   <li>Tracks must-aliases, implemented via a dataflow analysis. Each dataflow fact is a set of
  *       resource-aliases that refer to the same resource. Furthermore, that resource is owned. No
  *       dataflow facts are maintained for a non-owned resource.
- *   <li>When the last resource alias in a resource-alias set goes out-of-scope, it checks their
+ *   <li>When the last resource alias in a resource-alias set goes out of scope, it checks their
  *       must-call and called-methods types. The analysis does not track must-call or called-methods
  *       types, but queries other checkers to obtain them.
  * </ul>
  *
  * <p>Class {@link Obligation} represents a single such dataflow fact. Abstractly, each dataflow
  * fact is a pair: a set of resource aliases to some resource, and the must-call obligations of that
- * resource (i.e the list of must-call methods that need to be called on one of the resource
+ * resource (i.e., the list of must-call methods that need to be called on one of the resource
  * aliases). Concretely, the Must Call Checker is responsible for tracking the latter - an
  * expression's must-call type indicates which methods must be called - so this dataflow analysis
  * only actually tracks the sets of resource aliases.
@@ -129,7 +132,7 @@ import org.plumelib.util.CollectionsP;
  *
  * <p>The dataflow analysis for these Obligations is conservative in that it guarantees that for
  * every resource which actually does have a must-call obligation, at least one Obligation will
- * exist. However, it does not guarantee the opposite: Obligations may also exist for resources
+ * exist. However, it does not guarantee the opposite: Obligations might also exist for resources
  * without a must-call obligation (or for non-resources) as a result of analysis imprecision. That
  * is, the set of Obligations tracked by the analysis over-approximates the actual set of resources
  * in the analyzed program with must-call obligations.
@@ -141,7 +144,7 @@ import org.plumelib.util.CollectionsP;
  * variables, the checker wouldn't be able to verify code such as {@code new Socket(host,
  * port).close()}, which would cause false positives. Temporaries are created for {@code new}
  * expressions, method calls (for the return value), and ternary expressions. Other types of
- * expressions may be supported in the future.
+ * expressions might be supported in the future.
  */
 public class MustCallConsistencyAnalyzer {
 
@@ -152,7 +155,7 @@ public class MustCallConsistencyAnalyzer {
   private final boolean permitInitializationLeak;
 
   /**
-   * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
+   * Aliases about which the checker has already reported a resource leak, to avoid duplicate
    * reports.
    */
   private final Set<ResourceAlias> reportedErrorAliases = new HashSet<>();
@@ -183,6 +186,21 @@ public class MustCallConsistencyAnalyzer {
 
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
+
+  /**
+   * The invocations whose result has been counted for -AcountMustCall. The analysis processes an
+   * invocation once per outgoing CFG edge and once per set of Obligations that reaches it, but
+   * counts the invocation's result only once.
+   */
+  private final Set<Node> countedInvocationResults =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
+   * The invocations of {@code @CreatesMustCallFor} methods that have been counted for
+   * -AcountMustCall. See {@link #countedInvocationResults}.
+   */
+  private final Set<Node> countedCreatesMustCallForInvocations =
+      Collections.newSetFromMap(new IdentityHashMap<>());
 
   /** A description for how a method might exit. */
   public enum MethodExitKind {
@@ -239,7 +257,7 @@ public class MustCallConsistencyAnalyzer {
     /**
      * The ways a method can exit along which this Obligation has to be enforced. For example, this
      * will usually be {@link MethodExitKind#ALL}, indicating that this Obligation has to be
-     * enforced no matter how the method exits. It may also be a smaller set indicating that the
+     * enforced no matter how the method exits. It can also be a smaller set indicating that the
      * Obligation only has to be enforced on certain exit conditions.
      *
      * <p>If this set is empty then the Obligation can be dropped as it never needs to be enforced.
@@ -321,14 +339,14 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Gets the must-call methods (i.e. the list of methods that must be called to satisfy the
+     * Gets the must-call methods (i.e., the list of methods that must be called to satisfy the
      * must-call obligation) of each resource alias represented by this Obligation.
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
      *     null, then the default MustCall type of each variable's class will be used.
      * @return a map from each resource alias of this to a list of its must-call method names, or
-     *     null if the must-call obligations are unsatisfiable (i.e. the value of some tracked
+     *     null if the must-call obligations are unsatisfiable (i.e., the value of some tracked
      *     resource alias of this in the Must Call store is MustCallUnknown)
      */
     public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
@@ -353,7 +371,7 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Gets the must-call type associated with the given resource alias, falling on back on the
+     * Gets the must-call type associated with the given resource alias, falling back on the
      * declared type if there is no refined type for the alias in the store.
      *
      * @param alias a resource alias
@@ -454,9 +472,9 @@ public class MustCallConsistencyAnalyzer {
     public final Tree tree;
 
     /**
-     * Was this ResourceAlias derived from a parameter to a method that was annotated as {@link
-     * MustCallAlias}? If so, the obligation containing this resource alias must be discharged only
-     * in one of the following ways:
+     * True if this ResourceAlias was derived from a parameter to a method that was annotated as
+     * {@link MustCallAlias}. If so, the obligation containing this resource alias must be
+     * discharged only in one of the following ways:
      *
      * <ul>
      *   <li>it is passed to another method or constructor in an @MustCallAlias position, and then
@@ -493,7 +511,7 @@ public class MustCallConsistencyAnalyzer {
     /**
      * Create a new resource alias.
      *
-     * @param reference the local variable
+     * @param reference the reference
      * @param element the element for the reference
      * @param tree the tree
      * @param derivedFromMustCallAliasParam true iff this resource alias was created because of an
@@ -536,7 +554,7 @@ public class MustCallConsistencyAnalyzer {
      * Returns an appropriate String for representing this in an error message. In particular, if
      * {@link #reference} is a temporary variable, we return the String representation of {@link
      * #tree}, to avoid exposing the temporary name (which has no meaning for the user) in the error
-     * message
+     * message.
      *
      * @return an appropriate String for representing this in an error message
      */
@@ -624,7 +642,7 @@ public class MustCallConsistencyAnalyzer {
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
-      incrementNumMustCall(node);
+      incrementNumMustCall(node, countedCreatesMustCallForInvocations);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
@@ -636,7 +654,7 @@ public class MustCallConsistencyAnalyzer {
       // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the
       // return value of the method (which can't be the target of the annotation, because our
       // syntax doesn't support that).
-      incrementNumMustCall(node);
+      incrementNumMustCall(node, countedInvocationResults);
     }
     updateObligationsWithInvocationResult(obligations, node);
   }
@@ -711,7 +729,7 @@ public class MustCallConsistencyAnalyzer {
    *
    * <ul>
    *   <li>1) the expression is an owning pointer,
-   *   <li>2) the expression already has a tracked Obligation (i.e. there is already a resource
+   *   <li>2) the expression already has a tracked Obligation (i.e., there is already a resource
    *       alias in some Obligation's resource alias set that refers to the expression), or
    *   <li>3) the method in which the invocation occurs also has an @CreatesMustCallFor annotation,
    *       with the same expression.
@@ -720,7 +738,7 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param invocationPath the path to the invocation of the method from whose @CreateMustCallFor
+   * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
    *     annotation {@code expression} came
    * @return true iff the expression is valid, as defined above
    */
@@ -916,7 +934,7 @@ public class MustCallConsistencyAnalyzer {
    * <p>This method can also side-effect {@code obligations}, if node is a super or this constructor
    * call with MustCallAlias annotations, by removing that Obligation.
    *
-   * @param obligations the current set of Obligations, which may be side-effected
+   * @param obligations the current set of Obligations, which might be side-effected
    * @param node the invocation node to check; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
    * @param isMustCallInference true if this method is invoked as part of a MustCall inference
@@ -1223,8 +1241,8 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Add a new alias to all Obligations that have {@code var} in their resource-alias set. This
-   * method should be used when {@code var} and {@code newAlias} definitively point to the same
-   * object in memory.
+   * method should be used when {@code var} and {@code newAlias} definitely point to the same object
+   * in memory.
    *
    * @param obligations the set of Obligations to modify
    * @param var a variable
@@ -1264,7 +1282,7 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Helper type for {@link #removeObligationsContainingVar(Set, LocalVariableNode,
-   * MustCallAliasHandling, Set)}
+   * MustCallAliasHandling, Set)}.
    */
   private enum MustCallAliasHandling {
     /**
@@ -1284,7 +1302,7 @@ public class MustCallConsistencyAnalyzer {
    * Remove Obligations that contain {@code var} in their resource-alias set.
    *
    * <p>Some operations do not satisfy all Obligations. For instance, assigning to a field in a
-   * constructor only satisfies Obligations when the constructor exits normally (i.e. without
+   * constructor only satisfies Obligations when the constructor exits normally (i.e., without
    * throwing an exception). The last two arguments to this method can be used to retain some
    * Obligations in special circumstances.
    *
@@ -1326,15 +1344,15 @@ public class MustCallConsistencyAnalyzer {
    * Update a set of tracked Obligations to account for a (pseudo-)assignment to some variable, as
    * in a gen-kill dataflow analysis problem. That is, add ("gen") and remove ("kill") resource
    * aliases from Obligations in the {@code obligations} set as appropriate based on the
-   * (pseudo-)assignment performed by {@code node}. This method may also remove an Obligation
+   * (pseudo-)assignment performed by {@code node}. This method might also remove an Obligation
    * entirely if the analysis concludes that its resource alias set is empty because the last
    * tracked alias to it has been overwritten (including checking that the must-call obligations
    * were satisfied before the assignment).
    *
-   * <p>Pseudo-assignments may include operations that "assign" to a temporary variable, exposing
+   * <p>Pseudo-assignments can include operations that "assign" to a temporary variable, exposing
    * the possible value flow into the variable. E.g., for a ternary expression {@code b ? x : y}
-   * whose temporary variable is {@code t}, this method may process "assignments" {@code t = x} and
-   * {@code t = y}, thereby capturing the two possible values of {@code t}.
+   * whose temporary variable is {@code t}, this method might process "assignments" {@code t = x}
+   * and {@code t = y}, thereby capturing the two possible values of {@code t}.
    *
    * @param obligations the tracked Obligations, which will be side-effected
    * @param node the node performing the pseudo-assignment; it is not necessarily an assignment node
@@ -1485,6 +1503,7 @@ public class MustCallConsistencyAnalyzer {
           return;
         }
         VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+        incrementNumMustCallFailed(lhsElement.asType());
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -1630,6 +1649,7 @@ public class MustCallConsistencyAnalyzer {
     if (!calledMethodsSatisfyMustCall(mcValues, cmAnno)) {
       VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
       if (!checker.shouldSkipUses(lhsElement)) {
+        incrementNumMustCallFailed(lhsElement.asType());
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -1642,7 +1662,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks that the method that encloses an assignment is marked with @CreatesMustCallFor
+   * Checks that the method that encloses an assignment is marked with an @CreatesMustCallFor
    * annotation whose target is the object whose field is being re-assigned.
    *
    * @param node an assignment node whose lhs is a non-final, owning field
@@ -1844,7 +1864,7 @@ public class MustCallConsistencyAnalyzer {
    * @param node a method invocation
    * @return true iff the checker is in no-lightweight-ownership mode, or the method has a
    *     {@code @MustCallAlias} annotation, or (1) the method has a return type that needs to be
-   *     tracked (i.e., it has a non-empty {@code @MustCall} obligation and (2) the method
+   *     tracked (i.e., it has a non-empty {@code @MustCall} obligation) and (2) the method
    *     declaration does not have a {@code @NotOwning} annotation
    */
   private boolean shouldTrackReturnType(MethodInvocationNode node) {
@@ -1944,7 +1964,7 @@ public class MustCallConsistencyAnalyzer {
    * occurs (with two exceptions, both related to temporary variables that don't actually get
    * assigned; see code comments for details) and an error is issued if it fails. If the successor
    * is any other kind of block and there is information about at least one of the Obligation's
-   * aliases in the successor store (i.e. the resource itself definitely does not go out of scope),
+   * aliases in the successor store (i.e., the resource itself definitely does not go out of scope),
    * then the Obligation is passed forward to the successor ("propagated") with any definitely
    * out-of-scope aliases removed from its resource alias set.
    *
@@ -2038,7 +2058,12 @@ public class MustCallConsistencyAnalyzer {
                 + " with exception type "
                 + exceptionType;
     // Computed outside the Obligation loop for efficiency.
-    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = cmAtf.getRegularStore(successor);
+    // The CM and MC stores for the CFG edge from currentBlock to successor, when currentBlock has
+    // no nodes.  Computed at most once, in the Obligation loop, and only if a consistency check
+    // needs them.
+    AccumulationStore cmStoreForEdgeFromEmptyBlock = null;
+    CFStore mcStoreForEdgeFromEmptyBlock = null;
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -2107,16 +2132,8 @@ public class MustCallConsistencyAnalyzer {
         // like to use the store propagated along the CFG edge from currentBlock to
         // successor.  But, there are special cases to consider.  The rules are:
         // 1. if the current block has no nodes, it is either a ConditionalBlock or a
-        //    SpecialBlock.
-        //    For the called-methods store, we obtain the exact CFG edge store that we need
-        //    (see getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API
-        //    limitations, we use the following heuristics:
-        //    1a. if there is information about any alias in the resource alias set
-        //        in the successor store, use the successor's MC store, which
-        //        contains whatever information is true after this block finishes.
-        //    1b. if there is not any information about any alias in the resource alias
-        //        set in the successor store, use the current block's MC store,
-        //        which contain whatever information is true before this (empty) block.
+        //    SpecialBlock.  Use the CM store and the MC store for the CFG edge (see
+        //    getStoreForEdgeFromEmptyBlock()).
         // 2. if the current block has one or more nodes, always use the CM store after
         //    the last node. To decide which MC store to use:
         //    2a. if the last node in the block is the invocation of an
@@ -2132,18 +2149,16 @@ public class MustCallConsistencyAnalyzer {
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
-          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
-          // For the Must Call Checker, we currently apply a less precise handling and do
-          // not get the store for the specific CFG edge from currentBlock to successor.
-          // We do not believe this will impact precision except in convoluted and
-          // uncommon cases.  If we find that we need more precision, we can revisit this,
-          // but it will require additional API support in the AnalysisResult type to get
-          // the information that we need.
-          mcStore =
-              mcAtf.getStoreForBlock(
-                  obligationGoesOutOfScopeBeforeSuccessor,
-                  currentBlock, // 1a. (MC)
-                  successor); // 1b. (MC)
+          if (cmStoreForEdgeFromEmptyBlock == null) {
+            cmStoreForEdgeFromEmptyBlock =
+                getStoreForEdgeFromEmptyBlock(cmAtf, currentBlock, successor); // 1. (CM)
+          }
+          if (mcStoreForEdgeFromEmptyBlock == null) {
+            mcStoreForEdgeFromEmptyBlock =
+                getStoreForEdgeFromEmptyBlock(mcAtf, currentBlock, successor); // 1. (MC)
+          }
+          cmStore = cmStoreForEdgeFromEmptyBlock;
+          mcStore = mcStoreForEdgeFromEmptyBlock;
         } else {
           // In this case, current block has at least one node.
           // Use the called-methods store immediately after the last node in
@@ -2192,35 +2207,40 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the store propagated by the {@link RLCCalledMethodsAnalysis} (containing called methods
-   * information) along a particular CFG edge during local type inference. The source {@link Block}
-   * of the edge must contain no {@link Node}s.
+   * Returns the store that the given type factory's dataflow analysis propagates along the given
+   * CFG edge. The source {@link Block} of the edge must contain no {@link Node}s.
    *
+   * @param <V> the abstract value type of the analysis
+   * @param <S> the store type of the analysis
+   * @param atf a type factory, such as that of the Called Methods Checker or of the Must Call
+   *     Checker
    * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
    * @param successor target block of the CFG edge
-   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge
+   * @return the store that the dataflow analysis of {@code atf} propagates along the CFG edge
    */
-  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
+  private static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
+      S getStoreForEdgeFromEmptyBlock(
+          GenericAnnotatedTypeFactory<V, S, ?, ?> atf, Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {
       case CONDITIONAL_BLOCK -> {
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
         if (condBlock.getThenSuccessor().equals(successor)) {
-          return cmAtf.getInput(currentBlock).getThenStore();
+          return atf.getInput(currentBlock).getThenStore();
         } else if (condBlock.getElseSuccessor().equals(successor)) {
-          return cmAtf.getInput(currentBlock).getElseStore();
+          return atf.getInput(currentBlock).getElseStore();
         } else {
           throw new BugInCF("successor not found");
         }
       }
       case SPECIAL_BLOCK -> {
-        return cmAtf.getInput(successor).getRegularStore();
+        return atf.getRegularStore(currentBlock);
       }
       default -> throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
   }
 
   /**
-   * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
+   * Returns true if {@code alias.reference} is definitely in scope in the successor store: that is,
    * there is a value for it in {@code successorStore}.
    *
    * @param successorStore the regular CalledMethods store of the successor block
@@ -2283,11 +2303,11 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Returns true if there is some resource alias set <em>R</em> in {@code obligations} such that
-   * <em>R</em> contains a {@link ResourceAlias} whose local variable is {@code node}.
+   * <em>R</em> contains a {@link ResourceAlias} whose local variable is {@code var}.
    *
    * @param obligations the set of Obligations to search
    * @param var the local variable to look for
-   * @return true iff there is a resource alias set in {@code obligations} that contains node
+   * @return true iff there is a resource alias set in {@code obligations} that contains {@code var}
    */
   private static boolean varTrackedInObligations(
       Set<Obligation> obligations, LocalVariableNode var) {
@@ -2406,6 +2426,7 @@ public class MustCallConsistencyAnalyzer {
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
           reportedErrorAliases.add(firstAlias);
+          incrementNumMustCallFailed(firstAlias.reference.getType());
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
@@ -2419,12 +2440,14 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Increments the -AcountMustCall counter.
+   * Increments the -AcountMustCall counter, unless {@code counted} already contains {@code node}.
+   * Adds {@code node} to {@code counted}.
    *
    * @param node the node being counted, to extract the type
+   * @param counted the nodes that have already been counted
    */
-  private void incrementNumMustCall(Node node) {
-    if (countMustCall) {
+  private void incrementNumMustCall(Node node, Set<Node> counted) {
+    if (countMustCall && counted.add(node)) {
       TypeMirror type = node.getType();
       incrementMustCallImpl(type);
     }
@@ -2443,16 +2466,40 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Shared implementation for the two version of countMustCall. Don't call this directly.
+   * Shared implementation for the two versions of incrementNumMustCall. Don't call this directly.
    *
-   * @param type the type of the object that has a must call obligation
+   * @param type the type of the object that has a must-call obligation
    */
   private void incrementMustCallImpl(TypeMirror type) {
-    // only count uses of JDK classes, since that's what the paper reported
-    if (!isJdkClass(TypesUtils.getTypeElement(type).getQualifiedName().toString())) {
-      return;
+    if (isCountedType(type)) {
+      checker.numMustCall++;
     }
-    checker.numMustCall++;
+  }
+
+  /**
+   * Increments the -AcountMustCall counter of failures. Call this when issuing a {@code
+   * required.method.not.called} error. Uses the same classification as {@link
+   * #incrementMustCallImpl}, so that the two counters are consistent.
+   *
+   * @param type the type of the object whose must-call obligation is not satisfied
+   */
+  private void incrementNumMustCallFailed(TypeMirror type) {
+    if (countMustCall && isCountedType(type)) {
+      checker.numMustCallFailed++;
+    }
+  }
+
+  /**
+   * Returns true if an object of the given type should be counted by -AcountMustCall. Only uses of
+   * JDK classes are counted, since that's what the paper reported.
+   *
+   * @param type the type of an object that has a must-call obligation
+   * @return true if an object of the given type should be counted by -AcountMustCall
+   */
+  private boolean isCountedType(TypeMirror type) {
+    // The erasure of a type variable is the erasure of its upper bound.
+    TypeElement typeElement = TypesUtils.getTypeElement(checker.getTypeUtils().erasure(type));
+    return typeElement != null && isJdkClass(typeElement.getQualifiedName().toString());
   }
 
   /**
@@ -2538,7 +2585,7 @@ public class MustCallConsistencyAnalyzer {
      * Create a new BlockWithObligations from a block and a set of dataflow facts.
      *
      * @param b the block
-     * @param obligations the set of incoming Obligations at the start of the block (may be the
+     * @param obligations the set of incoming Obligations at the start of the block (can be the
      *     empty set)
      */
     public BlockWithObligations(Block b, Set<Obligation> obligations) {

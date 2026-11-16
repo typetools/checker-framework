@@ -32,7 +32,7 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Returns a list of the values of an annotation, and then cast the values to a given type.
+   * Returns a list of the values of an annotation, cast to a given type.
    *
    * @param anno the annotation that contains values
    * @param castTo the type that is cast to
@@ -45,11 +45,11 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Returns a list of the values of an annotation, and then cast the values to a given type.
+   * Returns a list of the values of an annotation, cast to a given type.
    *
    * @param anno the annotation that contains values
-   * @param castTo the unannotated type that is casted to
-   * @param isUnsigned true if the type being casted to is unsigned
+   * @param castTo the unannotated type that is cast to
+   * @param isUnsigned true if the type being cast to is unsigned
    * @param atypeFactory the type factory
    * @return a list of values after the casting
    */
@@ -83,7 +83,13 @@ public final class ValueCheckerUtils {
     return values;
   }
 
-  /** Get the minimum and maximum of a list and return a range bounded by them. */
+  /**
+   * Gets the minimum and maximum of a list and returns a range bounded by them.
+   *
+   * @param values the values whose minimum and maximum bound the result; might be null
+   * @return the range bounded by the minimum and maximum of the values, or null if {@code values}
+   *     is null
+   */
   public static @Nullable Range getRangeFromValues(List<? extends Number> values) {
     if (values == null) {
       return null;
@@ -124,9 +130,8 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Returns all possible values from the given type and cast them into a boxed primitive type.
-   * Returns null if the list would have length greater than {@link
-   * ValueAnnotatedTypeFactory#MAX_VALUES}.
+   * Returns all possible values from the given range, cast into a boxed primitive type. Returns
+   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
@@ -177,7 +182,7 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Convert the {@code value} argument/element of a @BoolVal annotation into a list.
+   * Converts the {@code value} argument/element of a @BoolVal annotation into a list.
    *
    * @param anno a @BoolVal annotation
    * @param newClass if String.class, the returned list is a {@code List<String>}
@@ -197,7 +202,7 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Convert the {@code value} argument/element of a {@code @StringVal} annotation into a list.
+   * Converts the {@code value} argument/element of a {@code @StringVal} annotation into a list.
    *
    * @param anno a {@code @StringVal} annotation
    * @param newClass if char[].class, the returned list is a {@code List<char[]>}
@@ -215,7 +220,7 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Convert a list of longs to a given type.
+   * Converts a list of longs to a given type.
    *
    * @param longs the integral values to convert
    * @param newClass determines the type of the result
@@ -241,7 +246,7 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Convert the {@code value} argument/element of a @StringVal annotation into a list.
+   * Converts the {@code value} argument/element of a {@code @DoubleVal} annotation into a list.
    *
    * @param anno a {@code @DoubleVal} annotation
    * @param newClass the component type for the returned list
@@ -409,7 +414,7 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Optimize the given JavaExpression. See {@link JavaExpressionOptimizer} for more details.
+   * Optimizes the given JavaExpression. See {@link JavaExpressionOptimizer} for more details.
    *
    * @param je the expression to optimize
    * @param factory the annotated type factory

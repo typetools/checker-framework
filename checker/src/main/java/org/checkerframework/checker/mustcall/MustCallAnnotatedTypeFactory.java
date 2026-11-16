@@ -35,10 +35,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -93,10 +91,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * This code is safe from resource leaks: sock is an unconnected socket and therefore has no
    * must-call obligation. The expression sock.socket() similarly has no must-call obligation
    * because it is a resource alias, but without a temporary variable that represents that
-   * expression in the store, the resource leak checker wouldn't be able to determine that.
+   * expression in the store, the Resource Leak Checker wouldn't be able to determine that.
    *
    * <p>These temporary variables are only created once---here---but are used by all three parts of
-   * the resource leak checker by calling {@link #getTempVar(Node)}. The temporary variables are
+   * the Resource Leak Checker by calling {@link #getTempVar(Node)}. The temporary variables are
    * shared in the same way that subcheckers share CFG structure; see {@link
    * #getSharedCFGForTree(Tree)}.
    */
@@ -393,8 +391,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private class MustCallQualifierUpperBounds extends QualifierUpperBounds {
 
     /**
-     * Creates a {@link QualifierUpperBounds} from the MustCall Checker the annotations that are in
-     * the type hierarchy.
+     * Creates a {@link QualifierUpperBounds} for the Must Call Checker, using the annotations that
+     * are in the type hierarchy.
      */
     public MustCallQualifierUpperBounds() {
       super(MustCallAnnotatedTypeFactory.this);
@@ -419,7 +417,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
   /**
    * Cache of the MustCall annotations that have actually been created. Most programs require few
-   * distinct MustCall annotations (e.g. MustCall() and MustCall("close")).
+   * distinct MustCall annotations (e.g., MustCall() and MustCall("close")).
    */
   private final Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
 
@@ -453,24 +451,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   protected QualifierHierarchy createQualifierHierarchy() {
     return new MustCallQualifierHierarchy(
         this.getSupportedTypeQualifiers(), this.getProcessingEnv(), this);
-  }
-
-  /**
-   * Fetches the store from the results of dataflow for {@code firstBlock}. If {@code
-   * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
-   * afterFirstStore} is false, the store before {@code succBlock} is returned.
-   *
-   * @param afterFirstStore if true, use the store after {@code firstBlock}; if false, use the store
-   *     before its successor, {@code succBlock}
-   * @param firstBlock a CFG block
-   * @param succBlock {@code firstBlock}'s successor
-   * @return the appropriate CFStore, populated with MustCall annotations, from the results of
-   *     running dataflow
-   */
-  public CFStore getStoreForBlock(boolean afterFirstStore, Block firstBlock, Block succBlock) {
-    return afterFirstStore
-        ? flowResult.getStoreAfter(firstBlock)
-        : flowResult.getStoreBefore(succBlock);
   }
 
   /**
@@ -552,7 +532,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
+   * @return true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;

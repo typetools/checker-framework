@@ -16,12 +16,12 @@ import org.checkerframework.javacutil.TypesUtils;
 /** TypeVariableSubstitutor replaces type variables from a declaration with arguments to its use. */
 public class TypeVariableSubstitutor {
 
-  /** Create a TypeVariableSubstitutor. */
+  /** Creates a TypeVariableSubstitutor. */
   public TypeVariableSubstitutor() {}
 
   /**
-   * Given a mapping from type variable to its type argument, replace each instance of a type
-   * variable with a copy of type argument.
+   * Given a mapping from type variable to its type argument, replaces each instance of a type
+   * variable with a copy of the type argument.
    *
    * @see #substituteTypeVariable(AnnotatedTypeMirror,
    *     org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
@@ -35,7 +35,7 @@ public class TypeVariableSubstitutor {
   }
 
   /**
-   * Given a mapping from type variable to its type argument, replace each instance of a type
+   * Given a mapping from type variable to its type argument, replaces each instance of a type
    * variable with the given type argument.
    *
    * @see #substituteTypeVariable(AnnotatedTypeMirror,
@@ -51,14 +51,14 @@ public class TypeVariableSubstitutor {
 
   /**
    * Given the types of a type parameter declaration, the argument to that type parameter
-   * declaration, and a given use of that declaration, return a substitute for the use with the
+   * declaration, and a given use of that declaration, returns a substitute for the use with the
    * correct annotations.
    *
-   * <p>To determine what primary annotations are correct for the substitute the following rules are
-   * used: If the type variable use has a primary annotation then apply that primary annotation to
-   * the substitute. Otherwise, use the annotations of the argument.
+   * <p>To determine what primary annotations are correct for the substitute, the following rules
+   * are used: If the type variable use has a primary annotation, then apply that primary annotation
+   * to the substitute. Otherwise, use the annotations of the argument.
    *
-   * @param argument the argument to declaration (this will be a value in typeParamToArg)
+   * @param argument the argument to the declaration (this will be a value in typeParamToArg)
    * @param use the use that is being replaced
    * @return a deep copy of argument with the appropriate annotations applied
    */
@@ -88,17 +88,17 @@ public class TypeVariableSubstitutor {
 
     /**
      * A list of type variables that should be replaced by the type mirror at the same index in
-     * {@code typeMirrors}
+     * {@code typeMirrors}.
      */
     private final List<TypeVariable> typeVars;
 
     /**
      * A list of TypeMirrors that should replace the type variable at the same index in {@code
-     * typeVars}
+     * typeVars}.
      */
     private final List<TypeMirror> typeMirrors;
 
-    /** True if a copy of type argument should be substituted. */
+    /** True if a copy of the type argument should be substituted. */
     private final boolean copyArgument;
 
     /**
@@ -106,7 +106,7 @@ public class TypeVariableSubstitutor {
      *
      * @param typeParamToArg mapping from TypeVariable to the AnnotatedTypeMirror that will replace
      *     it
-     * @param copyArgument true if a copy of type argument should be substituted
+     * @param copyArgument true if a copy of the type argument should be substituted
      */
     public Visitor(Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
       int size = typeParamToArg.size();
