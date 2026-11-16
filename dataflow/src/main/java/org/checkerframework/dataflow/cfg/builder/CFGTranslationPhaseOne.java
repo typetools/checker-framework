@@ -1787,7 +1787,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
       iteratorCallNode.setInSource(false);
-      extendWithMethodInvocationNode(iteratorCallNode);
+      // The iterator() call gets exceptional successors only if it terminates execution.
+      // Exceptional successors in general would cause Resource Leak Checker false positives:  on
+      // an exceptional successor of iterator(), the iterator variable is unassigned, and where
+      // that path merges with one on which the iterator variable is a @MustCallAlias of the
+      // Iterable (such as an exceptional successor of hasNext() or next()), the checker cannot
+      // determine the iterator variable's must-call type.  If iterator() terminates execution,
+      // then hasNext() and next() are unreachable, so no such merge occurs.
+      if (annotationProvider.getDeclAnnotation(
+              iteratorCallNode.getTarget().getMethod(), TerminatesExecution.class)
+          != null) {
+        extendWithMethodInvocationNode(iteratorCallNode);
+      } else {
+        extendWithNode(iteratorCallNode);
+      }
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
