@@ -1150,7 +1150,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @return true if {@code declarationAnnotations} contains an alias for a type qualifier
    */
   private boolean containsAliasForTypeQualifier(
-      @Nullable Set<AnnotationMirror> declarationAnnotations) {
+      @Nullable AnnotationMirrorSet declarationAnnotations) {
     if (declarationAnnotations == null) {
       return false;
     }
