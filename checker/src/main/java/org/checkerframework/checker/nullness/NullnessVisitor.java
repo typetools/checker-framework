@@ -432,12 +432,13 @@ public class NullnessVisitor
         }
       }
     }
-    if (tree.getPattern() instanceof BindingPatternTree bindingPattern) {
-      checkInstanceofPattern(tree, bindingPattern.getVariable());
-    }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, validate the reference type and scan the expression and the pattern or type.
     Tree patternTree = tree.getPattern();
+    // super.visitInstanceOf is not called, so check the binding variable here.
+    if (patternTree instanceof BindingPatternTree) {
+      checkInstanceOfPattern(tree);
+    }
     if (patternTree == null) {
       validateTypeOf(refTypeTree);
     }
@@ -447,20 +448,20 @@ public class NullnessVisitor
   }
 
   @Override
-  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
+  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+    // instanceof is false for null (JLS 15.20.2), so the nullness qualifier of the left operand
+    // does not restrict the binding variable.
     return withNonNull(expType);
   }
 
   /**
    * Returns a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}.
    *
-   * @param type the type of a value that a type pattern is matched against
+   * @param type a type
    * @return a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}
    */
   private AnnotatedTypeMirror withNonNull(AnnotatedTypeMirror type) {
-    // A type pattern that is not unconditional does not match null, so the nullness qualifier of
-    // the matched value does not restrict the binding variable.
-    AnnotatedTypeMirror copy = type.deepCopy();
+    AnnotatedTypeMirror copy = type.shallowCopy();
     copy.replaceAnnotation(NONNULL);
     return copy;
   }
