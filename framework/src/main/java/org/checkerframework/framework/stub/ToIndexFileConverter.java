@@ -1839,8 +1839,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * classpath counterpart of a stub declaration is the class on the classpath that has the same
    * binary name. A stub file often omits some of that class's members.
    *
-   * <p>This method does not consider the member types that the stub file declares, which {@link
-   * #memberTypeDeclaration} finds.
+   * <p>This method does not return a member type that the stub file declares, which {@link
+   * #memberTypeDeclaration} finds, but such a member type hides the member types of the same name
+   * in the supertypes of the type that declares it.
    *
    * @param declaration a type declaration in a stub file
    * @param identifier the simple name of a member type
@@ -1858,12 +1859,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     try {
+      // A member type that `declaration` declares, in the stub file or in its classpath
+      // counterpart, hides every member type of the same name in the supertypes of `declaration`,
+      // even if it is not inherited.
+      if (memberTypeDeclaration(declaration, identifier) != null) {
+        return null;
+      }
       @SuppressWarnings("signature") // a binary name is a valid argument to Class.forName
       @ClassGetName String counterpartName = qualifiedStubBinaryName(declaration);
       Class<?> counterpart = loadClass(counterpartName);
       Class<?> result =
           memberClass(counterpart, identifier, packageName, inherited, new HashSet<>());
-      if (result != null) {
+      if (result != null || declaredMemberClass(counterpart, identifier) != null) {
         return result;
       }
       for (ClassOrInterfaceType supertype : supertypes(declaration)) {
@@ -1888,7 +1895,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * null if there is none. A class inherits only the member types that are accessible from it, so
    * this method ignores an inherited private member type. It also ignores an inherited
    * package-private member type unless the member type and every class along the inheritance path
-   * are in {@code packageName}.
+   * are in {@code packageName}. A member type that a class declares hides every member type of the
+   * same name in the class's supertypes, even if the declared member type is not inherited because
+   * it is private or inaccessible (JLS 8.5).
    *
    * @param clazz a class on the classpath, or null
    * @param identifier the simple name of a member type
@@ -1911,10 +1920,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     Class<?> member = declaredMemberClass(clazz, identifier);
-    // A member type of an interface is implicitly public.
-    if (member != null
-        && (!inherited || clazz.isInterface() || isAccessible(member, packageName))) {
-      return member;
+    if (member != null) {
+      // A member type that `clazz` declares hides every member type of the same name in the
+      // supertypes of `clazz`, even if it is not inherited.  A member type of an interface is
+      // implicitly public.
+      return (!inherited || clazz.isInterface() || isAccessible(member, packageName))
+          ? member
+          : null;
     }
     // A supertype's member type is inherited by `clazz` only if it is accessible from `clazz`.
     String superPackageName = clazz.getPackageName().equals(packageName) ? packageName : null;

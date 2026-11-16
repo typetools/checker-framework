@@ -853,6 +853,89 @@ public class ToIndexFileConverterTest {
         "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
   }
 
+  /**
+   * A member type that an enclosing type inherits shadows a member type of the same name that an
+   * outer type declares, and a single-type import.
+   */
+  @Test
+  public void testInheritedMemberTypeShadowsOuterScope() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.Map.Entry;",
+            "class Outer {",
+            "  static class Entry {}",
+            "  abstract static class C implements java.util.Map<String, String> {",
+            "    abstract void m(Entry e);",
+            "  }",
+            "  void n(Entry e) {}",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "Outer", "n(Lp/Outer$Entry;)V");
+
+    jaif =
+        convert(
+            "package p;",
+            "class Super {",
+            "  static class Inner {}",
+            "}",
+            "class Outer {",
+            "  static class Inner {}",
+            "  static class C extends Super {",
+            "    void m(Inner i) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lp/Super$Inner;)V");
+  }
+
+  /**
+   * A private member type is not inherited, but it hides the member types of the same name in the
+   * supertypes of the type that declares it.
+   */
+  @Test
+  public void testPrivateMemberTypeHidesInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class A { public static class N {} }",
+            "class B extends A { private static class N {} }",
+            "interface I { class N {} }",
+            "class C extends B implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lp/I$N;)V");
+
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.Middle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
+    // The stub file declares the supertypes but omits their member types, which their classpath
+    // counterparts declare.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Base {}",
+            "class Middle extends Base {}",
+            "interface I {}",
+            "class C extends Middle implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
+    // A private member type that the stub file declares hides a member type of a classpath
+    // supertype.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class B extends Base { private static class N {} }",
+            "interface I {}",
+            "class C extends B implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+  }
+
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicInheritance() throws Exception {
@@ -1224,11 +1307,12 @@ public class ToIndexFileConverterTest {
   /** A package-private member type of a class in another package is not inherited. */
   @Test
   public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
-    // java.util.TreeMap declares a package-private member type named Entry.
+    // java.util.TreeMap declares a package-private member type named Entry, which hides
+    // java.util.Map.Entry in TreeMap.  MyClass inherits Map.Entry from its own superinterface.
     String jaif =
         convert(
             "package mypackage;",
-            "class MyClass extends java.util.TreeMap {",
+            "class MyClass extends java.util.TreeMap implements java.util.Map {",
             "  void myMethod(Entry e) {}",
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
