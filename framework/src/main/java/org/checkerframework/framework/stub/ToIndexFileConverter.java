@@ -915,7 +915,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
             String name = classBinaryName(type, declaration, typeName, identifiers);
             if (name == null) {
-              name = unresolvedBinaryName(typeName);
+              name = unresolvedBinaryName(typeName, type.findCompilationUnit().orElse(null));
             }
             return "L" + name.replace('.', '/') + ";";
           }
@@ -1823,13 +1823,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * package names and which are class names, this method uses the Java convention that a package
    * name starts with a lowercase letter and a class name starts with an uppercase letter. A name
    * whose first identifier a single-type import names is qualified by that import. Any other name
-   * with no package name is assumed to refer to the stub file's own package.
+   * with no package name is assumed to refer to the package of the compilation unit in which it is
+   * written.
    *
    * @param typeName a type name that resolution failed on
+   * @param cu the compilation unit in which {@code typeName} is written, or null if it is not in
+   *     any compilation unit
    * @return the binary name that {@code typeName} most likely refers to
    */
-  private String unresolvedBinaryName(@FullyQualifiedName String typeName) {
-    for (String declName : singleTypeImports) {
+  private String unresolvedBinaryName(
+      @FullyQualifiedName String typeName, @Nullable CompilationUnit cu) {
+    ImportContext context = importContext(cu);
+    for (String declName : context.singleTypeImports()) {
       String qualifiedName = mergeImport(declName, typeName);
       // An unchanged name is an import of a type in the unnamed package, which gives no package.
       if (qualifiedName != null && !qualifiedName.equals(typeName)) {
@@ -1837,7 +1842,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return splitBinaryName(qualifiedName, null);
       }
     }
-    return splitBinaryName(typeName, pkgName);
+    return splitBinaryName(typeName, context.pkgName());
   }
 
   /**
