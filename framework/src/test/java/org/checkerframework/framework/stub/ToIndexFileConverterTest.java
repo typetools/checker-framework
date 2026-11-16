@@ -959,6 +959,25 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * A {@code $} within the name of a supertype declared in the stub file is part of the name, not
+   * a nesting separator.
+   */
+  @Test
+  public void testInheritedMemberTypeOfSupertypeWithDollarInName() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Sub extends p.Base$Generated {",
+            "  void m(Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base$Generated {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lp/Base$Generated$Inner;)V");
+  }
+
+  /**
    * The supertype of a supertype in another compilation unit of the stub file is resolved using
    * that compilation unit's package and imports, not those of the subtype's compilation unit.
    */
