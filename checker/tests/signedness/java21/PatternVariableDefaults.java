@@ -3,7 +3,7 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
@@ -35,7 +35,7 @@ public class PatternVariableDefaults {
     }
   }
 
-  void instanceOfBoxed(@Unsigned Integer u) {
+  void instanceofBoxed(@Unsigned Integer u) {
     Object o = u;
     if (o instanceof Integer i) {
       // :: error: (operation.unsignedlhs)
@@ -62,7 +62,7 @@ public class PatternVariableDefaults {
     }
   }
 
-  <T extends Number> void instanceOfTypeVariable(@Unsigned T x) {
+  <T extends Number> void instanceofTypeVariable(@Unsigned T x) {
     if (x instanceof T t) {
       @Unsigned T u = t;
       // :: error: (assignment)

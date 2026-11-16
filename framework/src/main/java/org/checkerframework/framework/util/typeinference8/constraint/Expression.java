@@ -37,7 +37,8 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * &lt;Expression &rarr; T&gt; An expression is compatible in a loose invocation context with type T
+ * &lt;Expression &rarr; T&gt;: An expression is compatible in a loose invocation context with type
+ * T.
  */
 public class Expression extends TypeConstraint {
 
@@ -49,7 +50,7 @@ public class Expression extends TypeConstraint {
    *
    * @param parent the constraint whose reduction created this constraint
    * @param expressionTree the expression for the constraint
-   * @param t the type that the expression is compatible in a loose invocation context
+   * @param t the type with which the expression is compatible in a loose invocation context
    */
   public Expression(Constraint parent, ExpressionTree expressionTree, AbstractType t) {
     super(parent, t);
@@ -62,7 +63,7 @@ public class Expression extends TypeConstraint {
    *
    * @param source a string describing where this constraint came from
    * @param expressionTree the expression for the constraint
-   * @param t the type that the expression is compatible in a loose invocation context
+   * @param t the type with which the expression is compatible in a loose invocation context
    */
   public Expression(String source, ExpressionTree expressionTree, AbstractType t) {
     super(source, t);
@@ -178,7 +179,7 @@ public class Expression extends TypeConstraint {
    * instance creation expression, the corresponding "method" used for inference is defined in
    * 15.9.3).
    *
-   * <p>This bound set may contain new inference variables, as well as dependencies between these
+   * <p>This bound set might contain new inference variables, as well as dependencies between these
    * new variables and the inference variables in T.
    *
    * @param context the context
@@ -227,7 +228,7 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Reduce this constraint.
+   * Reduces this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
@@ -370,7 +371,7 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Reduce this constraint.
+   * Reduces this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
@@ -523,8 +524,9 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Infers the type of {@code lambda} which may create a bounds set that needs to be resolved as
-   * part of a larger inference problem. See 18.5.3: Functional Interface Parameterization Inference
+   * Infers the type of {@code lambda}, which might create a bound set that needs to be resolved as
+   * part of a larger inference problem. See 18.5.3: Functional Interface Parameterization
+   * Inference.
    *
    * @param t the target type of the lambda
    * @param lambda a lambda expression

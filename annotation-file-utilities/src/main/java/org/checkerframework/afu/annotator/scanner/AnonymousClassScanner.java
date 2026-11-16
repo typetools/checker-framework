@@ -7,8 +7,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
 /**
- * AnonymousClassScanner determine the index of a tree for an anonymous class. If the index is i, it
- * is the ith anonymous class in the file. Thus, if i = 2, it will have a name of the form
+ * AnonymousClassScanner determines the index of a tree for an anonymous class. If the index is i,
+ * it is the ith anonymous class in the file. Thus, if i = 2, it will have a name of the form
  * NamedClass$2.
  */
 public final class AnonymousClassScanner extends TreePathScanner<Void, Integer> {

@@ -18,11 +18,11 @@ import org.checkerframework.javacutil.TypeSystemError;
  * class. If a type system has more than one hierarchy, information about all hierarchies is stored
  * in this class.
  *
- * <p>The qualifier kind subtyping relationship may be an over-approximation of the qualifier
+ * <p>The qualifier kind subtyping relationship can be an over-approximation of the qualifier
  * subtyping relationship, for qualifiers that have elements/arguments. In other words, if a
- * qualifier kind is a subtype of another qualifier kind, then qualifiers of those kinds may or may
- * not be subtypes, depending on the values of any elements of the qualifiers. If qualifier kinds
- * are not subtypes, then qualifiers of those kinds are never subtypes.
+ * qualifier kind is a subtype of another qualifier kind, then qualifiers of those kinds might or
+ * might not be subtypes, depending on the values of any elements of the qualifiers. If qualifier
+ * kinds are not subtypes, then qualifiers of those kinds are never subtypes.
  *
  * <p>This interface is used by {@link NoElementQualifierHierarchy} and {@link
  * ElementQualifierHierarchy} (but <em>not</em> {@link MostlyNoElementQualifierHierarchy}) to

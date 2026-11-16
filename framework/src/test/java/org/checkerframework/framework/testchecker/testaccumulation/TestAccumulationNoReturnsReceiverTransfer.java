@@ -8,7 +8,7 @@ import org.checkerframework.common.accumulation.AccumulationAnalysis;
  */
 public class TestAccumulationNoReturnsReceiverTransfer extends TestAccumulationTransfer {
   /**
-   * default constructor
+   * Default constructor.
    *
    * @param analysis the analysis
    */

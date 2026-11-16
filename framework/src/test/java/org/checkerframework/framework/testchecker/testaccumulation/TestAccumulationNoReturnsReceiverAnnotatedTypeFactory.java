@@ -9,7 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 public class TestAccumulationNoReturnsReceiverAnnotatedTypeFactory
     extends TestAccumulationAnnotatedTypeFactory {
   /**
-   * Create a new accumulation checker's annotated type factory.
+   * Creates a new accumulation checker's annotated type factory.
    *
    * @param checker the checker
    */

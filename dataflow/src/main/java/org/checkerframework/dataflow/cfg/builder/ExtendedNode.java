@@ -15,8 +15,8 @@ import org.checkerframework.javacutil.BugInCF;
  *       which can throw exceptions. It contains a label for every possible exception type the node
  *       might throw.
  *   <li><em>UNCONDITIONAL_JUMP</em>: {@link UnconditionalJump}. An unconditional jump to a label.
- *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two
- *       targets for both the 'then' and 'else' branch.
+ *   <li><em>CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two targets for
+ *       both the 'then' and 'else' branch.
  * </ul>
  *
  * Note that this class is deliberately public, to enable users of the dataflow library to customize
@@ -31,11 +31,11 @@ public abstract class ExtendedNode {
   /** Type of this node. */
   protected final ExtendedNodeType type;
 
-  /** Does this node terminate the execution? (e.g., "System.exit()") */
+  /** True if this node terminates the execution (e.g., "System.exit()"). */
   protected boolean terminatesExecution = false;
 
   /**
-   * Create a new ExtendedNode.
+   * Creates a new ExtendedNode.
    *
    * @param type the type of this node
    */
@@ -43,11 +43,15 @@ public abstract class ExtendedNode {
     this.type = type;
   }
 
-  /** Extended node types (description see above). */
+  /** Extended node types (see the description above). */
   public enum ExtendedNodeType {
+    /** A node holding a regular {@link Node}. */
     NODE,
+    /** A node holding a {@link Node} that might throw an exception. */
     EXCEPTION_NODE,
+    /** An unconditional jump to a label. */
     UNCONDITIONAL_JUMP,
+    /** A conditional jump to a label. */
     CONDITIONAL_JUMP
   }
 

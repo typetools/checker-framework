@@ -241,7 +241,7 @@ public final class AnnotationDef extends AElement {
 
   /**
    * The retention policy for annotations of this type. If non-null, this is called a "top-level"
-   * annotation definition. It may be null for annotations that are used only as a field of other
+   * annotation definition. It can be null for annotations that are used only as a field of other
    * annotations.
    *
    * @return the retention policy for annotations of this type
@@ -461,7 +461,7 @@ public final class AnnotationDef extends AElement {
    *
    * @param <K> the type of map keys
    * @param <V> the type of map values
-   * @param map a map. If it is unmodifiable, it is immutable. That is, the client may not pass an
+   * @param map a map. If it is unmodifiable, it is immutable. That is, the client must not pass an
    *     unmodifiable map that can be modified through an alias.
    * @return an immutable copy of the map
    */
@@ -503,7 +503,7 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * Returns true if the map is unmodifiable. May return false for a map that is unmodifiable but
+   * Returns true if the map is unmodifiable. Might return false for a map that is unmodifiable but
    * whose implementation this method does not recognize.
    *
    * @param map a map

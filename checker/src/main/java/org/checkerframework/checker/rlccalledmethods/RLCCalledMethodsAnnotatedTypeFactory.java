@@ -41,10 +41,8 @@ import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -213,7 +211,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * @return the {@code @MustCall} annotation if present, null otherwise
    * @throws IllegalArgumentException if the input object type is not supported
    */
-  public AnnotationMirror getMustCallAnnotation(Object obj) {
+  public @Nullable AnnotationMirror getMustCallAnnotation(Object obj) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType;
@@ -235,7 +233,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * refinement.
    *
    * @param tree a tree
-   * @return true if the Must Call type is non-empty or top
+   * @return true if the Must Call type is empty; false if it is non-empty or top
    */
   public boolean hasEmptyMustCallValue(Tree tree) {
     AnnotationMirror mustCallAnnotation = getMustCallAnnotation(tree);
@@ -256,7 +254,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * refinement.
    *
    * @param element an element
-   * @return true if the Must Call type is non-empty or top
+   * @return true if the Must Call type is empty; false if it is non-empty or top
    */
   public boolean hasEmptyMustCallValue(Element element) {
     AnnotationMirror mustCallAnnotation = getMustCallAnnotation(element);
@@ -356,8 +354,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns true if the type of the tree includes a must-call annotation. Note that this method may
-   * not consider dataflow, and is only safe to use when you need the declared, rather than
+   * Returns true if the type of the tree includes a must-call annotation. Note that this method
+   * might not consider dataflow, and is only safe to use when you need the declared, rather than
    * inferred, type of the tree.
    *
    * <p>Do not use this method if you are trying to get the must-call obligations of the resource
@@ -380,11 +378,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns true if the given tree has an {@link MustCallAlias} annotation and resource-alias
+   * Returns true if the given tree has a {@link MustCallAlias} annotation and resource-alias
    * tracking is not disabled.
    *
    * @param tree a tree
-   * @return true if the given tree has an {@link MustCallAlias} annotation
+   * @return true if the given tree has a {@link MustCallAlias} annotation
    */
   public boolean hasMustCallAlias(Tree tree) {
     Element elt = TreeUtils.elementFromTree(tree);
@@ -392,11 +390,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns true if the given element has an {@link MustCallAlias} annotation and resource-alias
+   * Returns true if the given element has a {@link MustCallAlias} annotation and resource-alias
    * tracking is not disabled.
    *
    * @param elt an element
-   * @return true if the given element has an {@link MustCallAlias} annotation
+   * @return true if the given element has a {@link MustCallAlias} annotation
    */
   public boolean hasMustCallAlias(Element elt) {
     if (noResourceAliases) {
@@ -413,8 +411,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * CreatesMustCallFor} annotations.
    *
    * @param node a method invocation node
-   * @return true iff there is one or more @CreatesMustCallFor annotations on the declaration of the
-   *     invoked method
+   * @return true iff there are one or more @CreatesMustCallFor annotations on the declaration of
+   *     the invoked method
    */
   public boolean hasCreatesMustCallFor(MethodInvocationNode node) {
     ExecutableElement decl = TreeUtils.elementFromUse(node.getTree());
@@ -552,8 +550,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns true iff the {@code MustCall} annotation of the class that encloses the methodTree
-   * names this method.
+   * Returns true iff the {@code MustCall} annotation of the class that encloses {@code elt} names
+   * {@code elt}.
    *
    * @param elt a method
    * @return true if that method is one of the must-call methods for its enclosing class
@@ -581,26 +579,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * type.
    *
    * @param exceptionType exception type
-   * @return {@code true} if {@code exceptionType} is a member of {@link
-   *     RLCCalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
+   * @return {@code true} if {@code exceptionType} is a member of the set of ignored exceptions (see
+   *     {@link RLCCalledMethodsChecker#getIgnoredExceptions()}), {@code false} otherwise
    */
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
     return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
-  }
-
-  /**
-   * Fetches the transfer input for the given block, either from the flowResult, if the analysis is
-   * still running, or else from the analysis itself.
-   *
-   * @param block a block
-   * @return the appropriate TransferInput from the results of running dataflow
-   */
-  public TransferInput<AccumulationValue, AccumulationStore> getInput(Block block) {
-    if (!analysis.isRunning()) {
-      return flowResult.getInput(block);
-    } else {
-      return analysis.getInput(block);
-    }
   }
 }
