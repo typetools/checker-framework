@@ -980,6 +980,13 @@ public final class TypesUtils {
    * interface types, such as {@code Runnable} and {@code Serializable}, or a class type and an
    * unrelated interface type.
    *
+   * <p>It compares the type parameter that a wildcard is a type argument for, because a value of
+   * the wildcard has that type too, but the erasure of a wildcard that has an extends bound is the
+   * erasure of only its extends bound. For example, if {@code Box} is declared as {@code class
+   * Box<T extends Number>}, then the {@code ?} in {@code Box<? extends Comparable<?>>} cannot be
+   * the same object as a {@code String}, though a {@code Comparable} can be cast to a {@code
+   * String}.
+   *
    * <p>It compares every alternative of a union type, because the erasure of a union type is the
    * erasure of the first bound of the alternatives' least upper bound, which is less precise. For
    * example, if {@code E1}, {@code E2}, and {@code E3} are subclasses of {@code Base}, then the
@@ -1005,7 +1012,29 @@ public final class TypesUtils {
     if (b.getKind() == TypeKind.UNION) {
       return canAlias(b, a, javacTypes);
     }
+    if (!typeParameterCanAlias(a, b, javacTypes) || !typeParameterCanAlias(b, a, javacTypes)) {
+      return false;
+    }
     return javacTypes.isCastable(javacTypes.erasure((Type) a), javacTypes.erasure((Type) b));
+  }
+
+  /**
+   * Returns false if {@code a} is a wildcard and the type parameter that it is a type argument for
+   * shows that no object has both type {@code a} and type {@code b}. Returns true otherwise.
+   *
+   * @param a the type of an expression
+   * @param b the type of another expression
+   * @param javacTypes the javac type utilities
+   * @return false if the type parameter of wildcard {@code a} cannot alias {@code b}
+   */
+  private static boolean typeParameterCanAlias(
+      TypeMirror a, TypeMirror b, com.sun.tools.javac.code.Types javacTypes) {
+    if (a.getKind() != TypeKind.WILDCARD) {
+      return true;
+    }
+    // The type parameter is null if the wildcard is from bytecode.
+    TypeVariable typeParameter = ((Type.WildcardType) a).bound;
+    return typeParameter == null || canAlias(typeParameter, b, javacTypes);
   }
 
   /**

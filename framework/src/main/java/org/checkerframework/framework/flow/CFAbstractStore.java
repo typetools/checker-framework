@@ -1362,11 +1362,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns a conservative answer (i.e., returns {@code true} if not enough information is
    * available to determine aliasing).
    *
-   * <p>This implementation judges by the types of {@code a} and {@code b} and does not depend on
-   * the contents of the store; see {@link CFAbstractAnalysis#canAlias}.
+   * <p>This method returns the result of {@link CFAbstractAnalysis#canAlias}, which judges by the
+   * types of {@code a} and {@code b} and does not depend on the contents of the store. It is final
+   * so that every client gets the same answer; a checker that changes the aliasing judgment
+   * overrides {@link CFAbstractAnalysis#canAlias}.
    */
   @Override
-  public boolean canAlias(JavaExpression a, JavaExpression b) {
+  public final boolean canAlias(JavaExpression a, JavaExpression b) {
     return analysis.canAlias(a, b);
   }
 
