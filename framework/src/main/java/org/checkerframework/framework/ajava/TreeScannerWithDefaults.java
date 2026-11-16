@@ -163,7 +163,7 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   }
 
   /**
-   * Visit a switch expression tree.
+   * Visits a switch expression tree.
    *
    * @param tree switch expression tree
    * @param p null

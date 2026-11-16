@@ -29,7 +29,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
   private final LockAnnotatedTypeFactory atypeFactory;
 
   /**
-   * Create a transfer function for the Lock Checker.
+   * Creates a transfer function for the Lock Checker.
    *
    * @param analysis the analysis this transfer function belongs to
    * @param checker the type-checker this transfer function belongs to

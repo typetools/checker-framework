@@ -32,7 +32,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  * <ul>
  *   <li>If {@code i} is {@code @IndexFor("this")}, then {@code this.start + i} is
  *       {@code @IndexFor("array")}.
- *   <li>If {@code j} is {@code @IndexFor("array")}, then {@code j - this.start } is
+ *   <li>If {@code j} is {@code @IndexFor("array")}, then {@code j - this.start} is
  *       {@code @IndexFor("this")}.
  * </ul>
  *
@@ -52,7 +52,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  * <p>For an example of how this annotation is used in practice, see the test GuavaPrimitives.java
  * in /checker/tests/index/.
  *
- * <p>This annotation may only be written on fields.
+ * <p>This annotation can be written only on fields.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

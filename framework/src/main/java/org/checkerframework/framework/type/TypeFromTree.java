@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.BugInCF;
  * used ONLY from AnnotatedTypeFactory.
  *
  * <p>For each method in TypeFromTree there is a corresponding TypeFromTreeVisitor that handles the
- * input tree. The list of methods implemented by these visitors outline which trees each method
+ * input tree. The list of methods implemented by these visitors outlines which trees each method
  * will support. If a tree kind is not handled by the given visitor, then execution is halted and an
  * RuntimeException is thrown which includes a list of supported tree types.
  */

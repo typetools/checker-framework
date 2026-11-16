@@ -10,7 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SignednessInitializedFieldsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a SignednessInitializedFieldsTest.
+   * Creates a SignednessInitializedFieldsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

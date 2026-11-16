@@ -376,7 +376,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Check if the type represents a declared type of the given qualified name.
+   * Returns true if the type represents a declared type of the given qualified name.
    *
    * @param type the type
    * @param qualifiedName the name to check {@code type} against
@@ -388,8 +388,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Check if the type represents a declared type whose fully-qualified name is any of the given
-   * names.
+   * Returns true if the type represents a declared type whose fully-qualified name is any of the
+   * given names.
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
@@ -415,7 +415,7 @@ public final class TypesUtils {
               "java.lang.Float"));
 
   /**
-   * Check if the {@code type} represents a boxed primitive type.
+   * Returns true if the {@code type} represents a boxed primitive type.
    *
    * @param type the type to check
    * @return true iff type represents a boxed primitive type
@@ -578,8 +578,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if declaredType is a Class that is used to box primitive type (e.g.
-   * declaredType=java.lang.Double and primitiveType=22.5d )
+   * Returns true if declaredType is a Class that is used to box primitive type primitiveType (e.g.,
+   * declaredType=java.lang.Double and primitiveType=double).
    *
    * @param declaredType a type that might be a boxed type
    * @param primitiveType a type that might be a primitive type
@@ -647,7 +647,7 @@ public final class TypesUtils {
    * Returns true if a TypeMirror represents a class type.
    *
    * @param type a type that might be a class type
-   * @return true if {@code} is a class type
+   * @return true if {@code type} is a class type
    */
   public static boolean isClassType(TypeMirror type) {
     return (type instanceof Type.ClassType);
@@ -727,7 +727,7 @@ public final class TypesUtils {
   /**
    * Returns true if {@code type} has an enclosing type.
    *
-   * @param type type to checker
+   * @param type type to check
    * @return true if {@code type} has an enclosing type
    */
   public static boolean hasEnclosingType(TypeMirror type) {
@@ -738,8 +738,8 @@ public final class TypesUtils {
   // Type variables and wildcards
 
   /**
-   * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
-   * non-wildcard upper bound. Otherwise, return the type itself.
+   * If the argument is a bounded TypeVariable or WildcardType, returns its non-variable,
+   * non-wildcard upper bound. Otherwise, returns the type itself.
    *
    * @param type a type
    * @return the non-variable, non-wildcard upper bound of a type, if it has one, or itself if it
@@ -768,7 +768,7 @@ public final class TypesUtils {
 
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
-   * is sometimes null, in that case this method will return null.
+   * is sometimes null; in that case, this method returns null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -779,7 +779,7 @@ public final class TypesUtils {
 
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
-   * is sometimes null, in that case this method will return null.
+   * is sometimes null; in that case, this method returns null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -835,7 +835,7 @@ public final class TypesUtils {
    * null type.
    *
    * @param typeVariable a type variable
-   * @param env the proceProcessingEnvironment
+   * @param env the ProcessingEnvironment
    * @return the lower bound of {@code typeVariable} or the null type
    */
   public static TypeMirror getTypeVariableLowerBound(
@@ -868,9 +868,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound. If the
-   * bounded type extends other bounded types, this method will iterate through their bounds until a
-   * class, interface, or intersection is found.
+   * Given a bounded type (wildcard or typevar), returns the concrete type of its upper bound. If
+   * the bounded type extends other bounded types, this method will iterate through their bounds
+   * until a class, interface, or intersection is found.
    *
    * @return a type that is not a wildcard or typevar, or {@code null} if this type is an unbounded
    *     wildcard
@@ -1036,8 +1036,8 @@ public final class TypesUtils {
    * returns {@code null}.
    *
    * @param typeVar a type variable that might be a captured type variable
-   * @return {@code typeVar} is a captured type variable, then returns its underlying wildcard;
-   *     otherwise returns {@code null}
+   * @return if {@code typeVar} is a captured type variable, its underlying wildcard; otherwise
+   *     {@code null}
    */
   public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
     if (isCapturedTypeVariable(typeVar)) {
@@ -1203,7 +1203,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Given a list of TypeMirror, return a list of Type.
+   * Given a list of TypeMirror, returns a list of Type.
    *
    * @param typeMirrors a list of TypeMirrors
    * @return the argument, converted to a javac list
@@ -1272,9 +1272,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the superclass the given type. If there is no superclass the first interface returned
-   * by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a superclass
-   * nor a superinterface, then null is returned.
+   * Returns the superclass of the given type. If there is no superclass, the first interface
+   * returned by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a
+   * superclass nor a superinterface, then null is returned.
    *
    * @param type a type
    * @param types type utilities
@@ -1479,7 +1479,7 @@ public final class TypesUtils {
    *
    * @param functionalInterfaceType functional interface
    * @param env ProcessingEnvironment
-   * @return the single abstract method declared by the type of the tree
+   * @return the type of the single abstract method declared by {@code functionalInterfaceType}
    */
   public static ExecutableType findFunctionType(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
@@ -1651,7 +1651,7 @@ public final class TypesUtils {
    * is not a subtype of an array.
    *
    * @param type a type
-   * @param types TypesUtils
+   * @param types the type utilities
    * @return the most specific supertype of {@code type} that is an array, or null if {@code type}
    *     is not a subtype of an array
    */
@@ -1703,11 +1703,11 @@ public final class TypesUtils {
   /**
    * Creates a wildcard with the given bounds. If {@code lowerBound} is non-null, the {@code
    * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
-   * {@code Object}, then {@code lowerBound} must be {@code null};
+   * {@code Object}, then {@code lowerBound} must be {@code null}.
    *
    * @param lowerBound the lower bound for the wildcard, or null if it has none
    * @param upperBound the upper bound for the wildcard, or null if it has none
-   * @param types TypesUtils
+   * @param types the type utilities
    * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
@@ -1728,7 +1728,7 @@ public final class TypesUtils {
    *
    * @param type a type
    * @param types the type utilities
-   * @return true if assignment to the type may be a narrowing
+   * @return true if assignment to the type might be a narrowing
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
     // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
@@ -1741,7 +1741,7 @@ public final class TypesUtils {
 
   /**
    * Returns true if {@code t1} and {@code t2} are the same type, except that captured type
-   * variables in {@code t1} may differ from the corresponding captured type variables in {@code
+   * variables in {@code t1} might differ from the corresponding captured type variables in {@code
    * t2}.
    *
    * <p>More precisely, returns true if there is a one-to-one correspondence between the captured
@@ -1802,7 +1802,7 @@ public final class TypesUtils {
    * @param t2 a type
    * @param types the type utilities
    * @param visited the correspondence between the captured type variables of {@code t1} and those
-   *     of {@code t2}; this method may add pairs to it
+   *     of {@code t2}; this method might add pairs to it
    * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
    */
   private static boolean isSameTypeModuloCaptures(
@@ -1931,9 +1931,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the two type variables are the same type variable. Meaning they have the same
-   * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
-   * they do not have to be the same object.
+   * Returns true if the two type variables are the same type variable, meaning that they have the
+   * same name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror,
+   * TypeMirror)}, they do not have to be the same object.
    *
    * <p>This method is needed when a type has gone through type variable substitution, but only some
    * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
@@ -1941,7 +1941,7 @@ public final class TypesUtils {
    *
    * @param typeVariable1 a type variable
    * @param typeVariable2 a type variable
-   * @return if the two type variables are the same type variable
+   * @return true if the two type variables are the same type variable
    */
   @SuppressWarnings("TypeEquals") // early exit from comparison method
   @EqualsMethod

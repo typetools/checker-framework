@@ -51,8 +51,8 @@ examples appear in a table below.
   and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
   is:  for any non-array type, the binary name; and for any array type, a
   format like the
-  \href{https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor
-    field descriptor}, but using
+  \href{https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.3.2}{field
+    descriptor}, but using
   ``\<.>''~where the field descriptor uses ``\</>''.  See examples below.
 \end{sloppypar}
 
@@ -86,12 +86,12 @@ examples appear in a table below.
   method.  This format is not required by any method in the JDK, so you
   will rarely write it in source code.  The string can be empty.  This
   is not the same as the ``simple name'' defined in
-  (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.2}{JLS
-    \S 6.2}), which is the same as
+  \href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.2}{JLS
+    \S 6.2}, which is the same as
   \refqualclass{checker/signature/qual}{Identifier}.
 
 \item[\refqualclass{checker/signature/qual}{FqBinaryName}]
-  An extension of binary name format to represent primitives and arrays.
+  An extension of the binary name format to represent primitives and arrays.
   It is like \refqualclass{checker/signature/qual}{FullyQualifiedName}, but using
   ``\<\$>'' instead of ``\<.>'' to separate nested classes from their
   enclosing classes.  For example, \<"pkg.Outer\$Inner"> or
@@ -100,7 +100,7 @@ examples appear in a table below.
 \item[\refqualclass{checker/signature/qual}{CanonicalName}]
   Syntactically identical to
   \refqualclass{checker/signature/qual}{FullyQualifiedName}, but some
-  classes have multiple fully-qualified names, only one of which is
+  classes have multiple fully qualified names, only one of which is
   canonical (see
   \href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-6.html#jls-6.7}{JLS
     \S 6.7}).
@@ -110,7 +110,7 @@ examples appear in a table below.
 Other type qualifiers are the intersection of two or more qualifiers listed
 above; for example, a
 \refqualclass{checker/signature/qual}{DotSeparatedIdentifiers} is a string
-that is a valid fully-qualified name \emph{and} a valid binary name.  A
+that is a valid fully qualified name \emph{and} a valid binary name.  A
 programmer should rarely or never use these qualifiers, and you can ignore
 them as implementation details of the Signature Checker, though you might
 occasionally see them in an error message.  These qualifiers exist to give
@@ -197,7 +197,7 @@ represented is not a primitive or an array.
 \sectionAndLabel{What the Signature Checker checks}{signature-checks}
 
 Certain methods in the JDK, such as \<Class.forName>, are annotated
-indicating the type they require.  The Signature Checker ensures that
+to indicate the type they require.  The Signature Checker ensures that
 clients call them with the proper arguments.  The Signature Checker does
 not reason about string operations such as concatenation, substring,
 parsing, etc.

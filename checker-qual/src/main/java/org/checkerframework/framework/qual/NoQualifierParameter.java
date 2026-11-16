@@ -18,8 +18,8 @@ import java.lang.annotation.Target;
  * <p>When a class is {@code @NoQualifierParameter}, all its subclasses are as well.
  *
  * <p>One or more top qualifiers must be given for the hierarchies for which there are no qualifier
- * parameters. This annotation may not be written on the same class as {@code HasQualifierParameter}
- * for the same hierarchy.
+ * parameters. This annotation must not be written on the same class as {@code
+ * HasQualifierParameter} for the same hierarchy.
  *
  * <p>It is an error for a superclass to be {@code @HasQualifierParameter} but a subclass to be
  * {@code @NoQualifierParameter} for the same hierarchy.

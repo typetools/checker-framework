@@ -15,7 +15,7 @@ import org.plumelib.reflection.Signatures;
 /** A visitor to verify validity of {@code @}{@link ClassVal} annotations. */
 public class ClassValVisitor extends BaseTypeVisitor<ClassValAnnotatedTypeFactory> {
   /**
-   * Create a new ClassValVisitor.
+   * Creates a new ClassValVisitor.
    *
    * @param checker the associated type-checker
    */
