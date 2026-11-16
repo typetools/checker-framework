@@ -18,6 +18,9 @@ Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
 variable or intersection type whose upper bound unboxes to a numeric primitive,
 such as `T extends Integer`.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
