@@ -7,8 +7,9 @@
 
 ### User-visible changes
 
-The Interning Checker no longer treats a boxed primitive as `@Interned`.  For
-example, it reports `@Interned Integer x = anInt;`.
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
 
 ### Changes for type system implementers
 
