@@ -84,6 +84,15 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
+   * A leaked resource whose type is a type variable is counted as found but not as verified, using
+   * the erasure of the type variable for both counts.
+   */
+  @Test
+  public void leakedTypeVariableIsNotVerified() {
+    assertCounts("TypeVariableLeak.java", false, 1, 0);
+  }
+
+  /**
    * Runs the Resource Leak Checker with {@code -AcountMustCall} on the given file and checks the
    * statistics that it prints.
    *
@@ -110,29 +119,6 @@ public class ResourceLeakCountMustCallTest {
     int verified = countFromMessage(messages, "Successfully verified (\\d+) must call obligation");
     Assert.assertEquals("Found; messages: " + messages, expectedFound, found);
     Assert.assertEquals("Verified; messages: " + messages, expectedVerified, verified);
-  }
-
-  /**
-   * A leaked resource whose type is a type variable is counted as found but not as verified, using
-   * the erasure of the type variable for both counts.
-   */
-  @Test
-  public void leakedTypeVariableIsNotVerified() {
-    String testDir = "tests/resourceleak-countmustcall";
-    TestConfiguration config =
-        TestConfigurationBuilder.buildDefaultConfiguration(
-            testDir,
-            new File(testDir, "TypeVariableLeak.java"),
-            ResourceLeakChecker.class,
-            List.of("-AcountMustCall"),
-            TestUtilities.getShouldEmitDebugInfo());
-    CompilationResult result = new TypecheckExecutor().compile(config);
-    List<String> messages =
-        result.getDiagnostics().stream().map(d -> d.getMessage(Locale.ROOT)).toList();
-    int found = countFromMessage(messages, "Found (\\d+) must call obligation");
-    int verified = countFromMessage(messages, "Successfully verified (\\d+) must call obligation");
-    Assert.assertEquals("Messages: " + messages, 1, found);
-    Assert.assertEquals("Messages: " + messages, 0, verified);
   }
 
   /**
