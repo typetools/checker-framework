@@ -1177,7 +1177,7 @@ public abstract class CFAbstractTransfer<
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+        JavaExpression expr = JavaExpression.fromNode(node.getOperand());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           store.insertOrRefine(expr, anno);
         }
@@ -1456,11 +1456,20 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Refines, in {@code store}, the binding variable {@code bindingExpr} of a type pattern by the
-   * qualifiers of {@code matchedType}, the type of the value that the pattern is matched against. A
-   * qualifier of {@code matchedType} that is not a subtype of the qualifier upper bound of the
-   * binding variable's type is replaced by that bound, as for a cast to the binding variable's
-   * type.
+   * Refines the binding variable {@code bindingExpr} of a type pattern by the qualifiers of {@code
+   * matchedType}, the type of the value that the pattern is matched against. For example, in
+   *
+   * <pre>{@code
+   * if (o instanceof String s) ...
+   * switch (o) { case String s -> ... }
+   * }</pre>
+   *
+   * {@code bindingExpr} is {@code s} and {@code matchedType} is the type of {@code o}. This method
+   * refines {@code s} as if it were assigned a cast of {@code o}, as in {@code String s = (String)
+   * o;}: {@code s} gets each qualifier of the type of {@code o}, except that a qualifier that is
+   * not a subtype of the qualifier upper bound of {@code String} is replaced by that bound. For
+   * example, in the Interning Checker every {@code Class} is {@code @Interned}, so in {@code o
+   * instanceof Class<?> c}, {@code c} is {@code @Interned} even if {@code o} is not.
    *
    * @param store the store to refine; side-effected by this method
    * @param bindingExpr the binding variable of a type pattern
@@ -1468,8 +1477,6 @@ public abstract class CFAbstractTransfer<
    */
   protected void refineBindingVariable(
       S store, JavaExpression bindingExpr, AnnotatedTypeMirror matchedType) {
-    // For example, in the Interning Checker every Class is @Interned, so the binding variable of
-    // `o instanceof Class<?> c` is @Interned.
     AnnotationMirrorSet annos =
         analysis
             .atypeFactory
