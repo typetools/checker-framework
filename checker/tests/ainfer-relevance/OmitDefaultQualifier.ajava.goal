@@ -1,0 +1,40 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
+import org.checkerframework.framework.qual.DefaultQualifier;
+
+// `@AinferDefaultType` is the default qualifier of AinferRelevanceTestChecker.  Whole-program
+// inference infers `@AinferDefaultType` for the field and for the formal parameter and return type
+// of each method.  Writing `@AinferDefaultType` would be redundant, so the goal file omits it.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class OmitDefaultQualifier {
+
+    CharSequence field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void setField(OmitDefaultQualifier this, CharSequence cs) {
+        field = cs;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    CharSequence getField(OmitDefaultQualifier this) {
+        return field;
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void client(CharSequence cs) {
+        OmitDefaultQualifier o = new OmitDefaultQualifier();
+        o.setField(cs);
+        o.getField();
+        InScopeOfDefaultQualifier.take(cs);
+    }
+
+    // In the scope of `@DefaultQualifier(AinferTop.class)`, the qualifier of an unannotated type is
+    // `@AinferTop`, not `@AinferDefaultType`.  Inference infers `@AinferDefaultType` for the formal
+    // parameter, and the goal file contains it, because omitting it would change the meaning of the
+    // ajava file.
+    static class InScopeOfDefaultQualifier {
+
+        @org.checkerframework.dataflow.qual.SideEffectFree
+        static void take(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence cs) {
+        }
+    }
+}
