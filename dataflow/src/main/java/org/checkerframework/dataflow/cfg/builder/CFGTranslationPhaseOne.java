@@ -2700,7 +2700,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           doneLabel,
           finallyLabel,
           exceptionalFinallyLabel,
-          () -> scan(finallyBlock, p),
+          isExceptionalPath -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
           oldBreakLabels,
@@ -2798,7 +2798,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         doneLabel,
         finallyLabel,
         exceptionalFinallyLabel,
-        () -> addCloseCallForResource(resourceDeclarationTree, p),
+        isExceptionalPath -> addCloseCallForResource(resourceDeclarationTree, isExceptionalPath, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2812,11 +2812,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
    * in a try-with-resources.
    *
+   * <p>On the path on which the try block throws an exception, the try-with-resources statement
+   * suppresses any exception that {@code close()} throws, and then rethrows the try block's
+   * exception (JLS 14.20.3.1). On that path, a call to a {@code close()} method annotated
+   * {@code @TerminatesExecution} does not terminate execution, because the method may terminate by
+   * throwing an exception.
+   *
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
+   * @param isExceptionalPath true if the call is on the path on which the try block throws an
+   *     exception
    * @param p the value to pass to calls to {@code scan}
    */
-  private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+  private void addCloseCallForResource(
+      Tree resourceDeclarationTree, boolean isExceptionalPath, Void p) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
     Node receiverNode;
@@ -2873,7 +2882,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+    extendWithArtificialCall(
+        closeCall, receiverNode, NullReceiver.IMPOSSIBLE, !isExceptionalPath);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2905,6 +2915,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private MethodInvocationNode extendWithArtificialCall(
       MethodInvocationTree call, Node receiver, NullReceiver nullReceiver) {
+    return extendWithArtificialCall(call, receiver, nullReceiver, true);
+  }
+
+  /**
+   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
+   * call to {@code hasNext()} in an enhanced for loop.
+   *
+   * @param call the call
+   * @param receiver the receiver of the call
+   * @param nullReceiver what happens when the receiver is null. If the receiver is never null, such
+   *     as {@code this}, the call does not throw a {@code NullPointerException}, regardless of this
+   *     argument.
+   * @param mayTerminateExecution if true, the call terminates execution if the invoked method is
+   *     annotated {@link TerminatesExecution}. If false, the call never terminates execution.
+   * @return the node for the call
+   */
+  private MethodInvocationNode extendWithArtificialCall(
+      MethodInvocationTree call,
+      Node receiver,
+      NullReceiver nullReceiver,
+      boolean mayTerminateExecution) {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
@@ -2912,8 +2943,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
-    extendWithMethodInvocationNode(callNode);
+    ExtendedNode extendedNode = extendWithMethodInvocationNode(callNode);
+    if (!mayTerminateExecution) {
+      extendedNode.setTerminatesExecution(false);
+    }
     return callNode;
+  }
+
+  /** Generates CFG nodes and edges for a finally block. */
+  @FunctionalInterface
+  private interface FinallyBlockGenerator {
+    /**
+     * Generates CFG nodes and edges for a finally block.
+     *
+     * @param isExceptionalPath true if the finally block is generated for the path on which the try
+     *     block throws an exception
+     */
+    void generate(boolean isExceptionalPath);
   }
 
   /**
@@ -2944,7 +2990,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Label doneLabel,
       Label finallyLabel,
       Label exceptionalFinallyLabel,
-      Runnable finallyBlockCFGGenerator,
+      FinallyBlockGenerator finallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -2961,7 +3007,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCFGGenerator.generate(false);
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -2982,7 +3028,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      finallyBlockCFGGenerator.run();
+      finallyBlockCFGGenerator.generate(true);
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithException(
@@ -3004,7 +3050,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block for return #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCFGGenerator.generate(false);
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3024,7 +3070,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block for break #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCFGGenerator.generate(false);
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3049,7 +3095,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                     + " #"
                     + TreeUtils.treeUids.get(markerTree),
                 env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
+        finallyBlockCFGGenerator.generate(false);
         extendWithNode(
             new MarkerNode(
                 markerTree,
@@ -3073,7 +3119,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCFGGenerator.generate(false);
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3099,7 +3145,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                     + " #"
                     + TreeUtils.treeUids.get(markerTree),
                 env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
+        finallyBlockCFGGenerator.generate(false);
         extendWithNode(
             new MarkerNode(
                 markerTree,
@@ -3544,9 +3590,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * {@link TerminatesExecution}, the invocation terminates execution.
    *
    * @param node an invocation
+   * @return the extended node that holds {@code node}
    */
-  private void extendWithMethodInvocationNode(MethodInvocationNode node) {
-    extendWithInvocationNode(node, node.getTarget().getMethod());
+  private ExtendedNode extendWithMethodInvocationNode(MethodInvocationNode node) {
+    return extendWithInvocationNode(node, node.getTarget().getMethod());
   }
 
   /**
@@ -3556,8 +3603,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param node a method invocation or object creation
    * @param executable the method or constructor that {@code node} invokes
+   * @return the extended node that holds {@code node}
    */
-  private void extendWithInvocationNode(Node node, ExecutableElement executable) {
+  private ExtendedNode extendWithInvocationNode(Node node, ExecutableElement executable) {
     List<? extends TypeMirror> thrownTypes = executable.getThrownTypes();
     Set<TypeMirror> thrownSet =
         ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -3570,6 +3618,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (annotationProvider.getDeclAnnotation(executable, TerminatesExecution.class) != null) {
       extendedNode.setTerminatesExecution(true);
     }
+    return extendedNode;
   }
 
   @Override

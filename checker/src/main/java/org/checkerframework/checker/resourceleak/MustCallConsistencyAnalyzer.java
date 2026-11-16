@@ -344,7 +344,8 @@ public class MustCallConsistencyAnalyzer {
      * <p>The must-call methods of a resource alias that has a value in the store come from that
      * value, or from the alias's declaration (see {@link #getMustCallValue}).
      *
-     * <p>A resource alias that has no value in the store gets the must-call methods of the
+     * <p>A resource alias that has no value in the store gets the must-call methods of its
+     * declaration, if those are non-empty. Otherwise, it gets the must-call methods of the
      * resource, which is the union of the must-call methods of the resource aliases that have a
      * value in the store. For example, the store has no value for a resource alias that is
      * unassigned on some path to the store's program point, such as a variable that is assigned the
@@ -400,7 +401,19 @@ public class MustCallConsistencyAnalyzer {
         }
         List<String> resourceMustCallMethodsList = new ArrayList<>(resourceMustCallMethods);
         for (ResourceAlias alias : this.resourceAliases) {
-          result.putIfAbsent(alias, resourceMustCallMethodsList);
+          if (result.containsKey(alias)) {
+            continue;
+          }
+          // Resource aliases may declare different must-call methods; for example, a wrapper
+          // might require dispose() while the wrapped resource requires close().  So, use the
+          // alias's own declared must-call methods if they are non-empty.
+          List<String> declaredMustCallMethods =
+              getMustCallMethodsOfAlias(alias, null, mustCallAnnotatedTypeFactory, rlAtf);
+          if (declaredMustCallMethods != null && !declaredMustCallMethods.isEmpty()) {
+            result.put(alias, declaredMustCallMethods);
+          } else {
+            result.put(alias, resourceMustCallMethodsList);
+          }
         }
       }
       return result;

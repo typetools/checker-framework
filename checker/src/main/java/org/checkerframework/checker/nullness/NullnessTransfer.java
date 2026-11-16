@@ -1,8 +1,15 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -411,20 +418,24 @@ public class NullnessTransfer
     MethodInvocationTree tree = n.getTree();
     ExecutableElement method = TreeUtils.elementFromUse(tree);
 
-    boolean isMethodSideEffectFree =
-        atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
+    boolean isMethodSideEffectFree = isSideEffectFree(method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
     // The receiver is refined here, after the invocation completes normally, rather than at the
     // MethodAccessNode.  A call tests its receiver for nullness after evaluating its arguments, so
     // neither the arguments nor a handler for the call's NullPointerException may assume that the
-    // receiver is non-null.
-    if (!n.getTarget().isStatic()
-        && (nonNullAssumptionAfterInvocation
-            || isMethodSideEffectFree
-            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
-      // Make receiver non-null.
-      makeNonNull(result, receiver);
+    // receiver is non-null.  Conversely, the receiver is evaluated before the arguments, so if an
+    // argument reassigns the receiver expression, as in `r.m(r = null)`, then the call's normal
+    // completion shows nothing about the receiver expression's value afterward.
+    if (!n.getTarget().isStatic()) {
+      JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+      if ((nonNullAssumptionAfterInvocation
+              || isMethodSideEffectFree
+              || !receiverExpr.isAssignableByOtherCode())
+          && !argumentsMayReassign(tree, receiverExpr)) {
+        // Make receiver non-null.
+        makeNonNull(result, receiver);
+      }
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
@@ -463,6 +474,121 @@ public class NullnessTransfer
     }
 
     return result;
+  }
+
+  /**
+   * Returns true if evaluating the arguments of the given invocation may reassign the given
+   * receiver expression or a subexpression of it. The receiver is evaluated before the arguments,
+   * so after such an invocation, the receiver expression may denote a different value than the one
+   * the invocation tested for nullness.
+   *
+   * <p>The bodies of lambda expressions and anonymous classes in the arguments are not evaluated
+   * along with the arguments, so this method does not examine them.
+   *
+   * @param tree an invocation
+   * @param receiver the receiver expression of the invocation
+   * @return true if evaluating the arguments of {@code tree} may reassign {@code receiver}
+   */
+  private boolean argumentsMayReassign(MethodInvocationTree tree, JavaExpression receiver) {
+    if (tree.getArguments().isEmpty()) {
+      return false;
+    }
+    boolean receiverAssignableByOtherCode = receiver.isAssignableByOtherCode();
+    TreeScanner<Boolean, Void> scanner =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean reduce(Boolean r1, Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+
+          /**
+           * Returns true if assigning the given variable may reassign the receiver.
+           *
+           * @param variable the left-hand side of an assignment
+           * @return true if assigning {@code variable} may reassign the receiver
+           */
+          private boolean mayReassignReceiver(ExpressionTree variable) {
+            JavaExpression assigned = JavaExpression.fromTree(variable);
+            if (receiver.containsSyntacticEqualJavaExpression(assigned)) {
+              return true;
+            }
+            // An assignment to a field or array element may assign an alias of the receiver, such
+            // as `other.f` for a receiver `this.f`.
+            return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
+          }
+
+          @Override
+          public Boolean visitAssignment(AssignmentTree node, Void p) {
+            return mayReassignReceiver(node.getVariable()) || super.visitAssignment(node, p);
+          }
+
+          @Override
+          public Boolean visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+            return mayReassignReceiver(node.getVariable())
+                || super.visitCompoundAssignment(node, p);
+          }
+
+          @Override
+          public Boolean visitUnary(UnaryTree node, Void p) {
+            switch (node.getKind()) {
+              case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
+                if (mayReassignReceiver(node.getExpression())) {
+                  return true;
+                }
+              }
+              default -> {}
+            }
+            return super.visitUnary(node, p);
+          }
+
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            // A method with side effects may reassign a receiver that is assignable by other code.
+            if (receiverAssignableByOtherCode
+                && !isSideEffectFree(TreeUtils.elementFromUse(node))) {
+              return true;
+            }
+            return super.visitMethodInvocation(node, p);
+          }
+
+          @Override
+          public Boolean visitNewClass(NewClassTree node, Void p) {
+            // A constructor with side effects may reassign a receiver that is assignable by other
+            // code.
+            if (receiverAssignableByOtherCode
+                && !isSideEffectFree(TreeUtils.elementFromUse(node))) {
+              return true;
+            }
+            return super.visitNewClass(node, p);
+          }
+
+          @Override
+          public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            return false;
+          }
+
+          @Override
+          public Boolean visitClass(ClassTree node, Void p) {
+            return false;
+          }
+        };
+    for (ExpressionTree arg : tree.getArguments()) {
+      if (Boolean.TRUE.equals(scanner.scan(arg, null))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the given method or constructor is side-effect-free.
+   *
+   * @param executable a method or constructor
+   * @return true if {@code executable} is side-effect-free
+   */
+  private boolean isSideEffectFree(ExecutableElement executable) {
+    return atypeFactory.isSideEffectFree(executable)
+        || PurityUtils.isSideEffectFree(atypeFactory, executable);
   }
 
   /**
