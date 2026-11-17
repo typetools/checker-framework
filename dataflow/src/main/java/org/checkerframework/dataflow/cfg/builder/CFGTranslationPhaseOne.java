@@ -2358,14 +2358,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
-      if (!hasNullCaseLabel && !selectorExprNode.getType().getKind().isPrimitive()) {
-        // Without a `case null`, a null selector expression causes a NullPointerException before
-        // any case is tested.  (If the selector expression was unboxed, then the unboxing already
-        // has a NullPointerException edge.)
-        extendWithNodeWithException(selectorExprAssignment, nullPointerExceptionType);
-      } else {
-        extendWithNode(selectorExprAssignment);
-      }
+      extendWithNode(selectorExprAssignment);
     }
 
     /**
