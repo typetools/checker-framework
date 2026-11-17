@@ -22,11 +22,14 @@ whose receiver is `x`) rather than discarding them, so a checker issues fewer
 false positive warnings.  The default implementation returns true; a subclass
 of `JavaExpression` that overrides it must adopt the new meaning.
 
-`CFAbstractStore.canAlias(a, b)` returns true if a cast from the erasure of the
-type of `a` to the erasure of the type of `b`, or vice versa, is legal.  It
-previously required one type to be a subtype of the other, so it returned false
-for some values that can be the same object, such as values whose types are two
-different type variables, or two interfaces.
+`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
+the new method `CFAbstractAnalysis.canAlias` instead.
+
+`canAlias(a, b)` compares the erasures of the types of `a` and `b`, and every
+bound of a type variable, wildcard, or intersection type.  It previously
+required one type to be a subtype of the other, so it returned false for some
+values that can be the same object, such as values whose types are two
+different type variables or two parameterizations of a generic class.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.

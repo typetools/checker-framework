@@ -1,8 +1,6 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -19,7 +17,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -1361,27 +1358,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
-   * answer (i.e., returns {@code true} if not enough information is available to determine
-   * aliasing).
+   * Returns true if the objects {@code a} and {@code b} can be aliases, judging by their types.
+   * This method returns the result of {@link CFAbstractAnalysis#canAlias}, which does not depend on
+   * the contents of the store. It is final so that every client gets the same answer; a checker
+   * that changes the aliasing judgment overrides {@link CFAbstractAnalysis#canAlias}.
    *
-   * <p>This implementation returns true if a cast from the erasure of one type to the erasure of
-   * the other is legal. Erasure makes the test conservative for type variables, wildcards, and type
-   * arguments: for example, values of types {@code T} and {@code U} that are both bounded by {@code
-   * D} might be the same object, and so might values of types {@code Box<? extends Number>} and
-   * {@code Box<? super Integer>}. Castability makes the test conservative for interfaces: for
-   * example, values of types {@code Runnable[]} and {@code Comparable<?>[]} might be the same
-   * object. In none of these examples is either type a subtype of the other.
+   * <p>Contrary to the specification of {@link Store#canAlias}, the answer is not conservative when
+   * an interface type is involved. See https://github.com/typetools/checker-framework/issues/8558.
    */
   @Override
-  public boolean canAlias(JavaExpression a, JavaExpression b) {
-    Types types = analysis.getTypes();
-    Type ta = (Type) types.erasure(a.getType());
-    Type tb = (Type) types.erasure(b.getType());
-    com.sun.tools.javac.code.Types javacTypes =
-        com.sun.tools.javac.code.Types.instance(
-            ((JavacProcessingEnvironment) analysis.getEnv()).getContext());
-    return javacTypes.isCastable(ta, tb) || javacTypes.isCastable(tb, ta);
+  public final boolean canAlias(JavaExpression a, JavaExpression b) {
+    return analysis.canAlias(a, b);
   }
 
   /* --------------------------------------------------------- */
