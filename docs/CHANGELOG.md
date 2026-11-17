@@ -9,6 +9,10 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator, because the conversions of a
+binary operation's operands depend on the operator.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
