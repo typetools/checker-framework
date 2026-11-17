@@ -1348,7 +1348,6 @@ public abstract class CFAbstractTransfer<
    * A case produces no value, but it might imply some facts about the switch selector expression.
    */
   @Override
-  @SuppressWarnings("nullness:argument") // strengthenAnnotationOfEqualTo permits null values
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
     // The case labels are tested against the value of the selector expression that was saved
