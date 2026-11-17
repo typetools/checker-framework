@@ -952,7 +952,7 @@ public abstract class CFAbstractTransfer<
       i = 0;
     }
     return nodes.get(i) instanceof MethodInvocationNode call
-        && call.getIsUnboxing()
+        && call.isUnboxing()
         && call.getTarget() == n;
   }
 
@@ -1482,7 +1482,7 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
-    if (n.getIsUnboxing()) {
+    if (n.isUnboxing()) {
       return visitUnboxingCall(n, in);
     }
 
@@ -1504,6 +1504,13 @@ public abstract class CFAbstractTransfer<
     // look up the call's value in the store (if possible)
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    if (n.isBoxing()) {
+      // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
+      // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
+      // of `x`, the value being boxed.
+      V operandValue = in.getValueOfSubNode(n.getArgument(0));
+      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
+    }
 
     store.updateForMethodCall(n, resValue);
 
@@ -1554,6 +1561,11 @@ public abstract class CFAbstractTransfer<
             ? null
             : thenStoreValue.leastUpperBound(elseStoreValue);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type factory
+    // computes for the call) comes from the declared return type of `intValue()`, which lacks the
+    // qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
+    V receiverValue = in.getValueOfSubNode(n.getTarget().getReceiver());
+    resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), receiverValue));
 
     JavaExpression unboxingCall = JavaExpression.fromNode(n);
     thenStore.replaceValue(unboxingCall, resValue);
@@ -1821,13 +1833,12 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned. If one of them is null, then the other is
-   * returned.
+   * incomparable, then {@code value1} is returned. If either is null, the other is returned.
    *
    * @param value1 an abstract value, or null
    * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
-   *     value1}
+   *     value1}; null if both parameters are null
    */
   @Pure
   public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
@@ -1950,6 +1961,50 @@ public abstract class CFAbstractTransfer<
             type.getKind());
 
     return analysis.createAbstractValue(widenedAnnos, type);
+  }
+
+  /**
+   * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
+   * This is only called at an unboxing conversion.
+   *
+   * @param type the primitive type to unbox to
+   * @param annotatedValue a value to unbox
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy, as a value whose type is a type variable can
+   */
+  @SideEffectFree
+  protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet unboxedAnnos =
+        analysis.atypeFactory.getUnboxedAnnotations(
+            annotatedValue.getAnnotations(), type.getKind());
+    return analysis.createAbstractValue(unboxedAnnos, type);
+  }
+
+  /**
+   * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations}. This
+   * is only called at a boxing conversion.
+   *
+   * @param type the boxed primitive type to box to, such as {@code Integer}
+   * @param annotatedValue a value to box
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy
+   */
+  @SideEffectFree
+  protected @Nullable V getBoxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet boxedAnnos =
+        analysis.atypeFactory.getBoxedAnnotations(
+            annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
+    return analysis.createAbstractValue(boxedAnnos, type);
   }
 
   @Override
