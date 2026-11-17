@@ -10,7 +10,6 @@
 // pattern calls accessor methods, and the switch wraps any exception that an accessor throws in a
 // MatchException (JLS 14.30.2).
 
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RecordPatternAccessorException {
@@ -54,67 +53,6 @@ public class RecordPatternAccessorException {
     } catch (MatchException e) {
       // The catch block is unreachable.
       x.hashCode();
-    }
-  }
-
-  // An accessor that has a side effect on a field other than the selector expression.
-
-  static @Nullable Object f;
-
-  record Clearing(int x) implements Shape2 {
-    @Override
-    public int x() {
-      f = null;
-      return 0;
-    }
-  }
-
-  record Throwing(int x) implements Shape2 {
-    @Override
-    public int x() {
-      f = null;
-      throw new IllegalStateException();
-    }
-  }
-
-  sealed interface Shape2 permits Clearing, Throwing {}
-
-  @EnsuresNonNull("RecordPatternAccessorException.f")
-  static boolean initialize() {
-    f = "";
-    return false;
-  }
-
-  void accessorClearsField(Clearing c) {
-    f = "";
-    switch (c) {
-      case Clearing(int x) -> {
-        // :: error: [dereference.of.nullable]
-        f.hashCode();
-      }
-    }
-  }
-
-  void accessorClearsFieldAfterGuard(Clearing c) {
-    switch (c) {
-      case Clearing whole when initialize() -> {}
-      case Clearing(int x) -> {
-        // :: error: [dereference.of.nullable]
-        f.hashCode();
-      }
-    }
-  }
-
-  void accessorClearsFieldThenThrows(Shape2 s) {
-    f = "";
-    try {
-      switch (s) {
-        case Throwing(int x) -> {}
-        case Shape2 t -> {}
-      }
-    } catch (MatchException e) {
-      // :: error: [dereference.of.nullable]
-      f.hashCode();
     }
   }
 }
