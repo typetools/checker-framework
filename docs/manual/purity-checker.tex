@@ -184,12 +184,6 @@ whose parameter at that position is not a functional interface (for example,
 its type is a type variable), guarantees nothing, and the assumption does not
 apply.
 
-A method reference does not override the functional method that it
-implements, but it is checked against the same rule.  A method reference to a
-method that relies on its functional-interface argument being pure is an error
-if the functional method that the reference implements does not guarantee that
-purity (\<purity.methodref.functional.parameter>).
-
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  The requirement is the same for every
@@ -197,7 +191,10 @@ functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
 type is a functional interface is checked:  the method can assume nothing about an
 argument to a parameter whose type is a type variable, nor about the elements
-of a varargs array.  How the argument is checked depends on its form:
+of a varargs array.  How the argument is checked depends on its form.
+Parentheses around the argument are ignored, and so is a cast of a lambda, a
+method reference, a conditional expression, or a switch expression, because
+such a cast does not change the code that the argument denotes.
 
 \begin{itemize}
 \item
@@ -205,6 +202,12 @@ of a varargs array.  How the argument is checked depends on its form:
   the required purity annotations.
 \item
   A lambda is checked via its body, which must have the required purity.
+\item
+  A conditional expression (\<?:>) or a switch expression is checked branch
+  by branch:  each of its possible result expressions is checked according
+  to these rules.
+\item
+  The \<null> literal is not checked, because it denotes no code.
 \item
   Any other argument is checked via the functional method of the argument's
   declared type, which must have the required purity annotations.
@@ -214,6 +217,8 @@ of a varargs array.  How the argument is checked depends on its form:
   m(String::length, "hi");   // OK: String.length() is side-effect-free
   m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
   m(s -> count++, "hi");     // error: the lambda body has a side effect
+  m(b ? String::length : s -> 0, "hi");  // OK: each branch is side-effect-free
+  m(b ? null : s -> count++, "hi");      // error: the false branch has a side effect
 
   void caller(Function<String, Integer> g) {
     m(g, "hi");              // error: [purity.functional.argument] Function.apply is not @SideEffectFree
@@ -230,6 +235,54 @@ deterministic:
 
 \begin{Verbatim}
   Objects.requireNonNull(x, () -> String.format("bad %s", y));  // error: [purity.call]
+\end{Verbatim}
+
+A method reference does not override the functional method that it
+implements, but a call through that functional method, or through any method
+that the functional method overrides, can run the referenced method.  Each
+such call checks its arguments only against the method that it invokes.  So a
+method reference is an error (\<purity.methodref.functional.parameter>) if
+the referenced method assumes a purity of a functional-interface argument that
+one of those methods does not promise.  A purity that a command-line option
+such as \<-AassumeSideEffectFree> grants to every call is not required.  There
+is no error if the referenced method cannot be overridden (for example, it is
+static, private, or final) and its body does not rely on the assumption:  the
+body uses the parameter only to store it, return it, compare it, or call a
+method other than the functional method on it.
+
+\begin{Verbatim}
+  class Util {
+    @SideEffectFree
+    static int call(Function<String, Integer> f, String s) {
+      return f.apply(s);  // permitted: apply is treated as side-effect-free
+    }
+
+    @SideEffectFree
+    static int ignore(Function<String, Integer> f, String s) {
+      return 0;
+    }
+  }
+
+  @FunctionalInterface
+  interface Caller {
+    int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface PureCaller {
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface StrongCaller extends Caller {
+    @Override
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  PureCaller c1 = Util::call;    // OK: PureCaller.run requires a side-effect-free f
+  Caller c2 = Util::call;        // error: c2.run(s -> count++, "hi") would have a side effect
+  StrongCaller c3 = Util::call;  // error: a call through Caller.run can run Util.call
+  Caller c4 = Util::ignore;      // OK: Util.ignore is static and never calls f.apply
 \end{Verbatim}
 
 The assumption affects purity checking, and the dataflow analysis of a lambda
@@ -327,6 +380,36 @@ MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in 
 \noindent
 You can fix the definition by making its body pure.  Alternatively, you can
 suppress the warning; see \chapterpageref{suppressing-warnings}.
+
+\iffalse
+A \refqualclass{dataflow/qual}{SideEffectsOnly} annotation is inherited in
+the same way:  an overriding method that has no purity annotation is checked
+against the overridden method's \<@SideEffectsOnly> annotation.  The
+annotation's expressions are interpreted in the overridden method, which
+declares them.  For example, in the inherited annotation, \<this.f> names the
+field \<f> that the overridden method sees, even if the overriding method's
+class declares a field \<f> that hides it.
+
+An overriding method can strengthen an inherited \<@SideEffectsOnly>
+annotation by writing \refqualclass{dataflow/qual}{SideEffectFree},
+\refqualclass{dataflow/qual}{Pure}, or a \<@SideEffectsOnly> annotation in
+which each expression is one that the overridden method lists or is reached
+through one that the overridden method lists.  For example, an override of a
+\<@SideEffectsOnly("\#1")> method can be annotated
+\<@SideEffectsOnly("\#1.f")>, and an override of a
+\<@SideEffectsOnly(\{"\#1", "\#2"\})> method can be annotated
+\<@SideEffectsOnly("\#2")>.
+
+A method that overrides methods in two or more supertypes, and that has no
+purity annotation of its own, inherits the \<@SideEffectsOnly> expressions of
+all of the overridden methods.  If those methods' annotations differ, the
+union of their expressions permits more side effects than an overridden
+method permits, so the Checker Framework issues a
+\<purity.sideeffectsonly.overriding> error for each overridden method that
+permits less than the union.  To fix the errors, write, on the overriding
+method, a \<@SideEffectsOnly> annotation that every overridden method permits,
+or a stronger purity annotation.
+\fi
 
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
