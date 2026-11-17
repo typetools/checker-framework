@@ -125,8 +125,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * The package and the imports of a compilation unit, which determine the meaning of a simple or
-   * partially qualified type name written in it. Imports apply only within the compilation unit
-   * that contains them (JLS 7.5).
+   * partially qualified type name written in it. In Java, imports apply only within the compilation
+   * unit that contains them (JLS 7.5). In a stub file, however, the stub parser gives every
+   * compilation unit all of the stub file's imports, so an import applies throughout the stub file.
    *
    * @param pkgName the package name, or null for the unnamed package
    * @param singleTypeImports the types that single-type imports import, such as {@code
@@ -1305,7 +1306,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable @BinaryName String resolveUncached(
       @FullyQualifiedName String className, @Nullable CompilationUnit cu) {
-    // Imports and the package apply only within the compilation unit that declares them (JLS 7.5).
+    // The package applies only within the compilation unit that declares it (JLS 7.5).  The stub
+    // parser gives every compilation unit of a stub file all of the file's imports, so an import
+    // applies throughout the stub file.
     ImportContext context = importContext(cu);
     String cuPkgName = context.pkgName();
 
