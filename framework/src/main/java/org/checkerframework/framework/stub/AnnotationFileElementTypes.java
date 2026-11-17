@@ -324,7 +324,7 @@ public class AnnotationFileElementTypes {
       File location = AnnotationFileUtil.findFileSystemLocation(path);
       if (location != null) {
         if (location.isFile()
-            && !AnnotationFileUtil.isJarOrZip(location.getName())
+            && !AnnotationFileUtil.isArchive(location.getName())
             && !AnnotationFileUtil.hasAnnotationFileExtension(location.getName(), fileType)) {
           warnUnusableNamedFile(path, fileType);
           continue;
@@ -348,69 +348,85 @@ public class AnnotationFileElementTypes {
         if (path.startsWith("checker.jar/")) {
           path = "/" + path.substring("checker.jar/".length());
         }
-        try (InputStream in = checker.getClass().getResourceAsStream(path)) {
-          if (in != null) {
-            AnnotationFileParser.parseStubFile(
-                path, in, factory, processingEnv, annotationFileAnnos, parseType);
-          } else {
-            // Didn't find the file.  Issue a warning.
+        URL classpathResource = checker.getClass().getResource(path);
+        if (classpathResource != null) {
+          parseAnnotationFileResource(urlResource(path, classpathResource), parseType);
+        } else {
+          // Didn't find the file.  Issue a warning.
 
-            // When using a compound checker, the target file may be found by the
-            // current checker's parent checkers. Also check this to avoid a false
-            // warning. Currently, only the original checker will try to parse the
-            // target file, the parent checkers are only used to reduce false
-            // warnings.
-            SourceChecker currentChecker = checker;
-            boolean findByParentCheckers = false;
-            while (currentChecker != null) {
-              URL topLevelResource = currentChecker.getClass().getResource("/" + path);
-              if (topLevelResource != null) {
-                currentChecker.message(
-                    Diagnostic.Kind.WARNING,
-                    path
-                        + " should be in the same directory as "
-                        + currentChecker.getClass().getSimpleName()
-                        + ".class, but is at the top level of a jar file: "
-                        + topLevelResource);
-                findByParentCheckers = true;
-                break;
-              } else {
-                currentChecker = currentChecker.getParentChecker();
-              }
-            }
-            // If there exists one parent checker that can find this file, don't report
-            // a warning.
-            if (!findByParentCheckers) {
-              File parentPath = new File(path).getParentFile();
-              String parentPathDescription =
-                  (parentPath == null
-                      ? "current directory"
-                      : "directory " + parentPath.getAbsolutePath());
-              String testSrc = System.getProperty("test.src");
-              String msg =
-                  checker.getClass().getSimpleName()
-                      + " did not find annotation file or directory "
-                      + path
-                      + " on classpath or within "
-                      + parentPathDescription
-                      + ((testSrc == null || new File(path).isAbsolute())
-                          ? ""
-                          : (" or within directory " + testSrc));
-              StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
-              sj.add(msg);
-              sj.add("Classpath:");
-              for (URI uri : new ClassGraph().getClasspathURIs()) {
-                sj.add(uri.toString());
-              }
-              checker.message(Diagnostic.Kind.WARNING, sj.toString());
+          // When using a compound checker, the target file may be found by the
+          // current checker's parent checkers. Also check this to avoid a false
+          // warning. Currently, only the original checker will try to parse the
+          // target file, the parent checkers are only used to reduce false
+          // warnings.
+          SourceChecker currentChecker = checker;
+          boolean findByParentCheckers = false;
+          while (currentChecker != null) {
+            URL topLevelResource = currentChecker.getClass().getResource("/" + path);
+            if (topLevelResource != null) {
+              currentChecker.message(
+                  Diagnostic.Kind.WARNING,
+                  path
+                      + " should be in the same directory as "
+                      + currentChecker.getClass().getSimpleName()
+                      + ".class, but is at the top level of a jar file: "
+                      + topLevelResource);
+              findByParentCheckers = true;
+              break;
+            } else {
+              currentChecker = currentChecker.getParentChecker();
             }
           }
-        } catch (IOException e) {
-          checker.message(
-              Diagnostic.Kind.WARNING, "Could not read annotation resource: " + path + ": " + e);
+          // If there exists one parent checker that can find this file, don't report
+          // a warning.
+          if (!findByParentCheckers) {
+            File parentPath = new File(path).getParentFile();
+            String parentPathDescription =
+                (parentPath == null
+                    ? "current directory"
+                    : "directory " + parentPath.getAbsolutePath());
+            String testSrc = System.getProperty("test.src");
+            String msg =
+                checker.getClass().getSimpleName()
+                    + " did not find annotation file or directory "
+                    + path
+                    + " on classpath or within "
+                    + parentPathDescription
+                    + ((testSrc == null || new File(path).isAbsolute())
+                        ? ""
+                        : (" or within directory " + testSrc));
+            StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+            sj.add(msg);
+            sj.add("Classpath:");
+            for (URI uri : new ClassGraph().getClasspathURIs()) {
+              sj.add(uri.toString());
+            }
+            checker.message(Diagnostic.Kind.WARNING, sj.toString());
+          }
         }
       }
     }
+  }
+
+  /**
+   * Returns an annotation file resource whose contents are read from the given URL.
+   *
+   * @param description a description of the resource, such as the path that was used to find it
+   * @param url a URL, such as the one that {@link Class#getResource} returns
+   * @return an annotation file resource whose contents are read from {@code url}
+   */
+  private static AnnotationFileResource urlResource(String description, URL url) {
+    return new AnnotationFileResource() {
+      @Override
+      public String getDescription() {
+        return description;
+      }
+
+      @Override
+      public InputStream getInputStream() throws IOException {
+        return url.openStream();
+      }
+    };
   }
 
   /**
@@ -448,8 +464,8 @@ public class AnnotationFileElementTypes {
    * Issues a warning that a file that the user named is being ignored, because it is not an archive
    * and its name does not end with the file name extension of its file type.
    *
-   * @param path the file's name, as the user supplied it
-   * @param fileType the type of annotation file that the user supplied
+   * @param path a file name, as the user supplied it
+   * @param fileType the type of annotation file that the user supplied {@code path} as
    */
   private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
     String reason;

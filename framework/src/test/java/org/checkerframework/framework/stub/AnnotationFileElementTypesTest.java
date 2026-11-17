@@ -115,6 +115,21 @@ public class AnnotationFileElementTypesTest {
         diagnostics(ajava.getPath()));
   }
 
+  /** Tests that a named ZIP archive does not yield a warning that it is being ignored. */
+  @Test
+  public void namedZipArchive() throws IOException {
+    File zip = new File(tmp.getRoot(), "stubs.zip");
+    try (OutputStream os = Files.newOutputStream(zip.toPath());
+        ZipOutputStream zos = new ZipOutputStream(os)) {
+      zos.putNextEntry(new ZipEntry("A.astub"));
+      zos.write("package p;".getBytes(StandardCharsets.UTF_8));
+      zos.closeEntry();
+    }
+    for (String diagnostic : diagnostics(zip.getPath())) {
+      Assert.assertFalse(diagnostic, diagnostic.startsWith("WARNING: Ignoring"));
+    }
+  }
+
   /** Tests that an archive within a named directory yields a note. */
   @Test
   public void archiveInDirectory() throws IOException {
