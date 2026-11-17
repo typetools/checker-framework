@@ -1,3 +1,4 @@
+import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
@@ -48,6 +49,21 @@ public class AssignmentInComparison {
       // `i` is 0, not the value that was compared.
       // :: error: [assignment]
       @Positive int x = i;
+    }
+  }
+
+  static void otherOperandReassignsOffset(int[] a, int x, int y, int z) {
+    if ((x = y) + z < (z = a.length)) {
+      // `z` is `a.length`, not the value that was added to `x`.
+      // :: error: [assignment]
+      @LTLengthOf(value = "a", offset = "z") int w = x;
+    }
+  }
+
+  static void offsetUnchanged(int[] a, int x, int y, int z) {
+    if ((x = y) + z < a.length) {
+      @LTLengthOf(value = "a", offset = "z") int w = x;
+      @LTLengthOf(value = "a", offset = "z") int v = y;
     }
   }
 
