@@ -54,6 +54,11 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  *       applied; it has a use of an inference variable at each ignored position.
  * </ul>
  *
+ * <p>The <em>current instantiation</em> of an inference variable is its instantiation at this
+ * moment (see {@link Variable#getInstantiation}). It can change during inference: for example, an
+ * instantiation that ignores annotations can be replaced by one that does not. A type that was made
+ * by applying instantiations is then out of date (see {@link #upToDate}).
+ *
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
  * greatest lower bound, the methods of this class replace their ignored annotations with
  * annotations that cannot affect the result: for example, bottom for a subtype and top for a
@@ -335,10 +340,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns {@code type} brought up to date: if it is a proper type with an origin (see {@link
-   * ProperType#getOrigin}), the result of applying the current instantiations of the variables that
-   * its origin mentions to its origin; otherwise, {@code type} itself. The ignored positions of a
-   * type are found from those instantiations, so its annotated type must be made from them too.
+   * Returns {@code type} brought up to date. If {@code type} is a proper type with an origin (see
+   * {@link ProperType#getOrigin}), the result is its origin with the current instantiations applied
+   * and with the primary annotations of {@code type}; otherwise, it is {@code type} itself. The
+   * result is {@code type} itself if none of those instantiations has changed since {@code type}
+   * was made, or if a variable that its origin contains no longer has an instantiation. Otherwise,
+   * the result can differ from {@code type} at positions whose instantiation changed. The ignored
+   * positions of a type are found from the current instantiations, so its annotated type must be
+   * made from them too.
    *
    * @param type a type
    * @return {@code type} brought up to date
