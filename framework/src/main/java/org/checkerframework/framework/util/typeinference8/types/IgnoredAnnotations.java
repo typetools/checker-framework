@@ -273,15 +273,18 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
-   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
-   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
-   * primary annotations.
+   * Returns true if the annotations of {@code type1} and {@code type2} cannot make an annotation
+   * subtype or equality check between them fail (see {@link AbstractType#checkAnnotationSubtype}
+   * and {@link ProperType#checkAnnotationEquality}). That is the case when the only annotations of
+   * either type are its primary annotations, and at least one of the types ignores its primary
+   * annotations. A type has annotations other than its primary annotations if it has an origin (see
+   * {@link ProperType#getOrigin}) or has type arguments at any depth (see {@link
+   * #hasNoTypeArguments}).
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
-   *     nothing
+   * @return true if the annotations of {@code type1} and {@code type2} cannot make an annotation
+   *     subtype or equality check between them fail
    */
   static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
