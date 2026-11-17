@@ -13,9 +13,12 @@ The `CaseNode` constructor takes two new boolean arguments, `labelsUntested`
 and then `codeRanSinceSelector`, which the new methods
 `CaseNode.labelsUntested()` and `CaseNode.codeRanSinceSelector()` return.
 
-* `labelsUntested` is true for the last case of an exhaustive switch.  For such
-  a `CaseNode`, the CFG does not test the labels, and
-  `CFAbstractTransfer.visitCase()` returns a regular store.
+* `labelsUntested` is true for the last case of an exhaustive switch that has no
+  `default` case.  It is also true for a case whose single label matches every
+  non-null value of the selector expression, if the switch has no `case null` or
+  an earlier non-default case has a `null` label.  For such a `CaseNode`, the
+  CFG does not test the labels, and `CFAbstractTransfer.visitCase()` returns a
+  regular store.
 * `codeRanSinceSelector` is true if a guard or a deconstruction pattern that
   might have side effects can run between the evaluation of the switch's
   selector expression and the `CaseNode`.  The new method
