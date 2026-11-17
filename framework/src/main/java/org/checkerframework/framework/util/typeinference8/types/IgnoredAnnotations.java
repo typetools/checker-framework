@@ -21,6 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Utility methods for operating on types while ignoring some of their annotations.
@@ -558,8 +559,9 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Calls {@link #collectIgnoredPositions} on corresponding elements of the two lists, if they have
-   * the same length. Otherwise, does nothing.
+   * Calls {@link #collectIgnoredPositions} on corresponding elements of the two lists, which have
+   * the same length because {@code appliedTypes} was made from {@code origins} by applying
+   * instantiations.
    *
    * @param origins types that may contain uses of the inference variables in {@code map}
    * @param appliedTypes {@code origins} with the current instantiations of those variables applied
@@ -578,7 +580,8 @@ final class IgnoredAnnotations {
       Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Set<AnnotatedTypeMirror> result) {
     if (origins.size() != appliedTypes.size()) {
-      return;
+      throw new BugInCF(
+          "origins %s and appliedTypes %s have different lengths", origins, appliedTypes);
     }
     Iterator<? extends AnnotatedTypeMirror> appliedIter = appliedTypes.iterator();
     for (AnnotatedTypeMirror origin : origins) {
@@ -747,7 +750,10 @@ final class IgnoredAnnotations {
   /**
    * Returns true if {@link #allCorrespondingPositions} holds for each pair of corresponding
    * elements of the two lists. If the lists have different lengths, no positions correspond, so
-   * returns true without testing any.
+   * returns true without testing any. That is not an error: the lists can be the type arguments of
+   * declared types of different classes, which can be nested within types of the same class, as in
+   * {@code Box<? extends List<String>>} and {@code Box<? extends Map<String, String>>}, or the
+   * bounds of intersection types that have different numbers of bounds.
    *
    * @param types1 a list of types
    * @param types2 a list of types
