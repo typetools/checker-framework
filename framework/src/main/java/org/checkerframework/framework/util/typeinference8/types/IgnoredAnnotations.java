@@ -228,6 +228,11 @@ final class IgnoredAnnotations {
    * {@code other}, except that if {@code other} is a type variable, then the positions of its upper
    * bound are used.
    *
+   * <p>This method is not commutative: it tests only the ignored positions of {@code type}, and
+   * only {@code other} is replaced by its upper bound. For example, if {@code type} has an ignored
+   * position and {@code other} has no origin, then {@code ignoredPositionsStayIgnored(type, other)}
+   * may be false, but {@code ignoredPositionsStayIgnored(other, type)} is true.
+   *
    * @param type a type
    * @param other a type
    * @param resultType the Java type of the least upper bound or greatest lower bound of {@code
