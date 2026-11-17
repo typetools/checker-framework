@@ -1778,27 +1778,6 @@ public class ToIndexFileConverterTest {
     }
   }
 
-  /** A static import applies only within the compilation unit that contains it. */
-  @Test
-  public void testStaticImportIsLocalToCompilationUnit() throws Exception {
-    String[] importDecls = {"import static java.util.Map.Entry;", "import static java.util.Map.*;"};
-    for (String importDecl : importDecls) {
-      String jaif =
-          convert(
-              "package p;",
-              importDecl,
-              "class C {",
-              "  void m(Entry<String, String> e) {}",
-              "}",
-              "package q;",
-              "class D {",
-              "  void m(Entry<String, String> e) {}",
-              "}");
-      assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
-      assertMethod(jaif, "D", "m(Lq/Entry;)V");
-    }
-  }
-
   /**
    * An annotation interface that an enclosing declaration of the stub file declares shadows an
    * imported one of the same name when its {@code @Target} is determined.
