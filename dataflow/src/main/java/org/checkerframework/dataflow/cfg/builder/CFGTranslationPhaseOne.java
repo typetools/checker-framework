@@ -2379,13 +2379,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Handle the case labels and the guard.
       if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
+        boolean labelsMightHaveSideEffects = false;
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
           if (mightHaveSideEffects(exprTree)) {
             // Matching a record pattern invokes record accessors, which might have side effects,
             // even if the match fails.  mightHaveSideEffects also examines nested record patterns.
-            codeRanSinceSelector = true;
+            labelsMightHaveSideEffects = true;
           }
+        }
+        if (labelsMightHaveSideEffects) {
+          codeRanSinceSelector = true;
         }
 
         extendWithNode(
@@ -2395,6 +2399,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 exprs,
                 isLastCaseOfExhaustive,
                 codeRanSinceSelector,
+                labelsMightHaveSideEffects,
                 env.getTypeUtils()));
         if (!isLastCaseOfExhaustive) {
           Label labelsMatchLabel = new Label();
