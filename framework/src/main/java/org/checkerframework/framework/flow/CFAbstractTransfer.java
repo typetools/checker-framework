@@ -1476,11 +1476,14 @@ public abstract class CFAbstractTransfer<
      *     value than evaluating it before
      */
     boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
-      if (anyHeapLocation
+      if (!ignoreOwnLocation
+          && anyHeapLocation
           && analysis.atypeFactory.sideEffectsUnrefineAliases
           && expr.isModifiableByOtherCode()) {
         // As in CFAbstractStore#updateForMethodCall, a write might change the abstract value of
-        // the object that `expr` denotes, even if `expr` still denotes the same object.
+        // the object that `expr` denotes, even if `expr` still denotes the same object.  If
+        // `ignoreOwnLocation` is true, the value of `expr` is stored into its location after these
+        // writes, so its abstract value is the one that was stored.
         return true;
       }
       if (expr instanceof LocalVariable) {
