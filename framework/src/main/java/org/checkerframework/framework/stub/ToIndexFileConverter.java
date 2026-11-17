@@ -1574,7 +1574,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * <p>A class inherits a member type of a supertype only if the member type is not private and is
    * accessible in the class (JLS 8.5). Therefore, a package-private member type is inherited along
-   * an inheritance path only if every class on the path is in the member type's package.
+   * an inheritance path only if every class on the path is in the member type's package. A member
+   * type that a class declares hides every member type of the same name in the class's supertypes,
+   * even if the declared member type is not inherited.
    *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
@@ -1606,13 +1608,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       try {
         String cPackage = c.getPackageName();
         boolean packagePrivateInherited = pathPackage == null || pathPackage.equals(cPackage);
-        for (Class<?> member : c.getDeclaredClasses()) {
-          // A private member type is not inherited.  A private member type that `clazz` itself
-          // declares is skipped too, but the caller's fallback yields the same binary name.
-          if (member.getSimpleName().equals(identifier)
-              && isInheritedMemberType(c, member, packagePrivateInherited)) {
+        Class<?> member = declaredMemberType(c, identifier);
+        if (member != null) {
+          if (isInheritedMemberType(c, member, packagePrivateInherited)) {
             return member;
           }
+          // A member type that `c` declares hides every member type of the same name in the
+          // supertypes of `c`, even if it is not inherited (JLS 8.5).  A private member type that
+          // `clazz` itself declares is not returned, but the caller's fallback yields the same
+          // binary name.
+          continue;
         }
         String nextPathPackage = packagePrivateInherited ? cPackage : MIXED_PACKAGES;
         Class<?> superclass = c.getSuperclass();
@@ -1626,6 +1631,24 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       } catch (NoClassDefFoundError | SecurityException e) {
         // A class that `c` depends on is not on the classpath; skip `c`.
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that a class on the classpath declares,
+   * whether or not it is inherited.
+   *
+   * @param c a class on the classpath
+   * @param identifier the simple name of a member type
+   * @return the member type named {@code identifier} that {@code c} declares, or null if there is
+   *     none
+   */
+  private static @Nullable Class<?> declaredMemberType(Class<?> c, String identifier) {
+    for (Class<?> member : c.getDeclaredClasses()) {
+      if (member.getSimpleName().equals(identifier)) {
+        return member;
       }
     }
     return null;
@@ -1713,6 +1736,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             if (isInheritedStubMemberType(superTypeDecl, member, declaration)) {
               return member;
             }
+            // `member` is not inherited, but it hides every member type of the same name in the
+            // supertypes of `superTypeDecl` (JLS 8.5).
             continue;
           }
           // `superTypeDecl` inherits `inherited`; checking that `declaration` inherits it too, at
