@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -151,10 +152,14 @@ public class AnnotationFileUtilTest {
   @Test
   public void upperCaseArchiveExtension() throws IOException {
     File zip = writeZip(new File(tmp.getRoot(), "STUBS.ZIP"), "java/lang/String.astub");
-
     Assert.assertEquals(
         Arrays.asList(zip.getPath() + "!java/lang/String.astub"),
         descriptions(zip, AnnotationFileType.COMMAND_LINE_STUB));
+
+    File jar = writeZip(new File(tmp.getRoot(), "STUBS.JAR"), "java/lang/String.astub");
+    Assert.assertEquals(
+        Arrays.asList(jar.getPath() + "!java/lang/String.astub"),
+        descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
   /** Tests that an archive found by searching a directory is not opened. */
@@ -210,6 +215,22 @@ public class AnnotationFileUtilTest {
         descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
+  /** Tests that a "." or ".." component of an archive entry's name does not make it hidden. */
+  @Test
+  public void currentDirectoryComponentIsNotHidden() throws IOException {
+    File jar =
+        writeZip(
+            new File(tmp.getRoot(), "stubs.jar"),
+            "./java/lang/String.astub",
+            "java/./lang/../lang/Integer.astub",
+            "./java/.hidden/Long.astub");
+    Assert.assertEquals(
+        Arrays.asList(
+            jar.getPath() + "!./java/lang/String.astub",
+            jar.getPath() + "!java/./lang/../lang/Integer.astub"),
+        descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
   /** Tests that a hidden directory that is named explicitly is searched. */
   @Test
   public void explicitHiddenDirectoryIsSearched() throws IOException {
@@ -225,13 +246,13 @@ public class AnnotationFileUtilTest {
   public void archiveInDirectoryIsReported() throws IOException {
     File dir = tmp.newFolder("stubdir");
     write(new File(dir, "A.astub"), "package p;");
-    File zip = writeZip(new File(dir, "backup.zip"), "A.astub");
-    File jar = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
+    File backup = writeZip(new File(dir, "backup.zip"), "A.astub");
+    File lib = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
 
     List<File> ignoredArchives = new ArrayList<>();
     AnnotationFileUtil.forEachAnnotationFile(
         dir, AnnotationFileType.COMMAND_LINE_STUB, resource -> {}, ignoredArchives::add);
-    Assert.assertEquals(Arrays.asList(zip, jar), ignoredArchives);
+    Assert.assertEquals(Arrays.asList(backup, lib), ignoredArchives);
   }
 
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
@@ -320,5 +341,29 @@ public class AnnotationFileUtilTest {
         AnnotationFileUtil.allAnnotationFiles(
             new File(tmp.getRoot(), "does-not-exist.astub").getPath(),
             AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
+  /**
+   * Tests that a named directory that cannot be listed yields a resource whose contents cannot be
+   * read, rather than being treated as empty.
+   */
+  @Test
+  public void unlistableDirectory() throws IOException {
+    File dir = tmp.newFolder("stubs");
+    write(new File(dir, "A.astub"), "class A {}");
+    // Making a directory unreadable has no effect for the root user.
+    Assume.assumeTrue(dir.setReadable(false));
+    try {
+      Assume.assumeTrue(dir.listFiles() == null);
+      List<AnnotationFileResource> resources =
+          AnnotationFileUtil.allAnnotationFiles(
+              dir.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
+      Assert.assertNotNull(resources);
+      Assert.assertEquals(1, resources.size());
+      Assert.assertEquals(dir.getPath(), resources.get(0).getDescription());
+      Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());
+    } finally {
+      dir.setReadable(true);
+    }
   }
 }

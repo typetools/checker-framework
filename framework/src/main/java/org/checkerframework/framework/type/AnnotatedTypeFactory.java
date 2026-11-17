@@ -1075,7 +1075,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           AnnotationFileResource ajavaFile = new FileAnnotationFileResource(ajavaFileInDir);
           candidateAjavaFiles.put(ajavaFile.getDescription(), ajavaFile);
         } else if (ajavaLocationFile.isFile()
-            && AnnotationFileUtil.isJarOrZip(ajavaLocationFile.getName())) {
+            && AnnotationFileUtil.isArchive(ajavaLocationFile.getName())) {
           // Case (3): ajavaLocation is an archive, whose root is like a directory in case (1).
           // Use the absolute path, so that an archive named twice (say, by a relative and an
           // absolute path) yields one candidate rather than an ambiguity, as for a directory.
