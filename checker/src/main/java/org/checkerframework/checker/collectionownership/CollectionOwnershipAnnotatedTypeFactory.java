@@ -23,7 +23,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -74,7 +73,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The annotated type factory for the Collection Ownership Checker. As the last checker in the
@@ -704,7 +702,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     AnnotatedTypeMirror mustCallType = mcAtf.getAnnotatedType(insertedArgumentTree);
-    if (mustCallType != null && mustCallType.hasPrimaryAnnotation(NotOwning.class)) {
+    if (mustCallType.hasPrimaryAnnotation(NotOwning.class)) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
 
@@ -712,8 +710,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (typeMirror.getKind() == TypeKind.NULL) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
-    TypeElement typeElement = TypesUtils.getTypeElement(typeMirror);
-    if (typeElement != null && rlAtf.hasEmptyMustCallValue(typeElement)) {
+    // Use the argument's effective @MustCall type rather than the @MustCall type of its class
+    // declaration: for example, `@MustCall("close") Object o` has an obligation even though
+    // `Object` does not.
+    if (ResourceLeakUtils.getMcValues(mustCallType, mcAtf).isEmpty()) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
 
