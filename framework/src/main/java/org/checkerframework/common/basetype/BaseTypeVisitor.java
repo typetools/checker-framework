@@ -3810,7 +3810,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         VariableTree variableTree = bindingPatternTree.getVariable();
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
-          checkInstanceOfPattern(tree);
+          checkInstanceofPattern(tree);
         }
       } else {
         // TODO: implement deconstructed patterns.
@@ -3842,9 +3842,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree an instanceof expression whose pattern must be a type pattern
    */
-  protected void checkInstanceOfPattern(InstanceOfTree tree) {
+  protected void checkInstanceofPattern(InstanceOfTree tree) {
     if (!(tree.getPattern() instanceof BindingPatternTree bindingPatternTree)) {
-      throw new BugInCF("checkInstanceOfPattern: not a type pattern: %s", tree);
+      throw new BugInCF("checkInstanceofPattern: not a type pattern: %s", tree);
     }
     VariableTree variableTree = bindingPatternTree.getVariable();
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);

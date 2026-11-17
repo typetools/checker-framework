@@ -437,7 +437,7 @@ public class NullnessVisitor
     Tree patternTree = tree.getPattern();
     // super.visitInstanceOf is not called, so check the binding variable here.
     if (patternTree instanceof BindingPatternTree) {
-      checkInstanceOfPattern(tree);
+      checkInstanceofPattern(tree);
     }
     if (patternTree == null) {
       validateTypeOf(refTypeTree);
