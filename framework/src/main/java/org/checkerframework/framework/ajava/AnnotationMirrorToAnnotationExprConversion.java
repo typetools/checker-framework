@@ -41,7 +41,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Methods for converting a {@code AnnotationMirror} into a JavaParser {@code AnnotationExpr},
+ * Methods for converting an {@code AnnotationMirror} into a JavaParser {@code AnnotationExpr},
  * namely {@code annotationMirrorToAnnotationExpr}.
  */
 public class AnnotationMirrorToAnnotationExprConversion {
@@ -77,7 +77,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
   }
 
   /**
-   * Converts a Set of AnnotationMirror into List of JavaParser {@code AnnotationExpr}.
+   * Converts a Set of AnnotationMirror into a List of JavaParser {@code AnnotationExpr}.
    *
    * @param annotationMirrors the annotations to convert
    * @return a list of JavaParser {@code AnnotationExpr}s representing the same annotations
@@ -254,7 +254,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
     /**
      * Creates a JavaParser expression node representing a literal with the given value.
      *
-     * <p>JavaParser represents a negative literal with a {@code UnaryExpr} containing a {@code
+     * <p>JavaParser represents a negative literal with a {@code UnaryExpr} containing an {@code
      * IntegerLiteralExpr}, so this method won't necessarily return an {@code IntegerLiteralExpr}.
      *
      * @param value the value for the literal

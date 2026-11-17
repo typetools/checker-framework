@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
@@ -29,17 +30,24 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * annotations of the variable's instantiation. To ensure this, some types are marked as ignoring
  * annotations (see {@link AbstractType#ignoreAnnotations}).
  *
- * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
- * kinds of annotations are ignored:
+ * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth.
+ *
+ * <p>Two kinds of annotations are ignored:
  *
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
  *       including those of its bounds if it is a type variable or a wildcard, and
- *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} where
- *       {@link AbstractType#applyInstantiations} replaced a use of an inference variable by the
- *       variable's instantiation, and that instantiation ignores annotations. The type's {@link
- *       ProperType#getOrigin() origin} is the type before instantiations were applied; it has a use
- *       of an inference variable at each ignored position.
+ *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} that
+ *       {@link AbstractType#applyInstantiations} created, at which it replaced a use of an
+ *       inference variable by the variable's instantiation, and either:
+ *       <ul>
+ *         <li>that instantiation ignores annotations, and the use does not have a non-polymorphic
+ *             primary annotation in every qualifier hierarchy (if it does, then those annotations
+ *             replace the instantiation's; see {@link UseOfVariable#applyInstantiations}), or
+ *         <li>the corresponding position of that instantiation is an ignored position of it.
+ *       </ul>
+ *       The type's {@link ProperType#getOrigin() origin} is the type before instantiations were
+ *       applied; it has a use of an inference variable at each ignored position.
  * </ul>
  *
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
@@ -57,11 +65,19 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code sub} and {@code sup} with their ignored annotations
-   * replaced. If the primary annotations of {@code sub} are ignored, then they are replaced with
-   * bottom annotations. If the primary annotations of {@code sup} are ignored, then they are
-   * replaced with top annotations. Ignored annotations elsewhere in either type are replaced with
-   * the annotations at the corresponding position in the other type. If neither type has ignored
-   * annotations, the result holds the types' own annotated types; otherwise it holds copies.
+   * replaced.
+   *
+   * <ul>
+   *   <li>If the primary annotations of {@code sub} are ignored, then they are replaced with bottom
+   *       annotations.
+   *   <li>If the primary annotations of {@code sup} are ignored, then they are replaced with top
+   *       annotations.
+   *   <li>Ignored annotations elsewhere in either type are replaced with the annotations at the
+   *       corresponding position in the other type.
+   * </ul>
+   *
+   * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
+   * otherwise it holds copies.
    *
    * @param sub a potential subtype
    * @param sup the potential supertype
@@ -106,10 +122,15 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
-   * with their ignored annotations replaced. Each ignored annotation of one type is replaced by the
-   * annotation at the corresponding position of the other type. If neither type has ignored
-   * annotations, the result holds the types' own annotated types; otherwise it holds modified
-   * copies.
+   * with their ignored annotations replaced.
+   *
+   * <ul>
+   *   <li>Each ignored annotation of one type is replaced by the annotation at the corresponding
+   *       position of the other type.
+   * </ul>
+   *
+   * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
+   * otherwise it holds modified copies.
    *
    * @param type1 a type
    * @param type2 a type with the same Java type as {@code type1}
@@ -230,6 +251,49 @@ final class IgnoredAnnotations {
   }
 
   /**
+   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
+   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
+   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
+   * primary annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
+   *     nothing
+   */
+  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
+    return (type1.ignoreAnnotations || type2.ignoreAnnotations)
+        && type1.getOrigin() == null
+        && type2.getOrigin() == null
+        && hasNoTypeArguments(type1.getAnnotatedType())
+        && hasNoTypeArguments(type2.getAnnotatedType());
+  }
+
+  /**
+   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
+   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
+   * and its bounds get the primary annotations of {@code source}'s bounds.
+   *
+   * @param source a type whose primary annotations to copy
+   * @param target the type whose primary annotations to replace; side-effected by this method
+   */
+  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
+    if (source.getPrimaryAnnotations().isEmpty()
+        && source instanceof AnnotatedTypeVariable sourceTV
+        && target instanceof AnnotatedTypeVariable targetTV) {
+      targetTV.clearPrimaryAnnotations();
+      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
+      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
+    } else {
+      target.replaceAnnotations(source.getAnnotations());
+    }
+  }
+
+  // //////////////////////////////////////////////////////////////////////////
+  // Private methods appear below; package-protected methods appear above
+  //
+
+  /**
    * Returns the upper bound of {@code type} if it is a type variable, following the bounds of type
    * variables whose upper bound is a type variable; otherwise, returns {@code type} itself.
    *
@@ -281,25 +345,6 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
-   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
-   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
-   * primary annotations.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
-   *     nothing
-   */
-  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
-    return (type1.ignoreAnnotations || type2.ignoreAnnotations)
-        && type1.getOrigin() == null
-        && type2.getOrigin() == null
-        && hasNoTypeArguments(type1.getAnnotatedType())
-        && hasNoTypeArguments(type2.getAnnotatedType());
-  }
-
-  /**
    * Returns true if {@code type} is a primitive type, the null type, or a declared type with no
    * type arguments whose enclosing type, if any, also satisfies this condition. Returns false for
    * every other kind of type, such as an array, a wildcard, or a type variable, any of which can
@@ -326,14 +371,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the ignored positions of {@code atm}.
+   * Returns the ignored positions of {@code atm}, as an identity set, because distinct positions
+   * can hold equal types.
    *
    * @param type a type
    * @param atm an annotated type with the same structure as {@code type}'s annotated type, such as
    *     a deep copy of it; not modified
    * @param qh the qualifier hierarchy
-   * @return the types within {@code atm} that are at its ignored positions, as an identity set,
-   *     because distinct positions can hold equal types
+   * @return the types within {@code atm} that are at its ignored positions
    */
   private static Set<AnnotatedTypeMirror> ignoredPositions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
@@ -343,7 +388,13 @@ final class IgnoredAnnotations {
     }
     Set<AnnotatedTypeMirror> result = Collections.newSetFromMap(new IdentityHashMap<>());
     collectIgnoredPositions(
-        origin.getAnnotatedType(), atm, origin.getMap(), qh, new HashSet<>(), result);
+        origin.getAnnotatedType(),
+        atm,
+        origin.getMap(),
+        qh,
+        new HashSet<>(),
+        new IdentityHashMap<>(),
+        result);
     return result;
   }
 
@@ -364,6 +415,8 @@ final class IgnoredAnnotations {
    * @param map the inference variables of {@code origin}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
+   * @param visitedWildcards the pairs of wildcards of {@code origin} and {@code applied} that have
+   *     been scanned (see {@link #addPair})
    * @param result the set to which to add ignored positions
    */
   private static void collectIgnoredPositions(
@@ -372,6 +425,7 @@ final class IgnoredAnnotations {
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Set<AnnotatedTypeMirror> result) {
     if (origin.getKind() == TypeKind.TYPEVAR) {
       Variable variable = map.get(origin.getUnderlyingType());
@@ -393,6 +447,7 @@ final class IgnoredAnnotations {
               instantiationOrigin.getMap(),
               qh,
               visiting,
+              visitedWildcards,
               result);
           visiting.remove(variable);
         }
@@ -407,11 +462,18 @@ final class IgnoredAnnotations {
         AnnotatedDeclaredType originDT = (AnnotatedDeclaredType) origin;
         AnnotatedDeclaredType appliedDT = (AnnotatedDeclaredType) applied;
         collectPairwise(
-            originDT.getTypeArguments(), appliedDT.getTypeArguments(), map, qh, visiting, result);
+            originDT.getTypeArguments(),
+            appliedDT.getTypeArguments(),
+            map,
+            qh,
+            visiting,
+            visitedWildcards,
+            result);
         AnnotatedDeclaredType originEnclosing = originDT.getEnclosingType();
         AnnotatedDeclaredType appliedEnclosing = appliedDT.getEnclosingType();
         if (originEnclosing != null && appliedEnclosing != null) {
-          collectIgnoredPositions(originEnclosing, appliedEnclosing, map, qh, visiting, result);
+          collectIgnoredPositions(
+              originEnclosing, appliedEnclosing, map, qh, visiting, visitedWildcards, result);
         }
       }
       case ARRAY ->
@@ -421,14 +483,33 @@ final class IgnoredAnnotations {
               map,
               qh,
               visiting,
+              visitedWildcards,
               result);
       case WILDCARD -> {
         AnnotatedWildcardType originWT = (AnnotatedWildcardType) origin;
         AnnotatedWildcardType appliedWT = (AnnotatedWildcardType) applied;
+        // The type argument of a raw type can be a wildcard that is reachable from its own bound
+        // (see BoundsInitializer).  Every cycle that this method traverses passes through a
+        // wildcard, so stopping at a repeated pair of wildcards ensures termination.
+        if (!addPair(visitedWildcards, originWT, appliedWT)) {
+          return;
+        }
         collectIgnoredPositions(
-            originWT.getExtendsBound(), appliedWT.getExtendsBound(), map, qh, visiting, result);
+            originWT.getExtendsBound(),
+            appliedWT.getExtendsBound(),
+            map,
+            qh,
+            visiting,
+            visitedWildcards,
+            result);
         collectIgnoredPositions(
-            originWT.getSuperBound(), appliedWT.getSuperBound(), map, qh, visiting, result);
+            originWT.getSuperBound(),
+            appliedWT.getSuperBound(),
+            map,
+            qh,
+            visiting,
+            visitedWildcards,
+            result);
       }
       case INTERSECTION ->
           collectPairwise(
@@ -437,6 +518,7 @@ final class IgnoredAnnotations {
               map,
               qh,
               visiting,
+              visitedWildcards,
               result);
       default -> {}
     }
@@ -451,6 +533,7 @@ final class IgnoredAnnotations {
    * @param map the inference variables of {@code origins}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
+   * @param visitedWildcards the pairs of wildcards that have been scanned (see {@link #addPair})
    * @param result the set to which to add ignored positions
    */
   private static void collectPairwise(
@@ -459,13 +542,15 @@ final class IgnoredAnnotations {
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Set<AnnotatedTypeMirror> result) {
     if (origins.size() != appliedTypes.size()) {
       return;
     }
     Iterator<? extends AnnotatedTypeMirror> appliedIter = appliedTypes.iterator();
     for (AnnotatedTypeMirror origin : origins) {
-      collectIgnoredPositions(origin, appliedIter.next(), map, qh, visiting, result);
+      collectIgnoredPositions(
+          origin, appliedIter.next(), map, qh, visiting, visitedWildcards, result);
     }
   }
 
@@ -489,10 +574,20 @@ final class IgnoredAnnotations {
 
   /**
    * Gives each ignored position of {@code atm1} the annotations of the corresponding position of
-   * {@code atm2}, and vice versa. If corresponding positions of both types are ignored positions,
-   * then the one in {@code atm1} gets the annotations of the one in {@code atm2}, so the two have
-   * the same annotations. Positions correspond only where the two types have the same structure;
-   * elsewhere, nothing is replaced.
+   * {@code atm2}, and vice versa.
+   *
+   * <ul>
+   *   <li>If a position of {@code atm1} is ignored, it gets the annotation of the corresponding
+   *       position in {@code atm2}. (Note that this happens even if that position {@code atm2} is
+   *       also ignored.)
+   *   <li>Otherwise, if a position of {@code atm1} is ignored, it gets the annotation of the
+   *       corresponding position in {@code atm2}.
+   * </ul>
+   *
+   * At the end, {@code atm1} and {@code atm1} have the same annotations.
+   *
+   * <p>Positions correspond only where the two types have the same structure; elsewhere, nothing is
+   * replaced.
    *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
@@ -534,15 +629,43 @@ final class IgnoredAnnotations {
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
+    return allCorrespondingPositions(atm1, atm2, test, new IdentityHashMap<>());
+  }
+
+  /**
+   * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
+   * {@code atm2}; see {@link #allCorrespondingPositions(AnnotatedTypeMirror, AnnotatedTypeMirror,
+   * BiPredicate)}. A pair of positions at least one of which is a wildcard is tested at most once.
+   *
+   * @param atm1 a type
+   * @param atm2 a type
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
+   *     been tested (see {@link #addPair})
+   * @return true if {@code test} holds for each pair of corresponding positions
+   */
+  private static boolean allCorrespondingPositions(
+      AnnotatedTypeMirror atm1,
+      AnnotatedTypeMirror atm2,
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards) {
+    // The type argument of a raw type can be a wildcard that is reachable from its own bound (see
+    // BoundsInitializer).  Every cycle that this method traverses passes through a wildcard, so
+    // stopping at a repeated pair that includes a wildcard ensures termination.  The pair was
+    // already tested, so it does not make the result false.
+    if ((atm1.getKind() == TypeKind.WILDCARD || atm2.getKind() == TypeKind.WILDCARD)
+        && !addPair(visitedWildcards, atm1, atm2)) {
+      return true;
+    }
     if (!test.test(atm1, atm2)) {
       return false;
     }
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument is compared with a wildcard's bound; see #boundOf.
       if (atm1.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositions(boundOf(atm1), atm2, test);
+        return allCorrespondingPositions(boundOf(atm1), atm2, test, visitedWildcards);
       } else if (atm2.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositions(atm1, boundOf(atm2), test);
+        return allCorrespondingPositions(atm1, boundOf(atm2), test, visitedWildcards);
       }
       return true;
     }
@@ -551,32 +674,36 @@ final class IgnoredAnnotations {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
         if (!allCorrespondingPositionsPairwise(
-            dt1.getTypeArguments(), dt2.getTypeArguments(), test)) {
+            dt1.getTypeArguments(), dt2.getTypeArguments(), test, visitedWildcards)) {
           return false;
         }
         AnnotatedDeclaredType enclosing1 = dt1.getEnclosingType();
         AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
         return enclosing1 == null
             || enclosing2 == null
-            || allCorrespondingPositions(enclosing1, enclosing2, test);
+            || allCorrespondingPositions(enclosing1, enclosing2, test, visitedWildcards);
       }
       case ARRAY -> {
         return allCorrespondingPositions(
             ((AnnotatedArrayType) atm1).getComponentType(),
             ((AnnotatedArrayType) atm2).getComponentType(),
-            test);
+            test,
+            visitedWildcards);
       }
       case WILDCARD -> {
         AnnotatedWildcardType wt1 = (AnnotatedWildcardType) atm1;
         AnnotatedWildcardType wt2 = (AnnotatedWildcardType) atm2;
-        return allCorrespondingPositions(wt1.getExtendsBound(), wt2.getExtendsBound(), test)
-            && allCorrespondingPositions(wt1.getSuperBound(), wt2.getSuperBound(), test);
+        return allCorrespondingPositions(
+                wt1.getExtendsBound(), wt2.getExtendsBound(), test, visitedWildcards)
+            && allCorrespondingPositions(
+                wt1.getSuperBound(), wt2.getSuperBound(), test, visitedWildcards);
       }
       case INTERSECTION -> {
         return allCorrespondingPositionsPairwise(
             ((AnnotatedIntersectionType) atm1).getBounds(),
             ((AnnotatedIntersectionType) atm2).getBounds(),
-            test);
+            test,
+            visitedWildcards);
       }
       default -> {
         return true;
@@ -592,23 +719,45 @@ final class IgnoredAnnotations {
    * @param types1 a list of types
    * @param types2 a list of types
    * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
+   *     been tested (see {@link #addPair})
    * @return true if {@link #allCorrespondingPositions} holds for each pair of corresponding
    *     elements
    */
   private static boolean allCorrespondingPositionsPairwise(
       List<? extends AnnotatedTypeMirror> types1,
       List<? extends AnnotatedTypeMirror> types2,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards) {
     if (types1.size() != types2.size()) {
       return true;
     }
     Iterator<? extends AnnotatedTypeMirror> iter2 = types2.iterator();
     for (AnnotatedTypeMirror type1 : types1) {
-      if (!allCorrespondingPositions(type1, iter2.next(), test)) {
+      if (!allCorrespondingPositions(type1, iter2.next(), test, visitedWildcards)) {
         return false;
       }
     }
     return true;
+  }
+
+  /**
+   * Adds the pair of {@code atm1} and {@code atm2} to {@code visited}, which maps a type to the
+   * types with which it has been paired. Types are compared by identity, because distinct positions
+   * can hold equal types.
+   *
+   * @param visited the pairs visited so far; side-effected by this method
+   * @param atm1 the first type of the pair
+   * @param atm2 the second type of the pair
+   * @return true if the pair was not already in {@code visited}
+   */
+  private static boolean addPair(
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visited,
+      AnnotatedTypeMirror atm1,
+      AnnotatedTypeMirror atm2) {
+    return visited
+        .computeIfAbsent(atm1, k -> Collections.newSetFromMap(new IdentityHashMap<>()))
+        .add(atm2);
   }
 
   /**
@@ -624,25 +773,5 @@ final class IgnoredAnnotations {
       return superBound.getKind() == TypeKind.NULL ? wildcard.getExtendsBound() : superBound;
     }
     return type;
-  }
-
-  /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
-   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
-   * and its bounds get the primary annotations of {@code source}'s bounds.
-   *
-   * @param source a type whose primary annotations to copy
-   * @param target the type whose primary annotations to replace; side-effected by this method
-   */
-  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
-    if (source.getPrimaryAnnotations().isEmpty()
-        && source instanceof AnnotatedTypeVariable sourceTV
-        && target instanceof AnnotatedTypeVariable targetTV) {
-      targetTV.clearPrimaryAnnotations();
-      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
-      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
-    } else {
-      target.replaceAnnotations(source.getAnnotations());
-    }
   }
 }

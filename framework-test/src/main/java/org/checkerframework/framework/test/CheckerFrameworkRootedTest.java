@@ -23,7 +23,7 @@ abstract class CheckerFrameworkRootedTest {
   }
 
   /**
-   * Check that the {@link TypecheckResult} did not fail.
+   * Checks that the {@link TypecheckResult} did not fail.
    *
    * @param typecheckResult result to check
    */

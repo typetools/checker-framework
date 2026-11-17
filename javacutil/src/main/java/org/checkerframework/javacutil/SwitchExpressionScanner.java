@@ -19,7 +19,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * these method calls are combined using {@link #combineResults(Object, Object)}. Call {@link
  * #scanSwitchExpression(SwitchExpressionTree, Object)} to start scanning the switch expression.
  *
- * <p>{@link FunctionalSwitchExpressionScanner} can be used to pass functions for to use for {@link
+ * <p>{@link FunctionalSwitchExpressionScanner} can be used to pass functions to use for {@link
  * #visitSwitchResultExpression(ExpressionTree, Object)} and {@link #combineResults(Object,
  * Object)}.
  *
@@ -138,7 +138,8 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    * constructor for {@link #visitSwitchResultExpression(ExpressionTree, Object)} and {@link
    * #combineResults(Object, Object)}.
    *
-   * @param <R1> the type result of {@link #visitSwitchResultExpression(ExpressionTree, Object)}
+   * @param <R1> the type of the result of {@link #visitSwitchResultExpression(ExpressionTree,
+   *     Object)}
    * @param <P1> the type of the parameter to pass to {@link
    *     #visitSwitchResultExpression(ExpressionTree, Object)}
    */
@@ -148,7 +149,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
     /** The function to use for {@link #visitSwitchResultExpression(ExpressionTree, Object)}. */
     private final BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction;
 
-    /** The function to use for {@link #visitSwitchResultExpression(ExpressionTree, Object)}. */
+    /** The function to use for {@link #combineResults(Object, Object)}. */
     private final BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc;
 
     /**

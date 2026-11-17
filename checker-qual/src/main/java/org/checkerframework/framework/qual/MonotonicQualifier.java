@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that indicates that a qualifier signifies that an expression goes monotonically
- * from a type qualifier {@code T} to another qualifier {@code S}. The annotation {@code S} is
+ * from a type qualifier {@code S} to another qualifier {@code T}. The annotation {@code T} is
  * called the <em>target</em> of the monotonic qualifier, and has to be indicated by {@link
  * MonotonicQualifier#value()}.
  *

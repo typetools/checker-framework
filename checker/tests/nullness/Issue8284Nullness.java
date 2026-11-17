@@ -111,8 +111,10 @@ public class Issue8284Nullness {
   // X = @NonNull U ignores annotations, so X's annotations come from Box<? extends U>.
   static <U extends @Nullable Object> void ignoredAndWildcard(
       Box<@NonNull U> box, Box<? extends U> ext) {
-    nonNullThenExtends(box, ext);
-    extendsThenNonNull(ext, box);
+    // :: error: (dereference.of.nullable)
+    nonNullThenExtends(box, ext).toString();
+    // :: error: (dereference.of.nullable)
+    extendsThenNonNull(ext, box).toString();
   }
 
   static <T extends @Nullable Object> Box<? extends T> wildcardBox(Box<@NonNull T> b) {

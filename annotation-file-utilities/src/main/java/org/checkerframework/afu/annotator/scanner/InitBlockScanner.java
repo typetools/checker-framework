@@ -8,9 +8,9 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import java.lang.reflect.Field;
 
 /**
- * InitScanner scans the source tree and determines the index of a given initializer block, where
- * index {@code i} corresponds to the (0-based) i^th initializer of the indicated kind (static or
- * instance).
+ * InitBlockScanner scans the source tree and determines the index of a given initializer block,
+ * where index {@code i} corresponds to the (0-based) i^th initializer of the indicated kind (static
+ * or instance).
  */
 public final class InitBlockScanner extends TreePathScanner<Void, Boolean> {
   public static int indexOfInitTree(TreePath path, boolean isStatic) {
@@ -68,7 +68,7 @@ public final class InitBlockScanner extends TreePathScanner<Void, Boolean> {
   private static final Field BLOCK_END_POS_FIELD = getBlockEndPosField();
 
   /**
-   * Returns field for JCBlock#endpos or JCBlock#bracePos depending on the version of Java.
+   * Returns the field for JCBlock#endpos or JCBlock#bracePos depending on the version of Java.
    *
    * @return field for JCBlock#endpos or JCBlock#bracePos depending on the version of Java
    */

@@ -43,7 +43,7 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates a {@link SqlQuotesAnnotatedTypeFactory}.
    *
-   * @param checker the SQL tainting checker
+   * @param checker the SQL Quotes Checker
    */
   @SuppressWarnings("this-escape")
   public SqlQuotesAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -112,7 +112,7 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private class SqlQuotesTreeAnnotator extends TreeAnnotator {
     /**
-     * Creates a {@link SqlQuotesTreeAnnotator}
+     * Creates a {@link SqlQuotesTreeAnnotator}.
      *
      * @param atypeFactory the annotated type factory
      */

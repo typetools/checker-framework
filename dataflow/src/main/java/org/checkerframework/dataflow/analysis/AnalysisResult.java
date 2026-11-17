@@ -21,7 +21,7 @@ import org.plumelib.util.UniqueId;
 import org.plumelib.util.UnmodifiableIdentityHashMap;
 
 /**
- * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
+ * An {@link AnalysisResult} represents the result of an org.checkerframework.dataflow analysis by
  * providing the abstract values given a node or a tree. Note that it does not keep track of custom
  * results computed by some analysis.
  *
@@ -32,7 +32,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
 
   /**
    * For efficiency, certain maps stored in the result are only copied lazily, when they need to be
-   * mutated. This flag tracks if the copying has occurred.
+   * mutated. This flag is true if the copying has occurred.
    */
   private boolean mapsCopied = false;
 
@@ -83,7 +83,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   }
 
   /**
-   * Initialize with given mappings.
+   * Initializes with the given mappings.
    *
    * @param nodeValues {@link #nodeValues}
    * @param inputs {@link #inputs}
@@ -109,7 +109,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   }
 
   /**
-   * Initialize with given mappings and empty cache.
+   * Initializes with the given mappings and an empty cache.
    *
    * @param nodeValues {@link #nodeValues}
    * @param inputs {@link #inputs}
@@ -127,7 +127,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   }
 
   /**
-   * Initialize empty result with specified cache.
+   * Initializes an empty result with the specified cache.
    *
    * @param analysisCaches {@link #analysisCaches}
    */
@@ -143,7 +143,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   }
 
   /**
-   * Combine with another analysis result.
+   * Combines with another analysis result.
    *
    * @param other an analysis result to combine with this
    */
@@ -156,7 +156,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     finalLocalValues.putAll(other.finalLocalValues);
   }
 
-  /** Make copies of certain internal IdentityHashMaps, if they have not been copied already. */
+  /** Makes copies of certain internal IdentityHashMaps, if they have not been copied already. */
   private void copyMapsIfNeeded() {
     if (!mapsCopied) {
       nodeValues = new IdentityHashMap<>(nodeValues);
@@ -167,7 +167,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   }
 
   /**
-   * Merge all entries from otherTreeLookup into treeLookup. Merge sets if already present.
+   * Merges all entries from otherTreeLookup into treeLookup. Merges sets if already present.
    *
    * @param treeLookup a map from abstract syntax trees to sets of nodes
    * @param otherTreeLookup another treeLookup that will be merged into {@code treeLookup}
@@ -186,9 +186,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   }
 
   /**
-   * Returns the value of effectively final local variables.
+   * Returns the values of effectively final local variables.
    *
-   * @return the value of effectively final local variables
+   * @return the values of effectively final local variables
    */
   public Map<VariableElement, V> getFinalLocalValues() {
     return finalLocalValues;
@@ -210,7 +210,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   /**
    * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
    * available. Note that if the analysis has not finished yet, this value might not represent the
-   * final value for this node.
+   * final value for this tree.
    *
    * @param t a tree
    * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
@@ -239,7 +239,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
 
   /**
    * Returns the {@code Node}s corresponding to a particular {@code Tree}. Multiple {@code Node}s
-   * can correspond to a single {@code Tree} because of several reasons:
+   * can correspond to a single {@code Tree} for several reasons:
    *
    * <ol>
    *   <li>In a lambda expression such as {@code () -> 5} the {@code 5} is both an {@code
@@ -248,7 +248,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    *       and {@code NarrowingConversionNode}.
    *   <li>Automatic String conversion can result in a {@code StringConversionNode}.
    *   <li>Trees for {@code finally} blocks are cloned to achieve a precise CFG. Any {@code Tree}
-   *       within a finally block can have multiple corresponding {@code Node}s attached to them.
+   *       within a finally block can have multiple corresponding {@code Node}s attached to it.
    * </ol>
    *
    * Callers of this method should always iterate through the returned set, possibly ignoring all
@@ -407,8 +407,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
 
   /**
    * Runs the analysis again within the block of {@code node} and returns the store at the location
-   * of {@code node}. If {@code before} is true, then the store immediately before the {@link Node}
-   * {@code node} is returned. Otherwise, the store after {@code node} is returned.
+   * of {@code node}. If {@code preOrPost} is {@link Analysis.BeforeOrAfter#BEFORE}, then the store
+   * immediately before the {@link Node} {@code node} is returned. Otherwise, the store after {@code
+   * node} is returned.
    *
    * <p>If the given {@link Node} cannot be reached (in the control flow graph), then {@code null}
    * is returned.
@@ -416,8 +417,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * @param node the node to analyze
    * @param preOrPost which store to return: the store immediately before {@code node} or the store
    *     after {@code node}
-   * @return the store before or after {@code node} (depends on the value of {@code before}) after
-   *     running the analysis
+   * @return the store before or after {@code node} (depends on the value of {@code preOrPost})
+   *     after running the analysis
    */
   protected @Nullable S runAnalysisFor(Node node, Analysis.BeforeOrAfter preOrPost) {
     // block is null if node is a formal parameter of a method, or is a field access thereof
@@ -437,12 +438,13 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
 
   /**
    * Runs the analysis again within the block of {@code node} and returns the store at the location
-   * of {@code node}. If {@code before} is true, then the store immediately before the {@link Node}
-   * {@code node} is returned. Otherwise, the store immediately after {@code node} is returned. If
-   * {@code analysisCaches} is not null, this method uses a cache. {@code analysisCaches} is a map
-   * of a block of node to the cached analysis result. If the cache for {@code transferInput} is not
-   * in {@code analysisCaches}, this method creates new cache and stores it in {@code
-   * analysisCaches}. The cache is a map of nodes to the analysis results of the nodes.
+   * of {@code node}. If {@code preOrPost} is {@link Analysis.BeforeOrAfter#BEFORE}, then the store
+   * immediately before the {@link Node} {@code node} is returned. Otherwise, the store immediately
+   * after {@code node} is returned. If {@code analysisCaches} is not null, this method uses a
+   * cache. {@code analysisCaches} is a map of a block of node to the cached analysis result. If the
+   * cache for {@code transferInput} is not in {@code analysisCaches}, this method creates a new
+   * cache and stores it in {@code analysisCaches}. The cache is a map of nodes to the analysis
+   * results of the nodes.
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
@@ -452,8 +454,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * @param transferInput a transfer input
    * @param nodeValues {@link #nodeValues}
    * @param analysisCaches {@link #analysisCaches}
-   * @return the store before or after {@code node} (depends on the value of {@code before}) after
-   *     running the analysis
+   * @return the store before or after {@code node} (depends on the value of {@code preOrPost})
+   *     after running the analysis
    */
   public static <V extends AbstractValue<V>, S extends Store<S>> S runAnalysisFor(
       Node node,

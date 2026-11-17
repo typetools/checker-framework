@@ -15,7 +15,7 @@
 The Annotation File Utilities (AFU) include programs for extracting
 annotations from Java class files and inserting annotations into Java
 source or class files, in accordance with the Java language and virtual
-machine specification.  This
+machine specifications.  This
 document uses AFU in the singular, in reference to the source-insertion
 program, except where otherwise noted.
 
@@ -115,7 +115,7 @@ map.
 \item  For each position-to-insertion mapping in descending order by
 position:
 \begin{itemize}
-\item  Generate insertion text and insert at indicated position.
+\item  Generate insertion text and insert it at the indicated position.
 \end{itemize}
 \item  Emit modified source code.
 \end{enumerate}
@@ -172,7 +172,7 @@ improving time and space efficiency.
 instead of calculating numeric positions, apply a transformation to the
 appropriate subtree.  Advantage: the logic of tree transformation is
 both closer to the specification and easier to comprehend (and maintain)
-than the logic of finding numeric positions for inserting text by
+than the logic of finding numeric positions for inserting text in
 reverse order.
 \end{description}
 
@@ -241,7 +241,7 @@ comments) and intra-branch text (implicit or contained in branch node
 data members).  It will be an implementation of
 \texttt{com.sun.source.tree.Tree} that provides needed bits from
 \texttt{com.sun.tools.javac.tree.JCTree} and defines a parallel subclass
-hierarchy.  AAST and subclasses provide methods to retrieve the
+hierarchy.  AAST and its subclasses provide methods to retrieve the
 inter-leaf text segments that precede and follow an AST node, and
 printing methods that preserve the formatting of the source code.
 
@@ -325,14 +325,14 @@ and emit the text of each leaf interleaved with the non-leaf text.
 annotation.
 \end{itemize}
 \end{itemize}
-\item  Pretty-print AAST.
+\item  Pretty-print the AAST.
 \end{enumerate}
 \end{enumerate}
 
 \section{Planning}
 
-There will be some time required for integrating the two parts if they
-are implemented separately.  In particular, doing tree transformation
+Integrating the two parts will require some time if they are
+implemented separately.  In particular, doing tree transformation
 separately from path-based positioning means reifying transformations
 so they can be done in a second pass.  Hence it makes more sense to
 do path-based positioning on the way to doing tree transformation.

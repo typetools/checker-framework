@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * If a type is annotated as {@code @Regex(n)}, then the run-time value is a regular expression with
- * <em>n</em> capturing groups.
+ * at least <em>n</em> capturing groups.
  *
  * <p>For example, if an expression's type is <em>@Regex(2) String</em>, then at run time its value
  * will be a legal regular expression with at least two capturing groups. The type states that
