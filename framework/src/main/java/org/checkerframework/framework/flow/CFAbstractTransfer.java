@@ -1106,7 +1106,9 @@ public abstract class CFAbstractTransfer<
    * {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in the
    * chain, such as {@code a} and {@code b}; each value-preserving cast in the chain; and the
    * operand of the last assignment or cast in the chain, such as {@code c}. The result omits each
-   * side that a store can hold a value for and whose value the rest of the chain might change.
+   * side that a store can hold a value for, or that is a unary or binary operation, and whose value
+   * the rest of the chain might change. For example, the result for {@code s = s + "x"} is just
+   * {@code s}.
    *
    * @param assignment an assignment node or a value-preserving cast
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1256,8 +1258,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, and
-   * writing the given locations might change the side's value.
+   * Returns true if a store can hold a value for the given side of a chain of assignments, or the
+   * side is a unary or binary operation that does not contain {@link Unknown}, and writing the
+   * given locations might change the side's value.
    *
    * @param side a side of a chain of assignments and casts (see {@link #sidesOfAssignment}): an
    *     entire target, such as {@code a[i]} (not {@code a} or {@code i}), a cast in the chain, or
@@ -1268,12 +1271,20 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} and writing {@code written} might
-   *     change its value
+   * @return true if a store can hold a value for {@code side} or it is a unary or binary operation
+   *     without {@link Unknown}, and writing {@code written} might change its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
+    if (CFAbstractStore.canInsertJavaExpression(expr)) {
+      return written.mayChange(expr, true);
+    }
+    // No store holds a value for a unary or binary operation, but a client such as the SameLen
+    // Checker can relate it to other expressions. An operation denotes no location, so a write to
+    // any location that it reads changes its value, as for `s + "x"` in `s = s + "x"`.
+    return (expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+        && !expr.containsUnknown()
+        && written.mayChange(expr, false);
   }
 
   /**
