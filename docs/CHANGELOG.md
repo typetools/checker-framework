@@ -15,6 +15,9 @@ variable's type is not written in source code.  On JDK 22 and later,
 not written in source code for such a variable, so a check of the annotations
 written on a variable declaration should skip such a variable.
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
