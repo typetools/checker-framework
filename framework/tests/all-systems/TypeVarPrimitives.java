@@ -106,6 +106,15 @@ public class TypeVarPrimitives {
     return sum;
   }
 
+  // Assignment conversion unboxes and widens the result of the desugared next() call.
+  <T extends Integer> long enhancedForWidening(Iterable<T> iterable) {
+    long sum = 0;
+    for (long l : iterable) {
+      sum += l;
+    }
+    return sum;
+  }
+
   <T extends Integer> long enhancedForWideningTypeVar(java.util.List<T> ts, T[] tArray) {
     long sum = 0;
     for (long x : ts) {
@@ -113,15 +122,6 @@ public class TypeVarPrimitives {
     }
     for (long x : tArray) {
       sum += x;
-    }
-    return sum;
-  }
-
-  // Assignment conversion unboxes and widens the result of the desugared next() call.
-  <T extends Integer> long enhancedForWidening(Iterable<T> iterable) {
-    long sum = 0;
-    for (long l : iterable) {
-      sum += l;
     }
     return sum;
   }
