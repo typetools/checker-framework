@@ -16,6 +16,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signedness.qual.BitPattern;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
@@ -59,6 +60,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @Unsigned annotation. */
   private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+
+  /** The @BitPattern annotation. */
+  private final AnnotationMirror BIT_PATTERN =
+      AnnotationBuilder.fromClass(elements, BitPattern.class);
 
   /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
   private final AnnotationMirror SIGNEDNESS_GLB =
@@ -302,14 +307,36 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       switch (tree.getKind()) {
+        case PLUS, MINUS, MULTIPLY, DIVIDE, REMAINDER, AND, OR, XOR -> {
+          // For a @BitPattern operand, propagate @BitPattern to the result so that the
+          // general assignability check does not additionally complain about the result of
+          // an operation that SignednessVisitor already forbids (or, for the bitwise
+          // operators, correctly allows) on @BitPattern values. String concatenation is
+          // excluded because String is not a signedness-relevant type, and a non-integral
+          // result is excluded because a floating-point type is always @Signed in this
+          // type system.
+          if (!TreeUtils.isStringConcatenation(tree) && maybeIntegral(type)) {
+            AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
+            AnnotatedTypeMirror rht = getAnnotatedType(tree.getRightOperand());
+            if (lht.hasPrimaryAnnotation(BitPattern.class)
+                || rht.hasPrimaryAnnotation(BitPattern.class)) {
+              type.replaceAnnotation(BIT_PATTERN);
+            }
+          }
+        }
         case LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> {
+          AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
           TreePath path = getPath(tree);
-          if (path != null
+          if (lht.hasPrimaryAnnotation(BitPattern.class)) {
+            // A bit pattern remains a bit pattern after any shift: "positive" is a
+            // signedness interpretation, which does not apply, so the masked/casted-shift
+            // heuristic below must not override it.
+            type.replaceAnnotation(BIT_PATTERN);
+          } else if (path != null
               && (SignednessShifts.isMaskedShiftEitherSignedness(tree, path)
                   || SignednessShifts.isCastedShiftEitherSignedness(tree, path))) {
             type.replaceAnnotation(SIGNED_POSITIVE);
           } else {
-            AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
         }
