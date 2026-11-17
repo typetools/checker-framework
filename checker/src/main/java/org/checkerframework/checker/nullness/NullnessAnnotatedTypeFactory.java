@@ -552,16 +552,6 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  protected void resolvePolymorphicQualifiersWithReceiver(
-      AnnotatedTypeMirror receiverType, AnnotatedExecutableType type) {
-    // A method is invoked only on a non-null receiver.  In particular, a record pattern matches
-    // only a non-null value, so its accessors are invoked only on a non-null receiver.
-    AnnotatedTypeMirror nonNullReceiverType = receiverType.deepCopy();
-    nonNullReceiverType.replaceAnnotation(NONNULL);
-    super.resolvePolymorphicQualifiersWithReceiver(nonNullReceiverType, type);
-  }
-
-  @Override
   public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
     AnnotatedTypeMirror result = super.getMethodReturnType(m, r);
     replacePolyQualifier(result, r);

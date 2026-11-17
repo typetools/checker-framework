@@ -3,7 +3,6 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 // @below-java21-jdk-skip-test
 
@@ -189,29 +188,6 @@ public class RecordPatternNullableComponent {
   // `s` is refined by the type of the record component.
   void explicitNullable(Box<String> box) {
     if (box instanceof Box(@Nullable String s)) {
-      s.length();
-    }
-  }
-
-  record PolyAccessor(String s) {
-    public @PolyNull String s(@PolyNull PolyAccessor this) {
-      return s;
-    }
-  }
-
-  // A record pattern matches only a non-null value, so the accessor's receiver is non-null.
-  void polyNullAccessor(@Nullable PolyAccessor r) {
-    if (r instanceof PolyAccessor(var s)) {
-      s.length();
-    }
-    switch (r) {
-      case PolyAccessor(var s) -> s.length();
-      case null -> {}
-    }
-  }
-
-  void polyNullAccessorNested(Box<@Nullable PolyAccessor> box) {
-    if (box instanceof Box(PolyAccessor(var s))) {
       s.length();
     }
   }
