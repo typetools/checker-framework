@@ -29,6 +29,11 @@ public class InferredTypesAliasing {
     Object[] array = {sb};
   }
 
+  void varLocalChainedAssignment() {
+    var sb = InferredTypesAliasingBase.create();
+    sink = sb = InferredTypesAliasingBase.create();
+  }
+
   // The annotations written in source code are still used.
 
   void explicitLocal() {
