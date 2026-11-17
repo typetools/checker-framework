@@ -443,14 +443,20 @@ public class NullnessTransfer
     // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
     // case FlowNullness.java.
+    // As for the receiver, the refinement is skipped if evaluating a later argument might reassign
+    // the argument expression, as in `m(r, r = null)`.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
-          && (nonNullAssumptionAfterInvocation
+      if (!methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
+        continue;
+      }
+      JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
+      if ((nonNullAssumptionAfterInvocation
               || isMethodSideEffectFree
-              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
+              || !argExpr.isAssignableByOtherCode())
+          && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
         makeNonNull(result, n.getArgument(i));
       }
     }
@@ -479,10 +485,11 @@ public class NullnessTransfer
 
   /**
    * Returns true if evaluating the given method arguments might reassign the given receiver
-   * expression or a subexpression of it. This is conservative. It returns true if an argument
-   * assigns any part of the receiver expression. If the receiver expression is assignable by other
-   * code, it also returns true if an argument assigns a non-local variable or (unless {@link
-   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
+   * expression or a subexpression of it. The "receiver" may also be an earlier argument, whose
+   * expression a later argument might reassign. This is conservative. It returns true if an
+   * argument assigns any part of the receiver expression. If the receiver expression is assignable
+   * by other code, it also returns true if an argument assigns a non-local variable or (unless
+   * {@link #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
@@ -491,7 +498,8 @@ public class NullnessTransfer
    * method handles as described above.
    *
    * @param arguments the arguments of a method invocation
-   * @param receiverExpr the receiver of the method invocation
+   * @param receiverExpr the receiver of the method invocation, or an argument that is evaluated
+   *     before {@code arguments}
    * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
    */
   private boolean argumentsMayReassign(

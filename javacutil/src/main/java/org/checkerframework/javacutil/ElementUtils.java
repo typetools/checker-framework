@@ -1041,7 +1041,11 @@ public final class ElementUtils {
     // Symbol$CompletionFailure exception.  See
     // https://github.com/typetools/checker-framework/issues/6396.  Searching the members of every
     // supertype avoids the crash.
+    // javac searches classes before interfaces, so `candidates` lists the methods of classes
+    // before those of interfaces.  Within each group, the order is that of the closure, which is
+    // also the order in which javac searches.
     List<MethodSymbol> candidates = new ArrayList<>();
+    List<MethodSymbol> interfaceCandidates = new ArrayList<>();
     for (Type supertype : javacTypes.closure((Type) upperBound)) {
       for (Symbol member : supertype.tsym.members().getSymbolsByName(name)) {
         // A static or private method is not invoked through the receiver, and neither is a method
@@ -1052,23 +1056,105 @@ public final class ElementUtils {
             && method.getParameters().isEmpty()
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
             && method.isInheritedIn(origin, javacTypes)) {
-          candidates.add(method);
+          (supertype.tsym.isInterface() ? interfaceCandidates : candidates).add(method);
         }
       }
     }
+    candidates.addAll(interfaceCandidates);
+
+    // This loop mimics javac's Resolve.mostSpecific.  `result` is the best method so far.  If no
+    // method is best, because two methods neither of which takes precedence over the other (such as
+    // two abstract methods) have been found, then `result` is null and `ambiguous` contains the
+    // methods, in the order that javac stores them in a Resolve.AmbiguityError: the most recently
+    // found method first, except that the first two methods are in the order they were found.
     MethodSymbol result = null;
+    List<MethodSymbol> ambiguous = new ArrayList<>();
     for (MethodSymbol method : candidates) {
       // A method that another candidate overrides is not a member of the receiver's type.  Without
       // this check, an overridden concrete method could take precedence over an abstract method
       // that overrides it.
-      if (!isOverriddenByAny(method, candidates, javacTypes)
-          && (result == null
-              || takesPrecedenceInMethodResolution(
-                  method, result, (Type) upperBound, javacTypes))) {
+      if (isOverriddenByAny(method, candidates, javacTypes)) {
+        continue;
+      }
+      if (result == null && ambiguous.isEmpty()) {
         result = method;
+      } else if (result != null) {
+        if (takesPrecedenceInMethodResolution(method, result, (Type) upperBound, javacTypes)) {
+          result = method;
+        } else if (!takesPrecedenceInMethodResolution(
+            result, method, (Type) upperBound, javacTypes)) {
+          ambiguous.add(result);
+          ambiguous.add(method);
+          result = null;
+        }
+      } else {
+        boolean takesPrecedenceOverAll = true;
+        boolean allTakePrecedence = true;
+        for (MethodSymbol other : ambiguous) {
+          if (!takesPrecedenceInMethodResolution(method, other, (Type) upperBound, javacTypes)) {
+            takesPrecedenceOverAll = false;
+          }
+          if (!takesPrecedenceInMethodResolution(other, method, (Type) upperBound, javacTypes)) {
+            allTakePrecedence = false;
+          }
+        }
+        if (takesPrecedenceOverAll) {
+          result = method;
+          ambiguous.clear();
+        } else if (!allTakePrecedence) {
+          ambiguous.add(0, method);
+        }
       }
     }
+    if (result == null && !ambiguous.isEmpty()) {
+      result = mergeAbstracts(ambiguous, (Type) upperBound, javacTypes);
+    }
     return result;
+  }
+
+  /**
+   * Chooses among methods that javac's method resolution found to be ambiguous, as javac's
+   * Resolve.AmbiguityError.mergeAbstracts and Types.mergeAbstracts do. The result is the first
+   * method, in the reverse of the order of {@code ambiguous}, whose return type (as a member of
+   * {@code site}) is a subtype of the return type of every other method. Thus, of two abstract
+   * methods with the same return type, the result is the one that javac found later.
+   *
+   * @param ambiguous abstract methods with the same signature, none of which takes precedence over
+   *     another, in the order that javac stores them in a Resolve.AmbiguityError
+   * @param site the upper bound of the receiver type, which inherits the methods; it might be
+   *     uncaptured, as is {@code List<?>}
+   * @param javacTypes the javac type utilities
+   * @return the method that javac chooses, or null if javac reports the call as ambiguous
+   */
+  private static @Nullable MethodSymbol mergeAbstracts(
+      List<MethodSymbol> ambiguous, Type site, com.sun.tools.javac.code.Types javacTypes) {
+    for (MethodSymbol method : ambiguous) {
+      if (!isAbstract(method)) {
+        // javac reports an ambiguity error.
+        return null;
+      }
+    }
+    // The receiver expression's type is captured, but `site` might not be, as for a type variable
+    // whose bound is `List<?>`.  As a member of an uncaptured type, a method's return type
+    // might be a wildcard, which is not a type.  Capturing here, rather than in the caller, avoids
+    // creating capture variables in the common case that no merging is needed.
+    Type capturedSite = javacTypes.capture(site);
+    List<MethodSymbol> inOrder = new ArrayList<>(ambiguous);
+    Collections.reverse(inOrder);
+    List<Type> returnTypes = new ArrayList<>(inOrder.size());
+    for (MethodSymbol method : inOrder) {
+      returnTypes.add(javacTypes.memberType(capturedSite, method).getReturnType());
+    }
+    candidateLoop:
+    for (int i = 0; i < inOrder.size(); i++) {
+      for (int j = 0; j < inOrder.size(); j++) {
+        if (i != j && !javacTypes.isSubtype(returnTypes.get(i), returnTypes.get(j))) {
+          continue candidateLoop;
+        }
+      }
+      return inOrder.get(i);
+    }
+    return null;
   }
 
   /**
@@ -1113,17 +1199,14 @@ public final class ElementUtils {
    *       class does not inherit (JLS 8.4.8).
    *   <li>A concrete method, which might be a default method, takes precedence over an abstract
    *       method (JLS 15.12.2.5).
-   *   <li>Of two abstract methods, the one with the more specific return type (as a member of
-   *       {@code site}) takes precedence (JLS 15.12.2.5).
    * </ol>
    *
-   * If no rule applies, as for two abstract methods with the same return type, then neither method
-   * takes precedence over the other.
+   * If no rule applies, as for two abstract methods, then neither method takes precedence over the
+   * other. javac then chooses among them as {@link #mergeAbstracts} does.
    *
    * @param m1 a method
    * @param m2 a method with the same signature as {@code m1}
-   * @param site the upper bound of the receiver type, which inherits {@code m1} and {@code m2}; it
-   *     might be uncaptured, as is {@code List<?>}
+   * @param site the upper bound of the receiver type, which inherits {@code m1} and {@code m2}
    * @param javacTypes the javac type utilities
    * @return true if {@code m1} takes precedence over {@code m2}
    */
@@ -1154,24 +1237,9 @@ public final class ElementUtils {
         return !isInterface1;
       }
     }
-    boolean isAbstract1 = isAbstract(m1);
-    boolean isAbstract2 = isAbstract(m2);
-    if (isAbstract1 != isAbstract2) {
-      return isAbstract2;
-    }
-    if (!isAbstract1) {
-      // Two concrete methods, neither of which overrides the other, make the call ambiguous.
-      return false;
-    }
-    // The receiver expression's type is captured, but `site` might not be, as for a type variable
-    // whose bound is `List<?>`.  As a member of an uncaptured type, a method's return type
-    // might be a wildcard, which is not a type.  Capturing here, rather than in the caller, avoids
-    // creating capture variables in the common case that this comparison is not reached.
-    Type capturedSite = javacTypes.capture(site);
-    Type returnType1 = javacTypes.memberType(capturedSite, m1).getReturnType();
-    Type returnType2 = javacTypes.memberType(capturedSite, m2).getReturnType();
-    return javacTypes.isSubtype(returnType1, returnType2)
-        && !javacTypes.isSameType(returnType1, returnType2);
+    // Of two concrete methods, neither of which overrides the other, neither takes precedence;
+    // the call is ambiguous.  Of two abstract methods, neither takes precedence.
+    return isAbstract(m2) && !isAbstract(m1);
   }
 
   /**

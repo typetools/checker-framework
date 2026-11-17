@@ -130,6 +130,42 @@ public class EnhancedForIteratorResolution {
     }
   }
 
+  // Of two abstract methods with the same return type, javac chooses the one that it finds later.
+  // javac searches `APlain` before `ZPure`, because their names are in that order, so it chooses
+  // `ZPure.iterator()` regardless of the order of the interfaces.
+  interface APlain extends Iterable<String> {
+    @Override
+    Iterator<String> iterator();
+  }
+
+  interface ZPure extends Iterable<String> {
+    @Override
+    @SideEffectFree
+    Iterator<String> iterator();
+  }
+
+  interface APlainFirst extends APlain, ZPure {}
+
+  interface ZPureFirst extends ZPure, APlain {}
+
+  void aPlainFirst(APlainFirst r) {
+    if (f != null) {
+      for (String s : r) {
+        f.toString();
+      }
+      f.toString();
+    }
+  }
+
+  void zPureFirst(ZPureFirst r) {
+    if (f != null) {
+      for (String s : r) {
+        f.toString();
+      }
+      f.toString();
+    }
+  }
+
   void plainIterable(PlainIterable r) {
     if (f != null) {
       for (String s : r) {

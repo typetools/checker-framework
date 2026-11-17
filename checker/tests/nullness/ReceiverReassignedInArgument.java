@@ -20,6 +20,24 @@ public class ReceiverReassignedInArgument {
     r.toString();
   }
 
+  void take2(Object first, @Nullable Object second) {}
+
+  // A later argument reassigns an earlier argument that is passed to a non-null parameter.
+  void assignEarlierArgument() {
+    Object r = new Object();
+    take2(r, r = null);
+    // :: error: (dereference.of.nullable)
+    r.toString();
+  }
+
+  // A later argument reassigns both the receiver and an earlier argument.
+  void assignReceiverAndEarlierArgument() {
+    ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
+    r.take2(r, r = null);
+    // :: error: (dereference.of.nullable)
+    r.toString();
+  }
+
   // The argument assigns a non-null value to the receiver expression.
   void assignNonNullInArgument(@Nullable Object r, Object nn) {
     // :: error: (dereference.of.nullable)
