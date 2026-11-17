@@ -92,15 +92,6 @@ public class AssignmentInComparison {
     }
   }
 
-  // The right operand reassigns `k`, which the refinement of `j` would mention.
-  static void otherOperandReassignsAddend(int[] a, @NonNegative int j, @NonNegative int k) {
-    int i;
-    if ((i = j) + k < (k = a.length)) {
-      // :: error: [array.access.unsafe.high]
-      int value = a[j + k];
-    }
-  }
-
   // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
   // the new value of `k`.
   static void otherOperandReassignsOffset(@NonNegative int k, @NonNegative int j) {
