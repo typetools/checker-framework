@@ -1098,6 +1098,173 @@ public class ToIndexFileConverterTest {
     assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
   }
 
+  /** A method's JVML descriptor uses the binary name of an inherited member type. */
+  @Test
+  public void testInheritedNestedClass() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MySuperClass {",
+            "  class MyNestedClass {}",
+            "}",
+            "interface MyInterface {",
+            "  class MyInterfaceNestedClass {}",
+            "}",
+            "class MyMiddleClass extends MySuperClass implements MyInterface {}",
+            "class MyClass extends MyMiddleClass {",
+            "  void myMethod(MyNestedClass c, MyInterfaceNestedClass i) {}",
+            "  void myOtherMethod(MyMiddleClass.MyNestedClass c) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lmypackage/MySuperClass$MyNestedClass;"
+            + "Lmypackage/MyInterface$MyInterfaceNestedClass;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lmypackage/MySuperClass$MyNestedClass;)V");
+  }
+
+  /** A member type that is inherited from a class on the classpath is resolved. */
+  @Test
+  public void testInheritedNestedClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.HashMap;",
+            "class MyClass extends HashMap {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A member type that is inherited, through a supertype that the stub file declares, from a class
+   * on the classpath is resolved.
+   */
+  @Test
+  public void testIndirectlyInheritedNestedClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.HashMap;",
+            "class MyMiddleClass extends HashMap {}",
+            "class MyClass extends MyMiddleClass {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A member type that is inherited, through a chain of supertypes that the stub file declares,
+   * from an interface on the classpath is resolved.
+   */
+  @Test
+  public void testIndirectlyInheritedNestedClassOnClasspathViaInterface() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "interface MyInterface extends java.util.Map {}",
+            "abstract class MyMiddleClass implements MyInterface {}",
+            "abstract class MyClass extends MyMiddleClass {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type is inherited through a superclass that the stub file names by package. */
+  @Test
+  public void testInheritedThroughPackageQualifiedSuperclass() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class Parent {",
+            "  class Nested {}",
+            "}",
+            "class Child extends mypackage.Parent {",
+            "  void myMethod(Nested n) {}",
+            "}");
+    assertMethod(jaif, "Child", "myMethod(Lmypackage/Parent$Nested;)V");
+  }
+
+  /** A class's own member types are not in scope in its {@code extends} clause. */
+  @Test
+  public void testSupertypeIsResolvedOutsideClassBody() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MySuperClass {",
+            "  class MyNestedClass {}",
+            "}",
+            "class MyClass extends MySuperClass {",
+            "  static class MySuperClass {}",
+            "  void myMethod(MyNestedClass c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MySuperClass$MyNestedClass;)V");
+  }
+
+  /**
+   * A member type that a class inherits from a class on the classpath shadows a type that the stub
+   * file declares in an enclosing scope.
+   */
+  @Test
+  public void testInheritedMemberTypeShadowsTopLevelStubType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class Entry {}",
+            "abstract class MyClass extends java.util.AbstractMap {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A stub file that declares a cyclic inheritance hierarchy, which is not legal Java, does not
+   * cause infinite recursion while resolving an inherited member type.
+   */
+  @Test
+  public void testCyclicInheritanceOfNestedClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyFirstClass extends MySecondClass {}",
+            "class MySecondClass extends MyFirstClass {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
+  }
+
+  /** A package-private member type of a class in another package is not inherited. */
+  @Test
+  public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
+    // java.util.TreeMap declares a package-private member type named Entry, which hides
+    // java.util.Map.Entry in TreeMap.  MyClass inherits Map.Entry from its own superinterface.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass extends java.util.TreeMap implements java.util.Map {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A package-private member type is not inherited through a class in another package, even if the
+   * member type is in the stub file's package.
+   */
+  @Test
+  public void testPackagePrivateMemberTypeIsNotInheritedThroughOtherPackage() throws Exception {
+    // Middle, in package inheritanceb, inherits Inner from I but not from Base, whose Inner is
+    // package-private in package inheritancea.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "class MyClass extends org.checkerframework.framework.stub.inheritanceb.Middle {",
+            "  void myMethod(Inner i) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritanceb/I$Inner;)V");
+  }
+
   /**
    * A class's member types are not in scope in the class's header, such as in the bounds of its
    * type parameters, but they are in scope in its body.
