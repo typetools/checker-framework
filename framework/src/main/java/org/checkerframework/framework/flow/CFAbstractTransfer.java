@@ -23,7 +23,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -98,10 +97,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -1350,9 +1346,6 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    // The case labels are tested against the value of the selector expression that was saved
-    // before the switch.  If the selector expression may have changed since then, do not refine it.
-    boolean canRefineSelector = selectorExpressionDenotesSwitchValue(n);
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1361,13 +1354,14 @@ public abstract class CFAbstractTransfer<
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
     AssignmentNode assign = n.getSwitchOperand();
+    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
               finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      if (canRefineSelector) {
+      if (refineSelectorExpression) {
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
@@ -1394,7 +1388,7 @@ public abstract class CFAbstractTransfer<
     // has exceptional successors (for a MatchException when no case matches).  These stores
     // contain the effect of the accessor calls but not the facts implied by a successful match.
     Map<TypeMirror, S> exceptionalStores = null;
-    if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
+    if (!refineSelectorExpression && n.labelsMightHaveSideEffects()) {
       // A record accessor that a record pattern of this case invokes might have changed the
       // selector expression.  The CFG does not represent the accessor calls, so their effect on
       // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
@@ -1421,53 +1415,6 @@ public abstract class CFAbstractTransfer<
       return lubResult.withExceptionalStores(exceptionalStores);
     }
     return lubResult;
-  }
-
-  /**
-   * Returns true if matching a record pattern among the labels of the given case might have a side
-   * effect: that is, if a record accessor that the pattern invokes, directly or through a nested
-   * record pattern, is not side-effect-free.
-   *
-   * @param n a case node
-   * @return true if matching a record pattern among the labels of {@code n} might have a side
-   *     effect
-   */
-  private boolean recordPatternMightHaveSideEffect(CaseNode n) {
-    for (Tree label : CaseUtils.getLabels(n.getTree())) {
-      if (recordPatternMightHaveSideEffect(label)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if {@code pattern} is a record pattern, and a record accessor that it invokes,
-   * directly or through a nested record pattern, is not side-effect-free.
-   *
-   * @param pattern a case label or a pattern nested within a record pattern
-   * @return true if {@code pattern} is a record pattern whose matching might have a side effect
-   */
-  private boolean recordPatternMightHaveSideEffect(Tree pattern) {
-    if (!TreeUtils.isDeconstructionPatternTree(pattern)) {
-      return false;
-    }
-    TypeElement record = TypesUtils.getTypeElement(TreeUtils.typeOf(pattern));
-    if (record == null) {
-      return true;
-    }
-    for (RecordComponentElement component : record.getRecordComponents()) {
-      ExecutableElement accessor = component.getAccessor();
-      if (accessor == null || !analysis.atypeFactory.isSideEffectFree(accessor)) {
-        return true;
-      }
-    }
-    for (Tree nested : DeconstructionPatternUtils.getNestedPatterns(pattern)) {
-      if (recordPatternMightHaveSideEffect(nested)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
