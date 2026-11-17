@@ -132,12 +132,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param pkgName the package name, or null for the unnamed package
    * @param singleTypeImports the types that single-type imports import, such as {@code
    *     java.util.List} for {@code import java.util.List;}
-   * @param onDemandImports the packages and types that imports-on-demand import from, such as
-   *     {@code java.util} for {@code import java.util.*;}
+   * @param singleStaticImports the members that single-static-imports import, such as {@code
+   *     java.util.Map.Entry} for {@code import static java.util.Map.Entry;}. Such an import makes
+   *     available every static member with the given name, which might or might not include a
+   *     member type.
+   * @param onDemandImports the packages and types that imports-on-demand and
+   *     static-imports-on-demand import from, such as {@code java.util} for {@code import
+   *     java.util.*;} and {@code java.util.Map} for {@code import static java.util.Map.*;}
    */
   private record ImportContext(
       @Nullable @DotSeparatedIdentifiers String pkgName,
       List<String> singleTypeImports,
+      List<String> singleStaticImports,
       List<String> onDemandImports) {
 
     /**
@@ -152,21 +158,32 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         @Nullable PackageDeclaration pkgDecl, @Nullable List<ImportDeclaration> importDecls) {
       String pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
       if (importDecls == null) {
-        return new ImportContext(pkgName, Collections.emptyList(), Collections.emptyList());
+        return new ImportContext(
+            pkgName, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
       }
       ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> singleStatics = new ArrayList<>();
       ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
-        // A static import imports members, not types, and a module import is not used in a stub
-        // file.
-        if (!decl.isStatic() && !decl.isModule()) {
-          (decl.isAsterisk() ? onDemands : singles).add(decl.getNameAsString());
+        // A module import is not used in a stub file.
+        if (decl.isModule()) {
+          continue;
+        }
+        if (decl.isAsterisk()) {
+          onDemands.add(decl.getNameAsString());
+        } else {
+          // A static import can make a static member type available by its simple name.
+          (decl.isStatic() ? singleStatics : singles).add(decl.getNameAsString());
         }
       }
       singles.trimToSize();
+      singleStatics.trimToSize();
       onDemands.trimToSize();
       return new ImportContext(
-          pkgName, Collections.unmodifiableList(singles), Collections.unmodifiableList(onDemands));
+          pkgName,
+          Collections.unmodifiableList(singles),
+          Collections.unmodifiableList(singleStatics),
+          Collections.unmodifiableList(onDemands));
     }
 
     /**
@@ -1325,6 +1342,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return classBinaryName(qualifiedName, cu);
       }
     }
+    for (String declName : context.singleStaticImports()) {
+      // A single-static-import shadows the same declarations that a single-type import does.  It
+      // binds `className` only if it imports a member type, so continue if there is none.
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        String binaryName = classBinaryName(qualifiedName, cu);
+        if (binaryName != null) {
+          return binaryName;
+        }
+      }
+    }
     if (cuPkgName != null) {
       // The first identifier of `className` names a type in the current package, not a
       // subpackage, so every later identifier names a member type.  Therefore, search only the
@@ -2037,9 +2065,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Combines a single-type import with a partially qualified name, yielding a fully qualified name.
+   * Combines a single-type import or a single-static-import with a partially qualified name,
+   * yielding a fully qualified name.
    *
-   * @param importName the type that a single-type import imports, such as {@code java.util.Map}
+   * @param importName the type that a single-type import imports, such as {@code java.util.Map}, or
+   *     the member that a single-static-import imports, such as {@code java.util.Map.Entry}
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
@@ -2056,8 +2086,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       //   C.D myvar;
       return importName + className.substring(importEnd.length());
     } else {
-      // A single-type import makes available only the simple name of the type that it imports, so
-      // it cannot supply a prefix for any other name.
+      // A single import makes available only the simple name of the type or member that it
+      // imports, so it cannot supply a prefix for any other name.
       return null;
     }
   }
