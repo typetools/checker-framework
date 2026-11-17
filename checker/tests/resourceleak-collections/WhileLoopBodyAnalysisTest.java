@@ -187,7 +187,72 @@ class WhileLoopBodyAnalysisTest {
     }
   }
 
+  /*
+   * An extraction in a loop nested in the body can take several elements per iteration of the
+   * outer loop, and this loop disposes only the last of them.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorExtractionInNestedLoop(
+      @OwningCollection Collection<Resource> resources, int n) {
+    Iterator<Resource> it = resources.iterator();
+    while (it.hasNext()) {
+      Resource r = null;
+      for (int i = 0; i < n; i++) {
+        r = it.next();
+      }
+      if (r != null) {
+        r.close();
+        r.flush();
+      }
+    }
+  }
+
+  /*
+   * forEachRemaining advances the iterator past elements that the loop does not dispose of.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorForEachRemaining(@OwningCollection Collection<Resource> resources) {
+    Iterator<Resource> it = resources.iterator();
+    while (it.hasNext()) {
+      Resource r = it.next();
+      r.close();
+      r.flush();
+      it.forEachRemaining(x -> {});
+    }
+  }
+
+  /*
+   * A method that receives the iterator might advance it.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorPassedToMethod(@OwningCollection Collection<Resource> resources) {
+    Iterator<Resource> it = resources.iterator();
+    while (it.hasNext()) {
+      Resource r = it.next();
+      r.close();
+      r.flush();
+      skip(it);
+    }
+  }
+
+  /*
+   * clear() discards elements that the loop does not dispose of.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileQueuePollThenClear(@OwningCollection Queue<Resource> resources) {
+    while (!resources.isEmpty()) {
+      Resource r = resources.poll();
+      if (r != null) {
+        r.close();
+        r.flush();
+      }
+      resources.clear();
+    }
+  }
+
   void log(Resource r) {}
+
+  void skip(Iterator<Resource> it) {}
 
   // Two calls to newQueue() can return different queues, so this loop is not a disposal loop. The
   // checker used to crash on it.

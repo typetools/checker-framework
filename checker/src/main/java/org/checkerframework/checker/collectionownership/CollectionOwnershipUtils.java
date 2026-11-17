@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -156,6 +157,38 @@ public final class CollectionOwnershipUtils {
         return null;
       }
     }
+  }
+
+  /**
+   * Methods that replace elements of a collection but are not annotated
+   * {@code @CreatesCollectionObligation}.
+   */
+  private static final Set<String> REPLACING_METHODS = Set.of("set", "replaceAll");
+
+  /**
+   * Returns true if {@code invocation} inserts into or replaces elements of the collection named
+   * {@code collectionName}. An iterator over the collection might not visit the new elements (for
+   * example, the iterator of a {@code CopyOnWriteArrayList} iterates over a snapshot), so a loop
+   * that iterates over the collection and does this is not a disposal loop.
+   *
+   * @param invocation a method invocation
+   * @param collectionName the name of the iterated collection
+   * @param coAtf the CO type factory
+   * @return true if {@code invocation} inserts into or replaces elements of the collection
+   */
+  static boolean insertsIntoOrReplacesElementsOf(
+      MethodInvocationTree invocation,
+      Name collectionName,
+      CollectionOwnershipAnnotatedTypeFactory coAtf) {
+    if (!(invocation.getMethodSelect() instanceof MemberSelectTree memberSelectTree)) {
+      return false;
+    }
+    if (getNameFromExpressionTree(memberSelectTree.getExpression()) != collectionName) {
+      return false;
+    }
+    ExecutableElement method = TreeUtils.elementFromUse(invocation);
+    return coAtf.isCreatesCollectionObligationMethod(method)
+        || REPLACING_METHODS.contains(method.getSimpleName().toString());
   }
 
   /**

@@ -50,7 +50,8 @@ final class EnhancedForDisposalLoopMatcher {
 
   /**
    * Returns the {@link DisposalLoopInfo} if the enhanced-for-loop iterates over a resource
-   * collection and its body does not assign to the variable that holds the collection.
+   * collection and its body neither assigns to the variable that holds the collection nor inserts
+   * into or replaces elements of the collection.
    *
    * @param tree the enhanced-for-loop to inspect
    * @return the matched disposal loop info, or {@code null} if the loop does not match
@@ -61,23 +62,25 @@ final class EnhancedForDisposalLoopMatcher {
     }
     // If the body reassigns the collection variable, the loop still iterates over the original
     // collection, but after the loop the variable refers to a different collection.
+    // If the body inserts into the collection, the iterator might not visit the new elements.
     Name collectionName =
         CollectionOwnershipUtils.getNameFromExpressionTree(
             TreeUtils.withoutParens(tree.getExpression()));
-    if (collectionName != null && assignsTo(tree.getStatement(), collectionName)) {
+    if (collectionName != null && assignsToOrMutates(tree.getStatement(), collectionName)) {
       return null;
     }
     return resolveEnhancedForLoop(tree);
   }
 
   /**
-   * Returns true if {@code body} contains an assignment to a variable or field named {@code name}.
+   * Returns true if {@code body} contains an assignment to a variable or field named {@code name},
+   * or a call that inserts into or replaces elements of the collection named {@code name}.
    *
    * @param body a loop body
    * @param name a variable or field name
-   * @return true if {@code body} assigns to {@code name}
+   * @return true if {@code body} assigns to or mutates {@code name}
    */
-  private static boolean assignsTo(StatementTree body, Name name) {
+  private boolean assignsToOrMutates(StatementTree body, Name name) {
     @Nullable Boolean result =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -86,6 +89,14 @@ final class EnhancedForDisposalLoopMatcher {
               return true;
             }
             return super.visitAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+            if (CollectionOwnershipUtils.insertsIntoOrReplacesElementsOf(tree, name, coAtf)) {
+              return true;
+            }
+            return super.visitMethodInvocation(tree, p);
           }
 
           @Override

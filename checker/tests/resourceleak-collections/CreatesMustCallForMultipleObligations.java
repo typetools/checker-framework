@@ -23,4 +23,34 @@ class CreatesMustCallForMultipleObligations {
       r.flush();
     }
   }
+
+  // The call to `reset` resets both obligations, so fulfilling only one of them afterward is an
+  // error.
+  void disposeThenResetThenCloseOnly() {
+    List<Resource> list = new ArrayList<>();
+    list.add(new Resource());
+    for (Resource r : list) {
+      r.close();
+      r.flush();
+    }
+    // :: error: unfulfilled.collection.obligations
+    reset(list);
+    for (Resource r : list) {
+      r.close();
+    }
+  }
+
+  void disposeThenResetThenFlushOnly() {
+    List<Resource> list = new ArrayList<>();
+    list.add(new Resource());
+    for (Resource r : list) {
+      r.close();
+      r.flush();
+    }
+    // :: error: unfulfilled.collection.obligations
+    reset(list);
+    for (Resource r : list) {
+      r.flush();
+    }
+  }
 }

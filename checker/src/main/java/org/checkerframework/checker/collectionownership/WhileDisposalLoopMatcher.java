@@ -5,7 +5,11 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -67,11 +71,31 @@ final class WhileDisposalLoopMatcher {
       Set.of("poll", "pollFirst", "pollLast", "remove", "removeFirst", "removeLast", "pop");
 
   /**
-   * Methods that replace elements of a collection but are not annotated
-   * {@code @CreatesCollectionObligation}. An iterator loop that calls one of these on the iterated
-   * collection is not a disposal loop.
+   * Methods other than {@link #ITERATOR_EXTRACT_METHODS} that an iterator loop may call on its
+   * iterator. Any other use of the iterator, such as {@code it.forEachRemaining(...)} or passing
+   * {@code it} to a method, could advance the iterator past elements that the loop does not
+   * dispose of.
    */
-  private static final Set<String> REPLACING_METHODS = Set.of("set", "replaceAll");
+  private static final Set<String> ITERATOR_PERMITTED_METHODS = Set.of("hasNext", "remove");
+
+  /**
+   * Methods other than {@link #NONEMPTY_EXTRACT_METHODS} and insertion methods that a
+   * non-empty-collection loop may call on its collection. Any other use of the collection, such as
+   * {@code c.clear()} or passing {@code c} to a method, could remove elements that the loop does
+   * not dispose of.
+   */
+  private static final Set<String> NONEMPTY_PERMITTED_METHODS =
+      Set.of(
+          "contains",
+          "containsAll",
+          "element",
+          "getFirst",
+          "getLast",
+          "isEmpty",
+          "peek",
+          "peekFirst",
+          "peekLast",
+          "size");
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
@@ -539,7 +563,10 @@ final class WhileDisposalLoopMatcher {
    *   <li>does not overwrite the header variable or the matched collection variable
    *   <li>for an iterator loop, does not insert into or replace elements of the collection (an
    *       iterator might not visit the new elements, as for {@code CopyOnWriteArrayList})
-   *   <li>contains exactly one allowed extraction call on the header/collection variable
+   *   <li>uses the header variable only as the receiver of a permitted call (see {@link
+   *       #isPermittedCallOnHeaderVar}), and not within a lambda or class body
+   *   <li>contains exactly one allowed extraction call on the header/collection variable, and that
+   *       call is not within a loop nested in the body
    * </ul>
    */
   private final class WhileBodyScanner extends TreeScanner<Void, Void> {
@@ -567,6 +594,9 @@ final class WhileDisposalLoopMatcher {
 
     /** The unique extraction call, if one has been found so far. */
     private @Nullable MethodInvocationTree extractionCall = null;
+
+    /** The number of loops within the loop body that enclose the tree being scanned. */
+    private int nestedLoopDepth = 0;
 
     /**
      * Creates a {@link WhileBodyScanner}.
@@ -639,13 +669,59 @@ final class WhileDisposalLoopMatcher {
       }
 
       extractionCount++;
-      if (extractionCount > 1) {
-        // More than one extraction means this iteration can advance through more than one element,
-        // so the loop no longer corresponds to a single iterated element.
+      if (extractionCount > 1 || nestedLoopDepth > 0) {
+        // More than one extraction, or an extraction in a nested loop, means this iteration can
+        // advance through more than one element, so the loop no longer corresponds to a single
+        // iterated element.
         illegal = true;
         return;
       }
       extractionCall = methodInvocationTree;
+    }
+
+    /**
+     * Returns true if the header form is {@code while (it.hasNext())}, false if it is a
+     * non-empty-collection form such as {@code while (!c.isEmpty())}.
+     *
+     * @return true if this is an iterator loop
+     */
+    private boolean isIteratorLoop() {
+      return collectionVarNameForInvalidation != headerVarName;
+    }
+
+    /**
+     * Returns true if {@code expression} refers to the header variable.
+     *
+     * @param expression an expression
+     * @return true if {@code expression} refers to the header variable
+     */
+    private boolean refersToHeaderVar(ExpressionTree expression) {
+      return TreeUtils.elementFromTree(TreeUtils.withoutParens(expression)) == headerVarElement;
+    }
+
+    /**
+     * Returns true if {@code invocation}, whose receiver is the header variable, is permitted in the
+     * loop body. A permitted call is an allowed extraction call, or a call that neither advances
+     * the iterator nor removes elements from the collection without returning them.
+     *
+     * @param invocation a method invocation whose receiver is the header variable
+     * @return true if {@code invocation} is permitted in the loop body
+     */
+    private boolean isPermittedCallOnHeaderVar(MethodInvocationTree invocation) {
+      if (isExtractionCallOnHeaderVar(
+          invocation, headerVarName, headerVarElement, allowedExtractMethods)) {
+        return true;
+      }
+      ExecutableElement method = TreeUtils.elementFromUse(invocation);
+      String methodName = method.getSimpleName().toString();
+      if (isIteratorLoop()) {
+        return ITERATOR_PERMITTED_METHODS.contains(methodName)
+            && invocation.getArguments().isEmpty();
+      } else {
+        // The loop runs until the collection is empty, so it also disposes of inserted elements.
+        return NONEMPTY_PERMITTED_METHODS.contains(methodName)
+            || coAtf.isCreatesCollectionObligationMethod(method);
+      }
     }
 
     @Override
@@ -676,19 +752,11 @@ final class WhileDisposalLoopMatcher {
      * @param invocation a method invocation in the loop body
      */
     private void markMutationOfIteratedCollection(MethodInvocationTree invocation) {
-      if (collectionVarNameForInvalidation == null
-          || collectionVarNameForInvalidation == headerVarName) {
+      if (collectionVarNameForInvalidation == null || !isIteratorLoop()) {
         return;
       }
-      ExpressionTree receiver = receiverOfInvocation(invocation);
-      if (receiver == null
-          || CollectionOwnershipUtils.getNameFromExpressionTree(receiver)
-              != collectionVarNameForInvalidation) {
-        return;
-      }
-      ExecutableElement method = TreeUtils.elementFromUse(invocation);
-      if (coAtf.isCreatesCollectionObligationMethod(method)
-          || REPLACING_METHODS.contains(method.getSimpleName().toString())) {
+      if (CollectionOwnershipUtils.insertsIntoOrReplacesElementsOf(
+          invocation, collectionVarNameForInvalidation, coAtf)) {
         illegal = true;
       }
     }
@@ -699,8 +767,80 @@ final class WhileDisposalLoopMatcher {
       if (illegal) {
         return null;
       }
-      recordExtractionIfAny(tree);
+      ExpressionTree receiver = receiverOfInvocation(tree);
+      if (receiver != null && refersToHeaderVar(receiver)) {
+        if (!isPermittedCallOnHeaderVar(tree)) {
+          illegal = true;
+          return null;
+        }
+        recordExtractionIfAny(tree);
+        // Do not scan the receiver: it is a permitted use of the header variable.
+        scan(tree.getTypeArguments(), p);
+        scan(tree.getArguments(), p);
+        return null;
+      }
       return super.visitMethodInvocation(tree, p);
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      // Any use of the header variable other than as the receiver of a permitted call, such as
+      // passing it to a method or aliasing it, might advance the iterator or empty the collection.
+      if (TreeUtils.elementFromTree(tree) == headerVarElement) {
+        illegal = true;
+        return null;
+      }
+      return super.visitIdentifier(tree, p);
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      // See visitIdentifier.
+      if (TreeUtils.elementFromTree(tree) == headerVarElement) {
+        illegal = true;
+        return null;
+      }
+      return super.visitMemberSelect(tree, p);
+    }
+
+    @Override
+    public Void visitWhileLoop(WhileLoopTree tree, Void p) {
+      nestedLoopDepth++;
+      try {
+        return super.visitWhileLoop(tree, p);
+      } finally {
+        nestedLoopDepth--;
+      }
+    }
+
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
+      nestedLoopDepth++;
+      try {
+        return super.visitDoWhileLoop(tree, p);
+      } finally {
+        nestedLoopDepth--;
+      }
+    }
+
+    @Override
+    public Void visitForLoop(ForLoopTree tree, Void p) {
+      nestedLoopDepth++;
+      try {
+        return super.visitForLoop(tree, p);
+      } finally {
+        nestedLoopDepth--;
+      }
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+      nestedLoopDepth++;
+      try {
+        return super.visitEnhancedForLoop(tree, p);
+      } finally {
+        nestedLoopDepth--;
+      }
     }
 
     @Override
@@ -721,13 +861,21 @@ final class WhileDisposalLoopMatcher {
 
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
-      // A lambda body is not executed as part of the enclosing loop body.
+      // A lambda body is not executed as part of the enclosing loop body, so an extraction in it
+      // does not count. But the lambda might be run any number of times, so it must not use the
+      // header variable at all.
+      if (referencesElement(tree, headerVarElement)) {
+        illegal = true;
+      }
       return null;
     }
 
     @Override
     public Void visitClass(ClassTree tree, Void p) {
-      // Skip local and anonymous class bodies for the same reason as lambdas.
+      // Treat local and anonymous class bodies the same way as lambdas.
+      if (referencesElement(tree, headerVarElement)) {
+        illegal = true;
+      }
       return null;
     }
 
@@ -747,6 +895,37 @@ final class WhileDisposalLoopMatcher {
       }
       return super.scan(trees, p);
     }
+  }
+
+  /**
+   * Returns true if {@code tree} contains a reference to {@code element}.
+   *
+   * @param tree a tree
+   * @param element an element
+   * @return true if {@code tree} contains a reference to {@code element}
+   */
+  private static boolean referencesElement(Tree tree, Element element) {
+    @Nullable Boolean result =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean visitIdentifier(IdentifierTree t, Void p) {
+            return TreeUtils.elementFromTree(t) == element;
+          }
+
+          @Override
+          public Boolean visitMemberSelect(MemberSelectTree t, Void p) {
+            if (TreeUtils.elementFromTree(t) == element) {
+              return true;
+            }
+            return super.visitMemberSelect(t, p);
+          }
+
+          @Override
+          public Boolean reduce(@Nullable Boolean r1, @Nullable Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+        }.scan(tree, null);
+    return Boolean.TRUE.equals(result);
   }
 
   /**
