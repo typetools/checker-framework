@@ -1,5 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -9,7 +10,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -195,7 +198,7 @@ public class CollectionOwnershipTransfer
     // Some assignments instead create a non-owning alias at the lhs:
     //   1. desugared enhanced-for array temporaries
     //   2. reads from owning collection fields
-    //   3. explicit @NotOwningCollection declarations
+    //   3. assignments to a variable explicitly declared @NotOwningCollection
     // In those cases the rhs keeps its existing ownership information.
     if (rhsType != null) {
       switch (rhsType) {
@@ -262,22 +265,25 @@ public class CollectionOwnershipTransfer
   }
 
   /**
-   * Returns whether the given assignment is a variable declaration whose declared type is
-   * explicitly {@code @NotOwningCollection}.
+   * Returns whether the target of the given assignment (which may be a variable declaration) is a
+   * variable whose declared type is explicitly {@code @NotOwningCollection}.
    *
-   * <p>Such a declaration initializes a non-owning alias at the lhs instead of consuming ownership
-   * from the rhs expression.
+   * <p>Such an assignment creates a non-owning alias at the lhs instead of consuming ownership from
+   * the rhs expression.
    *
    * @param node an assignment node
-   * @return true if the assignment is a variable declaration with declared type
+   * @return true if the assignment's target is a variable with declared type
    *     {@code @NotOwningCollection}
    */
   private boolean hasExplicitNotOwningCollectionDeclaration(AssignmentNode node) {
-    if (!(node.getTree() instanceof VariableTree variableTree)) {
-      return false;
-    }
-    VariableElement declaredElement = TreeUtils.elementFromDeclaration(variableTree);
-    if (declaredElement == null) {
+    Tree targetTree =
+        node.getTree() instanceof VariableTree variableTree
+            ? variableTree
+            : node.getTarget().getTree();
+    // For an array access, elementFromTree returns the array variable, not the element.
+    if (targetTree == null
+        || targetTree instanceof ArrayAccessTree
+        || !(TreeUtils.elementFromTree(targetTree) instanceof VariableElement declaredElement)) {
       return false;
     }
     List<? extends AnnotationMirror> declaredType = declaredElement.asType().getAnnotationMirrors();
@@ -410,6 +416,10 @@ public class CollectionOwnershipTransfer
    * Executes collection ownership transfer in method invocations. Owning arguments to an owning
    * parameter lose ownership.
    *
+   * <p>If the same collection is passed to more than one owning parameter, this method reports an
+   * error and does not transfer that collection's ownership, because a collection has only one
+   * owner.
+   *
    * @param method the method whose parameters are checked
    * @param args the list of method arguments
    * @param argTypes the collection ownership type of each element of {@code args} before the
@@ -424,6 +434,10 @@ public class CollectionOwnershipTransfer
       TransferResult<CFValue, CollectionOwnershipStore> res) {
     List<? extends VariableElement> params = method.getParameters();
 
+    // The arguments whose ownership would be transferred, and the number of owning parameters to
+    // which each of them is passed.
+    List<@Nullable JavaExpression> transferredArgs = new ArrayList<>();
+    Map<JavaExpression, Integer> transferCounts = new HashMap<>();
     for (int i = 0; i < Math.min(args.size(), params.size()); i++) {
       VariableElement param = params.get(i);
       Node arg = getNodeOrTempVar(args.get(i));
@@ -431,6 +445,7 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipType argType = argTypes.get(i);
       CollectionOwnershipType paramType =
           atypeFactory.getCoType(atypeFactory.getAnnotatedType(param).getPrimaryAnnotations());
+      transferredArgs.add(null);
       if (argType == null || paramType == null) {
         continue;
       }
@@ -465,7 +480,28 @@ public class CollectionOwnershipTransfer
         checker.reportError(
             argTree, "transfer.owningcollection.field.ownership", argTree.toString());
       } else if (transferOwnership) {
+        transferredArgs.set(i, argJE);
+        transferCounts.merge(argJE, 1, Integer::sum);
+      }
+    }
+
+    // Transfer ownership of each argument that is passed to exactly one owning parameter.
+    for (int i = 0; i < transferredArgs.size(); i++) {
+      JavaExpression argJE = transferredArgs.get(i);
+      if (argJE == null) {
+        continue;
+      }
+      int count = transferCounts.getOrDefault(argJE, 0);
+      if (count == 1) {
         replaceInStores(res, argJE, atypeFactory.NOTOWNINGCOLLECTION);
+      } else if (count > 1) {
+        // Report the error once, at the first occurrence of the argument.
+        transferCounts.put(argJE, 0);
+        Tree argTree = args.get(i).getTree();
+        if (argTree != null) {
+          checker.reportError(
+              argTree, "transfer.owningcollection.multiple", argTree, method.getSimpleName());
+        }
       }
     }
     return res;

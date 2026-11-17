@@ -35,6 +35,7 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollectionBot
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
@@ -711,10 +712,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (typeMirror.getKind() == TypeKind.NULL) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
-    // Use the argument's effective @MustCall type rather than the @MustCall type of its class
-    // declaration: for example, `@MustCall("close") Object o` has an obligation even though
-    // `Object` does not.
-    if (ResourceLeakUtils.getMcValues(mustCallType, mcAtf).isEmpty()) {
+    // Use the argument's effective must-call type rather than the declaration of its class:  an
+    // expression of type `@MustCallUnknown Object` may be owning even though `Object` has no
+    // must-call obligations.  A missing @MustCall annotation means @MustCallUnknown.
+    AnnotationMirror mustCallAnno = mustCallType.getPrimaryAnnotation(MustCall.class);
+    if (mustCallAnno != null && rlAtf.getMustCallValues(mustCallAnno).isEmpty()) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
 

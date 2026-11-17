@@ -90,11 +90,12 @@ class ConstructorTakesOwnership implements Closeable {
     }
   }
 
-  // assignment allowed since field not owned by class.
-  // treated as normal variable.
+  // The field is explicitly declared @NotOwningCollection, so it remains non-owning after an
+  // assignment, and it cannot take ownership of an element.
   public void reassignCollectionNotOwningField() {
     notOwningField = new ArrayList<>();
-    // :: error: unfulfilled.collection.obligations
+    // :: error: illegal.collection.mutator.owning.insert.into.notowning
+    // :: error: required.method.not.called
     notOwningField.add(new Resource());
   }
 

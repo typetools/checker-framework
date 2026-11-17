@@ -206,6 +206,21 @@ public class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
+  /**
+   * The invocations whose result has been counted for -AcountMustCall. The analysis processes an
+   * invocation once per outgoing CFG edge and once per set of Obligations that reaches it, but
+   * counts the invocation's result only once.
+   */
+  private final Set<Node> countedInvocationResults =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
+   * The invocations of {@code @CreatesMustCallFor} methods that have been counted for
+   * -AcountMustCall. See {@link #countedInvocationResults}.
+   */
+  private final Set<Node> countedCreatesMustCallForInvocations =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
   /** A description for how a method might exit. */
   public enum MethodExitKind {
 
@@ -436,35 +451,100 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Gets the must-call methods (i.e., the list of methods that must be called to satisfy the
+     * Returns the must-call methods (i.e., the list of methods that must be called to satisfy the
      * must-call obligation) of each resource alias represented by this Obligation.
      *
+     * <p>The must-call methods of a resource alias that has a value in the store come from that
+     * value, or from the alias's declaration (see {@link #getMustCallValue}).
+     *
+     * <p>A resource alias that has no value in the store gets the must-call methods of the
+     * resource, which is the union of the must-call methods of the resource aliases that have a
+     * value in the store. For example, the store has no value for a resource alias that is
+     * unassigned on some path to the store's program point, such as a variable that is assigned the
+     * result of a {@code @MustCallAlias} method that might throw an exception. The declared type of
+     * such a resource alias might be {@code @MustCall({})}, as for a variable of type {@code
+     * Iterator}; using that type would make the obligation trivially satisfied. If no resource
+     * alias has a value in the store, then each one gets the must-call methods of its declaration.
+     *
      * @param rlAtf a Resource Leak Annotated Type Factory
-     * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
-     *     null, then the default MustCall type of each variable's class will be used.
-     * @return a map from each resource alias of this to a list of its must-call method names, or
-     *     null if the must-call obligations are unsatisfiable (i.e., the value of some tracked
-     *     resource alias of this in the Must Call store is MustCallUnknown)
+     * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis, or null. If
+     *     this is null, then each resource alias gets the must-call methods of its declaration.
+     * @return a map from each resource alias of this to the list of method names that must be
+     *     called through that resource alias to satisfy the must-call obligation; or null if the
+     *     must-call obligation is unsatisfiable (i.e., the must-call type that some resource alias
+     *     of this gets is not a {@code @MustCall} type, such as MustCallUnknown)
      */
     public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
         RLCCalledMethodsAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
-      Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
+      // A LinkedHashMap, so that the union below is deterministic.
+      Map<ResourceAlias, List<String>> result = new LinkedHashMap<>(this.resourceAliases.size());
 
       for (ResourceAlias alias : this.resourceAliases) {
-        AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
-          // MustCallUnknown; cannot be satisfied
-          return null;
+        if (mcStore == null || mcStore.getValue(alias.reference) != null) {
+          List<String> mustCallMethods =
+              getMustCallMethodsOfAlias(alias, mcStore, mustCallAnnotatedTypeFactory, rlAtf);
+          if (mustCallMethods == null) {
+            return null;
+          }
+          result.put(alias, mustCallMethods);
         }
-        List<String> annoVals = rlAtf.getMustCallValues(mcAnno);
-        // Really, annoVals should never be empty here; we should not have created the
-        // obligation in the first place.
-        // TODO: add an assertion that annoVals is non-empty and address any failures
-        result.put(alias, annoVals);
+      }
+
+      if (result.isEmpty()) {
+        // No resource alias has a value in the store, so use the declarations.
+        for (ResourceAlias alias : this.resourceAliases) {
+          List<String> mustCallMethods =
+              getMustCallMethodsOfAlias(alias, mcStore, mustCallAnnotatedTypeFactory, rlAtf);
+          if (mustCallMethods == null) {
+            return null;
+          }
+          result.put(alias, mustCallMethods);
+        }
+        return result;
+      }
+
+      if (result.size() < this.resourceAliases.size()) {
+        // At least one alias has a store value, and at least one does not.
+        Set<String> resourceMustCallMethods = new LinkedHashSet<>();
+        for (List<String> mustCallMethods : result.values()) {
+          resourceMustCallMethods.addAll(mustCallMethods);
+        }
+        List<String> resourceMustCallMethodsList = new ArrayList<>(resourceMustCallMethods);
+        for (ResourceAlias alias : this.resourceAliases) {
+          result.putIfAbsent(alias, resourceMustCallMethodsList);
+        }
       }
       return result;
+    }
+
+    /**
+     * Returns the must-call methods of the given resource alias, from its value in the given store
+     * or from its declaration (see {@link #getMustCallValue}).
+     *
+     * @param alias a resource alias
+     * @param mcStore the must-call checker's store, or null
+     * @param mcAtf the must-call checker's annotated type factory
+     * @param rlAtf the Resource Leak Annotated Type Factory
+     * @return the must-call methods of {@code alias}, or null if its must-call type is not a
+     *     {@code @MustCall} type, such as MustCallUnknown
+     */
+    private static @Nullable List<String> getMustCallMethodsOfAlias(
+        ResourceAlias alias,
+        @Nullable CFStore mcStore,
+        MustCallAnnotatedTypeFactory mcAtf,
+        RLCCalledMethodsAnnotatedTypeFactory rlAtf) {
+      AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mcAtf);
+      if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
+        // MustCallUnknown; cannot be satisfied
+        return null;
+      }
+      List<String> annoVals = rlAtf.getMustCallValues(mcAnno);
+      // Really, annoVals should never be empty here; we should not have created the
+      // obligation in the first place.
+      // TODO: add an assertion that annoVals is non-empty and address any failures
+      return annoVals;
     }
 
     /**
@@ -1117,7 +1197,7 @@ public class MustCallConsistencyAnalyzer {
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
-      incrementNumMustCall(node);
+      incrementNumMustCall(node, countedCreatesMustCallForInvocations);
     }
 
     addObligationsForOwningCollectionReturn(obligations, node);
@@ -1136,7 +1216,7 @@ public class MustCallConsistencyAnalyzer {
       // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the
       // return value of the method (which can't be the target of the annotation, because our
       // syntax doesn't support that).
-      incrementNumMustCall(node);
+      incrementNumMustCall(node, countedInvocationResults);
     }
     updateObligationsWithInvocationResult(obligations, node);
   }
@@ -3278,12 +3358,14 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Increments the -AcountMustCall counter.
+   * Increments the -AcountMustCall counter, unless {@code counted} already contains {@code node}.
+   * Adds {@code node} to {@code counted}.
    *
    * @param node the node being counted, to extract the type
+   * @param counted the nodes that have already been counted
    */
-  private void incrementNumMustCall(Node node) {
-    if (countMustCall) {
+  private void incrementNumMustCall(Node node, Set<Node> counted) {
+    if (countMustCall && counted.add(node)) {
       TypeMirror type = node.getType();
       incrementMustCallImpl(type);
     }
