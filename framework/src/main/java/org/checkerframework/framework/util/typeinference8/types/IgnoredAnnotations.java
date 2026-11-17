@@ -171,14 +171,22 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code type1} and {@code type2}, where the annotations at each
-   * ignored position of one type are replaced by those at the corresponding position of the other.
-   * If either type has ignored positions, then both are first replaced by their supertypes whose
-   * class is that of {@code resultType} (see {@link #asSuper}). If they are still of different
-   * classes, then nothing is replaced. Otherwise, positions correspond only where the two types
-   * have the same structure (see {@link #replaceIgnoredPositions}). Primary annotations are not
-   * replaced. If nothing is replaced, the result holds the types' own annotated types; otherwise it
-   * holds copies.
+   * Returns the annotated types of {@code type1} and {@code type2}, with the annotations at their
+   * ignored positions replaced. The steps are:
+   *
+   * <ol>
+   *   <li>If neither type has an origin (see {@link ProperType#getOrigin}), then neither has
+   *       ignored positions, so return the types' own annotated types.
+   *   <li>Find the supertype of each type whose class is that of {@code resultType} (see {@link
+   *       #asSuper}). If the two supertypes are of different classes, then their positions do not
+   *       correspond, so return the types' own annotated types.
+   *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
+   *       the annotations of the corresponding position of the other (see {@link
+   *       #replaceIgnoredPositions}).
+   * </ol>
+   *
+   * <p>This method does not replace primary annotations that are ignored because of {@link
+   * AbstractType#ignoreAnnotations}; the caller handles them.
    *
    * @param type1 a type
    * @param type2 a type
@@ -186,8 +194,8 @@ final class IgnoredAnnotations {
    *     type1} and {@code type2}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored positions
-   *     replaced
+   * @return a pair of annotated types: {@code type1} and {@code type2}, or their supertypes whose
+   *     class is that of {@code resultType}, with ignored positions replaced
    */
   static ReplacedTypes replaceIgnoredForLubOrGlb(
       AbstractType type1,
