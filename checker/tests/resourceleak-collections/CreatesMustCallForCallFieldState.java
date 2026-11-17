@@ -17,9 +17,21 @@ class CreatesMustCallForCallFieldState implements Closeable {
     resList = new ArrayList<>();
   }
 
+  // The `@CreatesMustCallFor` target "#1" of `fill` resolves to `this` at the call site.
+  CreatesMustCallForCallFieldState(@Owning Resource r, int i) {
+    fill(this, r);
+    // :: error: unfulfilled.collection.obligations
+    resList = new ArrayList<>();
+  }
+
   @CreatesMustCallFor("this")
   void add(@Owning Resource r) {
     resList.add(r);
+  }
+
+  @CreatesMustCallFor("#1")
+  static void fill(CreatesMustCallForCallFieldState h, @Owning Resource r) {
+    h.add(r);
   }
 
   @CreatesMustCallFor("this")
