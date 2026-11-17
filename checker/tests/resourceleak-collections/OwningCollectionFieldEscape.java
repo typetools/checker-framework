@@ -24,12 +24,12 @@ class OwningCollectionFieldEscape implements Closeable {
   }
 
   List<Resource> returnCast() {
-    // :: error: transfer.owningcollection.field.ownership
+    // :: error: return.owningcollection.field.ownership
     return (List<Resource>) resList;
   }
 
   List<Resource> returnConditional() {
-    // :: error: transfer.owningcollection.field.ownership
+    // :: error: return.owningcollection.field.ownership
     return b ? resList : resList;
   }
 
