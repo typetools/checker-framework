@@ -23,7 +23,7 @@ public class ExpressionStatementNode extends Node {
   protected final ExpressionTree tree;
 
   /**
-   * Construct a ExpressionStatementNode.
+   * Constructs an ExpressionStatementNode.
    *
    * @param t the expression constituting this ExpressionStatementNode
    */

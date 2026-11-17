@@ -339,10 +339,10 @@ public final class NumberMath {
   }
 
   /**
-   * Returns whether {@code number} is an integral zero.
+   * Returns true if {@code number} is an integral zero.
    *
    * @param number a number
-   * @return whether {@code number} is an integral zero
+   * @return true if {@code number} is an integral zero
    */
   public static boolean isIntegralZero(Number number) {
     return isIntegral(number) && number.longValue() == 0;
@@ -395,15 +395,16 @@ public final class NumberMath {
    */
   private static void requireIntegral(Number value) {
     if (!isIntegral(value)) {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException(
+          "Not an integral number: " + value + " of type " + value.getClass().getName());
     }
   }
 
   /**
-   * Returns whether {@code value} is an integral boxed primitive.
+   * Returns true if {@code value} is an integral boxed primitive.
    *
    * @param value a number
-   * @return whether {@code value} is an integral boxed primitive
+   * @return true if {@code value} is an integral boxed primitive
    */
   private static boolean isIntegral(Number value) {
     return value instanceof Byte
@@ -413,10 +414,10 @@ public final class NumberMath {
   }
 
   /**
-   * Returns whether {@code value} is a boxed long.
+   * Returns true if {@code value} is a boxed long.
    *
    * @param value a number
-   * @return whether {@code value} is a boxed long
+   * @return true if {@code value} is a boxed long
    */
   private static boolean isLong(Number value) {
     return value instanceof Long;

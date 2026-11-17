@@ -45,8 +45,8 @@ public final class AnnotationFactory {
    * @param typeName the name of the annotation being built
    * @param tlAnnotationsHere the top-level meta-annotations on the annotation being built
    * @param source where the annotation came from, such as a filename
-   * @return an {@link AnnotationBuilder} appropriate for building a {@link Annotation} of the given
-   *     type name
+   * @return an {@link AnnotationBuilder} appropriate for building an {@link Annotation} of the
+   *     given type name
    */
   public AnnotationBuilder beginAnnotation(
       @BinaryName String typeName, Set<Annotation> tlAnnotationsHere, String source) {

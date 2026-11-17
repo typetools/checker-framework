@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** The visitor for Fenum Checker. */
+/** The visitor for the Fenum Checker. */
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
 
   /**

@@ -101,12 +101,12 @@ final class ConstructorFirstWriteAnalysis {
 
   /**
    * Returns true if {@code classTree} contains a non-null field initializer or an instance
-   * initializer block that may assign {@code targetField}.
+   * initializer block that might assign {@code targetField}.
    *
    * @param classTree the class to inspect
    * @param targetField the field being checked
    * @param cmAtf the factory used for side-effect reasoning
-   * @return true if {@code targetField} may be assigned in a field initializer or instance
+   * @return true if {@code targetField} might be assigned in a field initializer or instance
    *     initializer block in {@code classTree}
    */
   // TODO: If this implementation is too slow, it could use memoization with a cache of weak
@@ -154,10 +154,10 @@ final class ConstructorFirstWriteAnalysis {
   }
 
   /**
-   * Scanner that checks whether a block may assign the target field.
+   * Scanner that checks whether a block might assign the target field.
    *
    * <p>The entry point is {@link #mayBeAssigned}. It returns true if the given block either assigns
-   * the field directly or may do so through a side-effecting call.
+   * the field directly or might do so through a side-effecting call.
    */
   private static final class BlockAssignmentScanner extends BooleanShortCircuitScanner {
 
@@ -168,7 +168,7 @@ final class ConstructorFirstWriteAnalysis {
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
-     * Creates a scanner that checks whether a block may assign {@code targetField}.
+     * Creates a scanner that checks whether a block might assign {@code targetField}.
      *
      * @param targetField the field being checked
      * @param cmAtf the type factory for side-effect reasoning
@@ -180,13 +180,13 @@ final class ConstructorFirstWriteAnalysis {
     }
 
     /**
-     * Returns true if {@code block} directly assigns {@code targetField} or may assign it through a
-     * side-effecting call to a method or constructor.
+     * Returns true if {@code block} directly assigns {@code targetField} or might assign it through
+     * a side-effecting call to a method or constructor.
      *
      * @param block the block to scan
-     * @param targetField the field under analyze
+     * @param targetField the field under analysis
      * @param cmAtf the factory used for side-effect reasoning
-     * @return true if {@code block} may assign {@code targetField}
+     * @return true if {@code block} might assign {@code targetField}
      */
     static boolean mayBeAssigned(
         BlockTree block,
@@ -231,7 +231,7 @@ final class ConstructorFirstWriteAnalysis {
    * #mayBeAssignedInInitializer(ClassTree, VariableElement, RLCCalledMethodsAnnotatedTypeFactory)}.
    *
    * <p>This scanner is conservative and does not model every tree kind. Supported statement kinds
-   * are documented in {@link FirstWriteScanner#isModeledStatementKind(Tree.Kind)}. Unmodelled
+   * are documented in {@link FirstWriteScanner#isModeledStatementKind(Tree.Kind)}. Unmodeled
    * statement kinds conservatively return {@link FirstWriteScanResult#REASSIGNMENT}.
    */
   private static final class FirstWriteScanner extends TreeScanner<FirstWriteScanResult, Void> {
@@ -501,7 +501,7 @@ final class ConstructorFirstWriteAnalysis {
    * <p>Subclasses define the matching condition in visit methods and return {@code true} when they
    * find a match.
    *
-   * <p>This scanner is only used in {@link BlockAssignmentScanner}, but keeping it separate to
+   * <p>This scanner is only used in {@link BlockAssignmentScanner}, but it is kept separate to
    * allow it to be reused for other similar checks in the future.
    */
   private abstract static class BooleanShortCircuitScanner extends TreeScanner<Boolean, Void> {

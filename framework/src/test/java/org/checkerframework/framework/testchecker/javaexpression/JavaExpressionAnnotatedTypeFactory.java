@@ -51,7 +51,7 @@ public class JavaExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private class JavaExpressionQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
     /**
-     * Create a {@code JavaExpressionQualifierHierarchy}.
+     * Creates a {@code JavaExpressionQualifierHierarchy}.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers
      * @param elements element utils

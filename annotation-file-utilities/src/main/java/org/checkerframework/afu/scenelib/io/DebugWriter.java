@@ -39,7 +39,7 @@ public class DebugWriter {
   }
 
   /**
-   * Set the enabled status of this DebugWriter.
+   * Sets the enabled status of this DebugWriter.
    *
    * @param enabled true if this DebugWriter is enabled
    */
@@ -48,7 +48,7 @@ public class DebugWriter {
   }
 
   /**
-   * Print to System.out if this DebugWriter is enabled.
+   * Prints to System.out if this DebugWriter is enabled.
    *
    * @param format a format string
    * @param args the format string arguments

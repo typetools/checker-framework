@@ -12,20 +12,20 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A reaching definition store contains a set of reaching definitions represented by
- * ReachingDefinitionNode
+ * ReachingDefinitionNodes.
  */
 public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
 
   /** The set of reaching definitions in this store. */
   private final Set<ReachingDefinitionNode> reachingDefSet;
 
-  /** Create a new ReachDefinitionStore. */
+  /** Creates a new ReachingDefinitionStore. */
   public ReachingDefinitionStore() {
     reachingDefSet = new LinkedHashSet<>();
   }
 
   /**
-   * Create a new ReachDefinitionStore.
+   * Creates a new ReachingDefinitionStore.
    *
    * @param reachingDefSet a set of reaching definition nodes. The parameter is captured and the
    *     caller should not retain an alias.
@@ -35,7 +35,7 @@ public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
   }
 
   /**
-   * Remove the information of a reaching definition from the reaching definition set.
+   * Removes the information of a reaching definition from the reaching definition set.
    *
    * @param defTarget target of a reaching definition
    */
@@ -48,7 +48,7 @@ public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
   }
 
   /**
-   * Add a reaching definition to the reaching definition set.
+   * Adds a reaching definition to the reaching definition set.
    *
    * @param def a reaching definition
    */
