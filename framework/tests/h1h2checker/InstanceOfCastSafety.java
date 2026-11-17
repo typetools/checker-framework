@@ -11,6 +11,13 @@ public class InstanceOfCastSafety {
     if (o instanceof @H1S2 String s) {}
   }
 
+  void parameterized(@H1S1 @H2Top Object o) {
+    // :: warning: [instanceof.unsafe]
+    if (o instanceof java.util.@H1S2 List<?>) {}
+    // :: warning: [instanceof.pattern.unsafe]
+    if (o instanceof java.util.@H1S2 List<?> s) {}
+  }
+
   void upcast(@H1S1 @H2Top Object o) {
     if (o instanceof @H1Top String) {}
     if (o instanceof @H1Top String s) {}
