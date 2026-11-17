@@ -154,7 +154,7 @@
   <a href="https://en.wikipedia.org/wiki/Liskov_substitution_principle">behavioral
   subtyping</a>:  subtyping theory
   permits argument types to change contravariantly (even though Java forbids it
-  for reasons related to overloading), whereas return types may change
+  for reasons related to overloading), whereas return types can change
   <a href="https://en.wikipedia.org/wiki/Covariance_and_contravariance_%28computer_science%29">covariantly</a>
   both in theory and in Java.
 </p>
@@ -179,7 +179,7 @@ in depth.
   Framework:  that is, run the Checker Framework on some program.
   If you have already done so, you can skip this section.
   Otherwise, a case study gives you experience in using the Checker
-  Framework, and it may reveal bugs either in the Checker Framework or in
+  Framework, and it might reveal bugs either in the Checker Framework or in
   the program it is analyzing.
 </p>
 
@@ -430,7 +430,7 @@ One possible outcome is to identify
     new <a href="https://openjdk.org/jeps/484">class-file API</a>
     in <a href="https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/lang/classfile/package-summary.html"><code>java.lang.classfile</code></a>.
     Annotate it to determine that it is internally consistent and to enable
-    type-checking of its clients, such as that
+    type-checking of its clients, such as the one
     in <a href="https://plse.cs.washington.edu/daikon/">Daikon</a>.
   </li>
   <li>
@@ -506,7 +506,7 @@ The methodology is:
   project or a limitation of the verification tool.  For example, the Signedness
   Checker does not currently handle boxed integers and BigInteger; these
   haven't yet come up in case studies but could be worthwhile enhancements.
-  You may also need to write more annotations for libraries such as the
+  You might also need to write more annotations for libraries such as the
   JDK.
   </li>
   <li>submit bug reports against the project, or improve the verification tool
@@ -580,7 +580,7 @@ The <a href="https://checkerframework.org/manual/#resource-leak-checker">Resourc
 Leak Checker</a> ensures that resources (sockets, file descriptors,
 database connections, ...) are closed.  This prevents resource exhaustion,
 which can lead to crashes and denial-of-service attacks.  The Resource Leak
-Checker may be the second-most-used checker in the Checker Framework (after
+Checker might be the second-most-used checker in the Checker Framework (after
 the Nullness Checker).  Real-world users have asked us to extend it to
 handle <em>collections</em> of resources.
 </p>
@@ -591,7 +591,7 @@ request #7166</a> implements resource leak checking for collections.  The
 goal of this project is to finish up the work by doing case studies.
 The <a href="https://github.com/njit-jerse/specimin">Specimin tool</a> can
 extract just the parts of a project that are relevant to resource
-leak <em>collections</em>, so it may be possible to type-check only a few
+leak <em>collections</em>, so it might be possible to type-check only a few
 hundred lines of a large project and be sure that there are no leaks
 related to collections of resources.
 </p>
@@ -643,7 +643,7 @@ By default, the Checker Framework is
   in</a> <a href="https://checkerframework.org/manual/#nullness-lint">several</a>
 <a href="https://github.com/typetools/checker-framework/issues/986">circumstances</a>.
 &ldquo;Unsound&rdquo; means that the Checker Framework
-may report no warning even though the program can misbehave at run time.
+might report no warning even though the program can misbehave at run time.
 </p>
 
 <p>
@@ -709,7 +709,7 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
 
 <p>
   These projects annotate a library, so that it is easier to
-  type-check clients of the library.  Another benefit is that this may find
+  type-check clients of the library.  Another benefit is that this might find
   bugs in the library.  It can also give evidence for the usefulness of
   pluggable type-checking, or point out ways to improve the Checker
   Framework.
@@ -904,7 +904,7 @@ running <code>./gradlew checkNullness</code> (run it in the top-level <code>chec
 </p>
 
 <p>
-  The best approach may be to have the Nullness Checker run the Non-Empty
+  The best approach might be to have the Nullness Checker run the Non-Empty
   Checker as a subchecker but suppress the Non-Empty Checker warnings.  That
   is, the Nullness Checker takes advantage of information that the Non-Empty
   Checker verifies, without caring about code that the Non-Empty Checker
@@ -1218,7 +1218,7 @@ when overflow is possible</a>.  It doesn't issue a warning, but your
 checker could record whether overflow was possible (this could be a
 two-element type system) and then issue a warning, if the value is used as
 an array index.
-Other implementation strategies may be possible.
+Other implementation strategies might be possible.
 </p>
 
 <p>
@@ -1285,7 +1285,7 @@ import org.plumelib.reflection.Signatures;
 </pre>
 
 <p>
-However, users may not know about the library method.  Therefore, the
+However, users might not know about the library method.  Therefore, the
 Checker Framework should issue a warning message, along with the error
 message, notifying users of the library method.  For example, the Signature
 String Checker would mention
@@ -1342,7 +1342,7 @@ It would behave similarly for other library methods.
 <!-- To compute "340": wc $(findfile messages.properties | grep -v build) -->
 <p>
   The Checker Framework issues 340 different error messages, revealing 340
-  different types of programming errors.  Users may not understand all of
+  different types of programming errors.  Users might not understand all of
   these error messages.  The goal of this project is to write one webpage
   per error message.  The webpage will explain the message, show an example
   of code that triggers it, and show how to fix the code so that the
@@ -1387,7 +1387,7 @@ some distinct challenges:
   <li>
     Compiler messages currently show
     the <a href="https://checkerframework.org/manual/#effective-qualifier">effective
-    type</a>, which may be different from what the user wrote due to
+    type</a>, which might be different from what the user wrote due to
     defaulting, inference, and syntactic sugar.  For example, a user-written
     <code>@IndexFor("a")</code> annotation is syntactic sugar for
     <code>@NonNegative @LTLengthOf("a")</code>, and those types are
@@ -1405,7 +1405,7 @@ some distinct challenges:
     and avoid distracting the user with irrelevant information.
   </li>
   <li>
-    When a checker has multiple type systems, a type error or the lack of one may depend on facts from multiple type systems, and this should be expressed to the user.
+    When a checker has multiple type systems, a type error or the lack of one might depend on facts from multiple type systems, and this should be expressed to the user.
   </li>
 </ul>
 
@@ -1552,7 +1552,7 @@ ajava files, specify types for unannotated libraries.  A challenge is that
 a stub file is not necessarily a legal Java file.  A stub file looks like
 the concatenation of multiple Java files (for example, it can have
 multiple <code>package</code> declarations and multiple blocks
-of <code>import</code> statements).  Furthermore, a stub file may
+of <code>import</code> statements).  Furthermore, a stub file can
 omit method bodies, replacing the body by "<code>;</code>".
 </p>
 
@@ -1717,7 +1717,7 @@ void foo() {
 <p>
 The call <code>f2.close()</code> unrefines the inferred dataflow fact
 that <code>f1.close()</code> has already been called, because it's possible
-that <code>f2.close()</code> re-assigns <code>f1</code>.  Therefore, the
+that <code>f2.close()</code> reassigns <code>f1</code>.  Therefore, the
 RLC reports that the <code>@EnsuresCalledMethods</code> annotation doesn't
 verify because <code>f1</code> might not be closed at the moment of
 procedure exit.  Programmers who see the error message are mystified,
@@ -1786,8 +1786,8 @@ caused by:
 the Checker Framework's new-contributor-projects.html . -->
 
 <p>
-A side effect analysis (or inference) reports what side effects a procedure may perform,
-such as what variable values it may modify.  A side effect analysis is
+A side effect analysis (or inference) reports what side effects a procedure might perform,
+such as what variable values it might modify.  A side effect analysis is
 essential to other program analyses.  A program analysis makes
 estimates about the current values of expressions.  When a method call
 occurs, the analysis has to throw away most of its estimates, because the

@@ -225,7 +225,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    *   <li>{@code @javax.annotation.concurrent.GuardedBy}
    * </ul>
    *
-   * @param methodElement the ExecutableElement for the method call referred to by {@code tree}
+   * @param methodElement the ExecutableElement for the method declared by {@code
+   *     treeForErrorReporting}
    * @param treeForErrorReporting the MethodTree used to report the error
    */
   private void issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(
@@ -542,10 +543,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   }
 
   /**
-   * When visiting a method invocation, issue an error if the side effect annotation on the called
+   * When visiting a method invocation, issues an error if the side effect annotation on the called
    * method causes the side effect guarantee of the enclosing method to be violated. For example, a
-   * method annotated with @ReleasesNoLocks may not call a method annotated with @MayReleaseLocks.
-   * Also check that matching @GuardSatisfied(index) on a method's formal receiver/parameters
+   * method annotated with @ReleasesNoLocks must not call a method annotated with @MayReleaseLocks.
+   * Also checks that matching @GuardSatisfied(index) on a method's formal receiver/parameters
    * matches those in corresponding locations on the method call site.
    *
    * @param methodInvocationTree the MethodInvocationTree of the method call being visited
@@ -797,15 +798,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   }
 
   /**
-   * When visiting a synchronized block, issue an error if the expression has a type that implements
-   * the java.util.concurrent.locks.Lock interface. This prevents explicit locks from being
-   * accidentally used as built-in (monitor) locks. This is important because the Lock Checker does
-   * not have a mechanism to separately keep track of the explicit lock and the monitor lock of an
-   * expression that implements the Lock interface (i.e. there is a @LockHeld annotation used in
+   * When visiting a synchronized block, issues an error if the expression has a type that
+   * implements the java.util.concurrent.locks.Lock interface. This prevents explicit locks from
+   * being accidentally used as built-in (monitor) locks. This is important because the Lock Checker
+   * does not have a mechanism to separately keep track of the explicit lock and the monitor lock of
+   * an expression that implements the Lock interface (i.e., there is a @LockHeld annotation used in
    * dataflow, but there are not distinct @MonitorLockHeld and @ExplicitLockHeld annotations). It is
    * assumed that both kinds of locks will never be held for any expression that implements Lock.
    *
-   * <p>Additionally, a synchronized block may not be present in a method that has a @LockingFree
+   * <p>Additionally, a synchronized block must not be present in a method that has a @LockingFree
    * guarantee or stronger. An error is issued in this case.
    *
    * @param tree the SynchronizedTree for the synchronized block being visited
@@ -1254,7 +1255,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   }
 
   /**
-   * Parse a Java expression.
+   * Parses a Java expression.
    *
    * @param expression the Java expression
    * @param path the path to the expression

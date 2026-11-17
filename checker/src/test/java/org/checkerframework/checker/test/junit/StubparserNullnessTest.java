@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized;
 public class StubparserNullnessTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a StubparserNullnessTest.
+   * Creates a StubparserNullnessTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

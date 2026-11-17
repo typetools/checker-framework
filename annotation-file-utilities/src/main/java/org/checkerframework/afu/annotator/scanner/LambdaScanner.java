@@ -10,8 +10,8 @@ import java.util.Map;
 
 /**
  * LambdaScanner stores information about the names and offsets of lambda expressions inside a
- * method, and can also be used to scan the source tree and determine the index of a given
- * instanceof check, where the i^th index corresponds to the i^th instanceof check, using 0-based
+ * method, and can also be used to scan the source tree and determine the index of a given lambda
+ * expression, where the i^th index corresponds to the i^th lambda expression, using 0-based
  * indexing.
  */
 public final class LambdaScanner extends CommonScanner {
@@ -40,7 +40,7 @@ public final class LambdaScanner extends CommonScanner {
   private final Tree tree;
 
   /**
-   * Creates an InstanceOfScanner that will scan the source tree for the given node representing the
+   * Creates a LambdaScanner that will scan the source tree for the given node representing the
    * lambda expression to find.
    *
    * @param tree the given lambda expression to search for

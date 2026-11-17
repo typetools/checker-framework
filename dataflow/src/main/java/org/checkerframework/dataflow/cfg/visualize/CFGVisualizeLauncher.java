@@ -54,7 +54,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate a visualization of the CFG of a method to a file, optionally running an analysis.
+   * Generates a visualization of the CFG of a method to a file, optionally running an analysis.
    *
    * @param <V> the abstract value type of the analysis
    * @param <S> the store type of the analysis
@@ -119,14 +119,14 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the DOT representation of the CFG for a method, only. Does no dataflow analysis.
+   * Generates the DOT representation of the CFG for a method, only. Does no dataflow analysis.
    *
    * @param inputFile a Java source file, used as input
    * @param outputDir output directory
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for
-   * @param pdf also generate a PDF
-   * @param verbose show verbose information in CFG
+   * @param pdf true if a PDF should also be generated
+   * @param verbose true if verbose information should be shown in the CFG
    */
   private static void generatePdfOfCfgWithoutAnalysis(
       String inputFile,
@@ -139,12 +139,12 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the String representation of the CFG for a method, only. Does no dataflow analysis.
+   * Generates the String representation of the CFG for a method, only. Does no dataflow analysis.
    *
    * @param inputFile a Java source file, used as input
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for
-   * @param verbose show verbose information in CFG
+   * @param verbose true if verbose information should be shown in the CFG
    * @return the String representation of the CFG
    */
   private static String generateStringOfCFGWithoutAnalysis(
@@ -162,7 +162,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the DOT and PDF representations of the CFG for a method.
+   * Generates the DOT and PDF representations of the CFG for a method.
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
@@ -171,8 +171,8 @@ public final class CFGVisualizeLauncher {
    * @param outputDir source output directory
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for
-   * @param pdf also generate a PDF
-   * @param verbose show verbose information in CFG
+   * @param pdf true if a PDF should also be generated
+   * @param verbose true if verbose information should be shown in the CFG
    * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
    *     to be performed)
    */
@@ -190,15 +190,15 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the DOT and PDF representations of the CFG for a method.
+   * Generates the DOT and PDF representations of the CFG for a method.
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
    * @param <T> the transfer function type that is used to approximate run-time behavior
    * @param cfg the control flow graph to visualize
    * @param outputDir source output directory
-   * @param pdf also generate a PDF
-   * @param verbose show verbose information in CFG
+   * @param pdf true if a PDF should also be generated
+   * @param verbose true if verbose information should be shown in the CFG
    * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
    *     to be performed)
    */
@@ -225,7 +225,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the control flow graph of a method in a class.
+   * Generates the control flow graph of a method in a class.
    *
    * @param file a Java source file, used as input
    * @param method name of the method to generate the CFG for
@@ -286,7 +286,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Write generated String representation of the CFG for a method to a file.
+   * Writes the generated String representation of the CFG for a method to a file.
    *
    * @param inputFile a Java source file, used as input
    * @param method name of the method to generate the CFG for
@@ -302,7 +302,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Write generated String representation of the CFG for a method to a file.
+   * Writes the generated String representation of the CFG for a method to a file.
    *
    * @param cfg the control flow graph
    * @param outputFile source output file
@@ -323,7 +323,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Invoke "dot" command to generate a PDF.
+   * Invokes the "dot" command to generate a PDF.
    *
    * @param file name of the dot file
    */
@@ -353,7 +353,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the String representation of the CFG for a method.
+   * Generates the String representation of the CFG for a method.
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
@@ -361,7 +361,7 @@ public final class CFGVisualizeLauncher {
    * @param inputFile a Java source file, used as input
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for
-   * @param verbose show verbose information in CFG
+   * @param verbose true if verbose information should be shown in the CFG
    * @param analysis the analysis to perform (or {@code null} if no analysis is to be performed)
    * @return a map which includes a key "stringGraph" and the String representation of CFG as the
    *     value
@@ -379,13 +379,13 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the String representation of the CFG for a method.
+   * Generates the String representation of the CFG for a method.
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
    * @param <T> the transfer function type that is used to approximate run-time behavior
    * @param cfg the control flow graph to visualize
-   * @param verbose show verbose information in CFG
+   * @param verbose true if verbose information should be shown in the CFG
    * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
    *     to be performed)
    * @return a map which includes a key "stringGraph" and the String representation of CFG as the
@@ -404,7 +404,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Print error message.
+   * Prints an error message.
    *
    * @param string error message
    */

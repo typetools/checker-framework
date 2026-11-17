@@ -19,7 +19,7 @@ import org.plumelib.util.ArraySet;
   protected final ArrayDeque<TryFrame> frames;
 
   /**
-   * Construct a TryStack.
+   * Constructs a TryStack.
    *
    * @param exitLabel exit label
    */
@@ -29,7 +29,7 @@ import org.plumelib.util.ArraySet;
   }
 
   /**
-   * Push a new frame.
+   * Pushes a new frame.
    *
    * @param frame the frame to push
    */
@@ -37,17 +37,17 @@ import org.plumelib.util.ArraySet;
     frames.addFirst(frame);
   }
 
-  /** Pop a frame. */
+  /** Pops a frame. */
   public void popFrame() {
     frames.removeFirst();
   }
 
   /**
-   * Returns the set of possible {@link Label}s where control may transfer when an exception of the
-   * given type is thrown.
+   * Returns the set of possible {@link Label}s where control might transfer when an exception of
+   * the given type is thrown.
    *
    * @param thrown an exception
-   * @return where control may transfer when {@code thrown} is thrown
+   * @return where control might transfer when {@code thrown} is thrown
    */
   public Set<Label> possibleLabels(TypeMirror thrown) {
     // Work up from the innermost frame until the exception is known to be caught.
