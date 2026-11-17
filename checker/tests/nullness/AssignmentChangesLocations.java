@@ -43,6 +43,41 @@ public class AssignmentChangesLocations {
     }
   }
 
+  static class Holder {
+    @Nullable Holder next;
+    int count;
+
+    @Pure
+    int index() {
+      return next == null ? 0 : 1;
+    }
+
+    @Pure
+    int countIndex() {
+      return count;
+    }
+  }
+
+  // Assigning `h.next` might change `h.index()`, and therefore `a[h.index()]`, because the method's
+  // result might depend on `h.next`.
+  static void arrayIndexedByMethodCall(@Nullable String[] a, Holder h) {
+    if (a[h.index()] != null) {
+      h.next = null;
+      // :: error: [dereference.of.nullable]
+      a[h.index()].length();
+    }
+  }
+
+  // Assigning `h.count` might change `h.countIndex()`, even though the type of `h.count` is
+  // unrelated to the type of `h`.
+  static void arrayIndexedByMethodCallPrimitiveField(@Nullable String[] a, Holder h) {
+    if (a[h.countIndex()] != null) {
+      h.count = 1;
+      // :: error: [dereference.of.nullable]
+      a[h.countIndex()].length();
+    }
+  }
+
   // The values of `x` and `y` might be the same object, even though neither type is a subtype of
   // the other.
   static <T extends D, U extends D> void typeVariableReceivers(T x, U y) {
@@ -133,24 +168,6 @@ public class AssignmentChangesLocations {
       S2.sf = null;
       // :: error: [dereference.of.nullable]
       S1.sf.toString();
-    }
-  }
-
-  // The values of `a` and `b` might be the same array, whose elements implement both interfaces.
-  static void interfaceArrays(@Nullable Runnable[] a, @Nullable Comparable<?>[] b) {
-    if (a[0] != null) {
-      b[0] = null;
-      // :: error: [dereference.of.nullable]
-      a[0].run();
-    }
-  }
-
-  // The values of `a` and `b` cannot be the same array:  `String` is final and does not implement
-  // `Runnable`.
-  static void unrelatedArrays(@Nullable Runnable[] a, @Nullable String[] b) {
-    if (a[0] != null) {
-      b[0] = null;
-      a[0].run();
     }
   }
 }

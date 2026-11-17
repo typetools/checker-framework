@@ -1276,8 +1276,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
       ArrayAccess otherArrayAccess = entry.getKey();
       // case 1:
-      // TODO: When the arrays can be aliases, one could be less strict here, and only raise the
-      // abstract value of the other array access.
+      // TODO: When the arrays can be aliases, this code could be less strict:  rather than removing
+      // the abstract value of the other array access, it could raise that abstract value.
       if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
         arrayValuesIterator.remove(); // remove information completely
       }

@@ -20,16 +20,18 @@ the value of `y.g`.  As a result, when `CFAbstractStore` processes an assignment
 to `y.g`, it retains its refined types for `x.f` (and for other field accesses
 whose receiver is `x`) rather than discarding them, so a checker issues fewer
 false positive warnings.  The default implementation returns true; a subclass
-of `JavaExpression` that overrides it must adopt the new meaning.
-
-`CFAbstractStore.canAlias(a, b)` returns true if a cast from the erasure of the
-type of `a` to the erasure of the type of `b`, or vice versa, is legal.  It
-previously required one type to be a subtype of the other, so it returned false
-for some values that can be the same object, such as values whose types are two
-different type variables, or two interfaces.
+of `JavaExpression` that overrides it must adopt the new meaning.  A method call
+is treated as reading every field and array element.
 
 `CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
 the new method `CFAbstractAnalysis.canAlias` instead.
+
+`canAlias(a, b)` returns true if a cast from the erasure of the type of `a` to
+the erasure of the type of `b`, or vice versa, is legal.  It previously
+required one type to be a subtype of the other, so it returned false for some
+values that can be the same object, such as values whose types are two
+different type variables, two parameterizations of a generic class, or two
+interfaces.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
