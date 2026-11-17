@@ -871,6 +871,31 @@ public class ToIndexFileConverterTest {
         "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
   }
 
+  /**
+   * A private member type is not inherited, but it hides the member types of the same name in the
+   * supertypes of the type that declares it.
+   */
+  @Test
+  public void testPrivateMemberTypeHidesInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class A { public static class N {} }",
+            "class B extends A { private static class N {} }",
+            "interface I { class N {} }",
+            "class C extends B implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lp/I$N;)V");
+
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.Middle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+  }
+
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicInheritance() throws Exception {
