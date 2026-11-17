@@ -1169,6 +1169,9 @@ public abstract class CFAbstractTransfer<
     // If the chain stopped at a conversion, then the conversion changes the value (the loop above
     // looks through value-preserving widening conversions). JavaExpression.fromNode ignores the
     // conversion, so omit `rhs`: its expression does not have the value of the chain.
+    // Omitting a narrowing conversion is defensive.  Its operand is a constant, whose value it
+    // keeps, or a binary operation such as `b + i` in `b += i`, for which no store holds a value;
+    // the omission keeps this code sound if a store ever holds one.
     boolean rhsIsValueChangingConversion =
         rhs instanceof WideningConversionNode || rhs instanceof NarrowingConversionNode;
     if (!rhsIsValueChangingConversion && !mayBeChanged(rhs, written)) {
