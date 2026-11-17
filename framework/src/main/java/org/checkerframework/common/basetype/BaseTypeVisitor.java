@@ -3806,7 +3806,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (patternTree == null) {
       Tree refTypeTree = tree.getType();
       boolean valid = validateTypeOf(refTypeTree);
-      if (valid && refTypeTree instanceof AnnotatedTypeTree) {
+      // Only check a reference type that is explicitly annotated.  For a qualified parameterized
+      // type such as "java.util.@A List<?>", the annotation is within the ParameterizedTypeTree.
+      Tree unparameterizedRefTypeTree =
+          refTypeTree instanceof ParameterizedTypeTree parameterizedTypeTree
+              ? parameterizedTypeTree.getType()
+              : refTypeTree;
+      if (valid && unparameterizedRefTypeTree instanceof AnnotatedTypeTree) {
         AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
         if (!isTypeCastSafe(refType, expType)) {
