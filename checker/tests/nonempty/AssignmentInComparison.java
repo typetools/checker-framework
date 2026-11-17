@@ -7,16 +7,15 @@ import org.checkerframework.checker.nonempty.qual.NonEmpty;
 // refines its target.
 class AssignmentInComparison {
 
-  List<String> list = new ArrayList<>();
-
   // Not side-effect-free.
   List<String> newList() {
     return new ArrayList<>();
   }
 
-  static void callInRhs(AssignmentInComparison h, @NonEmpty List<String> ne) {
-    if ((h.list = h.newList()) == ne) {
-      @NonEmpty List<String> l = h.list;
+  void callInRhs(@NonEmpty List<String> ne) {
+    List<String> l;
+    if ((l = newList()) == ne) {
+      @NonEmpty List<String> m = l;
     }
   }
 }
