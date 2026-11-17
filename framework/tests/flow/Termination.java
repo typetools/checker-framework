@@ -103,9 +103,9 @@ public class Termination {
     }
   }
 
-  // On the exceptional path, the try-with-resources statement suppresses any exception that the
-  // desugared call to close() throws, and rethrows the CheckedException (JLS 14.20.3.1).  So the
-  // catch clause is reachable even though close() terminates execution.
+  // The desugared call to close() terminates execution, but on the exceptional path, an exception
+  // that close() throws is suppressed and the primary exception propagates, so the catch clause is
+  // reachable.
   void t6(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
@@ -122,7 +122,7 @@ public class Termination {
     @Odd String l3 = l1;
   }
 
-  // Like t6, but the desugared call to close() returns normally.  The catch clause is reachable.
+  // Like t6, but the desugared call to close() returns normally.
   void t6Returning(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
