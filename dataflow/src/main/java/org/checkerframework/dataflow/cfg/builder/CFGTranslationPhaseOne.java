@@ -2625,6 +2625,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           finallyLabel,
           exceptionalFinallyLabel,
           () -> scan(finallyBlock, p),
+          () -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
           oldBreakLabels,
@@ -2722,7 +2723,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         doneLabel,
         finallyLabel,
         exceptionalFinallyLabel,
-        () -> addCloseCallForResource(resourceDeclarationTree, p),
+        () -> addCloseCallForResource(resourceDeclarationTree, p, false),
+        () -> addCloseCallForResource(resourceDeclarationTree, p, true),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2739,8 +2741,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param p the value to pass to calls to {@code scan}
+   * @param primaryExceptionPending true if the try block threw an exception (the primary exception)
+   *     that propagates after the call to {@code close}. Then, any exception that {@code close}
+   *     throws is suppressed (JLS 14.20.3.1), and the primary exception propagates even if {@code
+   *     close} terminates execution.
    */
-  private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+  private void addCloseCallForResource(
+      Tree resourceDeclarationTree, Void p, boolean primaryExceptionPending) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
     Node receiverNode;
@@ -2799,7 +2806,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MethodInvocationNode(
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(closeCallNode);
+    if (primaryExceptionPending) {
+      // Any exception that close() throws is suppressed, and control continues to the code that
+      // rethrows the primary exception.  Model that by catching every exception that close()
+      // throws and continuing after the call.  If close() terminates execution, it has no normal
+      // successor, but its exceptional successors still reach the rethrow of the primary
+      // exception.
+      Label suppressedLabel = new Label();
+      tryStack.pushFrame(
+          new TryCatchFrame(
+              types,
+              Collections.singletonList(
+                  new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
+      extendWithMethodInvocationNode(closeCallNode);
+      tryStack.popFrame();
+      addLabelForNextNode(suppressedLabel);
+    } else {
+      extendWithMethodInvocationNode(closeCallNode);
+    }
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2817,7 +2841,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param finallyLabel label for the entry of the finally block for the normal case
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
-   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, for each
+   *     path except the one on which the try block throws an exception
+   * @param exceptionalFinallyBlockCFGGenerator generates CFG nodes and edges for the finally block,
+   *     for the path on which the try block throws an exception
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
@@ -2835,6 +2862,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Label finallyLabel,
       Label exceptionalFinallyLabel,
       Runnable finallyBlockCFGGenerator,
+      Runnable exceptionalFinallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -2872,7 +2900,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      finallyBlockCFGGenerator.run();
+      exceptionalFinallyBlockCFGGenerator.run();
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithException(
