@@ -1028,6 +1028,28 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * the package that is on the classpath, so the type does not shadow a type that a later import on
+   * demand makes available. {@code java.util.RegularEnumSet} is package-private.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleClasspathTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "import p.*;",
+            "class C {",
+            "  void m(RegularEnumSet s) {}",
+            "  void n(List x) {}",
+            "}",
+            "package p;",
+            "public class RegularEnumSet {}");
+    assertMethod(jaif, "C", "m(Lp/RegularEnumSet;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/List;)V");
+  }
+
+  /**
    * A member type that a type inherits from a supertype in another compilation unit of the stub
    * file is found.
    */

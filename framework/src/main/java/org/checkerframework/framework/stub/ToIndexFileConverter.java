@@ -1388,9 +1388,24 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     String qualifiedName = prefix + "." + className;
     String binaryName = loadClassBinaryName(qualifiedName);
     // No `.` follows the part of `binaryName` that comes from the import.
-    return (binaryName != null && binaryName.lastIndexOf('.') <= prefix.length())
-        ? binaryName
-        : null;
+    if (binaryName == null || binaryName.lastIndexOf('.') > prefix.length()) {
+      return null;
+    }
+    // An import on demand makes available only the accessible top-level or member types (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.  The first identifier of `className` names the type that the import makes
+    // available; the binary name of that type is a prefix of `binaryName`.
+    int firstLength = className.indexOf('.');
+    if (firstLength < 0) {
+      firstLength = className.length();
+    }
+    @SuppressWarnings("signature") // a prefix of a binary name, ending at the end of an identifier
+    @ClassGetName String firstBinaryName =
+        binaryName.substring(0, prefix.length() + 1 + firstLength);
+    if (!isImportAccessible(loadClass(firstBinaryName), cu)) {
+      return null;
+    }
+    return binaryName;
   }
 
   /**
@@ -1437,10 +1452,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
    *     Class} on the classpath, or null
-   * @param cu the stub file's compilation unit in which the import is written
+   * @param cu the stub file's compilation unit in which the import is written, or null for the
+   *     converter's import context
    * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
-  private boolean isImportAccessible(@Nullable Object member, CompilationUnit cu) {
+  private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
     String cuPkgName = importContext(cu).pkgName();
     String cuPackage = cuPkgName == null ? "" : cuPkgName;
     if (member instanceof TypeDeclaration<?> memberDecl) {
