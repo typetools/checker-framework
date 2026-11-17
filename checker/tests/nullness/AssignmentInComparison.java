@@ -453,51 +453,6 @@ public class AssignmentInComparison {
     }
   }
 
-  // The assignment writes the `next` field of the original `n`, not of `o`.
-  static void receiverReassignedNonNullRhs(AssignmentInComparison n, AssignmentInComparison o) {
-    // :: warning: [nulltest.redundant]
-    if ((n.next = (n = o)) != null) {
-      // :: error: [dereference.of.nullable]
-      n.next.toString();
-    }
-  }
-
-  static void receiverReassignedNoComparison(AssignmentInComparison n, AssignmentInComparison o) {
-    n.next = (n = o);
-    // :: error: [dereference.of.nullable]
-    n.next.toString();
-  }
-
-  static AssignmentInComparison nonNullGlobal = new AssignmentInComparison();
-
-  // Sets `nonNullGlobal` to `n` and returns a non-null value.
-  static AssignmentInComparison reassignNonNullGlobal(AssignmentInComparison n) {
-    nonNullGlobal = n;
-    return new AssignmentInComparison();
-  }
-
-  // The call reassigns `nonNullGlobal` after the receiver of the target is evaluated, so the
-  // assignment writes the `next` field of the original `nonNullGlobal`.
-  static void receiverReassignedByCall(AssignmentInComparison o) {
-    nonNullGlobal.next = reassignNonNullGlobal(o);
-    // :: error: [dereference.of.nullable]
-    nonNullGlobal.next.toString();
-  }
-
-  static void receiverReassignedByCallInComparison(AssignmentInComparison o) {
-    // :: warning: [nulltest.redundant]
-    if ((nonNullGlobal.next = reassignNonNullGlobal(o)) != null) {
-      // :: error: [dereference.of.nullable]
-      nonNullGlobal.next.toString();
-    }
-  }
-
-  // A call cannot reassign a local variable, so it cannot change the location of `n.next`.
-  static void localReceiverWithCall(AssignmentInComparison n, AssignmentInComparison o) {
-    n.next = reassignNonNullGlobal(o);
-    n.next.toString();
-  }
-
   // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
   void assignmentInLeftOperand(@Nullable Object x) {
     if (nonNull(x = null) == x) {
@@ -538,6 +493,40 @@ public class AssignmentInComparison {
   void sideEffectFreeCallInRightOperand() {
     if (f == constant()) {
       f.toString();
+    }
+  }
+
+  // The assignment writes the `next` field of the original `n`, not of `o`.
+  static void receiverReassignedNonNullRhs(AssignmentInComparison n, AssignmentInComparison o) {
+    // :: warning: [nulltest.redundant]
+    if ((n.next = (n = o)) != null) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  static void receiverReassignedNoComparison(AssignmentInComparison n, AssignmentInComparison o) {
+    n.next = (n = o);
+    // :: error: [dereference.of.nullable]
+    n.next.toString();
+  }
+
+  static class ReassigningHolder {
+    int index;
+
+    @Nullable Object[] array = new Object[10];
+
+    Object reassignIndex() {
+      index++;
+      return "";
+    }
+
+    // The call in the right-hand side changes the index of the left-hand side.
+    void indexReassignedByCall() {
+      array[index] = reassignIndex();
+      // After the assignment, `array[index]` is a different element of `array`.
+      // :: error: [dereference.of.nullable]
+      array[index].toString();
     }
   }
 

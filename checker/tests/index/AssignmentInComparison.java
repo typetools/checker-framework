@@ -1,3 +1,4 @@
+import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
@@ -77,6 +78,20 @@ public class AssignmentInComparison {
     }
   }
 
+  @NonNegative int clearArr() {
+    arr = new int[0];
+    return 0;
+  }
+
+  // The right operand reassigns `arr` after the left operand reads `arr.length`.
+  void otherOperandReassignsComparedSequence() {
+    int i;
+    if (arr.length > (i = clearArr())) {
+      // :: error: [array.access.unsafe.high.range]
+      int value = arr[i];
+    }
+  }
+
   // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
   // the new value of `k`.
   static void otherOperandReassignsOffset(@NonNegative int k, @NonNegative int j) {
@@ -110,6 +125,15 @@ public class AssignmentInComparison {
     // :: error: [assignment]
     int @SameLen("a") [] x = n.arr;
     int @SameLen("a") [] y = b;
+  }
+
+  // The dimension reassigns `h`, so after the assignment `h.arr` is not the created array.
+  static void arrayCreationRelocatesTarget(
+      AssignmentInComparison h, AssignmentInComparison other, @NonNegative int x) {
+    int i;
+    h.arr = new int[(i = x) + (h = other).arr.length];
+    // :: error: [assignment]
+    @LTEqLengthOf("h.arr") int y = i;
   }
 
   void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
