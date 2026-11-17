@@ -67,6 +67,14 @@ public class CastInComparison {
     }
   }
 
+  // A compound assignment narrows `b + i` to byte, which might change its value.  After the
+  // comparison, the target `b` has the compared value.
+  void narrowingCompoundAssignment(byte b, int i) {
+    if ((b += i) == 5) {
+      @IntVal(5) byte c = b;
+    }
+  }
+
   // The assignment converts `l` to double, which might change its value.
   void lossyAssignmentConversionInCast(double d, long l) {
     if (((double) (d = l)) == 5d) {
@@ -78,7 +86,7 @@ public class CastInComparison {
   // Comparing a cast of an array length refines the array.
   void castArrayLength(int[] a) {
     if ((long) a.length == 5) {
-      @ArrayLen(5) int[] b = a;
+      int @ArrayLen(5) [] b = a;
     }
   }
 

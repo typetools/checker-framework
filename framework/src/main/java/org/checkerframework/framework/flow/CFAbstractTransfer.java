@@ -1152,19 +1152,21 @@ public abstract class CFAbstractTransfer<
       }
     }
     Node innermost = chain.get(chain.size() - 1);
-    // The string conversions of a `+=` string concatenation, which happen after `rhs` and the
-    // receivers and indices of the targets are evaluated, might write locations.
-    if (innermost.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
-        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
-      written.addStringConversions(
-          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
-    }
     ExpressionTree rhsTree =
         innermost instanceof AssignmentNode a
             ? rhsTree(a)
             : ((TypeCastNode) innermost).getTree().getExpression();
     if (rhsTree != null) {
       written.scan(rhsTree, null);
+    }
+    // A `+=` string concatenation might call `toString()` after evaluating its rhs and before
+    // storing into its target. Only the innermost node of the chain can be a compound assignment,
+    // because the expression of a compound assignment node is not an assignment or cast.
+    if (innermost instanceof AssignmentNode a
+        && a.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
+        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+      written.addStringConversions(
+          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
     }
     // The sides that the result contains, in source order: `sides[i]` is the target of
     // `chain.get(i)` if that is an assignment, and `chain.get(i)` itself if that is a cast; and
@@ -1605,11 +1607,14 @@ public abstract class CFAbstractTransfer<
      *     value than evaluating it before
      */
     boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
-      if (anyHeapLocation
+      if (!ignoreOwnLocation
+          && anyHeapLocation
           && analysis.atypeFactory.sideEffectsUnrefineAliases
           && expr.isModifiableByOtherCode()) {
         // As in CFAbstractStore#updateForMethodCall, a write might change the abstract value of
-        // the object that `expr` denotes, even if `expr` still denotes the same object.
+        // the object that `expr` denotes, even if `expr` still denotes the same object.  If
+        // `ignoreOwnLocation` is true, the value of `expr` is stored into its location after these
+        // writes, so its abstract value is the one that was stored.
         return true;
       }
       if (expr instanceof LocalVariable) {
