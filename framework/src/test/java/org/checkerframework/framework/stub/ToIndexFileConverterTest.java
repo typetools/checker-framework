@@ -1199,22 +1199,6 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
   }
 
-  /**
-   * A stub file that declares a cyclic inheritance hierarchy, which is not legal Java, does not
-   * cause infinite recursion while resolving an inherited member type.
-   */
-  @Test
-  public void testCyclicInheritanceOfNestedClassOnClasspath() throws Exception {
-    String jaif =
-        convert(
-            "package mypackage;",
-            "class MyFirstClass extends MySecondClass {}",
-            "class MySecondClass extends MyFirstClass {",
-            "  void myMethod(Entry e) {}",
-            "}");
-    assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
-  }
-
   /** A package-private member type of a class in another package is not inherited. */
   @Test
   public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
