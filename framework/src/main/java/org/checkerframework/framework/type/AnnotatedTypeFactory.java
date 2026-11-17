@@ -3413,6 +3413,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *   <li>Any other operation applies binary numeric promotion (JLS 5.6) if both operands have
    *       numeric primitive or boxed primitive types: it unboxes each boxed operand, such as one of
    *       type {@code Character}, and widens both operands to a common primitive type.
+   *   <li>Any other operation whose operands both have type {@code boolean} or {@code Boolean},
+   *       such as {@code b == p} or {@code b & p} for {@code Boolean b} and {@code boolean p},
+   *       unboxes each {@code Boolean} operand (JLS 15.21.2, 15.22.2, 15.23, 15.24).
    * </ul>
    *
    * Operands to which no promotion applies are returned unchanged.
@@ -3444,6 +3447,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeKind promotedKind =
         TypeKindUtils.widenedNumericType(numericTypeKind(left), numericTypeKind(right));
     if (!TypeKindUtils.isNumeric(promotedKind)) {
+      if (TypesUtils.isBooleanType(left.getUnderlyingType())
+          && TypesUtils.isBooleanType(right.getUnderlyingType())) {
+        // A boolean equality (JLS 15.21.2), logical (JLS 15.22.2), or conditional (JLS 15.23,
+        // 15.24) operation unboxes each operand.  Reference equality of two boxed operands was
+        // handled above.
+        return new BinaryArgTypes(applyUnboxing(left), applyUnboxing(right));
+      }
       return new BinaryArgTypes(left, right);
     }
     return new BinaryArgTypes(
