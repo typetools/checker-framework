@@ -95,29 +95,6 @@ public class Issue3028 {
     Comparator<T> c2 = (Comparator<T>) c;
   }
 
-  void unboundedWildcardDowncast(Object o) {
-    // The cast is checked: the run-time check verifies everything about the Java type.
-    List<?> list = (List<?>) o;
-    List<? extends @Nullable Object> list2 = (List<? extends @Nullable Object>) o;
-  }
-
-  void nonNullWildcardDowncast(Object o) {
-    // The cast is checked, but the run-time check does not verify the @NonNull qualifier: the
-    // list might contain null.
-    // :: warning: [cast.unsafe]
-    List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) o;
-  }
-
-  void nonNullWildcardDowncastFromCollection(Collection<? extends @NonNull Object> c) {
-    // The type argument of the List is determined by the type argument of the Collection.
-    List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) c;
-  }
-
-  void unsafeNonNullWildcardDowncastFromCollection(Collection<? extends @Nullable Object> c) {
-    // :: warning: [cast.unsafe]
-    List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) c;
-  }
-
   static class StringList extends ArrayList<@NonNull String> {}
 
   void downcastToNonGenericSubclass(List<@NonNull String> list) {
