@@ -85,6 +85,7 @@ public class PurityMethodRef {
   @FunctionalInterface
   interface PureRunnable {
     @Pure
+    // :: warning: [purity.deterministic.void.method]
     void run();
   }
 
@@ -92,6 +93,7 @@ public class PurityMethodRef {
   static void mySideEffectFreeVoidMethod() {}
 
   @Deterministic
+  // :: warning: [purity.deterministic.void.method]
   static void myDeterministicVoidMethod() {}
 
   /** A side-effect-free method that returns void is deterministic. */
