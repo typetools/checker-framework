@@ -1,8 +1,10 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -483,6 +485,11 @@ public class NullnessTransfer
    * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
    *
+   * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
+   * arguments. Evaluating the arguments executes such a body only through a method or constructor
+   * invocation (an anonymous class's initializers run as part of its constructor), which this
+   * method handles as described above.
+   *
    * @param arguments the arguments of a method invocation
    * @param receiverExpr the receiver of the method invocation
    * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
@@ -533,6 +540,19 @@ public class NullnessTransfer
           public Boolean visitNewClass(NewClassTree tree, Void p) {
             return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
                 || super.visitNewClass(tree, p);
+          }
+
+          // visitMethodInvocation and visitNewClass handle the invocations that execute the body
+          // of a lambda expression or anonymous class.
+
+          @Override
+          public Boolean visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+            return false;
+          }
+
+          @Override
+          public Boolean visitClass(ClassTree tree, Void p) {
+            return false;
           }
 
           /*
