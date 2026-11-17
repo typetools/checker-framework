@@ -1707,7 +1707,7 @@ public class MustCallConsistencyAnalyzer {
             && coAtf.isOwningCollectionField(returnTree)) {
           checker.reportError(
               node.getTree(),
-              "transfer.owningcollection.field.ownership",
+              "return.owningcollection.field.ownership",
               node.getTree().toString(),
               returnTree.toString());
         }

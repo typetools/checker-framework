@@ -141,7 +141,7 @@ class OwningCollectionFieldTyping {
   }
 
   List<Resource> tryTransferringFieldOwnershipReturn() {
-    // :: error: transfer.owningcollection.field.ownership
+    // :: error: return.owningcollection.field.ownership
     return ocField;
   }
 }
