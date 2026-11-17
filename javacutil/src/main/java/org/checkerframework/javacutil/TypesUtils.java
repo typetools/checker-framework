@@ -975,10 +975,10 @@ public final class TypesUtils {
    * a generic type. For example, a {@code Box<Integer>} is both a {@code Box<? extends Number>} and
    * a {@code Box<? super Integer>}, and heap pollution can make a {@code Box<String>} also a {@code
    * Box<Integer>}. Two erased types have no common object if a value of one cannot be cast to the
-   * other (JLS 5.5): for example, if both are classes and neither is a subclass of the other, or if
-   * one is a final class that does not implement the other. One object can have two unrelated
-   * interface types, such as {@code Runnable} and {@code Serializable}, or a class type and an
-   * unrelated interface type.
+   * other (JLS 5.5): for example, if both erased types are classes and neither is a subclass of the
+   * other, or if one is a final class that does not implement the other. One object can have two
+   * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
+   * and an unrelated interface type.
    *
    * <p>It compares the type parameter that a wildcard is a type argument for, because a value of
    * the wildcard has that type too, but the erasure of a wildcard that has an extends bound is the
