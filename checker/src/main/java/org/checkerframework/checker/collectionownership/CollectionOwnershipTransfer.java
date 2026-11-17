@@ -1,5 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -274,7 +275,7 @@ public class CollectionOwnershipTransfer
             : node.getTarget().getTree();
     // For an array access, elementFromTree returns the array variable, not the element.
     if (targetTree == null
-        || targetTree.getKind() == Tree.Kind.ARRAY_ACCESS
+        || targetTree instanceof ArrayAccessTree
         || !(TreeUtils.elementFromTree(targetTree) instanceof VariableElement declaredElement)) {
       return false;
     }

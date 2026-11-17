@@ -191,17 +191,17 @@ final class EnhancedForDisposalLoopMatcher {
     Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
 
     // Walk backward from the iterator `next()` node to recover the `hasNext()` loop-condition node
-    // and the loop-update/back-edge block for this desugared enhanced-for.
-    Block loopUpdateBlock = blockContainingNext;
-    nodeIterator = loopUpdateBlock.getNodes().iterator();
+    // for this desugared enhanced-for.
+    Block currentBlock = blockContainingNext;
+    nodeIterator = currentBlock.getNodes().iterator();
     Node loopConditionNode;
     boolean isLoopCondition;
     do {
       while (!nodeIterator.hasNext()) {
-        Set<Block> predecessorBlocks = loopUpdateBlock.getPredecessors();
+        Set<Block> predecessorBlocks = currentBlock.getPredecessors();
         if (predecessorBlocks.size() == 1) {
-          loopUpdateBlock = predecessorBlocks.iterator().next();
-          nodeIterator = loopUpdateBlock.getNodes().iterator();
+          currentBlock = predecessorBlocks.iterator().next();
+          nodeIterator = currentBlock.getNodes().iterator();
         } else {
           return null;
         }
@@ -220,19 +220,25 @@ final class EnhancedForDisposalLoopMatcher {
     if (blockContainingLoopCondition == null) {
       return null;
     }
-    if (blockContainingLoopCondition.getSuccessors().size() != 1) {
+    // The `hasNext()` call is in an exception block, whose regular successor is the conditional
+    // block and whose other successors are exceptional.
+    if (!(blockContainingLoopCondition instanceof SingleSuccessorBlock loopConditionSsb)) {
       throw new BugInCF(
-          "loop condition has: "
-              + blockContainingLoopCondition.getSuccessors().size()
-              + " successors instead of 1.");
+          "loop condition block is not a SingleSuccessorBlock, but: "
+              + blockContainingLoopCondition.getClass());
     }
-    Block maybeConditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
+    Block maybeConditionalBlock = loopConditionSsb.getSuccessor();
     if (!(maybeConditionalBlock instanceof ConditionalBlock conditionalBlock)) {
       throw new BugInCF(
           "loop condition successor is not ConditionalBlock, but: "
-              + maybeConditionalBlock.getClass());
+              + (maybeConditionalBlock == null ? null : maybeConditionalBlock.getClass()));
     }
-    if (loopVariableNode == null || loopBodyEntryBlock == null) {
+    // The loop-update (back-edge) block is the block that starts evaluating the loop condition:
+    // the block that contains the receiver of `hasNext()`.  The `hasNext()` call itself is in a
+    // later block, because the call can throw an exception.
+    Block loopUpdateBlock =
+        ((MethodInvocationNode) loopConditionNode).getTarget().getReceiver().getBlock();
+    if (loopVariableNode == null || loopBodyEntryBlock == null || loopUpdateBlock == null) {
       return null;
     }
     Tree loopVariableTree = loopVariableNode.getTree();
