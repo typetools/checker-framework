@@ -30,6 +30,15 @@ return.
   `visitCase()` discards an earlier refinement of a selector expression that
   the accessor might have changed.
 
+New method `CFAbstractStore.updateForUnknownSideEffect()` removes the
+information that code with arbitrary side effects might invalidate, for code
+that no CFG node represents.  `CFAbstractTransfer.visitCase()` calls it for a
+case whose record pattern invokes a record accessor that is not
+side-effect-free.  A subclass of `CFAbstractStore` that overrides
+`updateForMethodCall()` to remove or keep additional information should
+override `updateForUnknownSideEffect()` in the same way, as
+`InitializationStore` and `LockStore` do.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 

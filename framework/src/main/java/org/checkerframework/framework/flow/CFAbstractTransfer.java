@@ -1345,7 +1345,33 @@ public abstract class CFAbstractTransfer<
    */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
+    // The case labels are tested against the value of the selector expression that was saved
+    // before the switch.  If the selector expression might have changed since then, do not refine
+    // it.
+    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     S store = in.getRegularStore();
+    S thenStoreIn = in.getThenStore();
+    S elseStoreIn = in.getElseStore();
+    // Non-null if a record accessor might have side effects and the case node has exceptional
+    // successors (for a MatchException, for example when an accessor throws an exception).  These
+    // stores contain the effect of the accessor calls but not the facts implied by a successful
+    // match.
+    Map<TypeMirror, S> exceptionalStores = null;
+    if (n.labelsMightHaveSideEffects()) {
+      // A record accessor that a record pattern of this case invokes might have side effects.  The
+      // CFG does not represent the accessor calls, so their effect is applied here, before the
+      // facts implied by a successful match (which hold after the accessor calls).
+      store = applyRecordAccessorSideEffects(store, n, refineSelectorExpression);
+      thenStoreIn = applyRecordAccessorSideEffects(thenStoreIn, n, refineSelectorExpression);
+      elseStoreIn = applyRecordAccessorSideEffects(elseStoreIn, n, refineSelectorExpression);
+      if (n.getBlock() instanceof ExceptionBlock block
+          && !block.getExceptionalSuccessors().isEmpty()) {
+        exceptionalStores = new LinkedHashMap<>();
+        for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
+          exceptionalStores.put(exceptionType, store.copy());
+        }
+      }
+    }
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1354,11 +1380,10 @@ public abstract class CFAbstractTransfer<
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
     AssignmentNode assign = n.getSwitchOperand();
-    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
-              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
+              finishValue(null, store), thenStoreIn.copy(), elseStoreIn.copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
       if (refineSelectorExpression) {
@@ -1384,27 +1409,6 @@ public abstract class CFAbstractTransfer<
     }
     assert lubResult != null
         : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
-    // Non-null if a record accessor might have changed the selector expression and the case node
-    // has exceptional successors (for a MatchException when no case matches).  These stores
-    // contain the effect of the accessor calls but not the facts implied by a successful match.
-    Map<TypeMirror, S> exceptionalStores = null;
-    if (!refineSelectorExpression && n.labelsMightHaveSideEffects()) {
-      // A record accessor that a record pattern of this case invokes might have changed the
-      // selector expression.  The CFG does not represent the accessor calls, so their effect on
-      // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
-      JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
-      lubResult.getThenStore().clearValue(selector);
-      lubResult.getElseStore().clearValue(selector);
-      if (n.getBlock() instanceof ExceptionBlock block
-          && !block.getExceptionalSuccessors().isEmpty()) {
-        exceptionalStores = new LinkedHashMap<>();
-        for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
-          S exceptionalStore = store.copy();
-          exceptionalStore.clearValue(selector);
-          exceptionalStores.put(exceptionType, exceptionalStore);
-        }
-      }
-    }
     if (n.labelsUntested()) {
       // The CFG does not test the case expressions, so the facts that hold when they match hold
       // after this node.
@@ -1415,6 +1419,29 @@ public abstract class CFAbstractTransfer<
       return lubResult.withExceptionalStores(exceptionalStores);
     }
     return lubResult;
+  }
+
+  /**
+   * Returns a copy of {@code store} with the effect of record accessor calls that might have side
+   * effects applied. The record patterns of {@code n} invoke the accessors, but the CFG does not
+   * represent the calls.
+   *
+   * @param store a store before the record accessor calls; is not side-effected by this method
+   * @param n the case node whose record patterns invoke the accessors
+   * @param refineSelectorExpression the result of {@link #selectorExpressionDenotesSwitchValue} for
+   *     {@code n}
+   * @return a copy of {@code store} with the effect of the accessor calls applied
+   */
+  private S applyRecordAccessorSideEffects(S store, CaseNode n, boolean refineSelectorExpression) {
+    S result = store.copy();
+    result.updateForUnknownSideEffect();
+    if (!refineSelectorExpression) {
+      // An accessor might have changed the selector expression, even if the selector expression
+      // is a field with a monotonic qualifier or a call to a pure method, which
+      // updateForUnknownSideEffect does not unrefine.
+      result.clearValue(JavaExpression.fromNode(n.getSwitchOperand().getExpression()));
+    }
+    return result;
   }
 
   /**
