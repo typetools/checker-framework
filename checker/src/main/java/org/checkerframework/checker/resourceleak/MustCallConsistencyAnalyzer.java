@@ -686,7 +686,11 @@ public class MustCallConsistencyAnalyzer {
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node, @Nullable TypeMirror exceptionType) {
 
-    TreePath currentPath = cmAtf.getPath(node.getTree());
+    @SuppressWarnings({
+      "nullness:argument", // an invocation node has a tree
+      "nullness:assignment" // the invocation is in the current compilation unit
+    })
+    @NonNull TreePath currentPath = cmAtf.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             node, cmAtf, cmAtf);
