@@ -77,6 +77,20 @@ public class AssignmentInComparison {
     }
   }
 
+  @NonNegative int clearArr() {
+    arr = new int[0];
+    return 0;
+  }
+
+  // The right operand reassigns `arr` after the left operand reads `arr.length`.
+  void otherOperandReassignsComparedSequence() {
+    int i;
+    if (arr.length > (i = clearArr())) {
+      // :: error: [array.access.unsafe.high.range]
+      int value = arr[i];
+    }
+  }
+
   // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
   // the new value of `k`.
   static void otherOperandReassignsOffset(@NonNegative int k, @NonNegative int j) {

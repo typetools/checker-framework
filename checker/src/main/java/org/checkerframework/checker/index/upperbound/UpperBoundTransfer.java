@@ -262,8 +262,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       NumericalSubtractionNode node,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    // The refined type of the left operand mentions the right operand, so it holds after a
-    // comparison only if the right operand still has the value that was compared.
+    // `newInfo` mentions the right operand. If later code might change its value, as in
+    // `j - k < (k = a.length)`, then `newInfo` does not hold after the comparison.
     if (mayBeChangedByLaterOperand(node.getRightOperand())) {
       return;
     }
@@ -294,8 +294,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
     UBQualifier newQual = getUBQualifier(operand, in);
-    // The offset mentions `other`, so it holds after a comparison only if `other` still has the
-    // value that was compared.
+    // `typeOfAddition.plusOffset(other, ...)` mentions `other`. If later code might change the
+    // value of `other`, as in `j + k < (k = a.length)`, then that qualifier does not hold after the
+    // comparison. The lower bound of `other` below is a fact about the value that was added, so it
+    // holds regardless.
     if (!mayBeChangedByLaterOperand(other)) {
       newQual = newQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
     }
@@ -322,6 +324,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       AnnotationMirror smallerAnno,
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
+    // If evaluating `smaller` might change the value of `larger`, as in `arr.length > (i =
+    // clear())` where `clear()` reassigns `arr`, then `largerAnno` and the qualifiers derived from
+    // it might not hold after the comparison.
+    if (mayBeChangedByLaterOperand(larger)) {
+      return;
+    }
     // larger > smaller
     UBQualifier largerQual =
         UBQualifier.createUBQualifier(largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
@@ -353,6 +361,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       AnnotationMirror rightAnno,
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
+    // If evaluating `right` might change the value of `left`, as in `arr.length >= (i = clear())`
+    // where `clear()` reassigns `arr`, then `leftAnno` and the qualifiers derived from it might not
+    // hold after the comparison.
+    if (mayBeChangedByLaterOperand(left)) {
+      return;
+    }
     UBQualifier leftQualifier =
         UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
     UBQualifier rightQualifier =
@@ -391,12 +405,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       boolean offsetAddOne,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
-      // The refined type of the subtrahend mentions offsetNode, so it holds after the comparison
-      // only if offsetNode still has the value that was compared.
-      if (mayBeChangedByLaterOperand(offsetNode)) {
-        return;
-      }
+    // The new qualifier mentions `offsetNode`, so it does not hold after the comparison if later
+    // code might change the value of `offsetNode`.
+    if (gtNode instanceof NumericalSubtractionNode subtractionNode
+        && !mayBeChangedByLaterOperand(offsetNode)) {
 
       Node minuend = subtractionNode.getLeftOperand();
       UBQualifier minuendQual = getUBQualifier(minuend, in);
