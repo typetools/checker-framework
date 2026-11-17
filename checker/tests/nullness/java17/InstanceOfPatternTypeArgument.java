@@ -9,17 +9,17 @@ public class InstanceOfPatternTypeArgument {
 
   static class Sub<T extends @NonNull Object> extends Box<T> {}
 
-  void instanceofPattern(Box<String> b) {
+  void instanceOfPattern(Box<String> b) {
     // :: error: (type.argument)
     if (b instanceof Sub<@Nullable String> s) {}
   }
 
-  void instanceofNoPattern(Box<String> b) {
+  void instanceOfNoPattern(Box<String> b) {
     // :: error: (type.argument)
     if (b instanceof Sub<@Nullable String>) {}
   }
 
-  void instanceofValid(Box<String> b) {
+  void instanceOfValid(Box<String> b) {
     if (b instanceof Sub<String> s) {}
     if (b instanceof Sub<String>) {}
   }

@@ -831,8 +831,8 @@ public final class ElementUtils {
           ElementKind.BINDING_VARIABLE);
 
   /**
-   * Returns true if the element is a local variable. Resource variables, exception parameters, and
-   * binding variables are local variables.
+   * Returns true if the element is a local variable. This method treats resource variables,
+   * exception parameters, and binding variables as local variables.
    *
    * @param elt the element to test
    * @return true if the argument is a local variable
