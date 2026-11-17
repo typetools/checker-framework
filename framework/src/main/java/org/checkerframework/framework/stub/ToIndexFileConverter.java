@@ -1690,6 +1690,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             if (isInheritedStubMemberType(superTypeDecl, member, declaration)) {
               return member;
             }
+            // `member` is not inherited, but it hides every member type of the same name in the
+            // supertypes of `superTypeDecl` (JLS 8.5).
             continue;
           }
           // The stub file often omits a member type that the classpath counterpart of
