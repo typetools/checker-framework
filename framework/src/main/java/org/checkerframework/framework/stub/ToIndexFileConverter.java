@@ -1692,6 +1692,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             if (isInheritedStubMemberType(superTypeDecl, member, declaration)) {
               return member;
             }
+            // `member` is not inherited, but it hides every member type of the same name in the
+            // supertypes of `superTypeDecl` (JLS 8.5).
             continue;
           }
           // `superTypeDecl` inherits `inherited`; checking that `declaration` inherits it too, at
@@ -2043,7 +2045,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * null if there is none. A class inherits only the member types that are accessible from it, so
    * this method ignores an inherited private member type. It also ignores an inherited
    * package-private member type unless the member type and every class along the inheritance path
-   * are in {@code packageName}.
+   * are in {@code packageName}. A member type that a class declares hides every member type of the
+   * same name in the class's supertypes, even if the declared member type is not inherited because
+   * it is private or inaccessible (JLS 8.5).
    *
    * @param clazz a class on the classpath, or null
    * @param identifier the simple name of a member type
@@ -2066,10 +2070,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     Class<?> member = declaredMemberClass(clazz, identifier);
-    // A member type of an interface is implicitly public.
-    if (member != null
-        && (!inherited || clazz.isInterface() || isAccessible(member, packageName))) {
-      return member;
+    if (member != null) {
+      // A member type that `clazz` declares hides every member type of the same name in the
+      // supertypes of `clazz`, even if it is not inherited.  A member type of an interface is
+      // implicitly public.
+      return (!inherited || clazz.isInterface() || isAccessible(member, packageName))
+          ? member
+          : null;
     }
     // A supertype's member type is inherited by `clazz` only if it is accessible from `clazz`.
     String superPackageName = clazz.getPackageName().equals(packageName) ? packageName : null;
