@@ -1175,9 +1175,7 @@ public abstract class CFAbstractTransfer<
     List<Node> fieldsWrittenByCalls = new ArrayList<>(0);
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (CFAbstractStore.canInsertJavaExpression(expr)
-          || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
-              && !expr.containsUnknown())) {
+      if (isTrackedSide(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1207,7 +1205,8 @@ public abstract class CFAbstractTransfer<
    * {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in the
    * chain, such as {@code a} and {@code b}; each value-preserving cast in the chain; and the
    * operand of the last assignment or cast in the chain, such as {@code c}. The result omits each
-   * side that a store can hold a value for and whose value the rest of the chain might change.
+   * side that is tracked (see {@link #isTrackedSide}) and whose value the rest of the chain might
+   * change. For example, the result for {@code (String) (s = s + "x")} omits {@code s + "x"}.
    *
    * @param assignment an assignment node or a value-preserving cast
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1271,8 +1270,8 @@ public abstract class CFAbstractTransfer<
     // looks through value-preserving widening conversions). JavaExpression.fromNode ignores the
     // conversion, so omit `rhs`: its expression does not have the value of the chain.
     // Omitting a narrowing conversion is defensive.  Its operand is a constant, whose value it
-    // keeps, or a binary operation such as `b + i` in `b += i`, for which no store holds a value;
-    // the omission keeps this code sound if a store ever holds one.
+    // keeps, or a binary operation such as `b + i` in `b += i`, which reads the target that the
+    // chain writes, so mayBeChanged also omits it; the omission keeps this code sound regardless.
     boolean rhsIsValueChangingConversion =
         rhs instanceof WideningConversionNode || rhs instanceof NarrowingConversionNode;
     if (!rhsIsValueChangingConversion && !mayBeChanged(rhs, written)) {
@@ -1357,8 +1356,24 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, and
-   * writing the given locations might change the side's value.
+   * Returns true if the given expression is one that {@link #nodesWithValueOf} omits if its value
+   * might change: an expression that a store can hold a value for, or a unary or binary operation
+   * that contains no unknown expression. A client such as the SameLen Checker can relate such an
+   * operation to other expressions, even though no store holds a value for it.
+   *
+   * @param expr an expression
+   * @return true if a store can hold a value for {@code expr}, or {@code expr} is a unary or binary
+   *     operation that contains no unknown expression
+   */
+  private static boolean isTrackedSide(JavaExpression expr) {
+    return CFAbstractStore.canInsertJavaExpression(expr)
+        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+            && !expr.containsUnknown());
+  }
+
+  /**
+   * Returns true if the given side of a chain of assignments is tracked (see {@link
+   * #isTrackedSide}), and writing the given locations might change the side's value.
    *
    * @param side a side of a chain of assignments and casts (see {@link #sidesOfAssignment}): an
    *     entire target, such as {@code a[i]} (not {@code a} or {@code i}), a cast in the chain, or
@@ -1369,12 +1384,11 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} and writing {@code written} might
-   *     change its value
+   * @return true if {@code side} is tracked and writing {@code written} might change its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
+    return isTrackedSide(expr) && written.mayChange(expr, true);
   }
 
   /**
