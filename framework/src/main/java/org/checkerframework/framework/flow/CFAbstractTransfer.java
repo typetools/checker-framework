@@ -1014,10 +1014,6 @@ public abstract class CFAbstractTransfer<
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
    * such a node to an expression that contains {@link Unknown}, which no store holds a value for.
    *
-   * <p>The result omits a {@link NarrowingConversionNode}, as in the rhs of {@code b += i} for a
-   * {@code byte b}. {@link JavaExpression#fromNode} converts such a node to the expression for its
-   * operand, whose value might differ from the narrowed value, even in sign.
-   *
    * <p>Clients must not modify the result, which is cached.
    *
    * <p>{@link #insertValueForNodesWithValueOf} and {@link #hasRefinableSide} do not call this
@@ -1178,10 +1174,6 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     List<Node> fieldsWrittenByCalls = new ArrayList<>(0);
     for (Node candidate : candidates) {
-      if (candidate instanceof NarrowingConversionNode) {
-        // `fromNode` converts the node to the expression for its operand, whose value might differ.
-        continue;
-      }
       JavaExpression expr = JavaExpression.fromNode(candidate);
       if (CFAbstractStore.canInsertJavaExpression(expr)
           || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
