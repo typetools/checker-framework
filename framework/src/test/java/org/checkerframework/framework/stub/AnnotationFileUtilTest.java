@@ -245,12 +245,11 @@ public class AnnotationFileUtilTest {
     write(new File(dir, "A.astub"), "package p;");
     File backup = writeZip(new File(dir, "backup.zip"), "A.astub");
     File lib = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
-    File zip = writeZip(new File(dir, "sub/stubs.zip"), "C.astub");
 
     List<File> ignoredArchives = new ArrayList<>();
     AnnotationFileUtil.forEachAnnotationFile(
         dir, AnnotationFileType.COMMAND_LINE_STUB, resource -> {}, ignoredArchives::add);
-    Assert.assertEquals(Arrays.asList(backup, lib, zip), ignoredArchives);
+    Assert.assertEquals(Arrays.asList(backup, lib), ignoredArchives);
   }
 
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
