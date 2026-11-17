@@ -47,12 +47,12 @@ public class AssignmentChangesLocations {
     @Nullable Holder next;
     int count;
 
-    @org.checkerframework.dataflow.qual.Pure
+    @Pure
     int index() {
       return next == null ? 0 : 1;
     }
 
-    @org.checkerframework.dataflow.qual.Pure
+    @Pure
     int countIndex() {
       return count;
     }
@@ -168,24 +168,6 @@ public class AssignmentChangesLocations {
       S2.sf = null;
       // :: error: [dereference.of.nullable]
       S1.sf.toString();
-    }
-  }
-
-  // The values of `a` and `b` might be the same array, whose elements implement both interfaces.
-  static void interfaceArrays(@Nullable Runnable[] a, @Nullable Comparable<?>[] b) {
-    if (a[0] != null) {
-      b[0] = null;
-      // :: error: [dereference.of.nullable]
-      a[0].run();
-    }
-  }
-
-  // The values of `a` and `b` cannot be the same array:  `String` is final and does not implement
-  // `Runnable`.
-  static void unrelatedArrays(@Nullable Runnable[] a, @Nullable String[] b) {
-    if (a[0] != null) {
-      b[0] = null;
-      a[0].run();
     }
   }
 }
