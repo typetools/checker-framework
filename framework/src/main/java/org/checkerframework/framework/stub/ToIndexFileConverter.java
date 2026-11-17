@@ -245,10 +245,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
-   * True if, during the current call to {@link #inheritedMemberType}, cyclic inheritance cut a
-   * search short because {@link #inheritanceVisiting} or {@link #classpathInheritanceVisiting}
-   * already contained a type. The result of such a call is not cached, unless the call is the
-   * outermost one.
+   * True if, during the current call to {@link #inheritedMemberType} or {@link
+   * #classpathMemberClass}, cyclic inheritance cut a search short because {@link
+   * #inheritanceVisiting} or {@link #classpathInheritanceVisiting} already contained a type. The
+   * result of such a call is not cached, unless the call is the outermost one.
    */
   private boolean inheritanceCycleCut = false;
 
@@ -258,6 +258,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<String, @Nullable Object>>
       inheritedMemberTypesCache = new IdentityHashMap<>();
+
+  /**
+   * The arguments of a call to {@link #classpathMemberClass}, other than the type declaration.
+   *
+   * @param identifier the simple name of a member type
+   * @param inherited true if the type declaration is a supertype of the class whose members are
+   *     sought
+   * @param packageName the package of the stub declaration whose members are sought, or the empty
+   *     string for the unnamed package
+   */
+  private record ClasspathMemberQuery(String identifier, boolean inherited, String packageName) {}
+
+  /**
+   * A cache for {@link #classpathMemberClass}. Maps a type declaration of the stub file, and the
+   * other arguments of a call to {@link #classpathMemberClass}, to the result of the call. It is an
+   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
+   * subtree.
+   */
+  private final IdentityHashMap<TypeDeclaration<?>, Map<ClasspathMemberQuery, @Nullable Class<?>>>
+      classpathMemberClassCache = new IdentityHashMap<>();
 
   /**
    * Creates a new ToIndexFileConverter for one compilation unit of a stub file. The converter does
@@ -1947,6 +1967,41 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return the member type named {@code identifier}, or null
    */
   private @Nullable Class<?> classpathMemberClass(
+      TypeDeclaration<?> declaration, String identifier, boolean inherited, String packageName) {
+    Map<ClasspathMemberQuery, @Nullable Class<?>> cache =
+        classpathMemberClassCache.computeIfAbsent(declaration, d -> new HashMap<>());
+    ClasspathMemberQuery query = new ClasspathMemberQuery(identifier, inherited, packageName);
+    if (cache.containsKey(query)) {
+      return cache.get(query);
+    }
+    // As in inheritedMemberType, a result is cached only if it is complete.  Without the cache, a
+    // search through a hierarchy in which several paths lead to the same supertype, as in a
+    // diamond, would search that supertype once per path.
+    boolean outermost = inheritanceVisiting.isEmpty() && classpathInheritanceVisiting.isEmpty();
+    boolean enclosingCycleCut = inheritanceCycleCut;
+    inheritanceCycleCut = false;
+    Class<?> result = classpathMemberClassUncached(declaration, identifier, inherited, packageName);
+    if (outermost || !inheritanceCycleCut) {
+      cache.put(query, result);
+    }
+    inheritanceCycleCut |= enclosingCycleCut;
+    return result;
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that the classpath counterpart of {@code
+   * declaration}, or of one of its supertypes, declares or inherits, without consulting the cache;
+   * or null if there is none.
+   *
+   * @param declaration a type declaration in a stub file
+   * @param identifier the simple name of a member type
+   * @param inherited if true, {@code declaration} is a supertype of the class whose members are
+   *     sought, so only a member type that is accessible from {@code packageName} is inherited
+   * @param packageName the package of the stub declaration whose members are sought, or the empty
+   *     string for the unnamed package
+   * @return the member type named {@code identifier}, or null
+   */
+  private @Nullable Class<?> classpathMemberClassUncached(
       TypeDeclaration<?> declaration, String identifier, boolean inherited, String packageName) {
     if (!classpathInheritanceVisiting.add(declaration)) {
       // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.

@@ -1283,6 +1283,31 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
   }
 
+  /**
+   * In a stub file that declares a cyclic inheritance hierarchy, which is not legal Java, a search
+   * for a member type of a classpath counterpart, which the cycle cuts short, does not prevent a
+   * later search from finding that member type. Here, the search for {@code X.Entry} searches
+   * {@code Y}, and that search of {@code Y} is cut short when it reaches {@code X} again, so it
+   * does not find {@code Entry}. The search of {@code X} then finds {@code Entry} in the classpath
+   * counterpart of {@code java.util.Map}. The search for {@code W.Entry} searches {@code Y} again,
+   * and finds {@code Entry} via {@code X}.
+   */
+  @Test
+  public void testCyclicInheritanceCutsShortSearchOfClasspathCounterpart() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "interface Map {}",
+            "package p;",
+            "interface X extends Y, java.util.Map {}",
+            "interface Y extends X {}",
+            "interface W extends Y {}",
+            "class MyClass {",
+            "  void myMethod(X.Entry x, W.Entry w) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V");
+  }
+
   /** A package-private member type of a class in another package is not inherited. */
   @Test
   public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
