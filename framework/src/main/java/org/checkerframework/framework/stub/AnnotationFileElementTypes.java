@@ -340,7 +340,7 @@ public class AnnotationFileElementTypes {
                         + archive
                         + ", which is within directory "
                         + location
-                        + (fileType.isStub() ? "; to read it, name the archive itself" : "")));
+                        + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top

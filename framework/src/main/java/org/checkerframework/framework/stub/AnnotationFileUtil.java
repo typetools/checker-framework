@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -492,15 +491,14 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns true if {@code name} is the name of a JAR or ZIP archive file: one whose name ends with
-   * {@code .jar} or {@code .zip}, ignoring case.
+   * Returns true if {@code name} is the name of a JAR archive file: one whose name ends with {@code
+   * .jar}.
    *
    * @param name a file name
-   * @return true if {@code name} is the name of a JAR or ZIP archive file
+   * @return true if {@code name} is the name of a JAR archive file
    */
   static boolean isArchive(String name) {
-    String lowercaseName = name.toLowerCase(Locale.ROOT);
-    return lowercaseName.endsWith(".jar") || lowercaseName.endsWith(".zip");
+    return name.endsWith(".jar");
   }
 
   /**
