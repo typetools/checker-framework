@@ -101,6 +101,18 @@ These are the qualifiers in the signedness type system:
    For a description of qualifier polymorphism, see
    Section~\ref{method-qualifier-polymorphism}.
 
+\item[\refqualclass{checker/signedness/qual}{BitPattern}]
+    indicates that a value is not an arithmetic quantity, but is manipulated as
+    a pattern of bits --- for example, the result of
+    \<Double.doubleToLongBits> or a value used as a bit set.
+    All bitwise operators and shifts are permitted on such a value, as are
+    equality tests, which express which bits are set.  All arithmetic
+    operators, ordering comparisons, and string concatenation are forbidden.
+    This qualifier is unrelated to
+    \refqualclass{checker/signedness/qual}{Signed} and
+    \refqualclass{checker/signedness/qual}{Unsigned}, because a bit pattern
+    has no signedness interpretation at all.
+
 \item[\refqualclass{checker/signedness/qual}{UnknownSignedness}]
     indicates that a value's type is not relevant or known to this checker.
     This annotation is used internally, and should not be
@@ -352,4 +364,5 @@ Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
 % LocalWords:  Signedness signedness IntRange bitwise SignedPositive myInt
 % LocalWords:  SignednessGlb PolySigned qual
 % LocalWords:  UnknownSignedness SignednessBottom upcasting comparators
+% LocalWords:  BitPattern doubleToLongBits
 % LocalWords:  SignednessUtil SignednessUtilExtra
