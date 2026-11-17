@@ -3,6 +3,8 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -20,8 +22,10 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -359,8 +363,40 @@ public class NullnessTransfer
     TransferResult<NullnessValue, NullnessStore> result = super.visitInstanceOf(n, p);
     NullnessStore thenStore = result.getThenStore();
     NullnessStore elseStore = result.getElseStore();
+    // `n` evaluates to true only if its operand is non-null.  So, in the then store, the operand
+    // is non-null, and so is the binding variable of `n`'s pattern, if that pattern is a type
+    // pattern.
     makeNonNull(thenStore, n.getOperand());
+    if (n.getPatternNode() instanceof LocalVariableNode bindingVar) {
+      makeNonNull(thenStore, bindingVar);
+    }
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+  }
+
+  @Override
+  protected void refineCaseLabelBindingVariable(
+      NullnessStore store, VariableTree varTree, ExpressionTree selector) {
+    super.refineCaseLabelBindingVariable(store, varTree, selector);
+    // A type pattern that is a case label does not match null (JLS 14.11.1).
+    store.insertValue(JavaExpression.fromVariableTree(varTree), NONNULL);
+  }
+
+  @Override
+  public TransferResult<NullnessValue, NullnessStore> visitDeconstructorPattern(
+      DeconstructorPatternNode n, TransferInput<NullnessValue, NullnessStore> p) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitDeconstructorPattern(n, p);
+    Tree recordPattern = n.getTree();
+    assert recordPattern != null : "@AssumeAssertion(nullness): a pattern node has a tree";
+    List<Node> nestedPatterns = n.getNestedPatterns();
+    for (int i = 0; i < nestedPatterns.size(); i++) {
+      // A type pattern that is not unconditional for its record component does not match null
+      // (JLS 14.30.2).
+      if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar
+          && !nullnessTypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
+        makeNonNull(result, bindingVar);
+      }
+    }
+    return result;
   }
 
   @Override

@@ -69,6 +69,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Position;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -2431,6 +2432,21 @@ public final class TreeUtils {
   }
 
   /**
+   * The field {@code JCVariableDecl.startPos}, or null if it does not exist (javac 27 and later).
+   */
+  private static final @Nullable Field JC_VARIABLE_DECL_START_POS;
+
+  static {
+    Field startPos;
+    try {
+      startPos = JCVariableDecl.class.getField("startPos");
+    } catch (NoSuchFieldException e) {
+      startPos = null;
+    }
+    JC_VARIABLE_DECL_START_POS = startPos;
+  }
+
+  /**
    * Returns true if the {@code variableTree} is declared using the {@code var} Java keyword.
    *
    * @param variableTree the variableTree to check
@@ -2440,6 +2456,20 @@ public final class TreeUtils {
     JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
     if (variableDecl.declaredUsingVar()) {
       return true;
+    }
+    if (variableDecl.sym != null && variableDecl.sym.getKind() == ElementKind.BINDING_VARIABLE) {
+      // Before javac 27, declaredUsingVar() is false for a pattern variable, and after attribution
+      // its type tree may be null (javac 21) or have a source position (javac 25).  The parser
+      // sets the start position of a pattern variable only if its type is not written.  Javac 27
+      // has no start position, but declaredUsingVar() is correct for a pattern variable.
+      if (JC_VARIABLE_DECL_START_POS == null) {
+        return false;
+      }
+      try {
+        return JC_VARIABLE_DECL_START_POS.getInt(variableDecl) != Position.NOPOS;
+      } catch (IllegalAccessException e) {
+        throw new BugInCF(e);
+      }
     }
     JCExpression type = variableDecl.vartype;
     return type != null && type.pos == Position.NOPOS;

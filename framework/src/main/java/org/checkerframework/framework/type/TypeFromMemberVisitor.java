@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypeProjection;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -48,7 +49,14 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         || variableTree.getType() == null) {
       // VariableTree#getType returns null for binding variables from a
       // DeconstructionPatternTree.
-      result = f.type(variableTree);
+      if (elt != null && elt.getKind() == ElementKind.BINDING_VARIABLE) {
+        result = varPatternType(variableTree, f);
+        // As for a local variable declared using var, let normal defaulting happen for the
+        // primary annotation.  Dataflow refines it by the qualifiers of the record component.
+        result.clearPrimaryAnnotations();
+      } else {
+        result = f.type(variableTree);
+      }
     } else {
       // (variableTree.getType() does not include the annotation before the type, so those
       // are added to the type below).
@@ -122,6 +130,46 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       return lambdaParamType;
     }
     return result;
+  }
+
+  /**
+   * Returns the type of the binding variable declared by a {@code var} pattern: the upward
+   * projection of the type of the record component that the pattern is matched against (JLS
+   * 14.30.1).
+   *
+   * @param bindingVariable a binding variable declared by a {@code var} pattern
+   * @param f the annotated type factory
+   * @return the type of {@code bindingVariable}
+   */
+  private static AnnotatedTypeMirror varPatternType(
+      VariableTree bindingVariable, AnnotatedTypeFactory f) {
+    AnnotatedTypeMirror recordComponentType =
+        f.getRecordComponentTypeOfBindingVariable(bindingVariable);
+    if (recordComponentType != null) {
+      AnnotatedTypeMirror projectedType = AnnotatedTypeProjection.upward(f, recordComponentType);
+      // javac does not always project the type of a `var` pattern, so compare only erasures.
+      // TODO: When javac's type has the same erasure but a different shape, keep javac's shape and
+      // give it the qualifiers of the projected type.  For Box<? extends List<? extends
+      // CharSequence>>(var x) matched against a Supplier<List<@Nullable String>>, javac's type for
+      // x is List<? extends CharSequence>, but x gets the type List<@Nullable String>, so
+      // assigning an ArrayList<StringBuilder> to x is a false positive.  (AnnotatedTypes.asSuper
+      // cannot do this: for types with the same erasure, it returns the subtype unchanged.)
+      if (TypesUtils.isErasedSameType(
+          projectedType.getUnderlyingType(), TreeUtils.typeOf(bindingVariable), f.types)) {
+        return projectedType;
+      }
+      // The inferred type of the record pattern can be more specific than the type written in the
+      // source code, such as Box<String> for Box<? extends CharSequence>(var x).  A `var` pattern
+      // matches every value of the record component, so it takes the qualifiers of the
+      // component's type arguments.
+      AnnotatedTypeMirror type = f.type(bindingVariable);
+      if (TypesUtils.isErasedSubtype(
+          projectedType.getUnderlyingType(), type.getUnderlyingType(), f.types)) {
+        return AnnotatedTypes.asSuper(f, projectedType, type);
+      }
+      return type;
+    }
+    return f.type(bindingVariable);
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
