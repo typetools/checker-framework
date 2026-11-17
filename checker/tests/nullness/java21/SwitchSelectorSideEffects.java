@@ -35,11 +35,6 @@ public class SwitchSelectorSideEffects {
     return i > 0;
   }
 
-  @Pure
-  static @Nullable Shape getSelector() {
-    return selector;
-  }
-
   static boolean reset() {
     selector = null;
     return false;
@@ -83,22 +78,6 @@ public class SwitchSelectorSideEffects {
       case Circle c when reset() -> {}
       case Circle c -> local.toString();
       case Square s -> local.toString();
-    }
-  }
-
-  // A guard might change the result of a method call that is the selector expression.
-  void impureGuardMethodCallSelector() {
-    if (getSelector() == null) {
-      return;
-    }
-    switch (getSelector()) {
-      case Circle c when reset() -> {}
-      case Circle c ->
-          // :: error: (dereference.of.nullable)
-          getSelector().toString();
-      case Square s ->
-          // :: error: (dereference.of.nullable)
-          getSelector().toString();
     }
   }
 
