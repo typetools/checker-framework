@@ -372,8 +372,12 @@ second condition above is always considered to be \<true>.
 
 \begin{description}
 \item[\refqualclass{checker/nullness/qual}{HasName}]
-    indicates that a \<Path> or \<File> has a name --- that is, that it is
-    neither a root nor the empty path.
+    indicates that a \<Path> or \<File> has a name.  For a \<Path>, that
+    means it is neither a root nor the empty path.  For a \<File>, that
+    means \<getName()> returns a non-empty string.  The two differ for a
+    Windows UNC root such as
+    \<\textbackslash{}\textbackslash{}server\textbackslash{}share\textbackslash{}>,
+    which has no name as a \<Path> but has the name \<share> as a \<File>.
 \item[\refqualclass{checker/nullness/qual}{HasParent}]
     indicates that a \<Path> or \<File> has a parent --- that is, that
     \<getParent()> would return a non-\<null> value.

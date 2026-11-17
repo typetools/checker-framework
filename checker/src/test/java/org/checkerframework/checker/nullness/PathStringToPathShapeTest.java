@@ -200,6 +200,12 @@ public class PathStringToPathShapeTest {
     // A Path requires an absolute path after the long-path prefix.  A File on JDK 22 or later
     // strips the prefix, leaving the relative path "foo".
     check("\\\\?\\foo", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    // As a Windows File, "\\?\foo" has the parent "\\?" on a JDK before JDK 22.
+    Assert.assertEquals(HAS_PARENT, PathStringToPathShape.windowsFileBeforeJdk22("\\\\?\\foo"));
+    Assert.assertEquals(
+        HAS_NAME,
+        PathStringToPathShape.windowsFileBeforeJdk22(
+            PathStringToPathShape.stripLongPathPrefix("\\\\?\\foo")));
     // A File on JDK 22 or later strips the prefix, leaving a root.
     check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
     check("\\\\?\\C:", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
