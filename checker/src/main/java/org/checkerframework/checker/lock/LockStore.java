@@ -202,6 +202,17 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         }
       }
 
+      // The superclass retains some method calls, such as calls to @Pure methods whose values
+      // cannot be changed by the side effect.  The lock that such a call returns might still be
+      // locked or unlocked, so set it to @LockPossiblyHeld without changing its GuardedBy
+      // annotation.
+      for (MethodCall mc : new ArrayList<>(methodCallExpressions.keySet())) {
+        CFValue newValue = changeLockAnnoToTop(mc, methodCallExpressions.get(mc));
+        if (newValue != null) {
+          methodCallExpressions.put(mc, newValue);
+        }
+      }
+
       if (thisValue != null) {
         thisValue = changeLockAnnoToTop(null, thisValue);
       }
