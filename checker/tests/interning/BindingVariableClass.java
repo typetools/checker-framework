@@ -12,7 +12,7 @@ public class BindingVariableClass {
     take((Class<?>) value);
   }
 
-  void instanceOfPattern(Object value) {
+  void instanceofPattern(Object value) {
     if (value instanceof Class<?> cls) {
       take(cls);
     }
