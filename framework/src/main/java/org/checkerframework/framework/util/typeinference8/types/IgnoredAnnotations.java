@@ -357,24 +357,24 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the supertype of {@code type} whose class is that of {@code classType} (see {@link
+   * Returns the supertype of {@code type} whose class is that of {@code superType} (see {@link
    * AbstractType#asSuper}); for example, the supertype of {@code ArrayList<String>} whose class is
    * {@code List} is {@code List<String>}. Returns {@code type} itself if either is not a declared
    * type, if both are of the same class, or if {@code type} has no such supertype that is a proper
    * type.
    *
    * @param type a type
-   * @param classType a type
+   * @param superType a type; need not be a supertype of {@code type}
    * @param types the type utilities
-   * @return the supertype of {@code type} whose class is that of {@code classType}, or {@code type}
+   * @return the supertype of {@code type} whose class is that of {@code superType}, or {@code type}
    */
-  private static AbstractType asSuper(AbstractType type, TypeMirror classType, Types types) {
+  private static AbstractType asSuper(AbstractType type, TypeMirror superType, Types types) {
     if (type.getTypeKind() != TypeKind.DECLARED
-        || classType.getKind() != TypeKind.DECLARED
-        || types.isSameType(types.erasure(type.getJavaType()), types.erasure(classType))) {
+        || superType.getKind() != TypeKind.DECLARED
+        || types.isSameType(types.erasure(type.getJavaType()), types.erasure(superType))) {
       return type;
     }
-    AbstractType asSuper = type.asSuper(classType);
+    AbstractType asSuper = type.asSuper(superType);
     return asSuper != null && asSuper.isProper() ? asSuper : type;
   }
 
