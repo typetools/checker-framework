@@ -2509,13 +2509,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Handle the case labels and the guard.
       if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
+        boolean labelsMightHaveSideEffects = false;
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
           if (mightHaveSideEffects(exprTree)) {
             // Matching a record pattern invokes record accessors, which might have side effects,
             // even if the match fails.  mightHaveSideEffects also examines nested record patterns.
-            codeRanSinceSelector = true;
+            labelsMightHaveSideEffects = true;
           }
+        }
+        if (labelsMightHaveSideEffects) {
+          codeRanSinceSelector = true;
         }
 
         boolean labelAlwaysMatches = labelAlwaysMatches(caseTree, index);
@@ -2528,6 +2532,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 exprs,
                 labelsUntested,
                 codeRanSinceSelector,
+                labelsMightHaveSideEffects,
                 env.getTypeUtils());
         // A record pattern calls accessor methods, and the switch wraps any exception that an
         // accessor throws in a MatchException (JLS 14.30.2).

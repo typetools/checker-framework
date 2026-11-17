@@ -55,6 +55,13 @@ public class CaseNode extends Node {
   protected final boolean codeRanSinceSelector;
 
   /**
+   * True if testing this case's labels might have a side effect: that is, if a record accessor that
+   * a record pattern among the labels invokes, directly or through a nested record pattern, is not
+   * side-effect-free. See {@link #labelsMightHaveSideEffects()}.
+   */
+  protected final boolean labelsMightHaveSideEffects;
+
+  /**
    * Creates a new CaseNode.
    *
    * @param tree the tree for this node
@@ -66,6 +73,8 @@ public class CaseNode extends Node {
    * @param codeRanSinceSelector true if code that might have side effects can run between the
    *     evaluation of the switch selector expression and this node; see {@link
    *     #codeRanSinceSelector()}
+   * @param labelsMightHaveSideEffects true if testing the case expressions might have a side
+   *     effect; see {@link #labelsMightHaveSideEffects()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -74,6 +83,7 @@ public class CaseNode extends Node {
       List<Node> caseExprs,
       boolean labelsUntested,
       boolean codeRanSinceSelector,
+      boolean labelsMightHaveSideEffects,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
@@ -81,6 +91,7 @@ public class CaseNode extends Node {
     this.caseExprs = caseExprs;
     this.labelsUntested = labelsUntested;
     this.codeRanSinceSelector = codeRanSinceSelector;
+    this.labelsMightHaveSideEffects = labelsMightHaveSideEffects;
   }
 
   /**
@@ -143,6 +154,20 @@ public class CaseNode extends Node {
     return codeRanSinceSelector;
   }
 
+  /**
+   * Returns true if testing this case's labels might have a side effect: that is, if a record
+   * accessor that a record pattern among the labels invokes, directly or through a nested record
+   * pattern, is not side-effect-free. The record pattern invokes the accessors even if the match
+   * fails. The CFG does not represent the accessor calls, so a transfer function must account for
+   * their effect at this node. If this method returns true, so does {@link
+   * #codeRanSinceSelector()}.
+   *
+   * @return true if testing this case's labels might have a side effect
+   */
+  public boolean labelsMightHaveSideEffects() {
+    return labelsMightHaveSideEffects;
+  }
+
   @Override
   public CaseTree getTree() {
     return tree;
@@ -169,13 +194,18 @@ public class CaseNode extends Node {
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
         && labelsUntested == other.labelsUntested
-        && codeRanSinceSelector == other.codeRanSinceSelector;
+        && codeRanSinceSelector == other.codeRanSinceSelector
+        && labelsMightHaveSideEffects == other.labelsMightHaveSideEffects;
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        getSwitchOperand(), getCaseOperands(), labelsUntested, codeRanSinceSelector);
+        getSwitchOperand(),
+        getCaseOperands(),
+        labelsUntested,
+        codeRanSinceSelector,
+        labelsMightHaveSideEffects);
   }
 
   @Override

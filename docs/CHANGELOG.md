@@ -9,9 +9,11 @@
 
 ### Changes for type system implementers
 
-The `CaseNode` constructor takes two new boolean arguments, `labelsUntested`
-and then `codeRanSinceSelector`, which the new methods
-`CaseNode.labelsUntested()` and `CaseNode.codeRanSinceSelector()` return.
+The `CaseNode` constructor takes three new boolean arguments,
+`labelsUntested`, `codeRanSinceSelector`, and `labelsMightHaveSideEffects`,
+which the new methods `CaseNode.labelsUntested()`,
+`CaseNode.codeRanSinceSelector()`, and `CaseNode.labelsMightHaveSideEffects()`
+return.
 
 * `labelsUntested` is true for the last case of an exhaustive switch.  For such
   a `CaseNode`, the CFG does not test the labels, and
@@ -23,6 +25,10 @@ and then `codeRanSinceSelector`, which the new methods
   an earlier guard or a record accessor might have changed the selector
   expression; then, `visitCase()` refines only the synthetic variable that
   holds the selector's value.
+* `labelsMightHaveSideEffects` is true if a record pattern among the case's
+  labels invokes a record accessor that is not side-effect-free.  Then,
+  `visitCase()` discards an earlier refinement of a selector expression that
+  the accessor might have changed.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
