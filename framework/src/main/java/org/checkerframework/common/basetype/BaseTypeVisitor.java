@@ -498,7 +498,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports a warning if the type of the binding variable declared by {@code bindingPattern} is not
    * a safe downcast from {@code componentType}, as adjusted by {@link
-   * #instanceOfPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
+   * #instanceofPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
    * unconditional for the record component that it is matched against.
    *
    * @param bindingPattern a type pattern nested in a record pattern
@@ -510,7 +510,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       BindingPatternTree bindingPattern,
       AnnotatedTypeMirror variableType,
       AnnotatedTypeMirror componentType) {
-    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(componentType))) {
+    if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(componentType))) {
       checker.reportWarning(
           bindingPattern, "instanceof.pattern.unsafe", componentType, bindingPattern.getVariable());
     }
@@ -3888,7 +3888,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         VariableTree variableTree = bindingPatternTree.getVariable();
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
-          checkInstanceOfPattern(tree);
+          checkInstanceofPattern(tree);
         }
       } else {
         // A record pattern is checked by checkRecordPatternTypeInference and
@@ -3913,7 +3913,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports an {@code instanceof.pattern.unsafe} warning if the type of the binding variable of
    * {@code tree}'s type pattern is not a safe downcast from the type that {@link
-   * #instanceOfPatternMatchedType} returns for the type of {@code tree}'s left operand.
+   * #instanceofPatternMatchedType} returns for the type of {@code tree}'s left operand.
    *
    * <p>For example, in the Tainting Checker, if {@code o} is {@code @Tainted}, then this method
    * warns about {@code o instanceof @Untainted String s}, because the run-time test does not check
@@ -3921,14 +3921,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree an instanceof expression whose pattern must be a type pattern
    */
-  protected void checkInstanceOfPattern(InstanceOfTree tree) {
+  protected void checkInstanceofPattern(InstanceOfTree tree) {
     if (!(tree.getPattern() instanceof BindingPatternTree bindingPatternTree)) {
-      throw new BugInCF("checkInstanceOfPattern: not a type pattern: %s", tree);
+      throw new BugInCF("checkInstanceofPattern: not a type pattern: %s", tree);
     }
     VariableTree variableTree = bindingPatternTree.getVariable();
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
     AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(expType))) {
+    if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(expType))) {
       checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
     }
   }
@@ -3945,7 +3945,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param expType the type of the value that a type pattern is matched against
    * @return the type of the values of {@code expType} that a type pattern can match
    */
-  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
     return expType;
   }
 
