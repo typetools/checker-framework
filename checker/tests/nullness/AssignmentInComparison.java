@@ -195,6 +195,42 @@ public class AssignmentInComparison {
     }
   }
 
+  // Sets `global` to `other` and returns a non-null value.
+  static AssignmentInComparison reassignGlobal(AssignmentInComparison other) {
+    global = other;
+    return other;
+  }
+
+  static void methodCallReassignsGlobalReceiver(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    // :: warning: [nulltest.redundant]
+    if ((global.next = reassignGlobal(other)) != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
+  static void methodCallReassignsReceiverNoComparison(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    global.next = reassignGlobal(other);
+    // After the assignment, `global.next` is a field of a different object.
+    // :: error: [dereference.of.nullable]
+    global.next.toString();
+  }
+
+  // A method call cannot reassign a local receiver.
+  static void methodCallLocalReceiver(AssignmentInComparison n, AssignmentInComparison other) {
+    // :: warning: [nulltest.redundant]
+    if ((n.next = reassignGlobal(other)) != null) {
+      n.next.toString();
+    }
+  }
+
   static void anonymousClassInitializerCallsMethod(AssignmentInComparison replacement) {
     if (global == null) {
       return;
@@ -389,6 +425,25 @@ public class AssignmentInComparison {
     n.next.toString();
   }
 
+  static class ReassigningHolder {
+    int index;
+
+    @Nullable Object[] array = new Object[10];
+
+    Object reassignIndex() {
+      index++;
+      return "";
+    }
+
+    // The call in the right-hand side changes the index of the left-hand side.
+    void indexReassignedByCall() {
+      array[index] = reassignIndex();
+      // After the assignment, `array[index]` is a different element of `array`.
+      // :: error: [dereference.of.nullable]
+      array[index].toString();
+    }
+  }
+
   // Java assigns `a[0]`, but after the assignment `a[i]` is `a[1]`.
   static void indexPostfixIncrementedRhs(@Nullable Integer[] a) {
     int i = 0;
@@ -418,6 +473,13 @@ public class AssignmentInComparison {
     Document(Document current) {
       this.current = current;
     }
+  }
+
+  // The string conversion of `value` calls `value.toString()`, which is side-effect-free, so it
+  // cannot reassign `d.current`.
+  static void plusAssignStringConversionPreservesTarget(Document d, Object value) {
+    d.current.text += value;
+    d.current.text.length();
   }
 
   // This method is not side-effect-free, so a call to it might reassign `d.current`.
