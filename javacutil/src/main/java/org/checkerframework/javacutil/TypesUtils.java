@@ -854,6 +854,12 @@ public final class TypesUtils {
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
    * is sometimes null; in that case, this method returns null.
    *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
+   *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
@@ -864,6 +870,12 @@ public final class TypesUtils {
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
    * is sometimes null; in that case, this method returns null.
+   *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
