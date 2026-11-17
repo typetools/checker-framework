@@ -281,10 +281,10 @@ final class IgnoredAnnotations {
    * Returns true if the annotations of {@code type1} and {@code type2} cannot make an annotation
    * subtype or equality check between them fail (see {@link AbstractType#checkAnnotationSubtype}
    * and {@link ProperType#checkAnnotationEquality}). That is the case when the only annotations of
-   * either type are its primary annotations, and at least one of the types ignores its primary
-   * annotations. A type has annotations other than its primary annotations if it has an origin (see
-   * {@link ProperType#getOrigin}) or has type arguments at any depth (see {@link
-   * #hasNoTypeArguments}).
+   * either type that are compared are its primary annotations, and at least one of the types
+   * ignores its primary annotations. A type has annotations that are compared other than its
+   * primary annotations if it has an origin (see {@link ProperType#getOrigin}) or if {@link
+   * #onlyPrimaryAnnotationsAreCompared} is false for it.
    *
    * @param type1 a type
    * @param type2 a type
@@ -295,8 +295,8 @@ final class IgnoredAnnotations {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
         && type1.getOrigin() == null
         && type2.getOrigin() == null
-        && hasNoTypeArguments(type1.getAnnotatedType())
-        && hasNoTypeArguments(type2.getAnnotatedType());
+        && onlyPrimaryAnnotationsAreCompared(type1.getAnnotatedType())
+        && onlyPrimaryAnnotationsAreCompared(type2.getAnnotatedType());
   }
 
   /**
@@ -379,21 +379,25 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if {@code type} is a primitive type, the null type, or a declared type with no
-   * type arguments whose enclosing type, if any, also satisfies this condition. Returns false for
-   * every other kind of type, such as an array, a wildcard, or a type variable, any of which can
-   * contain a type that has type arguments.
+   * Returns true if a subtype or equality check of {@code type} compares only its primary
+   * annotations. That is the case if {@code type} is a primitive type, the null type, or a declared
+   * type with no type arguments whose enclosing type, if any, also satisfies this condition.
+   *
+   * <p>Returns false for every other kind of type. A check of an array compares the annotations of
+   * its component type, even if the component type satisfies this condition, and a check of a
+   * wildcard or a type variable compares the annotations of its bounds.
    *
    * @param type an annotated type
-   * @return true if {@code type} has no type arguments at any depth
+   * @return true if a subtype or equality check of {@code type} compares only its primary
+   *     annotations
    */
-  private static boolean hasNoTypeArguments(AnnotatedTypeMirror type) {
+  private static boolean onlyPrimaryAnnotationsAreCompared(AnnotatedTypeMirror type) {
     switch (type.getKind()) {
       case DECLARED -> {
         AnnotatedDeclaredType declared = (AnnotatedDeclaredType) type;
         AnnotatedDeclaredType enclosing = declared.getEnclosingType();
         return declared.getTypeArguments().isEmpty()
-            && (enclosing == null || hasNoTypeArguments(enclosing));
+            && (enclosing == null || onlyPrimaryAnnotationsAreCompared(enclosing));
       }
       case NULL -> {
         return true;
