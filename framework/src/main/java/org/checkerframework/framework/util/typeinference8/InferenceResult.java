@@ -157,7 +157,8 @@ public class InferenceResult {
 
   /**
    * Creates a copy of the given inference result that holds only the information about the given
-   * expression. The copy does not share any mutable state with {@code other}: its maps are new, and
+   * expression, plus, if inference failed, the type arguments of every other tree of the inference
+   * problem. The copy does not share any mutable state with {@code other}: its maps are new, and
    * its type arguments are deep copies.
    *
    * @param other an inference result
@@ -165,12 +166,13 @@ public class InferenceResult {
    */
   private InferenceResult(InferenceResult other, ExpressionTree expressionTree) {
     this.results = new HashMap<>(4);
-    Map<TypeVariable, AnnotatedTypeMirror> otherTypeArgs = other.results.get(expressionTree);
-    if (otherTypeArgs != null) {
-      Map<TypeVariable, AnnotatedTypeMirror> typeArgs =
-          new HashMap<>(MapsP.mapCapacity(otherTypeArgs.size()));
-      otherTypeArgs.forEach((typeVar, typeArg) -> typeArgs.put(typeVar, typeArg.deepCopy()));
-      this.results.put(expressionTree, typeArgs);
+    if (other.annoInferenceFailed) {
+      other.results.forEach((tree, typeArgs) -> this.results.put(tree, deepCopy(typeArgs)));
+    } else {
+      Map<TypeVariable, AnnotatedTypeMirror> otherTypeArgs = other.results.get(expressionTree);
+      if (otherTypeArgs != null) {
+        this.results.put(expressionTree, deepCopy(otherTypeArgs));
+      }
     }
     this.needUncheckedConversion =
         other.needsUncheckedConversion(expressionTree)
@@ -187,8 +189,10 @@ public class InferenceResult {
    * Returns a copy of this inference result that holds only the information about {@code
    * expressionTree}: for {@code expressionTree}, the copy's {@link #getTypeArgumentsForExpression}
    * returns deep copies of the type arguments that this returns, and the copy's {@link
-   * #needsUncheckedConversion} returns what this returns. The copy does not share any mutable state
-   * with this.
+   * #needsUncheckedConversion} returns what this returns. If inference failed, the copy's {@link
+   * #getResults} also contains deep copies of the type arguments of every other tree of the
+   * inference problem, so that it identifies the invocations that share the failure. The copy does
+   * not share any mutable state with this.
    *
    * @param expressionTree a method invocation, class instance creation, or method reference in this
    *     inference problem
@@ -197,6 +201,20 @@ public class InferenceResult {
    */
   /* package-private */ InferenceResult copyForExpression(ExpressionTree expressionTree) {
     return new InferenceResult(this, expressionTree);
+  }
+
+  /**
+   * Returns a copy of the given map whose values are deep copies.
+   *
+   * @param typeArgs a map from type variable to type argument
+   * @return a copy of {@code typeArgs} whose values are deep copies
+   */
+  private static Map<TypeVariable, AnnotatedTypeMirror> deepCopy(
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs) {
+    Map<TypeVariable, AnnotatedTypeMirror> result =
+        new HashMap<>(MapsP.mapCapacity(typeArgs.size()));
+    typeArgs.forEach((typeVar, typeArg) -> result.put(typeVar, typeArg.deepCopy()));
+    return result;
   }
 
   /**
