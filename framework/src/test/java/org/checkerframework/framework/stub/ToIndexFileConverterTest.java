@@ -1007,6 +1007,27 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * another package, so the top-level type does not shadow a type in {@code java.lang}.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Pub x) {}",
+            "}",
+            "package p;",
+            "class String {}",
+            "public class Pub {}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    assertMethod(jaif, "C", "n(Lp/Pub;)V");
+  }
+
+  /**
    * A member type that a type inherits from a supertype in another compilation unit of the stub
    * file is found.
    */
