@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
@@ -387,7 +388,13 @@ final class IgnoredAnnotations {
     }
     Set<AnnotatedTypeMirror> result = Collections.newSetFromMap(new IdentityHashMap<>());
     collectIgnoredPositions(
-        origin.getAnnotatedType(), atm, origin.getMap(), qh, new HashSet<>(), result);
+        origin.getAnnotatedType(),
+        atm,
+        origin.getMap(),
+        qh,
+        new HashSet<>(),
+        new IdentityHashMap<>(),
+        result);
     return result;
   }
 
@@ -408,6 +415,8 @@ final class IgnoredAnnotations {
    * @param map the inference variables of {@code origin}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
+   * @param visitedWildcards the pairs of wildcards of {@code origin} and {@code applied} that have
+   *     been scanned (see {@link #addPair})
    * @param result the set to which to add ignored positions
    */
   private static void collectIgnoredPositions(
@@ -416,6 +425,7 @@ final class IgnoredAnnotations {
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Set<AnnotatedTypeMirror> result) {
     if (origin.getKind() == TypeKind.TYPEVAR) {
       Variable variable = map.get(origin.getUnderlyingType());
@@ -437,6 +447,7 @@ final class IgnoredAnnotations {
               instantiationOrigin.getMap(),
               qh,
               visiting,
+              visitedWildcards,
               result);
           visiting.remove(variable);
         }
@@ -451,11 +462,18 @@ final class IgnoredAnnotations {
         AnnotatedDeclaredType originDT = (AnnotatedDeclaredType) origin;
         AnnotatedDeclaredType appliedDT = (AnnotatedDeclaredType) applied;
         collectPairwise(
-            originDT.getTypeArguments(), appliedDT.getTypeArguments(), map, qh, visiting, result);
+            originDT.getTypeArguments(),
+            appliedDT.getTypeArguments(),
+            map,
+            qh,
+            visiting,
+            visitedWildcards,
+            result);
         AnnotatedDeclaredType originEnclosing = originDT.getEnclosingType();
         AnnotatedDeclaredType appliedEnclosing = appliedDT.getEnclosingType();
         if (originEnclosing != null && appliedEnclosing != null) {
-          collectIgnoredPositions(originEnclosing, appliedEnclosing, map, qh, visiting, result);
+          collectIgnoredPositions(
+              originEnclosing, appliedEnclosing, map, qh, visiting, visitedWildcards, result);
         }
       }
       case ARRAY ->
@@ -465,14 +483,33 @@ final class IgnoredAnnotations {
               map,
               qh,
               visiting,
+              visitedWildcards,
               result);
       case WILDCARD -> {
         AnnotatedWildcardType originWT = (AnnotatedWildcardType) origin;
         AnnotatedWildcardType appliedWT = (AnnotatedWildcardType) applied;
+        // The type argument of a raw type can be a wildcard that is reachable from its own bound
+        // (see BoundsInitializer).  Every cycle that this method traverses passes through a
+        // wildcard, so stopping at a repeated pair of wildcards ensures termination.
+        if (!addPair(visitedWildcards, originWT, appliedWT)) {
+          return;
+        }
         collectIgnoredPositions(
-            originWT.getExtendsBound(), appliedWT.getExtendsBound(), map, qh, visiting, result);
+            originWT.getExtendsBound(),
+            appliedWT.getExtendsBound(),
+            map,
+            qh,
+            visiting,
+            visitedWildcards,
+            result);
         collectIgnoredPositions(
-            originWT.getSuperBound(), appliedWT.getSuperBound(), map, qh, visiting, result);
+            originWT.getSuperBound(),
+            appliedWT.getSuperBound(),
+            map,
+            qh,
+            visiting,
+            visitedWildcards,
+            result);
       }
       case INTERSECTION ->
           collectPairwise(
@@ -481,6 +518,7 @@ final class IgnoredAnnotations {
               map,
               qh,
               visiting,
+              visitedWildcards,
               result);
       default -> {}
     }
@@ -495,6 +533,7 @@ final class IgnoredAnnotations {
    * @param map the inference variables of {@code origins}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
+   * @param visitedWildcards the pairs of wildcards that have been scanned (see {@link #addPair})
    * @param result the set to which to add ignored positions
    */
   private static void collectPairwise(
@@ -503,13 +542,15 @@ final class IgnoredAnnotations {
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Set<AnnotatedTypeMirror> result) {
     if (origins.size() != appliedTypes.size()) {
       return;
     }
     Iterator<? extends AnnotatedTypeMirror> appliedIter = appliedTypes.iterator();
     for (AnnotatedTypeMirror origin : origins) {
-      collectIgnoredPositions(origin, appliedIter.next(), map, qh, visiting, result);
+      collectIgnoredPositions(
+          origin, appliedIter.next(), map, qh, visiting, visitedWildcards, result);
     }
   }
 
@@ -588,15 +629,43 @@ final class IgnoredAnnotations {
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
+    return allCorrespondingPositions(atm1, atm2, test, new IdentityHashMap<>());
+  }
+
+  /**
+   * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
+   * {@code atm2}; see {@link #allCorrespondingPositions(AnnotatedTypeMirror, AnnotatedTypeMirror,
+   * BiPredicate)}. A pair of positions at least one of which is a wildcard is tested at most once.
+   *
+   * @param atm1 a type
+   * @param atm2 a type
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
+   *     been tested (see {@link #addPair})
+   * @return true if {@code test} holds for each pair of corresponding positions
+   */
+  private static boolean allCorrespondingPositions(
+      AnnotatedTypeMirror atm1,
+      AnnotatedTypeMirror atm2,
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards) {
+    // The type argument of a raw type can be a wildcard that is reachable from its own bound (see
+    // BoundsInitializer).  Every cycle that this method traverses passes through a wildcard, so
+    // stopping at a repeated pair that includes a wildcard ensures termination.  The pair was
+    // already tested, so it does not make the result false.
+    if ((atm1.getKind() == TypeKind.WILDCARD || atm2.getKind() == TypeKind.WILDCARD)
+        && !addPair(visitedWildcards, atm1, atm2)) {
+      return true;
+    }
     if (!test.test(atm1, atm2)) {
       return false;
     }
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument is compared with a wildcard's bound; see #boundOf.
       if (atm1.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositions(boundOf(atm1), atm2, test);
+        return allCorrespondingPositions(boundOf(atm1), atm2, test, visitedWildcards);
       } else if (atm2.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositions(atm1, boundOf(atm2), test);
+        return allCorrespondingPositions(atm1, boundOf(atm2), test, visitedWildcards);
       }
       return true;
     }
@@ -605,32 +674,36 @@ final class IgnoredAnnotations {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
         if (!allCorrespondingPositionsPairwise(
-            dt1.getTypeArguments(), dt2.getTypeArguments(), test)) {
+            dt1.getTypeArguments(), dt2.getTypeArguments(), test, visitedWildcards)) {
           return false;
         }
         AnnotatedDeclaredType enclosing1 = dt1.getEnclosingType();
         AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
         return enclosing1 == null
             || enclosing2 == null
-            || allCorrespondingPositions(enclosing1, enclosing2, test);
+            || allCorrespondingPositions(enclosing1, enclosing2, test, visitedWildcards);
       }
       case ARRAY -> {
         return allCorrespondingPositions(
             ((AnnotatedArrayType) atm1).getComponentType(),
             ((AnnotatedArrayType) atm2).getComponentType(),
-            test);
+            test,
+            visitedWildcards);
       }
       case WILDCARD -> {
         AnnotatedWildcardType wt1 = (AnnotatedWildcardType) atm1;
         AnnotatedWildcardType wt2 = (AnnotatedWildcardType) atm2;
-        return allCorrespondingPositions(wt1.getExtendsBound(), wt2.getExtendsBound(), test)
-            && allCorrespondingPositions(wt1.getSuperBound(), wt2.getSuperBound(), test);
+        return allCorrespondingPositions(
+                wt1.getExtendsBound(), wt2.getExtendsBound(), test, visitedWildcards)
+            && allCorrespondingPositions(
+                wt1.getSuperBound(), wt2.getSuperBound(), test, visitedWildcards);
       }
       case INTERSECTION -> {
         return allCorrespondingPositionsPairwise(
             ((AnnotatedIntersectionType) atm1).getBounds(),
             ((AnnotatedIntersectionType) atm2).getBounds(),
-            test);
+            test,
+            visitedWildcards);
       }
       default -> {
         return true;
@@ -646,23 +719,45 @@ final class IgnoredAnnotations {
    * @param types1 a list of types
    * @param types2 a list of types
    * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
+   *     been tested (see {@link #addPair})
    * @return true if {@link #allCorrespondingPositions} holds for each pair of corresponding
    *     elements
    */
   private static boolean allCorrespondingPositionsPairwise(
       List<? extends AnnotatedTypeMirror> types1,
       List<? extends AnnotatedTypeMirror> types2,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards) {
     if (types1.size() != types2.size()) {
       return true;
     }
     Iterator<? extends AnnotatedTypeMirror> iter2 = types2.iterator();
     for (AnnotatedTypeMirror type1 : types1) {
-      if (!allCorrespondingPositions(type1, iter2.next(), test)) {
+      if (!allCorrespondingPositions(type1, iter2.next(), test, visitedWildcards)) {
         return false;
       }
     }
     return true;
+  }
+
+  /**
+   * Adds the pair of {@code atm1} and {@code atm2} to {@code visited}, which maps a type to the
+   * types with which it has been paired. Types are compared by identity, because distinct positions
+   * can hold equal types.
+   *
+   * @param visited the pairs visited so far; side-effected by this method
+   * @param atm1 the first type of the pair
+   * @param atm2 the second type of the pair
+   * @return true if the pair was not already in {@code visited}
+   */
+  private static boolean addPair(
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visited,
+      AnnotatedTypeMirror atm1,
+      AnnotatedTypeMirror atm2) {
+    return visited
+        .computeIfAbsent(atm1, k -> Collections.newSetFromMap(new IdentityHashMap<>()))
+        .add(atm2);
   }
 
   /**
