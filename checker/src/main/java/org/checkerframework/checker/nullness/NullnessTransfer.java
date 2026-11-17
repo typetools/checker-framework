@@ -443,14 +443,20 @@ public class NullnessTransfer
     // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
     // case FlowNullness.java.
+    // As for the receiver, the refinement is skipped if evaluating a later argument might reassign
+    // the argument expression, as in `r.m(r, r = null)`.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
-          && (nonNullAssumptionAfterInvocation
+      if (!methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
+        continue;
+      }
+      JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
+      if ((nonNullAssumptionAfterInvocation
               || isMethodSideEffectFree
-              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
+              || !argExpr.isAssignableByOtherCode())
+          && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
         makeNonNull(result, n.getArgument(i));
       }
     }
@@ -478,11 +484,12 @@ public class NullnessTransfer
   }
 
   /**
-   * Returns true if evaluating the given method arguments might reassign the given receiver
-   * expression or a subexpression of it. This is conservative. It returns true if an argument
-   * assigns any part of the receiver expression. If the receiver expression is assignable by other
-   * code, it also returns true if an argument assigns a non-local variable or (unless {@link
-   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
+   * Returns true if evaluating the given method arguments might reassign the given expression or a
+   * subexpression of it. The expression is the receiver or an argument of the invocation, and
+   * {@code arguments} are the arguments that are evaluated after it. This is conservative. It
+   * returns true if an argument assigns any part of the expression. If the expression is assignable
+   * by other code, it also returns true if an argument assigns a non-local variable or (unless
+   * {@link #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
@@ -490,16 +497,16 @@ public class NullnessTransfer
    * invocation (an anonymous class's initializers run as part of its constructor), which this
    * method handles as described above.
    *
-   * @param arguments the arguments of a method invocation
-   * @param receiverExpr the receiver of the method invocation
-   * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
+   * @param arguments some arguments of a method invocation
+   * @param expr the receiver, or an argument, of the method invocation
+   * @return true if evaluating {@code arguments} might reassign {@code expr}
    */
   private boolean argumentsMayReassign(
-      List<? extends ExpressionTree> arguments, JavaExpression receiverExpr) {
+      List<? extends ExpressionTree> arguments, JavaExpression expr) {
     if (arguments.isEmpty()) {
       return false;
     }
-    boolean receiverAssignableByOtherCode = receiverExpr.isAssignableByOtherCode();
+    boolean exprAssignableByOtherCode = expr.isAssignableByOtherCode();
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -509,19 +516,19 @@ public class NullnessTransfer
 
           @Override
           public Boolean visitAssignment(AssignmentTree tree, Void p) {
-            return assignsReceiver(tree.getVariable()) || super.visitAssignment(tree, p);
+            return assignsExpr(tree.getVariable()) || super.visitAssignment(tree, p);
           }
 
           @Override
           public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
+            return assignsExpr(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
           }
 
           @Override
           public Boolean visitUnary(UnaryTree tree, Void p) {
             switch (tree.getKind()) {
               case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
-                if (assignsReceiver(tree.getExpression())) {
+                if (assignsExpr(tree.getExpression())) {
                   return true;
                 }
               }
@@ -556,27 +563,27 @@ public class NullnessTransfer
           }
 
           /*
-           * Returns true if assigning the given variable might reassign the receiver.
+           * Returns true if assigning the given variable might reassign {@code expr}.
            *
            * @param variable the left-hand side of an assignment
-           * @return true if assigning {@code variable} might reassign the receiver
+           * @return true if assigning {@code variable} might reassign {@code expr}
            */
-          private boolean assignsReceiver(ExpressionTree variable) {
+          private boolean assignsExpr(ExpressionTree variable) {
             JavaExpression assigned = JavaExpression.fromTree(variable);
-            if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
+            if (expr.containsSyntacticEqualJavaExpression(assigned)) {
               return true;
             }
-            return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
+            return exprAssignableByOtherCode && !(assigned instanceof LocalVariable);
           }
 
           /*
-           * Returns true if invoking the given method or constructor might reassign the receiver.
+           * Returns true if invoking the given method or constructor might reassign {@code expr}.
            *
            * @param executable a method or constructor
-           * @return true if invoking {@code executable} might reassign the receiver
+           * @return true if invoking {@code executable} might reassign {@code expr}
            */
           private boolean mayHaveSideEffect(ExecutableElement executable) {
-            return receiverAssignableByOtherCode
+            return exprAssignableByOtherCode
                 && !nonNullAssumptionAfterInvocation
                 && !atypeFactory.isSideEffectFree(executable)
                 && !PurityUtils.isSideEffectFree(atypeFactory, executable);

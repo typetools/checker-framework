@@ -3,7 +3,8 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 
 // A call's receiver is evaluated before its arguments.  If an argument reassigns the receiver
 // expression, then normal completion of the call does not show that the receiver expression is
-// non-null afterward.  ReceiverRefinementInCatch.java contains more such tests.
+// non-null afterward.  Likewise for an argument that a later argument reassigns.
+// ReceiverRefinementInCatch.java contains more such tests.
 public class ReceiverReassignedInArgument {
 
   @Nullable ReceiverReassignedInArgument f;
@@ -12,6 +13,17 @@ public class ReceiverReassignedInArgument {
 
   @SideEffectFree
   void sefTake(@Nullable Object o) {}
+
+  void take(Object first, @Nullable Object second) {}
+
+  // An argument passed to a non-null parameter is refined to non-null after the call, but not if a
+  // later argument reassigns it.
+  void assignInLaterArgument() {
+    ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
+    r.take(r, r = null);
+    // :: error: (dereference.of.nullable)
+    r.toString();
+  }
 
   void assignInNestedArgument() {
     ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();

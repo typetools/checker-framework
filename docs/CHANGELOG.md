@@ -25,6 +25,10 @@ such as `T extends Integer`.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
+
 Dataflow analysis gives the result of a boxing or unboxing conversion the
 qualifiers of the converted value, as adapted by the new methods
 `AnnotatedTypeFactory.getBoxedAnnotations()` and
@@ -61,10 +65,6 @@ A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 
 New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
 entirely, including dataflow analysis.
-
-In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
-`createIteratorVariableForEnhancedForLoop()` and
-`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
