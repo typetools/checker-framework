@@ -888,13 +888,15 @@ public abstract class CFAbstractTransfer<
    * @return true if the element is {@code Boolean.booleanValue()}
    */
   private static boolean isBooleanValueMethod(Element elt) {
-    return elt instanceof ExecutableElement method
+    if (!(elt instanceof ExecutableElement method
         && !ElementUtils.isStatic(method)
         && method.getParameters().isEmpty()
-        && method.getSimpleName().contentEquals("booleanValue")
-        && ElementUtils.enclosingTypeElement(method)
-            .getQualifiedName()
-            .contentEquals("java.lang.Boolean");
+        && method.getSimpleName().contentEquals("booleanValue"))) {
+      return false;
+    }
+    TypeElement enclosingType = ElementUtils.enclosingTypeElement(method);
+    return enclosingType != null
+        && enclosingType.getQualifiedName().contentEquals("java.lang.Boolean");
   }
 
   /**
@@ -950,7 +952,7 @@ public abstract class CFAbstractTransfer<
       i = 0;
     }
     return nodes.get(i) instanceof MethodInvocationNode call
-        && call.getIsUnboxing()
+        && call.isUnboxing()
         && call.getTarget() == n;
   }
 
@@ -1480,7 +1482,7 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
-    if (n.getIsUnboxing()) {
+    if (n.isUnboxing()) {
       return visitUnboxingCall(n, in);
     }
 
@@ -1502,6 +1504,13 @@ public abstract class CFAbstractTransfer<
     // look up the call's value in the store (if possible)
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    if (n.isBoxing()) {
+      // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
+      // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
+      // of `x`, the value being boxed.
+      V operandValue = in.getValueOfSubNode(n.getArgument(0));
+      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
+    }
 
     store.updateForMethodCall(n, resValue);
 
@@ -1535,7 +1544,8 @@ public abstract class CFAbstractTransfer<
   private TransferResult<V, S> visitUnboxingCall(MethodInvocationNode n, TransferInput<V, S> in) {
     ExecutableElement method = n.getTarget().getMethod();
     // The CFG builds a tree for each unboxing call, but a custom CFG might not.  Handle a missing
-    // tree as visitMethodInvocation does.
+    // tree as visitMethodInvocation does.  (JavaExpression.fromNode, which the store lookups and
+    // updates below use, does not require a tree.)
     ExpressionTree unboxingTree = n.getTree();
 
     S thenStore = in.getThenStore();
@@ -1551,6 +1561,11 @@ public abstract class CFAbstractTransfer<
             ? null
             : thenStoreValue.leastUpperBound(elseStoreValue);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type factory
+    // computes for the call) comes from the declared return type of `intValue()`, which lacks the
+    // qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
+    V receiverValue = in.getValueOfSubNode(n.getTarget().getReceiver());
+    resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), receiverValue));
 
     JavaExpression unboxingCall = JavaExpression.fromNode(n);
     thenStore.replaceValue(unboxingCall, resValue);
@@ -1664,13 +1679,14 @@ public abstract class CFAbstractTransfer<
    * @param invocationNode a method call or an object creation
    * @param store a store; is side-effected by this method
    * @param executableElement the method or constructor being called
-   * @param invocationTree the tree for the method call or the object creation
+   * @param invocationTree the tree for the method call or the object creation; may be null for a
+   *     method call in a custom CFG
    */
   protected void processPostconditions(
       Node invocationNode,
       S store,
       ExecutableElement executableElement,
-      ExpressionTree invocationTree) {
+      @Nullable ExpressionTree invocationTree) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
     Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement);
     processPostconditionsAndConditionalPostconditions(
@@ -1683,14 +1699,14 @@ public abstract class CFAbstractTransfer<
    *
    * @param invocationNode a method call
    * @param methodElement the method being called
-   * @param invocationTree the tree for the method call
+   * @param invocationTree the tree for the method call; may be null in a custom CFG
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    */
   protected void processConditionalPostconditions(
       MethodInvocationNode invocationNode,
       ExecutableElement methodElement,
-      ExpressionTree invocationTree,
+      @Nullable ExpressionTree invocationTree,
       S thenStore,
       S elseStore) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
@@ -1705,14 +1721,15 @@ public abstract class CFAbstractTransfer<
    * stores after an invocation.
    *
    * @param invocationNode a method call node or an object creation node
-   * @param invocationTree the tree for the method call or for the object creation
+   * @param invocationTree the tree for the method call or for the object creation; may be null for
+   *     a method call in a custom CFG
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    * @param postconditions the postconditions
    */
   private void processPostconditionsAndConditionalPostconditions(
       Node invocationNode,
-      ExpressionTree invocationTree,
+      @Nullable ExpressionTree invocationTree,
       S thenStore,
       S elseStore,
       Set<? extends Contract> postconditions) {
@@ -1722,11 +1739,11 @@ public abstract class CFAbstractTransfer<
       stringToJavaExpr =
           stringExpr ->
               StringToJavaExpression.atMethodInvocation(stringExpr, min, analysis.checker);
-    } else if (invocationNode instanceof ObjectCreationNode) {
+    } else if (invocationNode instanceof ObjectCreationNode ocn) {
       stringToJavaExpr =
           stringExpr ->
               StringToJavaExpression.atConstructorInvocation(
-                  stringExpr, (NewClassTree) invocationTree, analysis.checker);
+                  stringExpr, ocn.getTree(), analysis.checker);
     } else {
       throw new BugInCF(
           "CFAbstractTransfer.processPostconditionsAndConditionalPostconditions received "
@@ -1816,13 +1833,12 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned. If one of them is null, then the other is
-   * returned.
+   * incomparable, then {@code value1} is returned. If either is null, the other is returned.
    *
    * @param value1 an abstract value, or null
    * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
-   *     value1}
+   *     value1}; null if both parameters are null
    */
   @Pure
   public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
@@ -1945,6 +1961,50 @@ public abstract class CFAbstractTransfer<
             type.getKind());
 
     return analysis.createAbstractValue(widenedAnnos, type);
+  }
+
+  /**
+   * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
+   * This is only called at an unboxing conversion.
+   *
+   * @param type the primitive type to unbox to
+   * @param annotatedValue a value to unbox
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy, as a value whose type is a type variable can
+   */
+  @SideEffectFree
+  protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet unboxedAnnos =
+        analysis.atypeFactory.getUnboxedAnnotations(
+            annotatedValue.getAnnotations(), type.getKind());
+    return analysis.createAbstractValue(unboxedAnnos, type);
+  }
+
+  /**
+   * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations}. This
+   * is only called at a boxing conversion.
+   *
+   * @param type the boxed primitive type to box to, such as {@code Integer}
+   * @param annotatedValue a value to box
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy
+   */
+  @SideEffectFree
+  protected @Nullable V getBoxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet boxedAnnos =
+        analysis.atypeFactory.getBoxedAnnotations(
+            annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
+    return analysis.createAbstractValue(boxedAnnos, type);
   }
 
   @Override

@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsP;
@@ -61,18 +60,35 @@ public class MethodInvocationNode extends Node {
    */
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
-  /**
-   * True if this node is an unboxing call: a call to the method that unboxes a value of a boxed
-   * primitive type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()}. The CFG
-   * inserts such a call wherever Java unboxes a value implicitly, and the source code can contain
-   * one explicitly, as in {@code b.booleanValue()}.
-   *
-   * <p>Is set by {@link #setIsUnboxing}.
-   */
-  protected boolean isUnboxing = false;
+  /** A kind of boxing conversion that a method invocation can perform. */
+  public enum BoxingConversion {
+    /**
+     * The method invocation is neither a boxing conversion that the CFG builder inserted nor an
+     * unboxing call.
+     */
+    NONE,
+    /**
+     * The method invocation is a boxing conversion that the CFG builder inserted, such as the call
+     * to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument of such a call
+     * is the value being boxed.
+     */
+    BOXING,
+    /**
+     * The method invocation is an unboxing call: a call to the method that unboxes a value of a
+     * boxed primitive type, such as {@code Integer.intValue()} (but not {@code
+     * Integer.longValue()}). The CFG builder inserts such a call wherever Java unboxes a value
+     * implicitly, as the call to {@code intValue()} in {@code int i = anInteger;}, and the source
+     * code can contain one explicitly, as in {@code b.booleanValue()}. The receiver of such a call
+     * is the value being unboxed.
+     */
+    UNBOXING
+  }
+
+  /** The boxing or unboxing conversion that this MethodInvocationNode performs, if any. */
+  protected final BoxingConversion boxingConversion;
 
   /**
-   * Creates a MethodInvocationNode.
+   * Creates a MethodInvocationNode that is neither a boxing conversion nor an unboxing call.
    *
    * @param tree the tree for the method invocation
    * @param target the MethodAccessNode for the method being invoked
@@ -84,11 +100,31 @@ public class MethodInvocationNode extends Node {
       MethodAccessNode target,
       List<Node> arguments,
       TreePath treePath) {
+    this(tree, target, arguments, treePath, BoxingConversion.NONE);
+  }
+
+  /**
+   * Creates a MethodInvocationNode.
+   *
+   * @param tree the tree for the method invocation
+   * @param target the MethodAccessNode for the method being invoked
+   * @param arguments arguments of the method invocation
+   * @param treePath path to the method invocation
+   * @param boxingConversion the boxing or unboxing that the method invocation performs, if any; see
+   *     {@link BoxingConversion}
+   */
+  public MethodInvocationNode(
+      @Nullable MethodInvocationTree tree,
+      MethodAccessNode target,
+      List<Node> arguments,
+      TreePath treePath,
+      BoxingConversion boxingConversion) {
     super(tree != null ? TreeUtils.typeOf(tree) : target.getMethod().getReturnType());
     this.tree = tree;
     this.target = target;
     this.arguments = arguments;
     this.treePath = treePath;
+    this.boxingConversion = boxingConversion;
   }
 
   public MethodInvocationNode(MethodAccessNode target, List<Node> arguments, TreePath treePath) {
@@ -156,26 +192,27 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
-   * Returns true if this node is a call to the method that unboxes a value of a boxed primitive
-   * type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()} (but not {@code
-   * Integer.longValue()}). Such a call is either inserted by the CFG or written explicitly in the
-   * source code.
+   * Returns true if this MethodInvocationNode is a boxing conversion that the CFG builder inserted,
+   * such as the call to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument
+   * of such a call is the value being boxed.
    *
-   * @return true if this node is an unboxing call
+   * @return true if this is a boxing conversion that the CFG builder inserted
    */
-  @Pure
-  public boolean getIsUnboxing() {
-    return isUnboxing;
+  public boolean isBoxing() {
+    return boxingConversion == BoxingConversion.BOXING;
   }
 
   /**
-   * Marks this node as an unboxing call.
+   * Returns true if this MethodInvocationNode is an unboxing call, which the CFG builder inserted
+   * (such as the call to {@code intValue()} in {@code int i = anInteger;}) or which is written
+   * explicitly (such as {@code b.booleanValue()}). The receiver of such a call is the value being
+   * unboxed.
    *
-   * @param isUnboxing true if this node is an unboxing call
-   * @see #getIsUnboxing()
+   * @return true if this is an unboxing call
+   * @see BoxingConversion#UNBOXING
    */
-  public void setIsUnboxing(boolean isUnboxing) {
-    this.isUnboxing = isUnboxing;
+  public boolean isUnboxing() {
+    return boxingConversion == BoxingConversion.UNBOXING;
   }
 
   @Override

@@ -125,7 +125,7 @@ public final class NodeUtils {
       return bln.getValue() == value;
     } else if (n instanceof ConditionalNotNode cnn) {
       return isConstantBoolean(cnn.getOperand(), !value);
-    } else if (n instanceof MethodInvocationNode min && min.getIsUnboxing()) {
+    } else if (n instanceof MethodInvocationNode min && min.isUnboxing()) {
       // An unboxing call has no side effects and equals its receiver.
       return isConstantBoolean(min.getTarget().getReceiver(), value);
     } else {
