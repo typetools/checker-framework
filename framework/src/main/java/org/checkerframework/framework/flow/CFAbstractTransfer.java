@@ -1779,10 +1779,19 @@ public abstract class CFAbstractTransfer<
       } catch (JavaExpressionParseException e) {
         // report errors here
         if (e.isFlowParseError()) {
+          // `invocationTree` may be null for a method call in a custom CFG; in that case, obtain
+          // the method from the node.  `reportError` accepts a null source.
+          ExecutableElement invokedElement;
+          if (invocationTree != null) {
+            invokedElement = (ExecutableElement) TreeUtils.elementFromUse(invocationTree);
+          } else if (invocationNode instanceof MethodInvocationNode invocation) {
+            invokedElement = invocation.getTarget().getMethod();
+          } else {
+            invokedElement =
+                TreeUtils.elementFromUse(((ObjectCreationNode) invocationNode).getTree());
+          }
           Object[] args = new Object[e.args.length + 1];
-          args[0] =
-              ElementUtils.getSimpleSignature(
-                  (ExecutableElement) TreeUtils.elementFromUse(invocationTree));
+          args[0] = ElementUtils.getSimpleSignature(invokedElement);
           System.arraycopy(e.args, 0, args, 1, e.args.length);
           analysis.checker.reportError(invocationTree, "flowexpr.parse.error.postcondition", args);
         } else {
