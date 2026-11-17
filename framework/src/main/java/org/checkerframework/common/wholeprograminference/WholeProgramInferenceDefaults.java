@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -66,6 +67,19 @@ import org.checkerframework.javacutil.AnnotationUtils;
       result = AnnotatedTypeMirror.createType(elt.asType(), atypeFactory, false);
       if (result instanceof AnnotatedExecutableType methodType) {
         methodType.setElement((ExecutableElement) elt);
+      }
+      if (elt.getKind() == ElementKind.PARAMETER
+          && atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericFactory) {
+        // When the type of a method is read, DefaultForTypeAnnotator#visitExecutable applies the
+        // name-based defaults (@DefaultFor(names=...)) to each formal parameter before the
+        // type-based defaults, so a name-based default takes precedence.  Reading the type of the
+        // parameter element applies them in the opposite order.  Callers of the method see the
+        // method's type, so apply the name-based default first here as well.  The remaining
+        // defaults, including any @DefaultQualifier written on the parameter declaration, are
+        // applied below and do not override it.
+        genericFactory
+            .getDefaultForTypeAnnotator()
+            .defaultTypeFromName(result, elt.getSimpleName().toString());
       }
       atypeFactory.addComputedTypeAnnotations(elt, result);
     }
