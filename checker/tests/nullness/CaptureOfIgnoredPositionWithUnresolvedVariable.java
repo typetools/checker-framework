@@ -32,7 +32,7 @@ public class CaptureOfIgnoredPositionWithUnresolvedVariable {
     // :: error: (type.arguments.not.inferred)
     List<? extends Map<@Nullable U, String>> l1 = wl(mk(nonNullU, nble, "x"));
     // TODO: This is a false positive.
-    // :: error: (type.arguments.not.inferred)
+    // :: error: (argument) :: error: (assignment)
     List<? extends Map<@Nullable U, String>> l2 = id(wl(mk(nonNullU, nble, "x")));
     // TODO: This is a false positive.
     // :: error: (argument)

@@ -13,7 +13,7 @@ public class CastNonNullNestedAnnotations {
     @Nullable Object[] a1 = NullnessUtil.castNonNull(nullableElts);
     @NonNull Object[] a2 = NullnessUtil.castNonNull(nonNullElts);
     @Nullable Object[] a3 = NullnessUtil.castNonNull(nonNullElts);
-    // :: error: (assignment) :: error: (type.arguments.not.inferred)
+    // :: error: (assignment)
     @NonNull Object[] a4 = NullnessUtil.castNonNull(nullableElts);
     // :: error: (dereference.of.nullable)
     NullnessUtil.castNonNull(nullableElts)[0].toString();
@@ -22,7 +22,7 @@ public class CastNonNullNestedAnnotations {
   void lists(@Nullable List<@Nullable String> nullableElts, @Nullable List<String> nonNullElts) {
     List<@Nullable String> l1 = NullnessUtil.castNonNull(nullableElts);
     List<String> l2 = NullnessUtil.castNonNull(nonNullElts);
-    // :: error: (assignment) :: error: (type.arguments.not.inferred)
+    // :: error: (assignment)
     List<String> l3 = NullnessUtil.castNonNull(nullableElts);
     // :: error: (dereference.of.nullable)
     NullnessUtil.castNonNull(nullableElts).get(0).toString();
