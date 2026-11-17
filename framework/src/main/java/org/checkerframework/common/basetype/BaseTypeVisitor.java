@@ -5600,9 +5600,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                   "purity.methodref.functional.parameter",
                   params.get(i).getSimpleName(),
                   ElementUtils.getSimpleDescription(referenced),
-                  purityKindsToString(assumed),
+                  BaseTypeVisitor.purityKindsToString(assumed),
                   ElementUtils.getSimpleDescription(declaration),
-                  purityKindsToString(provided));
+                  BaseTypeVisitor.purityKindsToString(provided));
             }
             break;
           }
