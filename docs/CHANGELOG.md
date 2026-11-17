@@ -20,7 +20,8 @@ the value of `y.g`.  As a result, when `CFAbstractStore` processes an assignment
 to `y.g`, it retains its refined types for `x.f` (and for other field accesses
 whose receiver is `x`) rather than discarding them, so a checker issues fewer
 false positive warnings.  The default implementation returns true; a subclass
-of `JavaExpression` that overrides it must adopt the new meaning.
+of `JavaExpression` that overrides it must adopt the new meaning.  A method call
+is treated as reading every field and array element.
 
 `CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
 the new method `CFAbstractAnalysis.canAlias` instead.
