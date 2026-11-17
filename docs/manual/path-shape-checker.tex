@@ -47,9 +47,13 @@ These qualifiers are part of the Path Shape type system:
   indicates that the path has at least one name element and is not the
   empty path.  For a \<Path>, \<getFileName()> returns a non-\<null>,
   non-empty path.  For a \<File>, \<getName()> returns a non-empty string.
-  Roots (such as \</> and, on Windows, \<C:\textbackslash{}>, \<C:>, and
-  \<\textbackslash{}\textbackslash{}server\textbackslash{}share\textbackslash{}>)
-  and the empty path \<""> are not \<@HasName>.
+  The empty path \<""> and roots (such as \</> and, on Windows,
+  \<C:\textbackslash{}> and \<C:>) are not \<@HasName>.  On Windows, a
+  \<Path> treats
+  \<\textbackslash{}\textbackslash{}server\textbackslash{}share\textbackslash{}>
+  as a root, so it is not \<@HasName>; but a \<File> treats it as having
+  name \<share> and parent
+  \<\textbackslash{}\textbackslash{}server>, so it is \<@HasName>.
 
 \item[\refqualclass{checker/nullness/qual}{HasParent}]
   indicates that the path has a parent:  \<Path.getParent()>,
