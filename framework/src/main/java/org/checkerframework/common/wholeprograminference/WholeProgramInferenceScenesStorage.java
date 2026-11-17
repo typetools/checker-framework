@@ -786,9 +786,13 @@ public class WholeProgramInferenceScenesStorage
     annosToIgnore.remove(typeToUpdate);
 
     // Only update the ATypeElement if there are no explicit annotations.
+    // The calls to addAnnotationsToATypeElement check only primary annotations, not those on the
+    // bounds of a type variable or wildcard: a primary annotation on a use of a type variable
+    // overrides its bounds, so it is not redundant even if a bound has the same annotation.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
-        addAnnotationsToATypeElement(newATM, typeToUpdate, am, curATM.hasAnnotation(am), defaulted);
+        addAnnotationsToATypeElement(
+            newATM, typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -800,7 +804,8 @@ public class WholeProgramInferenceScenesStorage
           // Other hierarchies are still handled, so this is `continue` rather than `break`.
           continue;
         }
-        addAnnotationsToATypeElement(newATM, typeToUpdate, am, curATM.hasAnnotation(am), defaulted);
+        addAnnotationsToATypeElement(
+            newATM, typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
       }
     }
 
@@ -845,8 +850,8 @@ public class WholeProgramInferenceScenesStorage
    *     determine whether {@code am} should be ignored
    * @param typeToUpdate the ATypeElement that will be updated
    * @param am the annotation to add to {@code typeToUpdate}
-   * @param isEffectiveAnnotation true if {@code am} is already an effective annotation of the type
-   *     in the source code, in which case writing it into the source code would be redundant
+   * @param isEffectiveAnnotation true if {@code am} is already a primary annotation of the type in
+   *     the source code, in which case writing it into the source code would be redundant
    * @param defaulted the type that the location of {@code typeToUpdate} has when no annotation is
    *     written there, or null if that type is not known
    */
