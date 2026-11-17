@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -60,11 +61,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -920,6 +924,45 @@ public class CollectionOwnershipAnnotatedTypeFactory
   protected TypeAnnotator createTypeAnnotator() {
     return new ListTypeAnnotator(
         super.createTypeAnnotator(), new CollectionOwnershipTypeAnnotator(this));
+  }
+
+  @Override
+  protected QualifierPolymorphism createQualifierPolymorphism() {
+    return new CollectionOwnershipQualifierPolymorphism(processingEnv, this);
+  }
+
+  /**
+   * Resolves {@code @PolyOwningCollection} to {@code @NotOwningCollection} where the default would
+   * resolve it to {@code @OwningCollection} or {@code @OwningCollectionWithoutObligation}. See
+   * {@link PolyOwningCollection}.
+   */
+  private class CollectionOwnershipQualifierPolymorphism extends DefaultQualifierPolymorphism {
+
+    /**
+     * Creates a {@link CollectionOwnershipQualifierPolymorphism}.
+     *
+     * @param env the processing environment
+     * @param factory the factory for the current checker
+     */
+    public CollectionOwnershipQualifierPolymorphism(
+        ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+      super(env, factory);
+    }
+
+    @Override
+    protected void replace(
+        AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
+      AnnotationMirror resolved = replacements.get(POLY);
+      if (resolved == null
+          || !(AnnotationUtils.areSame(OWNINGCOLLECTION, resolved)
+              || AnnotationUtils.areSame(OWNINGCOLLECTIONWITHOUTOBLIGATION, resolved))) {
+        super.replace(type, replacements);
+        return;
+      }
+      AnnotationMirrorMap<AnnotationMirror> notOwning = new AnnotationMirrorMap<>(replacements);
+      notOwning.put(POLY, NOTOWNINGCOLLECTION);
+      super.replace(type, notOwning);
+    }
   }
 
   /**
