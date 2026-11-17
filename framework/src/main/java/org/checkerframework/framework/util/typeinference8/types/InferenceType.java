@@ -194,6 +194,15 @@ public final class InferenceType extends AbstractType {
     return abstractTypes;
   }
 
+  /**
+   * Returns the mapping from type variables to the inference variables of this type.
+   *
+   * @return the mapping from type variables to the inference variables of this type
+   */
+  Theta getMap() {
+    return map;
+  }
+
   @Override
   public AbstractType create(AnnotatedTypeMirror type, boolean ignoreAnnotations) {
     return create(type, map, qualifierVars, context, ignoreAnnotations);
@@ -247,9 +256,9 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Returns all inference variables mentioned in this type.
+   * Returns all inference variables contained in this type.
    *
-   * @return all inference variables mentioned in this type
+   * @return all inference variables contained in this type
    */
   @Override
   public Collection<Variable> getInferenceVariables() {
@@ -265,6 +274,41 @@ public final class InferenceType extends AbstractType {
     return variables;
   }
 
+  /**
+   * Returns true if this type contains a variable in {@code instantiated} whose instantiation
+   * ignores annotations (see {@link AbstractType#ignoreAnnotations}) or has an origin (see {@link
+   * ProperType#getOrigin}).
+   *
+   * @param instantiated variables, each of which has an instantiation
+   * @return true if this type contains a variable in {@code instantiated} whose instantiation
+   *     ignores annotations or has an origin
+   */
+  private boolean appliesIgnoredAnnotations(List<Variable> instantiated) {
+    // Computed only if needed, because computing it traverses this type.
+    Collection<Variable> variablesInThisType = null;
+    for (Variable alpha : instantiated) {
+      ProperType instantiation = alpha.getInstantiation();
+      if (instantiation != null
+          && (instantiation.ignoreAnnotations || instantiation.getOrigin() != null)) {
+        if (variablesInThisType == null) {
+          variablesInThisType = getInferenceVariables();
+        }
+        if (variablesInThisType.contains(alpha)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>If this type contains an instantiated variable whose instantiation ignores annotations or
+   * has an origin, then the result is either a proper type whose origin is this type (see {@link
+   * ProperType#getOrigin}) or, if applying instantiations would not give a proper type, this type
+   * itself.
+   */
   @Override
   public AbstractType applyInstantiations() {
     List<TypeVariable> typeVariables = new ArrayList<>();
@@ -301,6 +345,17 @@ public final class InferenceType extends AbstractType {
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    if (appliesIgnoredAnnotations(instantiations)) {
+      if (!newAbstractType.isProper()) {
+        // Only a proper type records an origin, so applying instantiations now would lose the
+        // record of the ignored positions.  Leave the instantiations unapplied until the result is
+        // proper.
+        return this;
+      }
+      // Record which positions are ignored; see ProperType#origin.
+      newAbstractType =
+          new ProperType(newATM, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations, this);
+    }
 
     // Also apply instantiations to function type.
     AnnotatedExecutableType unsubedFunctionType = getFunctionType();
