@@ -2143,36 +2143,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
     EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
-    addAssumedPurity(result, method);
+    // Like PurityChecker, apply each assumption to every method, including one with no purity
+    // annotation, so that a method reference is treated exactly like a lambda whose body calls
+    // the referenced method.
+    if (assumeSideEffectFree) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    if (assumeDeterministic) {
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    if (assumePureGetters && ElementUtils.isGetter(method)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.DETERMINISTIC);
+    }
     if (method.getKind() != ElementKind.CONSTRUCTOR) {
       // A constructor reference returns the new object, though the constructor's return type is
       // void.
       PurityUtils.addDeterminismOfVoidCall(result, method.getReturnType());
     }
     return result;
-  }
-
-  /**
-   * Adds to {@code purityKinds} whatever the command-line assumptions grant {@code method}.
-   *
-   * <p>Like PurityChecker, this applies each assumption to every method, including one with no
-   * purity annotation, so that a method reference is treated exactly like a lambda whose body calls
-   * the referenced method.
-   *
-   * @param purityKinds the purity kinds of {@code method}; side-effected by this method
-   * @param method a method or constructor
-   */
-  private void addAssumedPurity(EnumSet<PurityKind> purityKinds, ExecutableElement method) {
-    if (assumeSideEffectFree) {
-      purityKinds.add(PurityKind.SIDE_EFFECT_FREE);
-    }
-    if (assumeDeterministic) {
-      purityKinds.add(PurityKind.DETERMINISTIC);
-    }
-    if (assumePureGetters && ElementUtils.isGetter(method)) {
-      purityKinds.add(PurityKind.SIDE_EFFECT_FREE);
-      purityKinds.add(PurityKind.DETERMINISTIC);
-    }
   }
 
   /**
