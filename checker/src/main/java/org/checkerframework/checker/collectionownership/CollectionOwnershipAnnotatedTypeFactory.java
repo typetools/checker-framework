@@ -992,6 +992,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
           receiverType == null ? null : receiverType.getAnnotationInHierarchy(TOP);
       boolean receiverHasExplicitAnno =
           receiverAnno != null && !AnnotationUtils.areSameByName(BOTTOM, receiverAnno);
+      // A receiver whose type is not a collection (see ResourceLeakUtils.isCollection), such as a
+      // user-defined class that implements Iterator<String>, is never a resource collection, so it
+      // keeps its default.  Inheriting a qualifier such as @NotOwningCollection from the
+      // overridden method would make `this` incompatible with the receivers of the class's other
+      // methods.
+      boolean inheritReceiverAnno =
+          !receiverHasExplicitAnno
+              && receiverType != null
+              && ResourceLeakUtils.isCollection(receiverType.getUnderlyingType());
 
       AnnotatedTypeMirror returnType = t.getReturnType();
       AnnotationMirror returnAnno = returnType.getAnnotationInHierarchy(TOP);
@@ -1008,7 +1017,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
         AnnotatedExecutableType annotatedSuperMethod =
             CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
 
-        if (!receiverHasExplicitAnno) {
+        if (inheritReceiverAnno) {
           AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
           assert receiverType != null && superReceiver != null
               : "@AssumeAssertion(nullness): an overriding method and the method it overrides are instance methods";

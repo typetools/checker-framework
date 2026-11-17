@@ -20,6 +20,7 @@ import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
@@ -171,7 +172,9 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * Checks that overrides respect behavioral subtyping for @Owning and @NotOwning annotations. In
    * particular, checks that 1) if an overridden method has an @Owning parameter, then that
    * parameter is @Owning in the overrider, and 2) if an overridden method has an @NotOwning return,
-   * then the overrider also has an @NotOwning return.
+   * then the overrider also has an @NotOwning return or a return type with no must-call
+   * obligations, as in a {@code next()} method that returns {@code String} in a class that
+   * implements {@code Iterator<String>}.
    *
    * @param tree overriding method, for error reporting
    * @param overrider element for overriding method
@@ -199,7 +202,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       }
       // Check for @NotOwning returns.
       if (mcAtf.getDeclAnnotation(overridden, NotOwning.class) != null
-          && mcAtf.getDeclAnnotation(overrider, NotOwning.class) == null) {
+          && mcAtf.getDeclAnnotation(overrider, NotOwning.class) == null
+          && !hasEmptyMustCallReturnType(overrider, mcAtf)) {
         checker.reportError(
             tree,
             "owning.override.return",
@@ -209,6 +213,24 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
             ElementUtils.getEnclosingClassName(overridden));
       }
     }
+  }
+
+  /**
+   * Returns true if the return type of the given method has an empty must-call type, so a value
+   * that the method returns never carries a must-call obligation. Returns false if the must-call
+   * type is non-empty, {@code @MustCallUnknown}, or polymorphic.
+   *
+   * @param method a method
+   * @param mcAtf the type factory
+   * @return true if the return type of {@code method} has an empty must-call type
+   */
+  private boolean hasEmptyMustCallReturnType(
+      ExecutableElement method, MustCallAnnotatedTypeFactory mcAtf) {
+    AnnotationMirror returnMustCall =
+        mcAtf.getAnnotatedType(method).getReturnType().getAnnotationInHierarchy(mcAtf.TOP);
+    return returnMustCall != null
+        && mcAtf.areSameByClass(returnMustCall, MustCall.class)
+        && rlTypeFactory.getMustCallValues(returnMustCall).isEmpty();
   }
 
   /**

@@ -3,6 +3,7 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,6 +23,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -175,6 +177,76 @@ public class CollectionOwnershipVisitor
         defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
+    }
+  }
+
+  @Override
+  protected OverrideChecker createOverrideChecker(
+      Tree overriderTree,
+      AnnotatedExecutableType overriderMethodType,
+      AnnotatedTypeMirror overriderType,
+      AnnotatedTypeMirror overriderReturnType,
+      AnnotatedExecutableType overriddenMethodType,
+      AnnotatedDeclaredType overriddenType,
+      AnnotatedTypeMirror overriddenReturnType) {
+    return new CollectionOwnershipOverrideChecker(
+        overriderTree,
+        overriderMethodType,
+        overriderType,
+        overriderReturnType,
+        overriddenMethodType,
+        overriddenType,
+        overriddenReturnType);
+  }
+
+  /**
+   * An override checker that does not check the receiver of an overriding method whose receiver
+   * type is not a collection (see {@link ResourceLeakUtils#isCollection}), such as a user-defined
+   * class that implements {@code Iterator<String>}. No value of such a type is a resource
+   * collection, so the collection ownership qualifier of the overridden method's receiver, such as
+   * the {@code @PolyOwningCollection} receiver of {@link Iterable#iterator()}, does not constrain
+   * the overrider.
+   */
+  private class CollectionOwnershipOverrideChecker extends OverrideChecker {
+
+    /**
+     * Creates a CollectionOwnershipOverrideChecker.
+     *
+     * @param overriderTree the AST node of the overriding method or method reference
+     * @param overrider the type of the overriding method
+     * @param overriderType the type enclosing the overrider method, usually an
+     *     AnnotatedDeclaredType; for method references, it might be something else
+     * @param overriderReturnType the return type of the overriding method
+     * @param overridden the type of the overridden method
+     * @param overriddenType the declared type enclosing the overridden method
+     * @param overriddenReturnType the return type of the overridden method
+     */
+    CollectionOwnershipOverrideChecker(
+        Tree overriderTree,
+        AnnotatedExecutableType overrider,
+        AnnotatedTypeMirror overriderType,
+        AnnotatedTypeMirror overriderReturnType,
+        AnnotatedExecutableType overridden,
+        AnnotatedDeclaredType overriddenType,
+        AnnotatedTypeMirror overriddenReturnType) {
+      super(
+          overriderTree,
+          overrider,
+          overriderType,
+          overriderReturnType,
+          overridden,
+          overriddenType,
+          overriddenReturnType);
+    }
+
+    @Override
+    protected boolean checkReceiverOverride() {
+      AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
+      if (overriderReceiver != null
+          && !ResourceLeakUtils.isCollection(overriderReceiver.getUnderlyingType())) {
+        return true;
+      }
+      return super.checkReceiverOverride();
     }
   }
 
