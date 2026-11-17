@@ -3958,6 +3958,34 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if the type of the given variable is not written in source code. That is, the
+   * variable is declared using {@code var}, is a formal parameter of an implicitly typed lambda
+   * such as {@code x} in {@code x -> x.toString()}, or is a binding variable whose type is not
+   * written.
+   *
+   * <p>On JDK 22 and later, javac attaches to a type that it reads from a class file the type
+   * annotations in that class file, and it copies them to the types that it infers from that type.
+   * So, for such a variable, {@link AnnotatedTypeMirror#getExplicitAnnotations()} can return
+   * annotations that are not written in source code.
+   *
+   * @param tree a variable declaration
+   * @return true if the type of {@code tree} is not written in source code
+   */
+  public boolean isVariableTypeInferred(VariableTree tree) {
+    if (tree.getType() == null || TreeUtils.isVariableTreeDeclaredUsingVar(tree)) {
+      return true;
+    }
+    VariableElement element = TreeUtils.elementFromDeclaration(tree);
+    if (element != null && element.getKind() != ElementKind.PARAMETER) {
+      return false;
+    }
+    // A lambda parameter is declared in the current compilation unit.
+    TreePath path = getPath(tree);
+    TreePath parentPath = path == null ? null : path.getParentPath();
+    return parentPath != null && TreeUtils.isImplicitlyTypedLambda(parentPath.getLeaf());
+  }
+
+  /**
    * Gets the {@link Element} representing the declaration of the method enclosing a tree AST node.
    * This feature is used to record the enclosing methods of {@link Tree}s that are created
    * internally by the checker.
