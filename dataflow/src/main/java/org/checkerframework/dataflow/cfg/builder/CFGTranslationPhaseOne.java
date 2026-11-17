@@ -2526,9 +2526,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 codeRanSinceSelector,
                 labelsMightHaveSideEffects,
                 env.getTypeUtils());
-        if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
+        if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || labelsMightHaveSideEffects) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
           // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
+          // Also, if a record accessor that a record pattern invokes throws an exception, the
+          // switch throws MatchException (JLS 14.30.2).  That can happen whether or not the
+          // pattern always matches and whether or not this is the last case.
           extendWithNodeWithException(caseNode, matchExceptionType);
         } else {
           extendWithNode(caseNode);
