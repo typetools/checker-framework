@@ -70,8 +70,8 @@ public class AggregateCheckerMessagesTest {
         "[required.method.not.called] @MustCall method close may not have been invoked on r or");
     assertSomeMessageContains(
         messages,
-        "[missing.creates.mustcall.for] Method reassign re-assigns the non-final, owning field"
-            + " this.bound,");
+        "[missing.creates.mustcall.for] Method reassign possibly creates a new obligation for the"
+            + " owning field this.bound,");
   }
 
   /**
