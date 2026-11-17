@@ -14,11 +14,9 @@ public class SocketIntoList {
   }
 
   public void test2(List<Socket> l) {
-    // s is unconnected, so it has no obligation. Before #7602, the unannotated list was a
-    // type.argument error (#5912). Now l is a @NotOwningCollection parameter, which accepts
-    // only values that are definitely not owning.
+    // s is unconnected, so it has no obligation, and no error is expected when it is stored into
+    // the list, even though l is a @NotOwningCollection parameter.
     Socket s = new Socket();
-    // :: error: illegal.collection.mutator.owning.insert.into.notowning
     l.add(s);
   }
 
