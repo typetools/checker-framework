@@ -1116,8 +1116,10 @@ public final class ElementUtils {
    * Chooses among methods that javac's method resolution found to be ambiguous, as javac's
    * Resolve.AmbiguityError.mergeAbstracts and Types.mergeAbstracts do. The result is the first
    * method, in the reverse of the order of {@code ambiguous}, whose return type (as a member of
-   * {@code site}) is a subtype of the return type of every other method. Thus, of two abstract
-   * methods with the same return type, the result is the one that javac found later.
+   * {@code site}) is a subtype of the return type of every other method. If there is no such
+   * method, the result is the first method whose return type is a subtype of every other return
+   * type after unchecked conversion. Thus, of two abstract methods with the same return type, the
+   * result is the one that javac found later.
    *
    * @param ambiguous abstract methods with the same signature, none of which takes precedence over
    *     another, in the order that javac stores them in a Resolve.AmbiguityError
@@ -1145,14 +1147,28 @@ public final class ElementUtils {
     for (MethodSymbol method : inOrder) {
       returnTypes.add(javacTypes.memberType(capturedSite, method).getReturnType());
     }
-    candidateLoop:
-    for (int i = 0; i < inOrder.size(); i++) {
-      for (int j = 0; j < inOrder.size(); j++) {
-        if (i != j && !javacTypes.isSubtype(returnTypes.get(i), returnTypes.get(j))) {
-          continue candidateLoop;
+    // Like javac, first look for a return type that is a subtype of every other return type.  If
+    // there is none, then also permit unchecked conversion, as return-type-substitutability does
+    // (JLS 8.4.5); for example, a raw `Iterator` is substitutable for `Iterator<String>`.
+    for (boolean strict : new boolean[] {true, false}) {
+      candidateLoop:
+      for (int i = 0; i < inOrder.size(); i++) {
+        Type returnI = returnTypes.get(i);
+        for (int j = 0; j < inOrder.size(); j++) {
+          if (i == j) {
+            continue;
+          }
+          Type returnJ = returnTypes.get(j);
+          boolean isSubtype =
+              strict
+                  ? javacTypes.isSubtype(returnI, returnJ)
+                  : javacTypes.isSubtypeUnchecked(returnI, returnJ, javacTypes.noWarnings);
+          if (!isSubtype) {
+            continue candidateLoop;
+          }
         }
+        return inOrder.get(i);
       }
-      return inOrder.get(i);
     }
     return null;
   }
