@@ -441,8 +441,10 @@ final class IgnoredAnnotations {
    * applied}. Ignored positions are found where the corresponding position of {@code origin} is a
    * use of an inference variable.
    *
-   * @param origin a type that mentions inference variables
-   * @param applied {@code origin} with instantiations applied
+   * @param origin a type that may contain uses of the inference variables in {@code map}
+   * @param applied {@code origin} with the current instantiations of those variables applied, apart
+   *     from primary annotations; it contains no inference variables. If one of those variables no
+   *     longer has an instantiation, then no ignored positions are found within its uses.
    * @param map the inference variables of {@code origin}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
@@ -470,7 +472,7 @@ final class IgnoredAnnotations {
           result.add(applied);
         }
         InferenceType instantiationOrigin = instantiation.getOrigin();
-        // An F-bounded variable's instantiation can mention the variable itself.
+        // An F-bounded variable's instantiation can contain the variable itself.
         if (instantiationOrigin != null && visiting.add(variable)) {
           collectIgnoredPositions(
               instantiationOrigin.getAnnotatedType(),
@@ -559,8 +561,8 @@ final class IgnoredAnnotations {
    * Calls {@link #collectIgnoredPositions} on corresponding elements of the two lists, if they have
    * the same length. Otherwise, does nothing.
    *
-   * @param origins types that mention inference variables
-   * @param appliedTypes {@code origins} with instantiations applied
+   * @param origins types that may contain uses of the inference variables in {@code map}
+   * @param appliedTypes {@code origins} with the current instantiations of those variables applied
    * @param map the inference variables of {@code origins}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
