@@ -47,12 +47,12 @@ public class BoxedBinaryOperands {
     return c << 16;
   }
 
-  <T extends Character> @SignedPositive int typeVariableCharLeftShift(T c) {
+  <T extends Character> @SignedPositive int typeVarCharLeftShift(T c) {
     // :: error: [return]
     return c << 16;
   }
 
-  <T extends Character> @SignedPositive int typeVariableCharShift(T c) {
+  <T extends Character> @SignedPositive int typeVarCharShift(T c) {
     return c >> 2;
   }
 
