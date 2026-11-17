@@ -1833,15 +1833,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       Node expressionNode = scan(expression, p);
 
-      MethodAccessNode iteratorAccessNode =
-          new MethodAccessNode((MemberSelectTree) iteratorCall.getMethodSelect(), expressionNode);
-      iteratorAccessNode.setInSource(false);
-      extendWithNode(iteratorAccessNode, mayBeNull(expressionNode));
       MethodInvocationNode iteratorCallNode =
-          new MethodInvocationNode(
-              iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
-      iteratorCallNode.setInSource(false);
-      extendWithMethodInvocationNode(iteratorCallNode);
+          extendWithArtificialCall(iteratorCall, expressionNode, NullReceiver.THROWS);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -2926,7 +2919,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
-   * call to {@code hasNext()} in an enhanced for loop.
+   * call to {@code iterator()} in an enhanced for loop.
    *
    * @param call the call
    * @param receiver the receiver of the call
