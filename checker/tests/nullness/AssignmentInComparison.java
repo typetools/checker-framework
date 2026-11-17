@@ -374,6 +374,92 @@ public class AssignmentInComparison {
     }
   }
 
+  static Object nonNull(@Nullable Object o) {
+    return "";
+  }
+
+  // The right operand assigns `x` after the left operand reads it, so the comparison says nothing
+  // about the new value of `x`.
+  void assignmentInRightOperand(@Nullable Object x) {
+    if (x == nonNull(x = null)) {
+      // :: error: [dereference.of.nullable]
+      x.toString();
+    }
+  }
+
+  void assignmentInParenthesizedRightOperand(@Nullable Object x) {
+    if ((x) == (nonNull(x = null))) {
+      // :: error: [dereference.of.nullable]
+      x.toString();
+    }
+  }
+
+  void fieldAssignmentInRightOperand(AssignmentInComparison n) {
+    if (n.next == nonNull(n.next = null)) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  void aliasedFieldAssignmentInRightOperand(AssignmentInComparison n, AssignmentInComparison o) {
+    // If `n` and `o` alias, the right operand assigns `n.next`.
+    if (n.next == nonNull(o.next = null)) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  void aliasedArrayAssignmentInRightOperand(@Nullable Object[] a, @Nullable Object[] b) {
+    // If `a` and `b` alias, the right operand assigns `a[0]`.
+    if (a[0] == nonNull(b[0] = null)) {
+      // :: error: [dereference.of.nullable]
+      a[0].toString();
+    }
+  }
+
+  // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
+  void assignmentInLeftOperand(@Nullable Object x) {
+    if (nonNull(x = null) == x) {
+      x.toString();
+    }
+  }
+
+  @Nullable String f;
+
+  // Sets `f` to null and returns its old value, or a non-null value.
+  String reset() {
+    String result = (f == null) ? "" : f;
+    f = null;
+    return result;
+  }
+
+  @Pure
+  String constant() {
+    return "";
+  }
+
+  // The right operand calls a method that might change `f` after the left operand reads it.
+  void methodWithSideEffectsInRightOperand() {
+    if (f == reset()) {
+      // :: error: [dereference.of.nullable]
+      f.toString();
+    }
+  }
+
+  // A method call cannot change a local variable.
+  void methodWithSideEffectsInRightOperandLocal(@Nullable String s) {
+    if (s == reset()) {
+      s.toString();
+    }
+  }
+
+  // A side-effect-free call in the right operand does not change `f`.
+  void sideEffectFreeCallInRightOperand() {
+    if (f == constant()) {
+      f.toString();
+    }
+  }
+
   static void annotationArgumentInRhs(
       @Nullable Object o, @Nullable Object p, Map<String, Object> m) {
     // The annotation argument `"m"` is not an assignment to a variable.
