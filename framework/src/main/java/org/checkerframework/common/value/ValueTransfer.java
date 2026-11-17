@@ -1427,9 +1427,9 @@ public class ValueTransfer extends CFTransfer {
               convertToTypeOf(anno, internal), je.getType(), currentAnno, je.getType());
       store.insertValue(je, newAnno);
 
-      if (node instanceof FieldAccessNode) {
-        refineArrayAtLengthAccess((FieldAccessNode) internal, store);
-      } else if (node instanceof MethodInvocationNode miNode) {
+      if (internal instanceof FieldAccessNode fieldNode) {
+        refineArrayAtLengthAccess(fieldNode, store);
+      } else if (internal instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
       }
     }

@@ -1152,13 +1152,6 @@ public abstract class CFAbstractTransfer<
       }
     }
     Node innermost = chain.get(chain.size() - 1);
-    // The string conversions of a `+=` string concatenation, which happen after `rhs` and the
-    // receivers and indices of the targets are evaluated, might write locations.
-    if (innermost.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
-        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
-      written.addStringConversions(
-          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
-    }
     ExpressionTree rhsTree =
         innermost instanceof AssignmentNode a
             ? rhsTree(a)
@@ -1166,13 +1159,27 @@ public abstract class CFAbstractTransfer<
     if (rhsTree != null) {
       written.scan(rhsTree, null);
     }
+    // A `+=` string concatenation might call `toString()` after evaluating its rhs and before
+    // storing into its target. Only the innermost node of the chain can be a compound assignment,
+    // because the expression of a compound assignment node is not an assignment or cast.
+    if (innermost instanceof AssignmentNode a
+        && a.getTree() instanceof CompoundAssignmentTree compoundAssignmentTree
+        && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+      written.addStringConversions(
+          compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+    }
     // The sides that the result contains, in source order: `sides[i]` is the target of
     // `chain.get(i)` if that is an assignment, and `chain.get(i)` itself if that is a cast; and
     // `sides[chain.size()]` is `rhs`. An element is null if the result omits that side.
     Node[] sides = new Node[chain.size() + 1];
     // The number of non-null elements of `sides`, which is the size of the result.
     int resultSize = 0;
-    if (!mayBeChanged(rhs, written)) {
+    // If the chain stopped at a conversion, then the conversion changes the value (the loop above
+    // looks through value-preserving widening conversions). JavaExpression.fromNode ignores the
+    // conversion, so omit `rhs`: its expression does not have the value of the chain.
+    boolean rhsIsValueChangingConversion =
+        rhs instanceof WideningConversionNode || rhs instanceof NarrowingConversionNode;
+    if (!rhsIsValueChangingConversion && !mayBeChanged(rhs, written)) {
       sides[chain.size()] = rhs;
       resultSize++;
     }

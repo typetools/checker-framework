@@ -1,3 +1,4 @@
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
 
 // Comparing a cast refines the cast's operand, if the cast does not change the value.
@@ -63,6 +64,53 @@ public class CastInComparison {
     if ((float) l == 5f) {
       // :: error: [assignment]
       @IntVal(5) long m = l;
+    }
+  }
+
+  // A compound assignment narrows `b + i` to byte, which might change its value.  After the
+  // comparison, the target `b` has the compared value.
+  void narrowingCompoundAssignment(byte b, int i) {
+    if ((b += i) == 5) {
+      @IntVal(5) byte c = b;
+    }
+  }
+
+  // The assignment converts `l` to double, which might change its value.
+  void lossyAssignmentConversionInCast(double d, long l) {
+    if (((double) (d = l)) == 5d) {
+      // :: error: [assignment]
+      @IntVal(5) long m = l;
+    }
+  }
+
+  // Comparing a cast of an array length refines the array.
+  void castArrayLength(int[] a) {
+    if ((long) a.length == 5) {
+      int @ArrayLen(5) [] b = a;
+    }
+  }
+
+  // Comparing a cast of a string length refines the string.
+  void castStringLength(String s) {
+    if ((long) s.length() == 5) {
+      @ArrayLen(5) String t = s;
+    }
+  }
+
+  static class Base {
+    static int f;
+  }
+
+  static class Left extends Base {}
+
+  static class Right extends Base {}
+
+  // `Left.f` and `Right.f` are the same field, so assigning `Right.f` changes `Left.f`.
+  void staticFieldThroughUnrelatedClasses() {
+    Base.f = 1;
+    if (((long) Left.f) == (Right.f = 0) + 1) {
+      // :: error: [assignment]
+      @IntVal(1) int wrong = Left.f;
     }
   }
 }
