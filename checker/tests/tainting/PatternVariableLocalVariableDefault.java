@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java21-jdk-skip-test
 
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.DefaultQualifier;
