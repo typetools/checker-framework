@@ -400,6 +400,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * scene (it does not create a new scene).
    *
    * @param iu {@link StubUnit} representing stubfile
+   * @param scene the scene to augment
    */
   private static void extractScene(StubUnit iu, AScene scene) {
     // Every name is written in a compilation unit, whose package and imports apply to it.
