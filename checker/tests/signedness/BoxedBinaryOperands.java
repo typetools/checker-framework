@@ -52,6 +52,10 @@ public class BoxedBinaryOperands {
     return c << 16;
   }
 
+  <T extends Character> @SignedPositive int typeVarCharShift(T c) {
+    return c >> 2;
+  }
+
   // An equality test of a boxed operand and a primitive operand unboxes the boxed operand.
   boolean numericEquality(Character c, int i) {
     return c == i;
