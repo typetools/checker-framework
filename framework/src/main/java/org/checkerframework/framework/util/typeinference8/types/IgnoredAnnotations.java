@@ -129,9 +129,14 @@ final class IgnoredAnnotations {
    * with their ignored annotations replaced.
    *
    * <ul>
-   *   <li>Each ignored annotation of one type is replaced by the annotation at the corresponding
-   *       position of the other type.
+   *   <li>Each ignored annotation of {@code type1} is replaced by the annotation at the
+   *       corresponding position of {@code type2}, even if that annotation is ignored too.
+   *   <li>Each other ignored annotation of {@code type2} is replaced by the annotation at the
+   *       corresponding position of {@code type1}.
    * </ul>
+   *
+   * <p>Either way, the corresponding annotations are then the same, so ignored annotations cannot
+   * make the types unequal.
    *
    * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
    * otherwise it holds modified copies.
@@ -570,18 +575,18 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives each ignored position of {@code atm1} the annotations of the corresponding position of
-   * {@code atm2}, and vice versa.
+   * Gives each ignored position of {@code atm1} or {@code atm2} the annotations of the
+   * corresponding position of the other type.
    *
    * <ul>
-   *   <li>If a position of {@code atm1} is ignored, it gets the annotation of the corresponding
-   *       position in {@code atm2}. (Note that this happens even if that position {@code atm2} is
-   *       also ignored.)
-   *   <li>Otherwise, if a position of {@code atm1} is ignored, it gets the annotation of the
-   *       corresponding position in {@code atm2}.
+   *   <li>If a position of {@code atm1} is ignored, it gets the annotations of the corresponding
+   *       position of {@code atm2}, even if that position is ignored too.
+   *   <li>Otherwise, if the corresponding position of {@code atm2} is ignored, it gets the
+   *       annotations of the position of {@code atm1}.
    * </ul>
    *
-   * At the end, {@code atm1} and {@code atm1} have the same annotations.
+   * <p>If the position that annotations are copied from is a wildcard, the annotations of its bound
+   * are copied (see {@link #boundOf}).
    *
    * <p>Positions correspond only where the two types have the same structure; elsewhere, nothing is
    * replaced.
