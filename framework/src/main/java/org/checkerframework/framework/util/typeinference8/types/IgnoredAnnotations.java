@@ -30,7 +30,11 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * annotations of the variable's instantiation. To ensure this, some types are marked as ignoring
  * annotations (see {@link AbstractType#ignoreAnnotations}).
  *
- * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth.
+ * <p>A <em>position</em> in a type is a location in its tree of nested types: the type itself or,
+ * at any depth, a type argument, an enclosing type, an array component type, a wildcard bound, or
+ * an intersection bound. The bounds of a type variable are not positions in it. Code identifies a
+ * position by the {@link AnnotatedTypeMirror} object at it, so a set of positions is an identity
+ * set.
  *
  * <p>Two kinds of annotations are ignored:
  *
@@ -399,16 +403,9 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Adds to {@code result} each ignored position of {@code applied}. A position of {@code applied}
-   * is an ignored position if the corresponding position of {@code origin} is a use of a variable
-   * such that either:
-   *
-   * <ul>
-   *   <li>the variable's instantiation ignores annotations, and the use's non-polymorphic primary
-   *       annotations do not cover every qualifier hierarchy (see {@link
-   *       UseOfVariable#applyInstantiations}), or
-   *   <li>the position is an ignored position of the variable's instantiation.
-   * </ul>
+   * Adds to {@code result} each ignored position (see {@link IgnoredAnnotations}) of {@code
+   * applied}. Ignored positions are found where the corresponding position of {@code origin} is a
+   * use of an inference variable.
    *
    * @param origin a type that mentions inference variables
    * @param applied {@code origin} with instantiations applied
