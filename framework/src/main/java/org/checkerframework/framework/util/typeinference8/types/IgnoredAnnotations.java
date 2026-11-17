@@ -633,6 +633,33 @@ final class IgnoredAnnotations {
   }
 
   /**
+   * Returns true if, at each pair of corresponding positions of {@code atm1} and {@code atm2}, the
+   * primary annotations are each a subtype of the other.
+   *
+   * <p>Unlike a comparison by the type hierarchy, this compares the positions in enclosing types,
+   * such as the type argument {@code A} of {@code Outer<A>.Inner<B>}.
+   *
+   * @param atm1 a type
+   * @param atm2 a type with the same Java type as {@code atm1}
+   * @param qh the qualifier hierarchy
+   * @return true if the corresponding positions of {@code atm1} and {@code atm2} have the same
+   *     primary annotations, according to {@code qh}
+   */
+  static boolean samePrimaryAnnotationsAtEveryPosition(
+      AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, QualifierHierarchy qh) {
+    return allCorrespondingPositions(
+        atm1,
+        atm2,
+        (a1, a2) -> {
+          Set<AnnotationMirror> annos1 = a1.getPrimaryAnnotations();
+          Set<AnnotationMirror> annos2 = a2.getPrimaryAnnotations();
+          return annos1.size() == annos2.size()
+              && qh.isSubtypeQualifiersOnly(annos1, annos2)
+              && qh.isSubtypeQualifiersOnly(annos2, annos1);
+        });
+  }
+
+  /**
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}; see {@link #allCorrespondingPositions(AnnotatedTypeMirror, AnnotatedTypeMirror,
    * BiPredicate)}. A pair of positions at least one of which is a wildcard is tested at most once.

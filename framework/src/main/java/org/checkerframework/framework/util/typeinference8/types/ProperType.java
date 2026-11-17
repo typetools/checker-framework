@@ -853,7 +853,10 @@ public class ProperType extends AbstractType {
     if (properResult.origin != null && isSameAnnotatedType(resultATM, type)) {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations contain
-      // each other would make each other change forever.
+      // each other would make each other change forever.  isSameAnnotatedType compares every
+      // position, including those in enclosing types, so a stale annotation is not kept.  That
+      // stricter comparison still converges: once the instantiations stop changing, applying them
+      // to `origin` gives the same annotations each time, so the comparison succeeds.
       upToDateVersion = instantiationVersion(originVariables);
       return this;
     }
@@ -878,20 +881,24 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns true if {@code a} and {@code b} have the same Java type and each is a subtype of the
-   * other. Unlike {@link AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not
-   * require the underlying Java types to be the same object, so it can compare types made by
-   * separate applications of instantiations. It compares only annotated types, not the other fields
-   * that {@link #equals} compares, such as {@link #origin}.
+   * Returns true if {@code a} and {@code b} have the same Java type, each is a subtype of the
+   * other, and they have the same primary annotations at every position, including the positions
+   * in enclosing types, which the type hierarchy does not compare. Unlike {@link
+   * AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not require the underlying
+   * Java types to be the same object, so it can compare types made by separate applications of
+   * instantiations. It compares only annotated types, not the other fields that {@link #equals}
+   * compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type
-   * @return true if {@code a} and {@code b} have the same Java type and each is a subtype of the
-   *     other
+   * @return true if {@code a} and {@code b} have the same Java type, each is a subtype of the
+   *     other, and they have the same primary annotations at every position
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
-        && context.areMutualSubtypes(a, b);
+        && context.areMutualSubtypes(a, b)
+        && IgnoredAnnotations.samePrimaryAnnotationsAtEveryPosition(
+            a, b, typeFactory.getQualifierHierarchy());
   }
 
   /**
