@@ -437,7 +437,7 @@ public class NullnessVisitor
     Tree patternTree = tree.getPattern();
     // super.visitInstanceOf is not called, so check the binding variable here.
     if (patternTree instanceof BindingPatternTree) {
-      checkInstanceOfPattern(tree);
+      checkInstanceofPattern(tree);
     }
     if (patternTree == null) {
       validateTypeOf(refTypeTree);
@@ -448,7 +448,7 @@ public class NullnessVisitor
   }
 
   @Override
-  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
     // instanceof is false for null (JLS 15.20.2), so the nullness qualifier of the left operand
     // does not restrict the binding variable.
     return withNonNull(expType);

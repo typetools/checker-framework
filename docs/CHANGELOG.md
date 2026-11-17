@@ -18,9 +18,9 @@ nested in a record pattern.
 nested in a record pattern.  `ElementUtils.isLocalVariable()` returns true for
 pattern variables.
 
-New overridable method `BaseTypeVisitor.checkInstanceOfPattern()` checks the
+New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
 pattern variable of an `instanceof` type pattern.  A subclass can override the
-new method `BaseTypeVisitor.instanceOfPatternMatchedType()` to exclude values
+new method `BaseTypeVisitor.instanceofPatternMatchedType()` to exclude values
 that `instanceof` never matches, such as null.
 
 New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
