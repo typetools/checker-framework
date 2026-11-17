@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class IndexInitializedFieldsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create an IndexTest.
+   * Creates an IndexInitializedFieldsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

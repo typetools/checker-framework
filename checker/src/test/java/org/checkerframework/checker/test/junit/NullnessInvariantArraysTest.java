@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessInvariantArraysTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessInvariantArraysTest.
+   * Creates a NullnessInvariantArraysTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

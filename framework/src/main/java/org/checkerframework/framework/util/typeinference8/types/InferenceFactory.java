@@ -39,6 +39,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -124,12 +125,12 @@ public class InferenceFactory {
 
   /**
    * Creates a {@link Variable} for {@code typeMirror}'s type parameters and for the type parameters
-   * of every type lexically enclosing {@code typeMirror} (e.g. for {@code Outer<A>.Inner<B>}, both
+   * of every type lexically enclosing {@code typeMirror} (e.g., for {@code Outer<A>.Inner<B>}, both
    * {@code A} and {@code B}), adding each to {@code map} and to {@code classTypeArgVars}. Enclosing
    * types are added before {@code typeMirror}'s own type parameters, so that the order of {@code
    * classTypeArgVars} matches the order produced by {@link #addCapturedTypeArguments}.
    *
-   * @param typeMirror a possibly-nested declared type, e.g. the qualifier type of a raw or
+   * @param typeMirror a possibly-nested declared type, e.g., the qualifier type of a raw or
    *     diamond-instantiated method reference
    * @param type the annotated version of {@code typeMirror}
    * @param memRef the method reference for which {@code typeMirror} is the qualifier type
@@ -189,7 +190,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Gets the target type for the expression for which type arguments are being inferred.
+   * Returns the target type for the expression for which type arguments are being inferred.
    *
    * @return target type for the expression for which type arguments are being inferred
    */
@@ -296,7 +297,7 @@ public class InferenceFactory {
   }
 
   /**
-   * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
+   * If the variable's type is a type variable, returns getAnnotatedTypeLhsNoTypeVarDefault(tree).
    * Rationale:
    *
    * <p>For example:
@@ -311,11 +312,11 @@ public class InferenceFactory {
    * }</pre>
    *
    * During type argument inference of {@code bar}, the assignment context is {@code local}. If the
-   * local variable default is used, then the type of assignment context type is {@code @Nullable T}
-   * and the type argument inferred for {@code bar()} is {@code @Nullable T}. And an incompatible
-   * types in return error is issued.
+   * local variable default is used, then the assignment context type is {@code @Nullable T} and the
+   * type argument inferred for {@code bar()} is {@code @Nullable T}. And an incompatible types in
+   * return error is issued.
    *
-   * <p>If instead, the local variable default is not applied, then the assignment context type is
+   * <p>If, instead, the local variable default is not applied, then the assignment context type is
    * {@code T} (with lower bound {@code @NonNull Void} and upper bound {@code @Nullable Object}) and
    * the type argument inferred for {@code bar()} is {@code T}. During dataflow, the type of {@code
    * local} is refined to {@code T} and the return is legal.
@@ -337,7 +338,7 @@ public class InferenceFactory {
    *
    * @param atypeFactory AnnotatedTypeFactory
    * @param assignmentContext VariableTree
-   * @return AnnotatedTypeMirror of Assignment context
+   * @return AnnotatedTypeMirror of assignment context
    */
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
@@ -353,7 +354,7 @@ public class InferenceFactory {
    *
    * @param path path to the argument
    * @param invocation a method or constructor invocation
-   * @param arguments the argument expression tress
+   * @param arguments the argument expression trees
    * @param paramTypes the types of the formal parameters of the method or constructor that
    *     correspond to {@code arguments}; see {@link TreeUtils#parametersForArguments}
    * @return the rhs of the assignment of an argument and its formal parameter
@@ -398,9 +399,9 @@ public class InferenceFactory {
   /**
    * Returns true if argumentTree is the tree at the leaf of path. If tree is a conditional
    * expression, isArgument is called recursively on the true and false expressions. If tree is a
-   * switch expression isArgument is called recursively on all yielded expressions.
+   * switch expression, isArgument is called recursively on all yielded expressions.
    *
-   * @param path tree path might contain {@code argumentTree}
+   * @param path a tree path that might contain {@code argumentTree}
    * @param argumentTree an expression tree that might be in {@code path}
    * @return true if argumentTree is the tree at the leaf of path
    */
@@ -423,11 +424,11 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the type of the receiver of {@code tree} or null if {@code tree} does not have a
+   * Returns the type of the receiver of {@code tree}, or null if {@code tree} does not have a
    * receiver.
    *
    * @param tree an expression tree
-   * @return the type of the receiver of {@code tree} or null if {@code tree} does not have a
+   * @return the type of the receiver of {@code tree}, or null if {@code tree} does not have a
    *     receiver
    */
   private static @Nullable DeclaredType getReceiverType(ExpressionTree tree) {
@@ -587,7 +588,7 @@ public class InferenceFactory {
   }
 
   /**
-   * If a mapping, theta, for {@code invocation} doesn't exist create it by:
+   * If a mapping, theta, for {@code invocation} doesn't exist, creates it by:
    *
    * <p>Creates inference variables for the type parameters to {@code executableType} for a
    * particular {@code invocation}. Initializes the bounds of the variables. Returns a mapping from
@@ -655,7 +656,7 @@ public class InferenceFactory {
   }
 
   /**
-   * If a mapping, theta, for {@code memRef} doesn't exist create it by:
+   * If a mapping, theta, for {@code memRef} doesn't exist, creates it by:
    *
    * <p>Creates inference variables for the type parameters to {@code compileTimeDecl} for a
    * particular method reference. Initializes the bounds of the variables. Returns a mapping from
@@ -737,9 +738,9 @@ public class InferenceFactory {
   }
 
   /**
-   * If a mapping, theta, for {@code lambda} doesn't exist create it by:
+   * If a mapping, theta, for {@code lambda} doesn't exist, creates it by:
    *
-   * <p>Creates inference variables for the type parameters to the functional inference of the
+   * <p>Creates inference variables for the type parameters to the functional interface of the
    * lambda. Initializes the bounds of the variables. Returns a mapping from type variables to newly
    * created variables.
    *
@@ -774,7 +775,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Creates capture variables for variables introduced by a capture bounds. The new variables
+   * Creates capture variables for variables introduced by a capture bound. The new variables
    * correspond to the type parameters of {@code capturedType}.
    *
    * @param tree invocation tree that created the capture bound
@@ -804,7 +805,7 @@ public class InferenceFactory {
 
   /**
    * Returns the type of the method or constructor invocation adapted to its arguments. This type
-   * may include inference variables.
+   * might include inference variables.
    *
    * @param invocation method or constructor invocation
    * @return the type of the method or constructor invocation adapted to its arguments
@@ -832,7 +833,7 @@ public class InferenceFactory {
    * <p>The type of a member reference is a functional interface. The function type of a member
    * reference is the type of the single abstract method declared by the functional interface. The
    * compile-time declaration type is the type of the actual method referenced by the method
-   * reference, i.e. the method that is actually being referenced.
+   * reference, i.e., the method that is actually being referenced.
    *
    * <p>For example,
    *
@@ -844,8 +845,8 @@ public class InferenceFactory {
    * Comparator<MyClass> func = MyClass::compareByField;
    * }</pre>
    *
-   * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
-   * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+   * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)}
+   * whereas the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
    *
    * @param memRef method reference tree
    * @return the compile-time declaration of the method reference
@@ -982,9 +983,9 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the proper type for object.
+   * Returns the proper type for Object.
    *
-   * @return the proper type for object
+   * @return the proper type for Object
    */
   public ProperType getObject() {
     TypeMirror objectTypeMirror =
@@ -998,10 +999,10 @@ public class InferenceFactory {
   /**
    * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
-   * <p>The result may share its {@link AnnotatedTypeMirror} with an element of {@code properTypes};
-   * in particular, it does when {@code properTypes} has one element. A caller must not mutate the
-   * result's annotated type in place, because an element of {@code properTypes} may be stored in a
-   * hash set of bounds, whose hash code would change.
+   * <p>The result might share its {@link AnnotatedTypeMirror} with an element of {@code
+   * properTypes}; in particular, it does when {@code properTypes} has one element. A caller must
+   * not mutate the result's annotated type in place, because an element of {@code properTypes}
+   * might be stored in a hash set of bounds, whose hash code would change.
    *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}, or null
@@ -1020,7 +1021,6 @@ public class InferenceFactory {
     Iterator<ProperType> iter = properTypes.iterator();
     ProperType first = iter.next();
     TypeMirror lubTM = first.getJavaType();
-    AnnotatedTypeMirror lubATM = first.getAnnotatedType();
     // The least upper bound so far, as a type, so that its ignored positions can be found; see
     // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ProperType lubSoFar = first;
@@ -1031,34 +1031,39 @@ public class InferenceFactory {
       ReplacedTypes combined =
           IgnoredAnnotations.replaceIgnoredForLubOrGlb(
               lubSoFar, properType, lubTM, qh, context.modelTypes);
-      lubATM = combined.type1();
+      AnnotatedTypeMirror lubSoFarATM = combined.type1();
       AnnotatedTypeMirror atm = combined.type2();
+      AnnotatedTypeMirror lubATM;
       if (properType.ignoreAnnotations == ignoreAnnotations) {
-        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
+        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atm, lubTM);
       } else if (properType.ignoreAnnotations) {
-        // Only the primary annotations of `atm` are ignored.  Make them bottom, so that they don't
-        // change the lub.
+        // The primary annotations of `atm` are ignored, but not lubSoFarATM.  Make the primary
+        // annotations of `atm` bottom, so that they don't change the lub.
         AnnotatedTypeMirror atmWithBottomPrimary = atm.deepCopy();
         atmWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
-        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atmWithBottomPrimary, lubTM);
-      } else { // ignoreAnnotations is true
-        // Only the primary annotations of `lubATM` are ignored; see the previous case.
-        AnnotatedTypeMirror lubATMWithBottomPrimary = lubATM.deepCopy();
-        lubATMWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
-        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATMWithBottomPrimary, atm, lubTM);
+        lubATM =
+            AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atmWithBottomPrimary, lubTM);
+      } else {
+        assert ignoreAnnotations;
+        // Only the primary annotations of `lubSoFarATM` are ignored; see the previous case.
+        AnnotatedTypeMirror lubSoFarATMWithBottomPrimary = lubSoFarATM.deepCopy();
+        lubSoFarATMWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
+        lubATM =
+            AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATMWithBottomPrimary, atm, lubTM);
       }
       // The primary annotations of a type that ignores annotations put no constraint on the
       // result, so the result ignores annotations only if every type does.  This is the same
       // rule as in `glb`.
       ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
-      // If the result has the Java type of an input that records its ignored positions, and differs
-      // from that input only in its primary annotations and at those ignored positions, and those
-      // positions are still ignored, then it keeps that record; see ProperType#origin.  Its ignored
-      // positions have the annotations of the other input's ignored positions, and instantiations
-      // are applied to them again when the instantiations that ignore annotations change.  A result
-      // that differs elsewhere cannot keep the record, because a type with an origin computes its
-      // parts from the origin.  Keeping the record in `lubSoFar` lets the next input's annotations
-      // replace those of its ignored positions, as in `glb`.
+      // If an input has an origin (see ProperType#origin), and the result has that input's Java
+      // type and differs from it only in the primary annotations and at the input's ignored
+      // positions, and those positions are still ignored, then the result gets the input's origin.
+      // The result's ignored positions have the annotations of the other input's ignored positions,
+      // and instantiations are applied to them again when the instantiations that ignore
+      // annotations change.  A result that differs from the input elsewhere cannot get its origin,
+      // because a type with an origin computes its parts from the origin.  Keeping the origin in
+      // `lubSoFar` lets the next input's annotations replace those at its ignored positions, as in
+      // `glb`.
       List<ProperType> inputs = Arrays.asList(lubSoFar, properType);
       ProperType withOrigin = withOriginOf(lubSoFar, inputs, lubTM, lubATM, ignoreAnnotations);
       if (withOrigin == null) {
@@ -1075,15 +1080,16 @@ public class InferenceFactory {
    *
    * <ul>
    *   <li>{@code type} is a proper type with an origin (see {@link ProperType#getOrigin}),
-   *   <li>its Java type is {@code javaType},
-   *   <li>{@code atm} differs from it only in its primary annotations and at its ignored positions,
-   *       and
+   *   <li>{@code type}'s Java type is {@code javaType},
+   *   <li>{@code atm} differs from {@code type} only in the primary annotations and at the ignored
+   *       positions of {@code type}, and
    *   <li>no ignored position of {@code type} corresponds to a position of another of {@code
    *       inputs} that is not an ignored position (see {@link
    *       IgnoredAnnotations#ignoredPositionsStayIgnored}).
    * </ul>
    *
-   * The copy keeps the origin. Otherwise, returns null.
+   * The copy keeps the origin. Otherwise, returns null; that is normal and not an error, and it is
+   * the usual case, because most types have no origin.
    *
    * @param type an input to a least upper bound or greatest lower bound computation
    * @param inputs all the inputs to that computation, including {@code type}
@@ -1093,7 +1099,7 @@ public class InferenceFactory {
    * @return a copy of {@code type} whose annotated type is {@code atm}, or null
    */
   private @Nullable ProperType withOriginOf(
-      AbstractType type,
+      @FindDistinct AbstractType type,
       Collection<? extends AbstractType> inputs,
       TypeMirror javaType,
       AnnotatedTypeMirror atm,
@@ -1121,15 +1127,12 @@ public class InferenceFactory {
     // that ignore annotations.  Fixing this requires an origin that combines the ignored positions
     // of several inputs.
     for (AbstractType other : inputs) {
-      @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
       boolean isType = other == type;
-      if (!isType
-          && !IgnoredAnnotations.ignoredPositionsStayIgnored(
-              properType,
-              other,
-              javaType,
-              typeFactory.getQualifierHierarchy(),
-              context.modelTypes)) {
+      if (isType) {
+        continue;
+      }
+      if (!IgnoredAnnotations.ignoredPositionsStayIgnored(
+          properType, other, javaType, typeFactory.getQualifierHierarchy(), context.modelTypes)) {
         return null;
       }
     }
@@ -1162,7 +1165,7 @@ public class InferenceFactory {
    * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
    * empty.
    *
-   * <p>As with {@link #lub(Set)}, the result may share its {@link AnnotatedTypeMirror} with an
+   * <p>As with {@link #lub(Set)}, the result might share its {@link AnnotatedTypeMirror} with an
    * element of {@code abstractTypes} -- it returns the element itself when {@code abstractTypes}
    * has one element -- so a caller must not mutate the result's annotated type in place.
    *
@@ -1190,8 +1193,12 @@ public class InferenceFactory {
     Type bJavaType = (Type) b.getJavaType();
     TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);
 
-    // The annotations of an ignored position put no constraint on the result.  Positions correspond
-    // only if `a` and `b` are of the same class; see IgnoredAnnotations#replaceIgnoredForLubOrGlb.
+    // The annotations of an ignored position put no constraint on the result, so they are replaced
+    // by those at the corresponding position of the other type; see
+    // IgnoredAnnotations#replaceIgnoredForLubOrGlb.  Nothing is replaced if `a` and `b` are of
+    // different classes, such as `ArrayList<T>` and `List<T>`.  That is fine:
+    // AnnotatedTypes#annotatedGLB takes all but the primary annotations from just one of them, so
+    // the annotations of the other cannot conflict with an ignored position.
     ReplacedTypes combined =
         IgnoredAnnotations.replaceIgnoredForLubOrGlb(
             a, b, glb, typeFactory.getQualifierHierarchy(), context.modelTypes);
@@ -1443,9 +1450,9 @@ public class InferenceFactory {
 
   /**
    * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
-   * replaced by the corresponding element of {@code typeArgs}. An instantiation may mention another
-   * variable that is being resolved at the same time, so the instantiations are not final until
-   * this substitution has been performed.
+   * replaced by the corresponding element of {@code typeArgs}. An instantiation might mention
+   * another variable that is being resolved at the same time, so the instantiations are not final
+   * until this substitution has been performed.
    *
    * <p>{@code typeArgs} and {@code variables} are parallel lists: {@code typeArgs.get(i)} is the
    * instantiation of {@code variables.get(i)}.

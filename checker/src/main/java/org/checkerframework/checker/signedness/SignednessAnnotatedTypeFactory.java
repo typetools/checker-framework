@@ -103,7 +103,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final AnnotationMirrorSet UNSIGNED_SINGLETON = new AnnotationMirrorSet(UNSIGNED);
 
   /**
-   * Create a SignednessAnnotatedTypeFactory.
+   * Creates a SignednessAnnotatedTypeFactory.
    *
    * @param checker the type-checker associated with this type factory
    */
@@ -160,10 +160,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Refines an integer expression to @SignedPositive if its value is within the signed positive
-   * range (i.e. its MSB is zero). Does not refine the type of cast expressions, nor a type whose
+   * range (i.e., its MSB is zero). Does not refine the type of cast expressions, nor a type whose
    * signedness qualifier is not a supertype of @SignedPositive, such as @PolySigned.
    *
-   * @param tree an AST node, whose type may be refined
+   * @param tree an AST node, whose type might be refined
    * @param type the type of the tree
    */
   private void addSignedPositiveAnnotation(Tree tree, AnnotatedTypeMirror type) {
@@ -289,8 +289,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *   <li>boolean expressions are not given Unsigned or Signed annotations by {@link
    *       PropagationTreeAnnotator},
    *   <li>shift results take on the type of their left operand,
-   *   <li>the types of identifiers are refined based on the results of the Value Checker.
-   *   <li>casts take types related to widening
+   *   <li>the types of identifiers are refined based on the results of the Value Checker, and
+   *   <li>casts take types related to widening.
    * </ul>
    */
   private class SignednessTreeAnnotator extends TreeAnnotator {
@@ -416,8 +416,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Combines the two annotations. If they are comparable, return the lub. If they are
-     * incomparable, return @SignednessBottom.
+     * Combines the two annotations. If they are comparable, returns the lub. If they are
+     * incomparable, returns @SignednessBottom.
      *
      * @param polyQual the polymorphic qualifier
      * @param a1 the first annotation to compare

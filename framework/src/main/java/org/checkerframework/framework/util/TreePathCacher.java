@@ -87,7 +87,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     private final TreePath path;
 
     /**
-     * Create a {@link #getPath} result.
+     * Creates a {@link #getPath} result.
      *
      * @param path the result of {@link #getPath}
      */
@@ -100,7 +100,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     foundPaths.clear();
   }
 
-  /** Scan a single node. The current path is updated for the duration of the scan. */
+  /** Scans a single node. The current path is updated for the duration of the scan. */
   @SuppressWarnings("interning:not.interned") // assertion
   @Override
   public TreePath scan(Tree tree, Tree target) {

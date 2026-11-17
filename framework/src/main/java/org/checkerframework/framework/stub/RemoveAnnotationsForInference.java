@@ -51,7 +51,7 @@ import org.plumelib.util.ArraysP;
 import org.plumelib.util.CollectionsP;
 
 /**
- * Process Java source files to remove annotations that ought to be inferred.
+ * Processes Java source files to remove annotations that ought to be inferred.
  *
  * <p>Removes annotations from all files in the given directories. Modifies the files in place.
  *
@@ -74,7 +74,7 @@ import org.plumelib.util.CollectionsP;
  *       that, such as @Option
  * </ul>
  *
- * After removing annotations, javac may issue "warning: [cast] redundant cast to ..." if {@code
+ * After removing annotations, javac might issue "warning: [cast] redundant cast to ..." if {@code
  * -Alint:cast} (or {@code -Alint:all} which implies it) is passed to javac. You can suppress the
  * warning by passing {@code -Alint:-cast} to javac.
  */
@@ -166,7 +166,7 @@ public final class RemoveAnnotationsForInference {
   }
 
   /**
-   * Process each file in the given directory; see the {@link RemoveAnnotationsForInference class
+   * Processes each file in the given directory; see the {@link RemoveAnnotationsForInference class
    * documentation} for details.
    *
    * @param dir directory to process
@@ -560,8 +560,9 @@ public final class RemoveAnnotationsForInference {
   }
 
   /**
-   * Given an annotation argument for an element of type String[], return a list of strings. Returns
-   * null if the list of suppressed strings is unknown (e.g., if the argument is a name expression).
+   * Given an annotation argument for an element of type String[], returns a list of strings.
+   * Returns null if the list of suppressed strings is unknown (e.g., if the argument is a name
+   * expression).
    *
    * @param e an annotation argument
    * @return the strings expressed by {@code e}

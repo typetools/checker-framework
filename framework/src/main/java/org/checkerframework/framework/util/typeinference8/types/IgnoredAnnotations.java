@@ -30,17 +30,24 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * annotations of the variable's instantiation. To ensure this, some types are marked as ignoring
  * annotations (see {@link AbstractType#ignoreAnnotations}).
  *
- * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
- * kinds of annotations are ignored:
+ * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth.
+ *
+ * <p>Two kinds of annotations are ignored:
  *
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
  *       including those of its bounds if it is a type variable or a wildcard, and
- *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} where
- *       {@link AbstractType#applyInstantiations} replaced a use of an inference variable by the
- *       variable's instantiation, and that instantiation ignores annotations. The type's {@link
- *       ProperType#getOrigin() origin} is the type before instantiations were applied; it has a use
- *       of an inference variable at each ignored position.
+ *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} that
+ *       {@link AbstractType#applyInstantiations} created, at which it replaced a use of an
+ *       inference variable by the variable's instantiation, and either:
+ *       <ul>
+ *         <li>that instantiation ignores annotations, and the use does not have a non-polymorphic
+ *             primary annotation in every qualifier hierarchy (if it does, then those annotations
+ *             replace the instantiation's; see {@link UseOfVariable#applyInstantiations}), or
+ *         <li>the corresponding position of that instantiation is an ignored position of it.
+ *       </ul>
+ *       The type's {@link ProperType#getOrigin() origin} is the type before instantiations were
+ *       applied; it has a use of an inference variable at each ignored position.
  * </ul>
  *
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
@@ -58,11 +65,19 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code sub} and {@code sup} with their ignored annotations
-   * replaced. If the primary annotations of {@code sub} are ignored, then they are replaced with
-   * bottom annotations. If the primary annotations of {@code sup} are ignored, then they are
-   * replaced with top annotations. Ignored annotations elsewhere in either type are replaced with
-   * the annotations at the corresponding position in the other type. If neither type has ignored
-   * annotations, the result holds the types' own annotated types; otherwise it holds copies.
+   * replaced.
+   *
+   * <ul>
+   *   <li>If the primary annotations of {@code sub} are ignored, then they are replaced with bottom
+   *       annotations.
+   *   <li>If the primary annotations of {@code sup} are ignored, then they are replaced with top
+   *       annotations.
+   *   <li>Ignored annotations elsewhere in either type are replaced with the annotations at the
+   *       corresponding position in the other type.
+   * </ul>
+   *
+   * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
+   * otherwise it holds copies.
    *
    * @param sub a potential subtype
    * @param sup the potential supertype
@@ -107,10 +122,15 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
-   * with their ignored annotations replaced. Each ignored annotation of one type is replaced by the
-   * annotation at the corresponding position of the other type. If neither type has ignored
-   * annotations, the result holds the types' own annotated types; otherwise it holds modified
-   * copies.
+   * with their ignored annotations replaced.
+   *
+   * <ul>
+   *   <li>Each ignored annotation of one type is replaced by the annotation at the corresponding
+   *       position of the other type.
+   * </ul>
+   *
+   * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
+   * otherwise it holds modified copies.
    *
    * @param type1 a type
    * @param type2 a type with the same Java type as {@code type1}
@@ -231,6 +251,49 @@ final class IgnoredAnnotations {
   }
 
   /**
+   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
+   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
+   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
+   * primary annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
+   *     nothing
+   */
+  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
+    return (type1.ignoreAnnotations || type2.ignoreAnnotations)
+        && type1.getOrigin() == null
+        && type2.getOrigin() == null
+        && hasNoTypeArguments(type1.getAnnotatedType())
+        && hasNoTypeArguments(type2.getAnnotatedType());
+  }
+
+  /**
+   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
+   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
+   * and its bounds get the primary annotations of {@code source}'s bounds.
+   *
+   * @param source a type whose primary annotations to copy
+   * @param target the type whose primary annotations to replace; side-effected by this method
+   */
+  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
+    if (source.getPrimaryAnnotations().isEmpty()
+        && source instanceof AnnotatedTypeVariable sourceTV
+        && target instanceof AnnotatedTypeVariable targetTV) {
+      targetTV.clearPrimaryAnnotations();
+      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
+      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
+    } else {
+      target.replaceAnnotations(source.getAnnotations());
+    }
+  }
+
+  // //////////////////////////////////////////////////////////////////////////
+  // Private methods appear below; package-protected methods appear above
+  //
+
+  /**
    * Returns the upper bound of {@code type} if it is a type variable, following the bounds of type
    * variables whose upper bound is a type variable; otherwise, returns {@code type} itself.
    *
@@ -282,25 +345,6 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
-   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
-   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
-   * primary annotations.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
-   *     nothing
-   */
-  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
-    return (type1.ignoreAnnotations || type2.ignoreAnnotations)
-        && type1.getOrigin() == null
-        && type2.getOrigin() == null
-        && hasNoTypeArguments(type1.getAnnotatedType())
-        && hasNoTypeArguments(type2.getAnnotatedType());
-  }
-
-  /**
    * Returns true if {@code type} is a primitive type, the null type, or a declared type with no
    * type arguments whose enclosing type, if any, also satisfies this condition. Returns false for
    * every other kind of type, such as an array, a wildcard, or a type variable, any of which can
@@ -327,14 +371,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the ignored positions of {@code atm}.
+   * Returns the ignored positions of {@code atm}, as an identity set, because distinct positions
+   * can hold equal types.
    *
    * @param type a type
    * @param atm an annotated type with the same structure as {@code type}'s annotated type, such as
    *     a deep copy of it; not modified
    * @param qh the qualifier hierarchy
-   * @return the types within {@code atm} that are at its ignored positions, as an identity set,
-   *     because distinct positions can hold equal types
+   * @return the types within {@code atm} that are at its ignored positions
    */
   private static Set<AnnotatedTypeMirror> ignoredPositions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
@@ -530,10 +574,20 @@ final class IgnoredAnnotations {
 
   /**
    * Gives each ignored position of {@code atm1} the annotations of the corresponding position of
-   * {@code atm2}, and vice versa. If corresponding positions of both types are ignored positions,
-   * then the one in {@code atm1} gets the annotations of the one in {@code atm2}, so the two have
-   * the same annotations. Positions correspond only where the two types have the same structure;
-   * elsewhere, nothing is replaced.
+   * {@code atm2}, and vice versa.
+   *
+   * <ul>
+   *   <li>If a position of {@code atm1} is ignored, it gets the annotation of the corresponding
+   *       position in {@code atm2}. (Note that this happens even if that position {@code atm2} is
+   *       also ignored.)
+   *   <li>Otherwise, if a position of {@code atm1} is ignored, it gets the annotation of the
+   *       corresponding position in {@code atm2}.
+   * </ul>
+   *
+   * At the end, {@code atm1} and {@code atm1} have the same annotations.
+   *
+   * <p>Positions correspond only where the two types have the same structure; elsewhere, nothing is
+   * replaced.
    *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
@@ -719,25 +773,5 @@ final class IgnoredAnnotations {
       return superBound.getKind() == TypeKind.NULL ? wildcard.getExtendsBound() : superBound;
     }
     return type;
-  }
-
-  /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
-   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
-   * and its bounds get the primary annotations of {@code source}'s bounds.
-   *
-   * @param source a type whose primary annotations to copy
-   * @param target the type whose primary annotations to replace; side-effected by this method
-   */
-  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
-    if (source.getPrimaryAnnotations().isEmpty()
-        && source instanceof AnnotatedTypeVariable sourceTV
-        && target instanceof AnnotatedTypeVariable targetTV) {
-      targetTV.clearPrimaryAnnotations();
-      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
-      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
-    } else {
-      target.replaceAnnotations(source.getAnnotations());
-    }
   }
 }

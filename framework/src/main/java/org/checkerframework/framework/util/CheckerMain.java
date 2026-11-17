@@ -59,7 +59,7 @@ public class CheckerMain {
     System.exit(exitStatus);
   }
 
-  /** The path to the jar containing CheckerMain.class (i.e. checker.jar). */
+  /** The path to the jar containing CheckerMain.class (i.e., checker.jar). */
   protected final File checkerJar;
 
   /** The path to checker-qual.jar. */
@@ -89,19 +89,19 @@ public class CheckerMain {
 
   /**
    * Option name for specifying an alternative checker-qual.jar location. The accompanying value
-   * MUST be the path to the jar file (NOT the path to its encompassing directory)
+   * MUST be the path to the jar file (NOT the path to its encompassing directory).
    */
   public static final String CHECKER_QUAL_PATH_OPT = "-checkerQualJar";
 
   /**
    * Option name for specifying an alternative checker-util.jar location. The accompanying value
-   * MUST be the path to the jar file (NOT the path to its encompassing directory)
+   * MUST be the path to the jar file (NOT the path to its encompassing directory).
    */
   public static final String CHECKER_UTIL_PATH_OPT = "-checkerUtilJar";
 
   /**
-   * Construct all the relevant file locations and Java version given the path to this jar and a set
-   * of directories in which to search for jars.
+   * Constructs all the relevant file locations and Java version given the path to this jar and a
+   * set of directories in which to search for jars.
    */
   @SuppressWarnings("this-escape")
   public CheckerMain(File checkerJar, List<String> args) {
@@ -143,7 +143,7 @@ public class CheckerMain {
     assertValidState();
   }
 
-  /** Assert that required jars exist. */
+  /** Asserts that required jars exist. */
   protected void assertValidState() {
     assertFilesExist(checkerJar, checkerQualJar, checkerUtilJar);
   }
@@ -166,8 +166,8 @@ public class CheckerMain {
   }
 
   /**
-   * Remove the argument given by argumentName and the subsequent value from the list args if
-   * present. Return the subsequent value or null if not found.
+   * Removes the argument given by argumentName and the subsequent value from the list args if
+   * present. Returns the subsequent value, or null if not found.
    *
    * @param argumentName a command-line option name whose argument to extract
    * @param args the current list of arguments
@@ -187,13 +187,13 @@ public class CheckerMain {
   }
 
   /**
-   * Remove the argument given by argumentName and the subsequent value from the list args if
-   * present. Return the subsequent value wrapped as a File.
+   * Removes the argument given by argumentName and the subsequent value from the list args if
+   * present. Returns the subsequent value wrapped as a File.
    *
    * @param argumentName argument to extract
    * @param alternative file to return if argumentName is not found in args
    * @param args the current list of arguments
-   * @return the string that follows argumentName wrapped as a File if argumentName is in args or
+   * @return the string that follows argumentName wrapped as a File if argumentName is in args, or
    *     alternative if argumentName is not present in args
    */
   protected static File extractFileArg(String argumentName, File alternative, List<String> args) {
@@ -209,7 +209,7 @@ public class CheckerMain {
   protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^-J(.*)$");
 
   /**
-   * Remove all {@code -J} arguments from {@code args} and add them to the returned list (without
+   * Removes all {@code -J} arguments from {@code args} and add them to the returned list (without
    * the {@code -J} prefix).
    *
    * @param args the arguments to extract from
@@ -234,7 +234,7 @@ public class CheckerMain {
 
   /**
    * Returns the last {@code -cp} or {@code -classpath} option. If no {@code -cp} or {@code
-   * -classpath} arguments were present, then return the CLASSPATH environment variable (if set)
+   * -classpath} arguments were present, then returns the CLASSPATH environment variable (if set)
    * followed by the current directory.
    *
    * <p>Also removes all {@code -cp} and {@code -classpath} options from args.
@@ -275,7 +275,7 @@ public class CheckerMain {
   }
 
   /**
-   * Remove all {@code -processorpath} options and their arguments from args. Return the last
+   * Removes all {@code -processorpath} options and their arguments from args. Returns the last
    * argument.
    *
    * @param args a list of arguments to extract from
@@ -344,7 +344,12 @@ public class CheckerMain {
     return args;
   }
 
-  /** Given a list of paths, concatenate them to form a single path. Also expand wildcards. */
+  /**
+   * Given a list of paths, concatenates them to form a single path. Also expands wildcards.
+   *
+   * @param paths a list of paths, each of which can itself be a path-separator-separated list
+   * @return the concatenation of the paths, as a single path
+   */
   private String concatenatePaths(List<String> paths) {
     List<String> elements = new ArrayList<>();
     for (String path : paths) {
@@ -356,7 +361,7 @@ public class CheckerMain {
   }
 
   /**
-   * Invoke the compiler with all relevant jars on its classpath and/or bootclasspath.
+   * Invokes the compiler with all relevant jars on its classpath and/or bootclasspath.
    *
    * @return error code
    */
@@ -479,7 +484,7 @@ public class CheckerMain {
   }
 
   /**
-   * Find the jar file or directory containing the .class file from which cls was loaded.
+   * Returns the jar file or directory containing the .class file from which cls was loaded.
    *
    * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class
    * @param errIfFromDirectory if false, throw an exception if the file was loaded from a directory
@@ -533,7 +538,7 @@ public class CheckerMain {
   }
 
   /**
-   * Assert that all files in the list exist and if they don't, throw a RuntimeException with a list
+   * Asserts that all files in the list exist; if they don't, throws a RuntimeException with a list
    * of the files that do not exist.
    *
    * @param expectedFiles files that must exist
@@ -600,8 +605,10 @@ public class CheckerMain {
   }
 
   /**
-   * For every "-processor" argument in args, replace its immediate successor argument using
-   * unabbreviateProcessorNames.
+   * For every "-processor" argument in args, replaces its immediate successor argument using
+   * unshorthandProcessorNames.
+   *
+   * @param args command-line arguments; modified by this method
    */
   protected void replaceShorthandProcessor(List<String> args) {
     for (int i = 0; i < args.size(); i++) {
@@ -620,8 +627,8 @@ public class CheckerMain {
   /**
    * Returns the list of fully qualified names of the checkers found in checker.jar. This covers
    * only checkers with the name ending in "Checker". Checkers with a name ending in "Subchecker"
-   * are not included in the returned list. Note however that it is possible for a checker with the
-   * name ending in "Checker" to be used as a subchecker.
+   * are not included in the returned list. Note, however, that it is possible for a checker with
+   * the name ending in "Checker" to be used as a subchecker.
    *
    * @return fully qualified names of the checkers found in checker.jar
    */

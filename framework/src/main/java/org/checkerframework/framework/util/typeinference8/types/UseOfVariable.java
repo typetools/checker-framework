@@ -174,7 +174,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Set whether this use has a throws bound.
+   * Sets whether this use has a throws bound.
    *
    * @param hasThrowsBound true if this use has a throws bound
    */

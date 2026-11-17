@@ -92,7 +92,7 @@ public abstract class Contract {
     public final Class<? extends Annotation> frameworkContractListClass;
 
     /**
-     * Create a new Kind.
+     * Creates a new Kind.
      *
      * @param errorKey used for constructing error messages
      * @param metaAnnotation the meta-annotation identifying annotations of this kind
@@ -199,11 +199,11 @@ public abstract class Contract {
   }
 
   /**
-   * Viewpoint-adapt {@link #annotation} using {@code stringToJavaExpr}.
+   * Viewpoint-adapts {@link #annotation} using {@code stringToJavaExpr}.
    *
    * <p>For example, if the contract is {@code @EnsuresKeyFor(value = "this.field", map = "map")},
-   * {@code annotation} is {@code @KeyFor("map")}. This method applies {@code stringToJava} to "map"
-   * and returns a new {@code KeyFor} annotation with the result.
+   * {@code annotation} is {@code @KeyFor("map")}. This method applies {@code stringToJavaExpr} to
+   * "map" and returns a new {@code KeyFor} annotation with the result.
    *
    * @param factory used to get {@link DependentTypesHelper}
    * @param stringToJavaExpr function used to convert strings to {@link JavaExpression}s
@@ -231,7 +231,7 @@ public abstract class Contract {
   /** A precondition contract. */
   public static class Precondition extends Contract {
     /**
-     * Create a precondition contract.
+     * Creates a precondition contract.
      *
      * @param expressionString the Java expression that should have a type qualifier
      * @param annotation the type qualifier that {@code expressionString} should have
@@ -247,7 +247,7 @@ public abstract class Contract {
   /** A postcondition contract. */
   public static class Postcondition extends Contract {
     /**
-     * Create a postcondition contract.
+     * Creates a postcondition contract.
      *
      * @param expressionString the Java expression that should have a type qualifier
      * @param annotation the type qualifier that {@code expressionString} should have
@@ -281,13 +281,14 @@ public abstract class Contract {
     public final boolean resultValue;
 
     /**
-     * Create a new conditional postcondition.
+     * Creates a new conditional postcondition.
      *
      * @param expressionString the Java expression that should have a type qualifier
      * @param annotation the type qualifier that {@code expressionString} should have
      * @param contractAnnotation the postcondition annotation that the programmer wrote; used for
      *     diagnostic messages
-     * @param resultValue true if the condition is the method returning true or false
+     * @param resultValue the return value for the annotated method that ensures that the
+     *     conditional postcondition holds
      */
     public ConditionalPostcondition(
         String expressionString,

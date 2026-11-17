@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.Label;
 
 /**
- * A {@link LocalLocation} holds information about a local variable. A variable may have multiple
+ * A {@link LocalLocation} holds information about a local variable. A variable can have multiple
  * lifetimes. We store this information the same way ASM does, as 3 parallel arrays.
  */
 public final class LocalLocation {
@@ -39,8 +39,8 @@ public final class LocalLocation {
   public final @Nullable String variableName;
 
   /**
-   * Construct a new LocalLocation. This constructor does not assign meaningful values to start or
-   * end. Thus, the getScopeStart and getScopeLenth methods must not be used on the result.
+   * Constructs a new LocalLocation. This constructor does not assign meaningful values to start or
+   * end. Thus, the getScopeStart and getScopeLength methods must not be used on the result.
    *
    * @param index the offset of the variable in the stack frame
    * @param variableName the name of the local variable
@@ -50,7 +50,7 @@ public final class LocalLocation {
   }
 
   /**
-   * Construct a new LocalLocation.
+   * Constructs a new LocalLocation.
    *
    * @param start the code offsets to the starts of the variable's lifetimes
    * @param end the code offsets to the ends of the variable's lifetimes
@@ -65,8 +65,9 @@ public final class LocalLocation {
   }
 
   /**
-   * Construct a new LocalLocation representing a single scope/lifetime. Only being used by Writers,
-   * not Readers for now. Should possibly deprecate this in the future. Changes values reflectively.
+   * Constructs a new LocalLocation representing a single scope/lifetime. Only being used by
+   * Writers, not Readers for now. Should possibly deprecate this in the future. Changes values
+   * reflectively.
    *
    * @param scopeStart the bytecode offset of the start of the variable's lifetime
    * @param scopeLength the bytecode length of the variable's lifetime
@@ -108,9 +109,9 @@ public final class LocalLocation {
   }
 
   /**
-   * Test if the bytecode offset to the start of the first scope/lifetime is defined.
+   * Returns true if the bytecode offset to the start of the first scope/lifetime is defined.
    *
-   * @return if the Label at start[0] is resolved
+   * @return true if the Label at start[0] is resolved
    */
   public boolean scopeStartDefined() {
     try {
