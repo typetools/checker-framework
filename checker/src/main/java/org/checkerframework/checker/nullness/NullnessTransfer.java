@@ -36,6 +36,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -481,7 +482,8 @@ public class NullnessTransfer
    * Returns true if evaluating the given method arguments might reassign the given receiver
    * expression or a subexpression of it. This is conservative. It returns true if an argument
    * assigns any part of the receiver expression. If the receiver expression is assignable by other
-   * code, it also returns true if an argument assigns a non-local variable or (unless {@link
+   * code or contains a method call (whose value might depend on state that does not appear in the
+   * expression), it also returns true if an argument assigns a non-local variable or (unless {@link
    * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
    *
@@ -499,7 +501,12 @@ public class NullnessTransfer
     if (arguments.isEmpty()) {
       return false;
     }
-    boolean receiverAssignableByOtherCode = receiverExpr.isAssignableByOtherCode();
+    // A method call's value can depend on state that does not appear in the expression, such as a
+    // static field that the method reads.  (MethodCall.isAssignableByOtherCode() examines only the
+    // receiver and arguments.)  So, an assignment to a non-local variable or a call with side
+    // effects might change the value of a receiver that contains a method call.
+    boolean receiverMayChangeByOtherCode =
+        receiverExpr.isAssignableByOtherCode() || receiverExpr.containsOfClass(MethodCall.class);
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -566,7 +573,7 @@ public class NullnessTransfer
             if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
               return true;
             }
-            return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
+            return receiverMayChangeByOtherCode && !(assigned instanceof LocalVariable);
           }
 
           /*
@@ -576,7 +583,7 @@ public class NullnessTransfer
            * @return true if invoking {@code executable} might reassign the receiver
            */
           private boolean mayHaveSideEffect(ExecutableElement executable) {
-            return receiverAssignableByOtherCode
+            return receiverMayChangeByOtherCode
                 && !nonNullAssumptionAfterInvocation
                 && !atypeFactory.isSideEffectFree(executable)
                 && !PurityUtils.isSideEffectFree(atypeFactory, executable);
