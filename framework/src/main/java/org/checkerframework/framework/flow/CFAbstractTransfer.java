@@ -991,7 +991,11 @@ public abstract class CFAbstractTransfer<
    * (s = t)} are the cast, {@code s}, and {@code t}. Otherwise, the only candidate is {@code node}
    * itself. A widening conversion that does not change the value of its operand (see {@link
    * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
-   * {@code (int) s == 5L}, is looked through.
+   * {@code (int) s == 5L}, is looked through. There is no candidate if {@code node} is (after
+   * looking through value-preserving widening conversions) a conversion that might change the value
+   * of its operand, such as the binary numeric promotion of {@code i} in {@code i ==
+   * 16_777_216f}: {@link JavaExpression#fromNode} ignores the conversion, so the expression for the
+   * conversion is its operand, which might have a different value.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
    * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
@@ -1031,8 +1035,9 @@ public abstract class CFAbstractTransfer<
    *
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return the nodes that have the value of {@code node} when the comparison completes: the sides
-   *     of {@code node} if it is an assignment or a value-preserving cast, and otherwise {@code
-   *     node} itself, except for those that might have a different value by then
+   *     of {@code node} if it is an assignment or a value-preserving cast, none if it is a conversion
+   *     that might change the value, and otherwise {@code node} itself, except for those that might
+   *     have a different value by then
    */
   protected List<Node> nodesWithValueOf(Node node) {
     List<Node> result = analysis.nodesWithValueOfCache.get(node);
@@ -1068,11 +1073,19 @@ public abstract class CFAbstractTransfer<
         && isValuePreservingConversion(widening)) {
       unwrapped = widening.getOperand();
     }
-    List<Node> candidates =
-        unwrapped instanceof AssignmentNode
-                || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))
-            ? sidesOfAssignment(unwrapped)
-            : Collections.singletonList(node);
+    List<Node> candidates;
+    if (unwrapped instanceof AssignmentNode
+        || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))) {
+      candidates = sidesOfAssignment(unwrapped);
+    } else if (unwrapped instanceof WideningConversionNode
+        || unwrapped instanceof NarrowingConversionNode) {
+      // The loop above looks through value-preserving widening conversions, so this conversion
+      // might change the value, as in `i == 16_777_216f` where `i` is converted to `float`.
+      // JavaExpression.fromNode ignores the conversion, so no expression has the value of `node`.
+      candidates = Collections.emptyList();
+    } else {
+      candidates = Collections.singletonList(node);
+    }
     // Find the written locations only if a candidate might be omitted because of them, because
     // finding them requires the path to the tree of `node`, which can be costly to compute.
     WrittenLocations locationsWrittenUntilComparison = null;

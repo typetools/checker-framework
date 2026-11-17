@@ -67,6 +67,15 @@ public class CastInComparison {
     }
   }
 
+  // Binary numeric promotion converts `i` to float, which might change its value: both values of
+  // `i` convert to 16_777_216f.
+  void lossyPromotion(@IntVal({16_777_216, 16_777_217}) int i) {
+    if (i == 16_777_216f) {
+      // :: error: [assignment]
+      @IntVal(16_777_216) int j = i;
+    }
+  }
+
   // A compound assignment narrows `b + i` to byte, which might change its value.  After the
   // comparison, the target `b` has the compared value.
   void narrowingCompoundAssignment(byte b, int i) {
