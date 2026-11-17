@@ -1,57 +1,50 @@
-// A call tests its receiver for nullness after evaluating its arguments, so the receiver is refined
-// to non-null after the call.  That refinement must not happen if an argument reassigns the
-// receiver expression.
-
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
-class ReceiverReassignedInArgument {
+// A call's receiver is evaluated before its arguments.  If an argument reassigns the receiver
+// expression, then normal completion of the call does not show that the receiver expression is
+// non-null afterward.  ReceiverRefinementInCatch.java contains more such tests.
+public class ReceiverReassignedInArgument {
 
-  @Nullable Object f;
+  @Nullable ReceiverReassignedInArgument f;
 
-  void localAssignedNull() {
-    @Nullable Object x = new Object();
-    x.equals(x = null);
+  void take(@Nullable Object o) {}
+
+  @SideEffectFree
+  void sefTake(@Nullable Object o) {}
+
+  void assignInNestedArgument() {
+    ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
+    r.take(String.valueOf(r = null));
     // :: error: (dereference.of.nullable)
-    x.hashCode();
+    r.toString();
   }
 
-  void localAssignedNullNested(@Nullable Object y) {
-    @Nullable Object x = new Object();
-    x.equals(String.valueOf(x = y));
+  // The argument assigns a non-null value to the receiver expression.
+  void assignNonNullInArgument(@Nullable Object r, Object nn) {
     // :: error: (dereference.of.nullable)
-    x.hashCode();
+    r.equals(r = nn);
+    r.toString();
   }
 
-  void localNotAssigned(@Nullable Object x, @Nullable Object y) {
+  // Evaluating the argument does not execute the lambda body, and a side-effect-free method does
+  // not execute it either.
+  void assignInLambdaBody() {
     // :: error: (dereference.of.nullable)
-    x.equals(y = null);
-    x.hashCode();
+    f.sefTake((Runnable) () -> f = null);
+    f.toString();
   }
 
-  void fieldAssignedNull() {
-    this.f = new Object();
-    this.f.equals(this.f = null);
+  // Evaluating the argument executes the anonymous class's initializer.
+  void assignInAnonymousClassInitializer() {
     // :: error: (dereference.of.nullable)
-    this.f.hashCode();
-  }
-
-  void fieldSetToNullByCall() {
-    this.f = new Object();
-    this.f.equals(setFNull());
+    f.sefTake(
+        new Object() {
+          {
+            f = null;
+          }
+        });
     // :: error: (dereference.of.nullable)
-    this.f.hashCode();
-  }
-
-  Object setFNull() {
-    f = null;
-    return "";
-  }
-
-  void arrayIndexIncremented(@Nullable Object[] a, int i) {
-    if (a[i] != null) {
-      a[i].equals(i++);
-      // :: error: (dereference.of.nullable)
-      a[i].hashCode();
-    }
+    f.toString();
   }
 }

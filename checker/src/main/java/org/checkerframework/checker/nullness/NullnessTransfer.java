@@ -438,17 +438,16 @@ public class NullnessTransfer
     // neither the arguments nor a handler for the call's NullPointerException may assume that the
     // receiver is non-null.
     // The refinement applies to the receiver expression, not to the value that was evaluated
-    // before the arguments, so it is skipped if evaluating the arguments might change the value of
-    // the receiver expression, as in `x.equals(x = null)`.
-    if (!n.getTarget().isStatic()) {
-      JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
-      if ((nonNullAssumptionAfterInvocation
-              || isMethodSideEffectFree
-              || !receiverExpr.isAssignableByOtherCode())
-          && !argumentsMayChangeReceiver(tree.getArguments(), receiverExpr)) {
-        // Make receiver non-null.
-        makeNonNull(result, receiver);
-      }
+    // before the arguments, so it is skipped if evaluating the arguments might reassign the
+    // receiver expression, as in `r.m(r = null)`.
+    JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+    if (!n.getTarget().isStatic()
+        && (nonNullAssumptionAfterInvocation
+            || isMethodSideEffectFree
+            || !receiverExpr.isAssignableByOtherCode())
+        && !argumentsMayReassign(tree.getArguments(), receiverExpr)) {
+      // Make receiver non-null.
+      makeNonNull(result, receiver);
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
@@ -490,19 +489,28 @@ public class NullnessTransfer
   }
 
   /**
-   * Returns true if evaluating the given arguments of a method invocation might change the value of
-   * the invocation's receiver expression, as in {@code x.equals(x = null)}. This is conservative:
-   * it may return true even if the arguments do not change the receiver.
+   * Returns true if evaluating the given method arguments might reassign the given receiver
+   * expression or a subexpression of it. This is conservative. It returns true if an argument
+   * assigns any part of the receiver expression. If the receiver expression is assignable by other
+   * code, it also returns true if an argument assigns a non-local variable or (unless {@link
+   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
+   * side-effect-free.
+   *
+   * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
+   * arguments. Evaluating the arguments executes such a body only through a method or constructor
+   * invocation (an anonymous class's initializers run as part of its constructor), which this
+   * method handles as described above.
    *
    * @param arguments the arguments of a method invocation
    * @param receiverExpr the receiver of the method invocation
-   * @return true if evaluating {@code arguments} might change the value of {@code receiverExpr}
+   * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
    */
-  private boolean argumentsMayChangeReceiver(
+  private boolean argumentsMayReassign(
       List<? extends ExpressionTree> arguments, JavaExpression receiverExpr) {
     if (arguments.isEmpty()) {
       return false;
     }
+    boolean receiverAssignableByOtherCode = receiverExpr.isAssignableByOtherCode();
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -511,89 +519,78 @@ public class NullnessTransfer
           }
 
           @Override
-          public Boolean visitAssignment(AssignmentTree node, Void p) {
-            return isAssignedReceiverDependency(node.getVariable())
-                || super.visitAssignment(node, p);
+          public Boolean visitAssignment(AssignmentTree tree, Void p) {
+            return assignsReceiver(tree.getVariable()) || super.visitAssignment(tree, p);
           }
 
           @Override
-          public Boolean visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-            return isAssignedReceiverDependency(node.getVariable())
-                || super.visitCompoundAssignment(node, p);
+          public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+            return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
           }
 
           @Override
-          public Boolean visitUnary(UnaryTree node, Void p) {
-            switch (node.getKind()) {
+          public Boolean visitUnary(UnaryTree tree, Void p) {
+            switch (tree.getKind()) {
               case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
-                if (isAssignedReceiverDependency(node.getExpression())) {
+                if (assignsReceiver(tree.getExpression())) {
                   return true;
                 }
               }
               default -> {}
             }
-            return super.visitUnary(node, p);
+            return super.visitUnary(tree, p);
           }
 
           @Override
-          public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
-            return mayChangeReceiver(TreeUtils.elementFromUse(node))
-                || super.visitMethodInvocation(node, p);
+          public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+            return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
+                || super.visitMethodInvocation(tree, p);
           }
 
           @Override
-          public Boolean visitNewClass(NewClassTree node, Void p) {
-            return mayChangeReceiver(TreeUtils.elementFromUse(node))
-                || super.visitNewClass(node, p);
+          public Boolean visitNewClass(NewClassTree tree, Void p) {
+            return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
+                || super.visitNewClass(tree, p);
           }
 
-          // The bodies of lambdas and anonymous classes are not executed when the arguments are
-          // evaluated.  A call that executes them is handled by visitMethodInvocation and
-          // visitNewClass.
+          // visitMethodInvocation and visitNewClass handle the invocations that execute the body
+          // of a lambda expression or anonymous class.
 
           @Override
-          public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
+          public Boolean visitLambdaExpression(LambdaExpressionTree tree, Void p) {
             return false;
           }
 
           @Override
-          public Boolean visitClass(ClassTree node, Void p) {
+          public Boolean visitClass(ClassTree tree, Void p) {
             return false;
           }
 
           /*
-           * Returns true if assigning to the given variable might change the value of the receiver.
+           * Returns true if assigning the given variable might reassign the receiver.
            *
            * @param variable the left-hand side of an assignment
-           * @return true if assigning to {@code variable} might change the value of the receiver
+           * @return true if assigning {@code variable} might reassign the receiver
            */
-          private boolean isAssignedReceiverDependency(ExpressionTree variable) {
+          private boolean assignsReceiver(ExpressionTree variable) {
             JavaExpression assigned = JavaExpression.fromTree(variable);
             if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
               return true;
             }
-            if (assigned instanceof LocalVariable) {
-              return false;
-            }
-            // A field or array element assignment can change only a receiver that contains a
-            // field or array access that is assignable.
-            return receiverExpr.isAssignableByOtherCode();
+            return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
           }
 
           /*
-           * Returns true if invoking the given method or constructor might change the value of the
-           * receiver.
+           * Returns true if invoking the given method or constructor might reassign the receiver.
            *
-           * @param invoked the invoked method or constructor, or null if it is unknown
-           * @return true if invoking {@code invoked} might change the value of the receiver
+           * @param executable a method or constructor
+           * @return true if invoking {@code executable} might reassign the receiver
            */
-          private boolean mayChangeReceiver(@Nullable ExecutableElement invoked) {
-            if (nonNullAssumptionAfterInvocation || !receiverExpr.isAssignableByOtherCode()) {
-              return false;
-            }
-            return invoked == null
-                || !(atypeFactory.isSideEffectFree(invoked)
-                    || PurityUtils.isSideEffectFree(atypeFactory, invoked));
+          private boolean mayHaveSideEffect(ExecutableElement executable) {
+            return receiverAssignableByOtherCode
+                && !nonNullAssumptionAfterInvocation
+                && !atypeFactory.isSideEffectFree(executable)
+                && !PurityUtils.isSideEffectFree(atypeFactory, executable);
           }
         };
     for (ExpressionTree argument : arguments) {

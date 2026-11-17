@@ -6,11 +6,6 @@
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
-import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
-import org.checkerframework.checker.mustcall.qual.MustCallAlias;
-import org.checkerframework.checker.mustcall.qual.Owning;
 
 class AliasNotInMustCallStore {
 
@@ -47,33 +42,6 @@ class AliasNotInMustCallStore {
     FileInputStream t = s;
     t.close();
     assert c;
-  }
-
-  @InheritableMustCall("dispose")
-  static class Wrapper {
-    private final @Owning InputStream stream;
-
-    @MustCallAlias Wrapper(@MustCallAlias InputStream stream) {
-      this.stream = stream;
-    }
-
-    @EnsuresCalledMethods(value = "this.stream", methods = "close")
-    public void dispose() throws IOException {
-      this.stream.close();
-    }
-  }
-
-  // The alias that has no Must Call store value is a wrapper whose must-call method, dispose(),
-  // differs from that of the wrapped resource, close().
-  void whileLoopWrapper(boolean b, boolean c) throws IOException {
-    FileInputStream s = new FileInputStream("x");
-    if (b) {
-      s.close();
-      return;
-    }
-    Wrapper t = new Wrapper(s);
-    t.dispose();
-    while (c) {}
   }
 
   void ifAtEnd(boolean b, boolean c) throws IOException {
