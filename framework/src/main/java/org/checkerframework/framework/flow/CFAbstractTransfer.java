@@ -1021,10 +1021,6 @@ public abstract class CFAbstractTransfer<
    * {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
    * contains {@link Unknown}, which no store holds a value for.
    *
-   * <p>The result omits a {@link NarrowingConversionNode}, as in the rhs of {@code b += i} for a
-   * {@code byte b}. {@link JavaExpression#fromNode} converts such a node to the expression for its
-   * operand, whose value might differ from the narrowed value, even in sign.
-   *
    * <p>Clients must not modify the result, which is cached.
    *
    * @param node a node in an operand of a comparison, possibly an assignment
@@ -1070,10 +1066,6 @@ public abstract class CFAbstractTransfer<
     WrittenLocations locationsWrittenUntilComparison = null;
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
-      if (candidate instanceof NarrowingConversionNode) {
-        // `fromNode` converts the node to the expression for its operand, whose value might differ.
-        continue;
-      }
       JavaExpression expr = JavaExpression.fromNode(candidate);
       if (CFAbstractStore.canInsertJavaExpression(expr)
           || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
@@ -1510,11 +1502,14 @@ public abstract class CFAbstractTransfer<
      *     value than evaluating it before
      */
     boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
-      if (anyHeapLocation
+      if (!ignoreOwnLocation
+          && anyHeapLocation
           && analysis.atypeFactory.sideEffectsUnrefineAliases
           && expr.isModifiableByOtherCode()) {
         // As in CFAbstractStore#updateForMethodCall, a write might change the abstract value of
-        // the object that `expr` denotes, even if `expr` still denotes the same object.
+        // the object that `expr` denotes, even if `expr` still denotes the same object.  If
+        // `ignoreOwnLocation` is true, the value of `expr` is stored into its location after these
+        // writes, so its abstract value is the one that was stored.
         return true;
       }
       if (expr instanceof LocalVariable) {
