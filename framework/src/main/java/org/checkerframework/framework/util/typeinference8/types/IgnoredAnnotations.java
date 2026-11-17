@@ -288,9 +288,9 @@ final class IgnoredAnnotations {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Private methods appear below; package-protected methods appear above
-  ///
+  // //////////////////////////////////////////////////////////////////////////
+  // Private methods appear below; package-protected methods appear above
+  //
 
   /**
    * Returns the upper bound of {@code type} if it is a type variable, following the bounds of type
