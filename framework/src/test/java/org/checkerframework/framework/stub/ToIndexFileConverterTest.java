@@ -1198,74 +1198,6 @@ public class ToIndexFileConverterTest {
     assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
   }
 
-  /**
-   * A class's member types are not in scope in the class's header, such as in the bounds of its
-   * type parameters, but they are in scope in its body.
-   */
-  @Test
-  public void testMemberTypeNotInScopeInClassTypeParameterBound() throws Exception {
-    String jaif =
-        convert(
-            "package p;",
-            "class C<T extends Number> {",
-            "  static class Number {}",
-            "  void m(T x) {}",
-            "  <U extends Number> void m2(U x) {}",
-            "}");
-    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
-    assertMethod(jaif, "C", "m2(Lp/C$Number;)V");
-  }
-
-  /**
-   * In an unresolvable name, an identifier that starts with an uppercase letter is assumed to be a
-   * class name and one that starts with a lowercase letter is assumed to be a package name.
-   */
-  @Test
-  public void testUnresolvedQualifiedType() throws Exception {
-    String jaif =
-        convert(
-            "package mypackage;",
-            "class MyClass {",
-            "  void myMethod(MyOtherClass.MyNestedClass c, other.pkg.MyOtherClass o) {}",
-            "}");
-    assertMethod(
-        jaif,
-        "MyClass",
-        "myMethod(Lmypackage/MyOtherClass$MyNestedClass;Lother/pkg/MyOtherClass;)V");
-  }
-
-  /** A single-type import qualifies an unresolvable name, including a nested one. */
-  @Test
-  public void testUnresolvedImportedType() throws Exception {
-    String jaif =
-        convert(
-            "package mypackage;",
-            "import other.pkg.MyOtherClass;",
-            "class MyClass {",
-            "  void myMethod(MyOtherClass c, MyOtherClass.MyNestedClass n) {}",
-            "}");
-    assertMethod(
-        jaif,
-        "MyClass",
-        "myMethod(Lother/pkg/MyOtherClass;Lother/pkg/MyOtherClass$MyNestedClass;)V");
-  }
-
-  /**
-   * A single-type import determines the type that a name refers to, even if the imported type is
-   * not on the classpath and a type of the same name is in {@code java.lang}.
-   */
-  @Test
-  public void testUnloadableSingleTypeImportShadowsJavaLang() throws Exception {
-    String jaif =
-        convert(
-            "package mypackage;",
-            "import other.pkg.Module;",
-            "class MyClass {",
-            "  void myMethod(Module m) {}",
-            "}");
-    assertMethod(jaif, "MyClass", "myMethod(Lother/pkg/Module;)V");
-  }
-
   /** A method's JVML descriptor uses the binary name of an inherited member type. */
   @Test
   public void testInheritedNestedClass() throws Exception {
@@ -1401,6 +1333,106 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
   }
 
+  /** A package-private member type of a class in another package is not inherited. */
+  @Test
+  public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
+    // java.util.TreeMap declares a package-private member type named Entry, which hides
+    // java.util.Map.Entry in TreeMap.  MyClass inherits Map.Entry from its own superinterface.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass extends java.util.TreeMap implements java.util.Map {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A package-private member type is not inherited through a class in another package, even if the
+   * member type is in the stub file's package.
+   */
+  @Test
+  public void testPackagePrivateMemberTypeIsNotInheritedThroughOtherPackage() throws Exception {
+    // Middle, in package inheritanceb, inherits Inner from I but not from Base, whose Inner is
+    // package-private in package inheritancea.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "class MyClass extends org.checkerframework.framework.stub.inheritanceb.Middle {",
+            "  void myMethod(Inner i) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritanceb/I$Inner;)V");
+  }
+
+  /**
+   * A class's member types are not in scope in the class's header, such as in the bounds of its
+   * type parameters, but they are in scope in its body.
+   */
+  @Test
+  public void testMemberTypeNotInScopeInClassTypeParameterBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class C<T extends Number> {",
+            "  static class Number {}",
+            "  void m(T x) {}",
+            "  <U extends Number> void m2(U x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
+    assertMethod(jaif, "C", "m2(Lp/C$Number;)V");
+  }
+
+  /**
+   * In an unresolvable name, an identifier that starts with an uppercase letter is assumed to be a
+   * class name and one that starts with a lowercase letter is assumed to be a package name.
+   */
+  @Test
+  public void testUnresolvedQualifiedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass.MyNestedClass c, other.pkg.MyOtherClass o) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lmypackage/MyOtherClass$MyNestedClass;Lother/pkg/MyOtherClass;)V");
+  }
+
+  /** A single-type import qualifies an unresolvable name, including a nested one. */
+  @Test
+  public void testUnresolvedImportedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import other.pkg.MyOtherClass;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass c, MyOtherClass.MyNestedClass n) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lother/pkg/MyOtherClass;Lother/pkg/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /**
+   * A single-type import determines the type that a name refers to, even if the imported type is
+   * not on the classpath and a type of the same name is in {@code java.lang}.
+   */
+  @Test
+  public void testUnloadableSingleTypeImportShadowsJavaLang() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import other.pkg.Module;",
+            "class MyClass {",
+            "  void myMethod(Module m) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lother/pkg/Module;)V");
+  }
+
   /**
    * In a stub file that declares a cyclic inheritance hierarchy, which is not legal Java, a search
    * for a member type of a classpath counterpart, which the cycle cuts short, does not prevent a
@@ -1424,38 +1456,6 @@ public class ToIndexFileConverterTest {
             "  void myMethod(X.Entry x, W.Entry w) {}",
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V");
-  }
-
-  /** A package-private member type of a class in another package is not inherited. */
-  @Test
-  public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
-    // java.util.TreeMap declares a package-private member type named Entry, which hides
-    // java.util.Map.Entry in TreeMap.  MyClass inherits Map.Entry from its own superinterface.
-    String jaif =
-        convert(
-            "package mypackage;",
-            "class MyClass extends java.util.TreeMap implements java.util.Map {",
-            "  void myMethod(Entry e) {}",
-            "}");
-    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
-  }
-
-  /**
-   * A package-private member type is not inherited through a class in another package, even if the
-   * member type is in the stub file's package.
-   */
-  @Test
-  public void testPackagePrivateMemberTypeIsNotInheritedThroughOtherPackage() throws Exception {
-    String jaif =
-        convert(
-            "package org.checkerframework.framework.stub.inheritancefixture.a;",
-            "class MyClass extends org.checkerframework.framework.stub.inheritancefixture.b.Middle {",
-            "  void myMethod(Member m) {}",
-            "}");
-    assertMethod(
-        jaif,
-        "MyClass",
-        "myMethod(Lorg/checkerframework/framework/stub/inheritancefixture/a/Member;)V");
   }
 
   /**
