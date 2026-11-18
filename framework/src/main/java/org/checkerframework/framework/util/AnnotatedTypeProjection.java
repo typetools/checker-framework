@@ -5,6 +5,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -468,40 +469,7 @@ public final class AnnotatedTypeProjection {
    * @return true if {@code type} mentions a restricted type variable
    */
   private boolean mentionsRestricted(TypeMirror type) {
-    switch (type.getKind()) {
-      case TYPEVAR -> {
-        return isRestricted((TypeVariable) type);
-      }
-      case DECLARED -> {
-        DeclaredType declaredType = (DeclaredType) type;
-        for (TypeMirror typeArg : declaredType.getTypeArguments()) {
-          if (mentionsRestricted(typeArg)) {
-            return true;
-          }
-        }
-        return mentionsRestricted(declaredType.getEnclosingType());
-      }
-      case ARRAY -> {
-        return mentionsRestricted(((ArrayType) type).getComponentType());
-      }
-      case WILDCARD -> {
-        WildcardType wildcard = (WildcardType) type;
-        return (wildcard.getExtendsBound() != null
-                && mentionsRestricted(wildcard.getExtendsBound()))
-            || (wildcard.getSuperBound() != null && mentionsRestricted(wildcard.getSuperBound()));
-      }
-      case INTERSECTION -> {
-        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-          if (mentionsRestricted(bound)) {
-            return true;
-          }
-        }
-        return false;
-      }
-      default -> {
-        return false;
-      }
-    }
+    return mentionsTypeVariable(type, this::isRestricted);
   }
 
   /**
@@ -512,32 +480,44 @@ public final class AnnotatedTypeProjection {
    * @return true if {@code type} mentions a type parameter of {@code element}
    */
   private static boolean mentionsTypeParameter(TypeMirror type, TypeElement element) {
+    return mentionsTypeVariable(
+        type, typeVariable -> typeVariable.asElement().getEnclosingElement().equals(element));
+  }
+
+  /**
+   * Returns true if {@code type} mentions a type variable for which {@code test} returns true.
+   *
+   * @param type a type
+   * @param test a predicate on type variables
+   * @return true if {@code type} mentions a type variable for which {@code test} returns true
+   */
+  private static boolean mentionsTypeVariable(TypeMirror type, Predicate<TypeVariable> test) {
     switch (type.getKind()) {
       case TYPEVAR -> {
-        return ((TypeVariable) type).asElement().getEnclosingElement().equals(element);
+        return test.test((TypeVariable) type);
       }
       case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
         for (TypeMirror typeArg : declaredType.getTypeArguments()) {
-          if (mentionsTypeParameter(typeArg, element)) {
+          if (mentionsTypeVariable(typeArg, test)) {
             return true;
           }
         }
-        return mentionsTypeParameter(declaredType.getEnclosingType(), element);
+        return mentionsTypeVariable(declaredType.getEnclosingType(), test);
       }
       case ARRAY -> {
-        return mentionsTypeParameter(((ArrayType) type).getComponentType(), element);
+        return mentionsTypeVariable(((ArrayType) type).getComponentType(), test);
       }
       case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
-        return (wildcard.getExtendsBound() != null
-                && mentionsTypeParameter(wildcard.getExtendsBound(), element))
-            || (wildcard.getSuperBound() != null
-                && mentionsTypeParameter(wildcard.getSuperBound(), element));
+        TypeMirror extendsBound = wildcard.getExtendsBound();
+        TypeMirror superBound = wildcard.getSuperBound();
+        return (extendsBound != null && mentionsTypeVariable(extendsBound, test))
+            || (superBound != null && mentionsTypeVariable(superBound, test));
       }
       case INTERSECTION -> {
         for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-          if (mentionsTypeParameter(bound, element)) {
+          if (mentionsTypeVariable(bound, test)) {
             return true;
           }
         }

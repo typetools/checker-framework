@@ -57,8 +57,8 @@ public class RecordPatternTypeInference {
    */
   private final ExpressionTree deconstructor;
 
-  /** The inference context. */
-  private final Java8InferenceContext context;
+  /** The path to {@link #pattern}. */
+  private final TreePath pathToPattern;
 
   /**
    * Why inference failed.
@@ -93,7 +93,7 @@ public class RecordPatternTypeInference {
     this.typeFactory = typeFactory;
     this.pattern = pathToPattern.getLeaf();
     this.deconstructor = DeconstructionPatternUtils.getDeconstructor(pattern);
-    this.context = new InvocationTypeInference(typeFactory, pathToPattern).context;
+    this.pathToPattern = pathToPattern;
   }
 
   /**
@@ -166,6 +166,7 @@ public class RecordPatternTypeInference {
    * @return the result of inference
    */
   private Result inferGeneric(TypeElement record, AnnotatedTypeMirror matchedType) {
+    Java8InferenceContext context = new InvocationTypeInference(typeFactory, pathToPattern).context;
     // Step 2: the inference variables alpha1, ..., alphan, with bounds from the declared bounds.
     Theta map = context.inferenceTypeFactory.createThetaForTypeParameters(deconstructor, record);
     List<Variable> alphas = new ArrayList<>(map.values());
@@ -250,8 +251,6 @@ public class RecordPatternTypeInference {
     DeclaredType javaType = typeFactory.types.getDeclaredType(record, javaTypeArgs);
     AnnotatedDeclaredType patternType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(javaType, typeFactory, false);
-    patternType.addAnnotations(
-        typeFactory.getDefaultRecordPatternType(pattern).getPrimaryAnnotations());
     patternType.setTypeArguments(typeArgs);
     return createResult(
         matchedType,

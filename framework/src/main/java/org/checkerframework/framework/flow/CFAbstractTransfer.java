@@ -1509,9 +1509,7 @@ public abstract class CFAbstractTransfer<
     if (!PatternCaseLabelUtils.isPatternCaseLabelTree(labelPath.getLeaf())) {
       return null;
     }
-    // The parent of the case label is a case, whose parent is a switch.
-    Tree switchTree = labelPath.getParentPath().getParentPath().getLeaf();
-    return TreeUtils.switchSelector(switchTree);
+    return TreePathUtil.switchSelectorOfCaseLabel(labelPath);
   }
 
   @Override

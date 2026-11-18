@@ -5524,15 +5524,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
     TreePath bindingPatternPath = path.getParentPath();
-    TreePath recordPatternPath = bindingPatternPath.getParentPath();
-    Tree recordPattern = recordPatternPath.getLeaf();
-    if (!TreeUtils.isDeconstructionPatternTree(recordPattern)) {
+    if (!TreeUtils.isDeconstructionPatternTree(bindingPatternPath.getParentPath().getLeaf())) {
       return null;
     }
-    int index =
-        DeconstructionPatternUtils.getNestedPatterns(recordPattern)
-            .indexOf(bindingPatternPath.getLeaf());
-    return inferRecordPatternType(recordPatternPath).componentTypes().get(index).deepCopy();
+    return getTypeMatchedByPattern(bindingPatternPath);
   }
 
   /**
@@ -5552,9 +5547,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       int index = DeconstructionPatternUtils.getNestedPatterns(parent).indexOf(pattern);
       return inferRecordPatternType(parentPath).componentTypes().get(index).deepCopy();
     } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(parent)) {
-      // The parent of the case label is a case, whose parent is a switch.
-      Tree switchTree = parentPath.getParentPath().getParentPath().getLeaf();
-      return getAnnotatedType(TreeUtils.switchSelector(switchTree));
+      return getAnnotatedType(TreePathUtil.switchSelectorOfCaseLabel(parentPath));
     }
     throw new BugInCF("Unexpected parent of pattern %s: %s", pattern, parent);
   }

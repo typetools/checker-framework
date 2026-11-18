@@ -473,7 +473,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkNestedBindingPatterns(Tree recordPattern) {
     List<? extends Tree> nestedPatterns =
         DeconstructionPatternUtils.getNestedPatterns(recordPattern);
-    List<AnnotatedTypeMirror> componentTypes = null;
+    List<AnnotatedTypeMirror> componentTypes =
+        atypeFactory.getRecordPatternComponentTypes(recordPattern);
     for (int i = 0; i < nestedPatterns.size(); i++) {
       if (!(nestedPatterns.get(i) instanceof BindingPatternTree bindingPattern)) {
         continue;
@@ -481,9 +482,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       VariableTree variableTree = bindingPattern.getVariable();
       if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
         continue;
-      }
-      if (componentTypes == null) {
-        componentTypes = atypeFactory.getRecordPatternComponentTypes(recordPattern);
       }
       AnnotatedTypeMirror componentType = componentTypes.get(i);
       AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);

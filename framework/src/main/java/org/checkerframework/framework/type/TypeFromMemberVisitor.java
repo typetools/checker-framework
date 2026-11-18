@@ -14,6 +14,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -145,31 +146,30 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       VariableTree bindingVariable, AnnotatedTypeFactory f) {
     AnnotatedTypeMirror recordComponentType =
         f.getRecordComponentTypeOfBindingVariable(bindingVariable);
-    if (recordComponentType != null) {
-      AnnotatedTypeMirror projectedType = AnnotatedTypeProjection.upward(f, recordComponentType);
-      // javac does not always project the type of a `var` pattern, so compare only erasures.
-      // TODO: When javac's type has the same erasure but a different shape, keep javac's shape and
-      // give it the qualifiers of the projected type.  For Box<? extends List<? extends
-      // CharSequence>>(var x) matched against a Supplier<List<@Nullable String>>, javac's type for
-      // x is List<? extends CharSequence>, but x gets the type List<@Nullable String>, so
-      // assigning an ArrayList<StringBuilder> to x is a false positive.  (AnnotatedTypes.asSuper
-      // cannot do this: for types with the same erasure, it returns the subtype unchanged.)
-      if (TypesUtils.isErasedSameType(
-          projectedType.getUnderlyingType(), TreeUtils.typeOf(bindingVariable), f.types)) {
-        return projectedType;
-      }
-      // The inferred type of the record pattern can be more specific than the type written in the
-      // source code, such as Box<String> for Box<? extends CharSequence>(var x).  A `var` pattern
-      // matches every value of the record component, so it takes the qualifiers of the
-      // component's type arguments.
-      AnnotatedTypeMirror type = f.type(bindingVariable);
-      if (TypesUtils.isErasedSubtype(
-          projectedType.getUnderlyingType(), type.getUnderlyingType(), f.types)) {
-        return AnnotatedTypes.asSuper(f, projectedType, type);
-      }
-      return type;
+    if (recordComponentType == null) {
+      return f.type(bindingVariable);
     }
-    return f.type(bindingVariable);
+    AnnotatedTypeMirror projectedType = AnnotatedTypeProjection.upward(f, recordComponentType);
+    TypeMirror javacType = TreeUtils.typeOf(bindingVariable);
+    // javac does not always project the type of a `var` pattern, so compare only erasures.
+    // TODO: When javac's type has the same erasure but a different shape, keep javac's shape and
+    // give it the qualifiers of the projected type.  For Box<? extends List<? extends
+    // CharSequence>>(var x) matched against a Supplier<List<@Nullable String>>, javac's type for x
+    // is List<? extends CharSequence>, but x gets the type List<@Nullable String>, so assigning an
+    // ArrayList<StringBuilder> to x is a false positive.  (AnnotatedTypes.asSuper cannot do this:
+    // for types with the same erasure, it returns the subtype unchanged.)
+    if (TypesUtils.isErasedSameType(projectedType.getUnderlyingType(), javacType, f.types)) {
+      return projectedType;
+    }
+    // The inferred type of the record pattern can be more specific than the type written in the
+    // source code, such as Box<String> for Box<? extends CharSequence>(var x).  A `var` pattern
+    // matches every value of the record component, so it takes the qualifiers of the component's
+    // type arguments.
+    AnnotatedTypeMirror type = f.type(bindingVariable);
+    if (TypesUtils.isErasedSubtype(projectedType.getUnderlyingType(), javacType, f.types)) {
+      return AnnotatedTypes.asSuper(f, projectedType, type);
+    }
+    return type;
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
