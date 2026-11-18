@@ -168,14 +168,17 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
   @Override
   public void updateForMethodCall(MethodInvocationNode n, @Nullable CFValue val) {
-    super.updateForMethodCall(n, val);
     ExecutableElement method = n.getTarget().getMethod();
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
     // LockAnnotatedTypeFactory, but it affects only the LockPossiblyHeld type hierarchy (not
     // the @GuardedBy hierarchy), so it cannot use that logic.
+    // This is done before the superclass stores the value of the method call itself, so that value
+    // is not changed.  The superclass only removes other values, so the order does not otherwise
+    // matter.
     if (!atypeFactory.isSideEffectFree(method)) {
       changeLockAnnosToTopAfterSideEffect();
     }
+    super.updateForMethodCall(n, val);
   }
 
   @Override
@@ -186,8 +189,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
   /**
    * Changes the LockPossiblyHeld annotation of each stored value to top, because code that is not
-   * side-effect-free might lock or unlock any lock. Is called after the superclass has removed the
-   * values that such code might change.
+   * side-effect-free might lock or unlock any lock. The annotation in the GuardedBy hierarchy is
+   * not changed. The superclass removes the values that such code might change; this method may be
+   * called before or after that removal.
    */
   private void changeLockAnnosToTopAfterSideEffect() {
     // After the superclass has handled a side effect, only final fields are left in fieldValues.
@@ -214,6 +218,16 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       CFValue newValue = changeLockAnnoToTop(ice, iteratedCollectionElements.get(ice));
       if (newValue != null) {
         iteratedCollectionElements.put(ice, newValue);
+      }
+    }
+
+    // The superclass retains a method call that is not modifiable by other code, such as a
+    // deterministic static method with no arguments.  The lock that it returns might have been
+    // locked or unlocked.
+    for (MethodCall call : new ArrayList<>(methodCallExpressions.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(call, methodCallExpressions.get(call));
+      if (newValue != null) {
+        methodCallExpressions.put(call, newValue);
       }
     }
 
