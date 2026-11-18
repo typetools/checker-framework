@@ -49,11 +49,11 @@ public class InheritedTypeShadows {
             }
 
             @org.checkerframework.dataflow.qual.SideEffectFree
-            void expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Local this, Foo f) {
+            void expectsSibling1(Local this, Foo f) {
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            Foo getSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Local this) {
+            Foo getSibling1(Local this) {
                 return null;
             }
         }
