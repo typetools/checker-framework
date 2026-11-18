@@ -9,6 +9,7 @@ public class Issue579<T> implements Comparator<T> {
 
   @SideEffectFree
   @SuppressWarnings("unchecked")
+  @SideEffectFree
   Issue579(Comparator<? super T> real) {
     this.real = (Comparator<T>) real;
   }
