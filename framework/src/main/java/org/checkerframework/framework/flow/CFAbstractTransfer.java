@@ -1119,14 +1119,16 @@ public abstract class CFAbstractTransfer<
       // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type
       // factory computes for the call) comes from the declared return type of `intValue()`, which
       // lacks the qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
+      // Where the two are incomparable, the qualifier of `x` wins, because the declared return
+      // type, such as `@FenumUnqualified int`, says nothing about `x`.
       V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
-      resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), operandValue));
+      resValue = moreSpecificValue(getUnboxedValue(n.getType(), operandValue), resValue);
     } else if (n.isBoxing()) {
       // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
       // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
-      // of `x`, the value being boxed.
+      // of `x`, the value being boxed.  Where the two are incomparable, the qualifier of `x` wins.
       V operandValue = in.getValueOfSubNode(n.getArgument(0));
-      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
+      resValue = moreSpecificValue(getBoxedValue(n.getType(), operandValue), resValue);
     }
 
     store.updateForMethodCall(n, resValue);
