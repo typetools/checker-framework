@@ -162,6 +162,14 @@ public class Issue3028 {
     Object y = (List<? extends @NonNull Object> & Serializable) o;
   }
 
+  interface Extra<E> {}
+
+  void intersectionBoundUnrelatedToExpression(Collection<?> c) {
+    Object x = (List<?> & Extra<?>) c;
+    // :: warning: [cast.unsafe]
+    Object y = (List<?> & Extra<? extends @NonNull Object>) c;
+  }
+
   void fBoundedWildcardDowncast(Object o) {
     Enum<?> e = (Enum<?>) o;
     Comparable<?> c = (Comparable<?>) o;
