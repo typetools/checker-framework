@@ -21,6 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.AnnotatedTypeProjection;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -135,22 +136,22 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * Returns the type of the binding variable declared by a {@code var} pattern. Let P be the upward
-   * projection of the type of the record component that the pattern is matched against (JLS
-   * 14.30.1). The result is:
+   * Returns the type of the binding variable declared by a {@code var} pattern. If {@code
+   * bindingVariable} is not in the current compilation unit, the result is the Java type of {@code
+   * bindingVariable}, without annotations. Otherwise, let P be the upward projection of the type of
+   * the record component that the pattern is matched against (JLS 14.30.1). The result is:
    *
    * <ul>
    *   <li>P, if P has the same erasure as the Java type of {@code bindingVariable};
-   *   <li>otherwise, if the erasure of P is a subtype of the erasure of the Java type of {@code
-   *       bindingVariable}, the Java type of {@code bindingVariable} with the qualifiers of P, as
-   *       computed by {@link AnnotatedTypes#asSuper};
-   *   <li>otherwise, or if {@code bindingVariable} is not in the current compilation unit, the Java
-   *       type of {@code bindingVariable}, without annotations.
+   *   <li>otherwise, the Java type of {@code bindingVariable} with the qualifiers of P, as computed
+   *       by {@link AnnotatedTypes#asSuper}.
    * </ul>
    *
    * @param bindingVariable a binding variable declared by a {@code var} pattern
    * @param f the annotated type factory
    * @return the type of {@code bindingVariable}
+   * @throws BugInCF if the erasure of P is not a subtype of the erasure of the Java type of {@code
+   *     bindingVariable}
    */
   private static AnnotatedTypeMirror varPatternType(
       VariableTree bindingVariable, AnnotatedTypeFactory f) {
@@ -176,11 +177,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // more specific than the record pattern's Java type, such as Box<String> for Box<? extends
     // CharSequence>(var x).  A `var` pattern matches every value of the record component, so its
     // binding variable takes the qualifiers of the type arguments of the component's type.
-    AnnotatedTypeMirror defaultedType = f.type(bindingVariable);
-    if (TypesUtils.isErasedSubtype(projectedType.getUnderlyingType(), javacType, f.types)) {
-      return AnnotatedTypes.asSuper(f, projectedType, defaultedType);
+    if (!TypesUtils.isErasedSubtype(projectedType.getUnderlyingType(), javacType, f.types)) {
+      throw new BugInCF(
+          "The type %s of `var` binding variable %s is not a subtype of its Java type %s",
+          projectedType, TreeUtils.toStringTruncated(bindingVariable, 65), javacType);
     }
-    return defaultedType;
+    return AnnotatedTypes.asSuper(f, projectedType, f.type(bindingVariable));
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That
