@@ -183,12 +183,14 @@ final class IgnoredAnnotations {
    * <ol>
    *   <li>If neither type has an origin (see {@link ProperType#getOrigin}), then neither has
    *       ignored positions, so return the types' own annotated types.
-   *   <li>Find the supertype of each type whose class is that of {@code resultType} (see {@link
-   *       #asSuper}). If the two supertypes are of different classes, then their positions do not
-   *       correspond, so return the types' own annotated types.
+   *   <li>Find the supertype whose class is that of {@code resultType} (see {@link #asSuper}) of
+   *       each type, or of its upper bound if it is a type variable. If the two supertypes are of
+   *       different classes, then their positions do not correspond, so return the types' own
+   *       annotated types.
    *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
    *       the annotations of the corresponding position of the other (see {@link
-   *       #replaceIgnoredPositions}).
+   *       #replaceIgnoredPositions}), except that a type variable is returned itself, with no
+   *       annotations replaced.
    * </ol>
    *
    * <p>This method does not replace primary annotations that are ignored because of {@link
@@ -201,7 +203,8 @@ final class IgnoredAnnotations {
    * @param qh the qualifier hierarchy
    * @param types the type utilities
    * @return a pair of annotated types: {@code type1} and {@code type2}, or their supertypes whose
-   *     class is that of {@code resultType}, with ignored positions replaced
+   *     class is that of {@code resultType}, with ignored positions replaced; a type variable is
+   *     returned itself
    */
   static ReplacedTypes replaceIgnoredForLubOrGlb(
       AbstractType type1,
@@ -214,8 +217,12 @@ final class IgnoredAnnotations {
     if (upToDate1.getOrigin() == null && upToDate2.getOrigin() == null) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
-    AbstractType asSuper1 = asSuper(upToDate1, resultType, types);
-    AbstractType asSuper2 = asSuper(upToDate2, resultType, types);
+    // The least upper bound or greatest lower bound of a type variable is computed from its upper
+    // bound, so the positions of a type variable are those of its upper bound.
+    AbstractType bound1 = upperBoundIfTypeVariable(upToDate1);
+    AbstractType bound2 = upperBoundIfTypeVariable(upToDate2);
+    AbstractType asSuper1 = asSuper(bound1, resultType, types);
+    AbstractType asSuper2 = asSuper(bound2, resultType, types);
     if (!types.isSameType(
         types.erasure(asSuper1.getJavaType()), types.erasure(asSuper2.getJavaType()))) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
@@ -224,7 +231,12 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror atm2 = asSuper2.getAnnotatedType().deepCopy();
     replaceIgnoredPositions(
         atm1, atm2, ignoredPositions(asSuper1, atm1, qh), ignoredPositions(asSuper2, atm2, qh));
-    return new ReplacedTypes(atm1, atm2);
+    // A type variable is returned itself, because the least upper bound or greatest lower bound
+    // needs it rather than its upper bound.  TODO: Replace the ignored positions within the upper
+    // bound of a type variable too.
+    return new ReplacedTypes(
+        bound1 == upToDate1 ? atm1 : upToDate1.getAnnotatedType(),
+        bound2 == upToDate2 ? atm2 : upToDate2.getAnnotatedType());
   }
 
   /**
