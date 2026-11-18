@@ -23,7 +23,6 @@ public class Issue6716 {
   }
 
   static @Interned Integer sum(Integer a, Integer b) {
-    // :: error: [return]
     return a + b;
   }
 }

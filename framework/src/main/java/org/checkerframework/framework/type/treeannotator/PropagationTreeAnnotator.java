@@ -29,7 +29,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.MapsP;
 
 /**
@@ -95,27 +94,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getAnnotations();
-        // The type that `annos` describes.
-        TypeMirror annosTM = initType.getUnderlyingType();
-        boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
-        if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
-          // The initializer is boxed or unboxed (JLS 5.2).  A primitive initializer is boxed to the
-          // component type if that is a boxed primitive, as in `new Byte[] {1}`.
-          annos =
-              initIsPrimitive
-                  ? atypeFactory.getBoxedAnnotations(
-                      annos,
-                      TypesUtils.isBoxedPrimitive(componentTM)
-                          ? atypeFactory.types.unboxedType(componentTM).getKind()
-                          : annosTM.getKind())
-                  : atypeFactory.getUnboxedAnnotations(annos, componentTM.getKind());
-          annosTM = componentTM;
-        }
 
         prev =
             (prev == null)
                 ? annos
-                : qualHierarchy.leastUpperBoundsShallow(prev, componentTM, annos, annosTM);
+                : qualHierarchy.leastUpperBoundsShallow(
+                    prev, componentTM, annos, initType.getUnderlyingType());
       }
     } else {
       prev = componentType.getPrimaryAnnotations();
