@@ -73,8 +73,8 @@ final class WhileDisposalLoopMatcher {
   /**
    * Methods other than {@link #ITERATOR_EXTRACT_METHODS} that an iterator loop may call on its
    * iterator. Any other use of the iterator, such as {@code it.forEachRemaining(...)} or passing
-   * {@code it} to a method, could advance the iterator past elements that the loop does not
-   * dispose of.
+   * {@code it} to a method, could advance the iterator past elements that the loop does not dispose
+   * of.
    */
   private static final Set<String> ITERATOR_PERMITTED_METHODS = Set.of("hasNext", "remove");
 
@@ -700,9 +700,9 @@ final class WhileDisposalLoopMatcher {
     }
 
     /**
-     * Returns true if {@code invocation}, whose receiver is the header variable, is permitted in the
-     * loop body. A permitted call is an allowed extraction call, or a call that neither advances
-     * the iterator nor removes elements from the collection without returning them.
+     * Returns true if {@code invocation}, whose receiver is the header variable, is permitted in
+     * the loop body. A permitted call is an allowed extraction call, or a call that neither
+     * advances the iterator nor removes elements from the collection without returning them.
      *
      * @param invocation a method invocation whose receiver is the header variable
      * @return true if {@code invocation} is permitted in the loop body

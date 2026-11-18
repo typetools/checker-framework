@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.checkerframework.checker.collectionownership.qual.*;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 
 class PolyOwningCollectionReturn {
 
@@ -20,6 +21,24 @@ class PolyOwningCollectionReturn {
   }
 
   static void takeIterator(Iterator<String> it) {}
+
+  @InheritableMustCall("close")
+  static class Pool implements Iterable<Resource> {
+    final @OwningCollection List<Resource> rs = new ArrayList<>();
+
+    @Override
+    public Iterator<Resource> iterator() {
+      return rs.iterator();
+    }
+
+    @CollectionFieldDestructor("this.rs")
+    void close() {
+      for (Resource r : rs) {
+        r.close();
+        r.flush();
+      }
+    }
+  }
 
   void iteratorRemoveWithoutObligation() {
     List<Resource> l = new ArrayList<>();
@@ -58,6 +77,13 @@ class PolyOwningCollectionReturn {
     for (Resource r : self(l)) {
       r.flush();
     }
+    dispose(l);
+  }
+
+  void subListOfArrayList() {
+    ArrayList<Resource> l = new ArrayList<>();
+    l.add(new Resource());
+    List<Resource> view = l.subList(0, 1);
     dispose(l);
   }
 

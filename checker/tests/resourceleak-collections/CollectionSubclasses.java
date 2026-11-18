@@ -5,10 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.checkerframework.checker.collectionownership.qual.*;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 
 class CollectionSubclasses {
 
-  static class ResourceList<E> extends ArrayList<E> {}
+  static class ResourceList<E extends @MustCallUnknown Object> extends ArrayList<E> {}
+
+  // Without a @MustCallUnknown bound, the elements of a user-defined collection class cannot be
+  // resources.
+  static class PlainList<E> extends ArrayList<E> {}
+
+  // :: error: type.argument
+  void plainListOfResources(PlainList<Resource> list) {}
 
   void leakArrayList() {
     List<Resource> list = new ArrayList<>();

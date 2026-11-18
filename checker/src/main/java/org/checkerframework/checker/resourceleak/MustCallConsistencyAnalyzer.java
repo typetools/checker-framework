@@ -994,7 +994,8 @@ public class MustCallConsistencyAnalyzer {
         // mustCallValues is null if the type is not a collection with one type argument, such as
         // a user-annotated `@OwningCollection Map<String, Socket>`. Such a value has no
         // collection obligations.
-        if (mustCallValues != null && !ResourceLeakUtils.isIterator(node.getType())) {
+        if (mustCallValues != null
+            && !ResourceLeakUtils.isIterator(node.getType(), cmAtf.getProcessingEnv())) {
           for (String mustCallMethod : mustCallValues) {
             obligations.add(
                 new CollectionObligation(
@@ -3109,7 +3110,7 @@ public class MustCallConsistencyAnalyzer {
         if (coAtf.isOwningCollectionParameter(paramElement)) {
           List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
           if (mustCallValues != null) {
-            if (!ResourceLeakUtils.isIterator(paramElement.asType())) {
+            if (!ResourceLeakUtils.isIterator(paramElement.asType(), cmAtf.getProcessingEnv())) {
               for (String mustCallMethod : mustCallValues) {
                 // The method takes ownership only if it returns normally; if it throws, the caller
                 // still owns the collection.

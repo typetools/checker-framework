@@ -189,6 +189,15 @@ public class CollectionOwnershipVisitor
       AnnotatedExecutableType overriddenMethodType,
       AnnotatedDeclaredType overriddenType,
       AnnotatedTypeMirror overriddenReturnType) {
+    // A @PolyOwningCollection return never owns its elements, so an override may return
+    // @NotOwningCollection.
+    AnnotatedTypeMirror effectiveOverriddenReturnType = overriddenReturnType;
+    if (overriddenReturnType.hasPrimaryAnnotation(atypeFactory.POLY)
+        && overriderReturnType.hasPrimaryAnnotation(atypeFactory.NOTOWNINGCOLLECTION)
+        && atypeFactory.isResourceCollection(overriderReturnType.getUnderlyingType())) {
+      effectiveOverriddenReturnType = overriddenReturnType.deepCopy();
+      effectiveOverriddenReturnType.replaceAnnotation(atypeFactory.NOTOWNINGCOLLECTION);
+    }
     return new CollectionOwnershipOverrideChecker(
         overriderTree,
         overriderMethodType,
@@ -196,7 +205,7 @@ public class CollectionOwnershipVisitor
         overriderReturnType,
         overriddenMethodType,
         overriddenType,
-        overriddenReturnType);
+        effectiveOverriddenReturnType);
   }
 
   /**
@@ -243,7 +252,8 @@ public class CollectionOwnershipVisitor
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
       if (overriderReceiver != null
-          && !ResourceLeakUtils.isCollection(overriderReceiver.getUnderlyingType())) {
+          && !ResourceLeakUtils.isCollection(
+              overriderReceiver.getUnderlyingType(), atypeFactory.getProcessingEnv())) {
         return true;
       }
       return super.checkReceiverOverride();

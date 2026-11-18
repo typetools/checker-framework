@@ -5,10 +5,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
@@ -26,6 +29,7 @@ import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -220,42 +224,125 @@ public final class ResourceLeakUtils {
 
   /**
    * Returns true if the given {@link TypeMirror} is a java.lang.Iterable, java.util.Iterator, or
-   * java.util.Map subtype. This is determined by getting the class of the TypeMirror and checking
-   * whether it is assignable from any of these types.
+   * java.util.Map subtype.
    *
    * @param type the TypeMirror
+   * @param env the processing environment
    * @return true if type is subtype of a java.lang.Iterable, java.util.Iterator, or java.util.Map
    */
-  public static boolean isCollection(TypeMirror type) {
-    if (type == null) {
-      return false;
-    }
-    Class<?> elementRawType = TypesUtils.getClassFromType(type);
-    if (elementRawType == null) {
-      return false;
-    }
-    return Iterable.class.isAssignableFrom(elementRawType)
-        || Iterator.class.isAssignableFrom(elementRawType)
-        || Map.class.isAssignableFrom(elementRawType);
+  public static boolean isCollection(@Nullable TypeMirror type, ProcessingEnvironment env) {
+    return isSubtypeOf(type, Iterable.class, env)
+        || isSubtypeOf(type, Iterator.class, env)
+        || isSubtypeOf(type, Map.class, env);
   }
 
   /**
-   * Returns true if the given {@link TypeMirror} is a java.util.Iterator subclass. This is
-   * determined by getting the class of the TypeMirror and checking whether it is assignable from
-   * java.util.Iterator.
+   * Returns true if the given {@link TypeMirror} is a java.util.Iterator subtype.
    *
    * @param type the TypeMirror
+   * @param env the processing environment
    * @return true if type is a java.util.Iterator
    */
-  public static boolean isIterator(TypeMirror type) {
-    if (type == null) {
-      return false;
+  public static boolean isIterator(@Nullable TypeMirror type, ProcessingEnvironment env) {
+    return isSubtypeOf(type, Iterator.class, env);
+  }
+
+  /**
+   * Returns true if the given type is a declared type whose erasure is a subtype of the given
+   * class.
+   *
+   * @param type a type
+   * @param clazz a class
+   * @param env the processing environment
+   * @return true if the given type is a declared type whose erasure is a subtype of {@code clazz}
+   */
+  private static boolean isSubtypeOf(
+      @Nullable TypeMirror type, Class<?> clazz, ProcessingEnvironment env) {
+    return type != null
+        && type.getKind() == TypeKind.DECLARED
+        && TypesUtils.isErasedSubtype(
+            type,
+            TypesUtils.typeFromClass(clazz, env.getTypeUtils(), env.getElementUtils()),
+            env.getTypeUtils());
+  }
+
+  /**
+   * Returns the element type of the given collection type: the type argument of its {@code
+   * Iterable} or {@code Iterator} supertype. For example, it is {@code Resource} for {@code
+   * List<Resource>}, for {@code ConcurrentHashMap.KeySetView<Resource, Boolean>}, and for a class
+   * that extends {@code ArrayList<Resource>}.
+   *
+   * <p>The element type comes from the {@code Iterable} or {@code Iterator} supertype because a
+   * collection's own type arguments may not include it, or may include others: {@code
+   * KeySetView<Resource, Boolean>} has two type arguments, and a class that implements {@code
+   * Iterable<Resource>} may have none.
+   *
+   * @param type a type
+   * @param env the processing environment
+   * @return the element type of the given type, or null if it is not an {@code Iterable} or {@code
+   *     Iterator} with a type argument, as for a {@code Map}
+   */
+  public static @Nullable TypeMirror getCollectionElementType(
+      TypeMirror type, ProcessingEnvironment env) {
+    if (type.getKind() != TypeKind.DECLARED) {
+      return null;
     }
-    Class<?> elementRawType = TypesUtils.getClassFromType(type);
-    if (elementRawType == null) {
-      return false;
+    for (Class<?> clazz : List.of(Iterable.class, Iterator.class)) {
+      TypeMirror asSuper =
+          TypesUtils.asSuper(
+              type,
+              TypesUtils.typeFromClass(clazz, env.getTypeUtils(), env.getElementUtils()),
+              env);
+      if (asSuper instanceof DeclaredType declaredType
+          && declaredType.getTypeArguments().size() == 1) {
+        return declaredType.getTypeArguments().get(0);
+      }
     }
-    return Iterator.class.isAssignableFrom(elementRawType);
+    return null;
+  }
+
+  /**
+   * Returns the index of the type parameter of the given class that is its element type, as defined
+   * by {@link #getCollectionElementType}, or -1 if its element type is not one of its type
+   * parameters. For example, it is 0 for {@code ArrayList<E>} and for {@code KeySetView<K, V>}.
+   *
+   * @param classElt a class or interface
+   * @param env the processing environment
+   * @return the index of the type parameter that is the element type of the class, or -1
+   */
+  public static int collectionElementTypeParameterIndex(
+      TypeElement classElt, ProcessingEnvironment env) {
+    TypeMirror elementType = getCollectionElementType(classElt.asType(), env);
+    return elementType instanceof TypeVariable typeVariable
+        ? classElt.getTypeParameters().indexOf(typeVariable.asElement())
+        : -1;
+  }
+
+  /**
+   * Returns the type argument of the given type that is its element type, as defined by {@link
+   * #getCollectionElementType}. For example, it is {@code Socket} for {@code List<Socket>} and for
+   * {@code KeySetView<Socket, Boolean>}. Returns null if the type is not a collection, is raw, or
+   * has no type argument that is its element type, as for a class that implements {@code
+   * Iterable<Socket>} and has no type parameters.
+   *
+   * @param type a type
+   * @param env the processing environment
+   * @return the type argument of {@code type} that is its element type, or null
+   */
+  public static @Nullable AnnotatedTypeMirror getCollectionElementTypeArgument(
+      AnnotatedTypeMirror type, ProcessingEnvironment env) {
+    if (!(type instanceof AnnotatedDeclaredType declaredType)) {
+      return null;
+    }
+    TypeElement classElt = TypesUtils.getTypeElement(declaredType.getUnderlyingType());
+    if (classElt == null) {
+      return null;
+    }
+    int elementIndex = collectionElementTypeParameterIndex(classElt, env);
+    List<? extends AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+    return elementIndex >= 0 && typeArgs.size() == classElt.getTypeParameters().size()
+        ? typeArgs.get(elementIndex)
+        : null;
   }
 
   /**
