@@ -25,7 +25,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -83,6 +82,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -1551,29 +1551,33 @@ public abstract class CFAbstractTransfer<
    * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
    * This is only called at an unboxing conversion.
    *
-   * <p>If {@code annotatedValue}'s type is a type variable, such as {@code T extends @Odd Integer},
-   * and {@code annotatedValue} lacks an annotation in some hierarchy, then this method uses the
-   * annotation of the type variable's upper bound in that hierarchy.
+   * <p>If {@code annotatedValue} lacks an annotation in some hierarchy and its type is a type
+   * variable, such as {@code T} for {@code T extends @Odd Integer}, or a wildcard whose extends
+   * bound is a type variable, such as {@code ? extends T}, then this method uses the annotation of
+   * the type variable's upper bound in that hierarchy.
    *
    * @param type the primitive type to unbox to
    * @param annotatedValue a value to unbox
    * @return an abstract value with the given {@code type} and the annotations from {@code
-   *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
-   *     lacks an annotation in some hierarchy and its type is not a type variable
+   *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or if
+   *     the result would lack an annotation in some hierarchy
    */
   protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }
     AnnotationMirrorSet annos = annotatedValue.getAnnotations();
-    if (annotatedValue.getUnderlyingType() instanceof TypeVariable typeVariable) {
-      AnnotationMirrorSet upperBoundAnnos =
-          analysis.atypeFactory.getAnnotatedType(typeVariable.asElement()).getAnnotations();
-      QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
-      annos = new AnnotationMirrorSet(annos);
-      for (AnnotationMirror upperBoundAnno : upperBoundAnnos) {
-        if (qualHierarchy.findAnnotationInSameHierarchy(annos, upperBoundAnno) == null) {
-          annos.add(upperBoundAnno);
+    QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
+    if (annos.size() < qualHierarchy.getTopAnnotations().size()) {
+      AnnotatedTypeVariable typeVar =
+          CFAbstractValue.getTypeVar(annotatedValue.getUnderlyingType(), analysis.atypeFactory);
+      if (typeVar != null) {
+        AnnotationMirrorSet upperBoundAnnos = typeVar.getAnnotations();
+        annos = new AnnotationMirrorSet(annos);
+        for (AnnotationMirror upperBoundAnno : upperBoundAnnos) {
+          if (qualHierarchy.findAnnotationInSameHierarchy(annos, upperBoundAnno) == null) {
+            annos.add(upperBoundAnno);
+          }
         }
       }
     }
