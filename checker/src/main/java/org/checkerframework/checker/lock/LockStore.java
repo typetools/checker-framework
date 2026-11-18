@@ -124,7 +124,14 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       set.add(atypeFactory.LOCKPOSSIBLYHELD);
       return analysis.createAbstractValue(set, je.getType());
     }
+    return changeLockAnnoToTop(currentValue);
+  }
 
+  /**
+   * Returns a new CFValue with the same annotations as currentValue except that the annotation in
+   * the LockPossiblyHeld hierarchy is set to LockPossiblyHeld.
+   */
+  private CFValue changeLockAnnoToTop(CFValue currentValue) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
@@ -214,7 +221,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       }
 
       if (thisValue != null) {
-        thisValue = changeLockAnnoToTop(null, thisValue);
+        thisValue = changeLockAnnoToTop(thisValue);
       }
     }
   }
