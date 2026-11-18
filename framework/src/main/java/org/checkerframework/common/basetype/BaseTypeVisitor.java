@@ -4089,7 +4089,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TypeMirror throwTM = throwType.getUnderlyingType();
     Set<? extends AnnotationMirror> required = getThrowUpperBoundAnnotations();
     switch (throwType.getKind()) {
-      case NULL, DECLARED, TYPEVAR, WILDCARD -> {
+      case NULL, DECLARED, TYPEVAR, WILDCARD, INTERSECTION -> {
         if (!typeHierarchy.isSubtypeShallowEffective(throwType, required)) {
           AnnotationMirrorSet found = throwType.getAnnotations();
           checker.reportError(tree.getExpression(), "throw", found, required);
