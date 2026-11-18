@@ -265,6 +265,22 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * Replaces any interning type annotation with @UnknownInterned, since a boxed value need not be
+   * interned, even though every primitive is. For example, {@code Integer.valueOf(1000) ==
+   * Integer.valueOf(1000)} can be false. The exceptions are {@code boolean} and {@code byte}:
+   * {@code Boolean.valueOf()} and {@code Byte.valueOf()} return a cached object for every value, so
+   * a boxed {@code boolean} or {@code byte} is @Interned.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  public AnnotationMirrorSet getBoxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    boolean everyValueCached = primitiveKind == TypeKind.BOOLEAN || primitiveKind == TypeKind.BYTE;
+    return replaceInterningAnnotation(annos, everyValueCached ? INTERNED : TOP);
+  }
+
+  /**
    * Returns a copy of {@code annos} in which {@code interningAnno} replaces the annotation of the
    * interning hierarchy, if any.
    *
