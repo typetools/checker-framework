@@ -2890,11 +2890,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    if (hasExceptionalPath(exceptionalFinallyLabel)) {
+    Set<TypeMirror> exceptionalFinallyCauses = exceptionsReaching(exceptionalFinallyLabel);
+    if (!exceptionalFinallyCauses.isEmpty()) {
       // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
       // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
       // is no successful path, it will be removed in later phase.
-      // TODO: Don't we need a separate finally block for each kind of exception?
+      // After the finally block completes normally, it rethrows the exception that reached it,
+      // so the end of the finally block might throw each exception that reached its start.  A
+      // single copy of the finally block serves all of those exceptions, so the analysis merges
+      // their stores within the finally block.
       addLabelForNextNode(exceptionalFinallyLabel);
       extendWithNode(
           new MarkerNode(
@@ -2905,12 +2909,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       exceptionalFinallyBlockCFGGenerator.run();
 
       NodeWithExceptionsHolder throwing =
-          extendWithNodeWithException(
+          extendWithNodeWithExceptions(
               new MarkerNode(
                   markerTree,
                   "end of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
-              throwableType);
+              exceptionalFinallyCauses);
 
       throwing.setTerminatesExecution(true);
     }
@@ -3036,22 +3040,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if an exceptional node for {@code target} exists in {@link #nodeList}.
+   * Returns the types of the exceptions that a node in {@link #nodeList} throws to the given label,
+   * without duplicates.
    *
-   * @param target label for exception
-   * @return true when an exceptional node for {@code target} exists in {@link #nodeList}
+   * @param target a label, such as the entry of a finally block for exceptions
+   * @return the exception types, such as {@code java.io.IOException}, for which some node in {@link
+   *     #nodeList} has an exceptional edge to {@code target}; empty if no node does
    */
-  private boolean hasExceptionalPath(Label target) {
+  private Set<TypeMirror> exceptionsReaching(Label target) {
+    Set<TypeMirror> result = new ArraySet<>();
     for (ExtendedNode node : nodeList) {
       if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
-        for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
-          if (labels.contains(target)) {
-            return true;
+        for (Map.Entry<TypeMirror, Set<Label>> entry : exceptionalNode.getExceptions().entrySet()) {
+          TypeMirror cause = entry.getKey();
+          if (entry.getValue().contains(target)
+              && !CollectionsP.anyMatch(result, t -> types.isSameType(t, cause))) {
+            result.add(cause);
           }
         }
       }
     }
-    return false;
+    return result;
   }
 
   @Override
