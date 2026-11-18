@@ -26,7 +26,7 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
    * Scans each JavaExpression in {@code expressions}.
    *
    * @param expressions a list of JavaExpressions to scan
-   * @param p pameter to pass
+   * @param p parameter to pass
    */
   public void scan(List<? extends @Nullable JavaExpression> expressions, P p) {
     for (JavaExpression expression : expressions) {
@@ -75,6 +75,12 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
 
   @Override
   protected Void visitLocalVariable(LocalVariable localVarExpr, P p) {
+    return null;
+  }
+
+  @Override
+  protected Void visitIteratedCollectionElement(
+      IteratedCollectionElement iteratedCollectionElement, P p) {
     return null;
   }
 

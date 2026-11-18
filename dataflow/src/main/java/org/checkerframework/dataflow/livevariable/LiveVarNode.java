@@ -7,10 +7,10 @@ import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
  * A LiveVarNode contains a CFG node, which can only be a LocalVariableNode or FieldAccessNode. It
- * is used to represent the estimate of live variables at certain CFG block during dataflow
+ * is used to represent the estimate of live variables at a certain CFG block during dataflow
  * analysis. We override `.equals` in this class to compare nodes by value equality rather than
- * reference equality. We want two different nodes with the same value (that is, two nodes refer to
- * the same live variable in the program) to be regarded as the same.
+ * reference equality. We want two different nodes with the same value (that is, two nodes that
+ * refer to the same live variable in the program) to be regarded as the same.
  */
 public class LiveVarNode {
 
@@ -22,7 +22,7 @@ public class LiveVarNode {
   protected final Node liveVariable;
 
   /**
-   * Create a new live variable.
+   * Creates a new live variable.
    *
    * @param n a node
    */

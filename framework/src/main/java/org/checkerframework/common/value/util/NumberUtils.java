@@ -87,10 +87,10 @@ public final class NumberUtils {
   }
 
   /**
-   * Returns the given number, casted to unsigned byte.
+   * Returns the given number, cast to unsigned byte.
    *
    * @param n a number
-   * @return the given number, casted to unsigned byte
+   * @return the given number, cast to unsigned byte
    */
   private static Short byteValueUnsigned(Number n) {
     short result = n.byteValue();
@@ -101,10 +101,10 @@ public final class NumberUtils {
   }
 
   /**
-   * Returns the given number, casted to unsigned short.
+   * Returns the given number, cast to unsigned short.
    *
    * @param n a number
-   * @return the given number, casted to unsigned short
+   * @return the given number, cast to unsigned short
    */
   private static Integer shortValueUnsigned(Number n) {
     int result = n.shortValue();
@@ -115,10 +115,10 @@ public final class NumberUtils {
   }
 
   /**
-   * Returns the given number, casted to unsigned int.
+   * Returns the given number, cast to unsigned int.
    *
    * @param n a number
-   * @return the given number, casted to unsigned int
+   * @return the given number, cast to unsigned int
    */
   private static Long intValueUnsigned(Number n) {
     long result = n.intValue();
@@ -129,7 +129,7 @@ public final class NumberUtils {
   }
 
   /**
-   * Returns a range that restricts the given range to the given type. That is, return the range
+   * Returns a range that restricts the given range to the given type. That is, returns the range
    * resulting from casting a value with the given range.
    *
    * @param type the type for the cast; the result will be within it

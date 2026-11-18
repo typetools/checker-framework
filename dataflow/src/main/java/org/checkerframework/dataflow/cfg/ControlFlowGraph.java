@@ -78,19 +78,23 @@ public class ControlFlowGraph implements UniqueId {
    *
    * <ul>
    *   <li>Most Trees that produce a value will have at least one corresponding Node.
-   *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
-   *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while the
-   *       Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
+   *   <li>Trees that undergo implicit conversions, such as boxing or unboxing, can map to two
+   *       distinct Nodes. The Node for the value before implicit conversion is stored in {@link
+   *       #treeLookup}, while the Node for the value after implicit conversion is stored in {@link
+   *       #implicitlyConvertedTreeLookup}.
    * </ul>
    *
-   * Some of the mapped-to nodes (in both {@link #treeLookup} and {@link #convertedTreeLookup}) do
-   * not appear in {@link #getAllNodes} because their blocks are not reachable in the control flow
-   * graph. Dataflow will not compute abstract values for these nodes.
+   * Some of the mapped-to nodes (in both {@link #treeLookup} and {@link
+   * #implicitlyConvertedTreeLookup}) do not appear in {@link #getAllNodes} because their blocks are
+   * not reachable in the control flow graph. Dataflow will not compute abstract values for these
+   * nodes.
    */
   protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
-  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
+  /**
+   * Map from AST {@link Tree}s to sets of {@link Node}s for their values after implicit conversion.
+   */
+  protected final IdentityHashMap<Tree, Set<Node>> implicitlyConvertedTreeLookup;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
@@ -122,7 +126,7 @@ public class ControlFlowGraph implements UniqueId {
       SpecialBlockImpl exceptionalExitBlock,
       UnderlyingAST underlyingAST,
       IdentityHashMap<Tree, Set<Node>> treeLookup,
-      IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
+      IdentityHashMap<Tree, Set<Node>> implicitlyConvertedTreeLookup,
       IdentityHashMap<UnaryTree, BinaryTree> postfixNodeLookup,
       List<ReturnNode> returnNodes,
       List<ClassTree> declaredClasses,
@@ -132,7 +136,7 @@ public class ControlFlowGraph implements UniqueId {
     this.underlyingAST = underlyingAST;
     this.treeLookup = treeLookup;
     this.postfixNodeLookup = postfixNodeLookup;
-    this.convertedTreeLookup = convertedTreeLookup;
+    this.implicitlyConvertedTreeLookup = implicitlyConvertedTreeLookup;
     this.regularExitBlock = regularExitBlock;
     this.exceptionalExitBlock = exceptionalExitBlock;
     this.returnNodes = returnNodes;
@@ -141,7 +145,7 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Verify that this is a complete and well-formed CFG, i.e. that all internal invariants hold.
+   * Verifies that this is a complete and well-formed CFG, i.e., that all internal invariants hold.
    *
    * @throws IllegalStateException if some internal invariant is violated
    */
@@ -197,8 +201,8 @@ public class ControlFlowGraph implements UniqueId {
    *     trees that don't produce a value
    */
   public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
-    if (convertedTreeLookup.containsKey(t)) {
-      return convertedTreeLookup.get(t);
+    if (implicitlyConvertedTreeLookup.containsKey(t)) {
+      return implicitlyConvertedTreeLookup.get(t);
     } else {
       return treeLookup.get(t);
     }
@@ -344,9 +348,9 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * Returns all basic blocks in this control flow graph, in reversed depth-first postorder. Blocks
-   * may appear more than once in the sequence.
+   * can appear more than once in the sequence.
    *
-   * @return the list of all basic block in this control flow graph in reversed depth-first
+   * @return the list of all basic blocks in this control flow graph in reversed depth-first
    *     postorder sequence
    */
   public List<Block> getDepthFirstOrderedBlocks() {
@@ -376,8 +380,8 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Returns an unmodifiable view of the tree-lookup map. Ignores convertedTreeLookup, though {@link
-   * #getNodesCorrespondingToTree} uses that field.
+   * Returns an unmodifiable view of the tree-lookup map. Ignores implicitlyConvertedTreeLookup,
+   * though {@link #getNodesCorrespondingToTree} uses that field.
    *
    * @return the unmodifiable tree-lookup map
    */
@@ -467,7 +471,9 @@ public class ControlFlowGraph implements UniqueId {
     }
     result.add("underlyingAST=" + astString);
     result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
-    result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
+    result.add(
+        "implicitlyConvertedTreeLookup="
+            + AnalysisResult.treeLookupToString(implicitlyConvertedTreeLookup));
     result.add("postfixLookup=" + postfixNodeLookup);
     result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
     result.add("declaredClasses=" + declaredClasses);

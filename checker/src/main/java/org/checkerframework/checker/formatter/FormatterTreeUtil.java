@@ -2,15 +2,12 @@ package org.checkerframework.checker.formatter;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.SimpleTreeVisitor;
 import java.util.IllegalFormatException;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -68,7 +65,7 @@ public class FormatterTreeUtil {
      */
   }
 
-  /** Describes the ways a format method may be invoked. */
+  /** Describes the ways a format method can be invoked. */
   public enum InvocationType {
     /**
      * The parameters are passed as varargs. For example:
@@ -84,7 +81,7 @@ public class FormatterTreeUtil {
     VARARG,
 
     /**
-     * The parameters are passed as array. For example:
+     * The parameters are passed as an array. For example:
      *
      * <blockquote>
      *
@@ -119,6 +116,56 @@ public class FormatterTreeUtil {
    * @param location the location of the value
    */
   public record Result<E>(E value, ExpressionTree location) {}
+
+  /**
+   * Returns how a format method's arguments are passed and the tree at which to report errors.
+   *
+   * @param invocationTree the format-method invocation
+   * @param args the arguments whose values the format string formats; each is an argument of {@code
+   *     invocationTree}
+   * @return how the arguments are passed and the tree at which to report errors
+   */
+  public static Result<InvocationType> invocationType(
+      MethodInvocationTree invocationTree, List<? extends ExpressionTree> args) {
+    InvocationType type = InvocationType.VARARG;
+
+    if (args.size() == 1 && !isVarargsElement(invocationTree, args.get(0))) {
+      ExpressionTree arg = TreeUtils.withoutParens(args.get(0));
+      type =
+          switch (TreeUtils.typeOf(arg).getKind()) {
+            // The null literal is passed as a null array.
+            case NULL -> InvocationType.NULLARRAY;
+            // An array is passed; determine whether it is a null array such as "(Object[]) null".
+            case ARRAY ->
+                arg instanceof TypeCastTree cast
+                        && TreeUtils.typeOf(cast.getExpression()).getKind() == TypeKind.NULL
+                    ? InvocationType.NULLARRAY
+                    : InvocationType.ARRAY;
+            default -> InvocationType.VARARG;
+          };
+    }
+
+    ExpressionTree location =
+        type == InvocationType.VARARG ? invocationTree.getMethodSelect() : args.get(0);
+    return new Result<>(type, location);
+  }
+
+  /**
+   * Returns true if javac passes {@code arg} as an element of a newly-created varargs array, rather
+   * than passing {@code arg} itself. For example, in {@code String.format("%d", new int[] {1})},
+   * the argument {@code new int[] {1}} is a varargs element.
+   *
+   * @param invocationTree a method invocation
+   * @param arg an argument of {@code invocationTree}
+   * @return true if {@code arg} is an element of the varargs array of {@code invocationTree}
+   */
+  private static boolean isVarargsElement(MethodInvocationTree invocationTree, ExpressionTree arg) {
+    if (!TreeUtils.isVarargsCall(invocationTree)) {
+      return false;
+    }
+    int varargsIndex = TreeUtils.elementFromUse(invocationTree).getParameters().size() - 1;
+    return invocationTree.getArguments().indexOf(arg) >= varargsIndex;
+  }
 
   /**
    * Returns true if the call is to a method with the @ReturnsFormat annotation. An example of such
@@ -222,7 +269,7 @@ public class FormatterTreeUtil {
     private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Create a new FormatCall object.
+     * Creates a new FormatCall object.
      *
      * @param invocationTree the call itself
      * @param formatStringTree the format string argument
@@ -265,64 +312,11 @@ public class FormatterTreeUtil {
     /**
      * Returns the type of method invocation.
      *
+     * @return the type of method invocation
      * @see InvocationType
      */
     public final Result<InvocationType> getInvocationType() {
-      InvocationType type = InvocationType.VARARG;
-
-      if (args.size() == 1) {
-        ExpressionTree first = args.get(0);
-        TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
-        // figure out if argType is an array
-        type =
-            argType.accept(
-                new SimpleTypeVisitor8<>() {
-                  @Override
-                  protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
-                    // not an array
-                    return InvocationType.VARARG;
-                  }
-
-                  @Override
-                  public InvocationType visitArray(ArrayType t, Class<Void> p) {
-                    // it's an array, now figure out if it's a (Object[])null
-                    // array
-                    return first.accept(
-                        new SimpleTreeVisitor<InvocationType, Class<Void>>() {
-                          @Override
-                          protected InvocationType defaultAction(Tree tree, Class<Void> p) {
-                            // just a normal array
-                            return InvocationType.ARRAY;
-                          }
-
-                          @Override
-                          public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
-                            // it's a (Object[])null
-                            return atypeFactory
-                                        .getAnnotatedType(tree.getExpression())
-                                        .getUnderlyingType()
-                                        .getKind()
-                                    == TypeKind.NULL
-                                ? InvocationType.NULLARRAY
-                                : InvocationType.ARRAY;
-                          }
-                        },
-                        p);
-                  }
-
-                  @Override
-                  public InvocationType visitNull(NullType t, Class<Void> p) {
-                    return InvocationType.NULLARRAY;
-                  }
-                },
-                Void.TYPE);
-      }
-
-      ExpressionTree loc = invocationTree.getMethodSelect();
-      if (type != InvocationType.VARARG && !args.isEmpty()) {
-        loc = args.get(0);
-      }
-      return new Result<>(type, loc);
+      return invocationType(invocationTree, args);
     }
 
     /**
@@ -360,7 +354,7 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Checks if the type of an argument returned from {@link #getArgTypes()} is valid for the
+     * Returns true if the type of an argument returned from {@link #getArgTypes()} is valid for the
      * passed ConversionCategory.
      *
      * @param formatCat a format specifier
@@ -376,7 +370,8 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
+     * Returns true if the argument returned from {@link #getArgTypes()} is a {@code null}
+     * expression.
      *
      * @param type a type
      * @return true if the argument is a {@code null} expression
@@ -428,9 +423,12 @@ public class FormatterTreeUtil {
   }
 
   /**
-   * Takes an exception that describes an invalid formatter string and, returns a syntax trees
-   * element that represents a {@link InvalidFormat} annotation with the exception's error message
-   * as value.
+   * Takes an exception that describes an invalid formatter string, and returns a syntax tree
+   * element that represents an {@link InvalidFormat} annotation with the exception's error message
+   * as its value.
+   *
+   * @param ex an exception that describes an invalid formatter string
+   * @return an {@link InvalidFormat} annotation whose value is the exception's error message
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalFormatException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());
@@ -459,8 +457,8 @@ public class FormatterTreeUtil {
   }
 
   /**
-   * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns its
-   * value.
+   * Takes a syntax tree element that represents an {@link InvalidFormat} annotation, and returns
+   * its value.
    *
    * @param anno an InvalidFormat annotation
    * @return its value() element/field

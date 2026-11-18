@@ -1,6 +1,8 @@
 package org.checkerframework.framework.flow;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -32,7 +34,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>A value holds a set of annotations and a type mirror. The set of annotations represents the
  * primary annotation on a type; therefore, the set of annotations must have an annotation for each
  * hierarchy unless the type mirror is a type variable or a wildcard that extends a type variable.
- * Both type variables and wildcards may be missing a primary annotation. For this set of
+ * Both type variables and wildcards can be missing a primary annotation. For this set of
  * annotations, there is an additional constraint that only wildcards that extend type variables can
  * be missing annotations.
  *
@@ -68,7 +70,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /**
    * The annotations in this abstract value. Its size is the same as the number of hierarchies, with
    * two exceptions. First, some typekinds are excluded by {@link #canBeMissingAnnotations}. Second,
-   * it may be empty if, when creating this CFAbstractValue, true was passed for the {@code
+   * it can be empty if, when creating this CFAbstractValue, true was passed for the {@code
    * permitEmptyAnnotations} formal parameter.
    */
   protected final AnnotationMirrorSet annotations;
@@ -131,6 +133,48 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     return true;
+  }
+
+  /**
+   * Returns the union of the given sets, or null if the union is within {@code base}. That is,
+   * returns null if {@code base} already contains {@code set1} and {@code set2}. A null argument
+   * represents the empty set. Does not side-effect any argument.
+   *
+   * <p>This is useful for subclasses whose values hold a set in addition to annotations, since
+   * values must not be side-effected.
+   *
+   * @param base a set, or null
+   * @param set1 a set, or null
+   * @param set2 a set, or null
+   * @return the union of the given sets, or null if the union is within {@code base}
+   */
+  protected static @Nullable Set<String> unionIfLarger(
+      @Nullable Set<String> base, @Nullable Set<String> set1, @Nullable Set<String> set2) {
+    if (isSubset(set1, base) && isSubset(set2, base)) {
+      return null;
+    }
+    Set<String> result = new LinkedHashSet<>();
+    if (base != null) {
+      result.addAll(base);
+    }
+    if (set1 != null) {
+      result.addAll(set1);
+    }
+    if (set2 != null) {
+      result.addAll(set2);
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if {@code subset} is a subset of {@code superset}. Null represents the empty set.
+   *
+   * @param subset a set, or null
+   * @param superset a set, or null
+   * @return true if {@code subset} is a subset of {@code superset}
+   */
+  private static boolean isSubset(@Nullable Set<String> subset, @Nullable Set<String> superset) {
+    return subset == null || subset.isEmpty() || (superset != null && superset.containsAll(subset));
   }
 
   /**
@@ -198,7 +242,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
   /**
    * Returns a set of annotations. If {@link #canBeMissingAnnotations()} returns true, then the set
-   * of annotations may not have an annotation for every hierarchy.
+   * of annotations might not have an annotation for every hierarchy.
    *
    * <p>To get the single annotation in a particular hierarchy, use {@link
    * QualifierHierarchy#findAnnotationInHierarchy}.
@@ -215,10 +259,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return underlyingType;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A subclass that adds state must override this method and {@link #hashCode} to account for
+   * that state. The dataflow analysis uses {@code equals} to determine whether it has reached a
+   * fixed point, so ignoring some state could stop the analysis before that state has stabilized.
+   */
   @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // efficiency pre-test
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof CFAbstractValue<?> other)) {
+    if (!(obj instanceof CFAbstractValue<?> other) || this.getClass() != other.getClass()) {
       return false;
     }
 
@@ -273,11 +324,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /**
    * Returns the more specific of two values {@code this} and {@code other}. If they do not contain
    * information for all hierarchies, then it is possible that information from both {@code this}
-   * and {@code other} are taken.
+   * and {@code other} is taken.
    *
    * <p>If neither of the two is more specific for one of the hierarchies (i.e., if the two are
    * incomparable as determined by {@link QualifierHierarchy#isSubtypeShallow(AnnotationMirror,
-   * TypeMirror, AnnotationMirror, TypeMirror)}, then the respective value from {@code backup} is
+   * TypeMirror, AnnotationMirror, TypeMirror)}), then the respective value from {@code backup} is
    * used.
    *
    * @param other the other value to obtain information from
@@ -322,14 +373,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
   /** Computes the most specific annotations. */
   private class MostSpecificVisitor extends AnnotationSetCombiner {
-    /** If set to true, then this visitor was unable to find a most specific annotation. */
+    /** True if this visitor was unable to find a most specific annotation. */
     boolean error = false;
 
     /** Set of annotations to use if a most specific value cannot be found. */
     final AnnotationMirrorSet backupAMSet;
 
     /**
-     * Create a {@link MostSpecificVisitor}.
+     * Creates a {@link MostSpecificVisitor}.
      *
      * @param backup value to use if no most specific value is found
      */
@@ -475,16 +526,16 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Compute the least upper bound of two abstract values. The returned value has a Java type of
+   * Computes the least upper bound of two abstract values. The returned value has a Java type of
    * {@code typeMirror}. {@code typeMirror} should be an upper bound of the Java types of {@code
-   * this} an {@code other}, but it does not have be to the least upper bound.
+   * this} and {@code other}, but it does not have to be the least upper bound.
    *
    * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
    * of this method.
    *
    * @param other another value
-   * @param typeMirror the underlying Java type of the returned value, which may or may not be the
-   *     least upper bound
+   * @param typeMirror the underlying Java type of the returned value, which might or might not be
+   *     the least upper bound
    * @return the least upper bound of two abstract values
    */
   public final V leastUpperBound(@Nullable V other, TypeMirror typeMirror) {
@@ -492,7 +543,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Compute an upper bound of two values that is wider than the least upper bound of the two
+   * Computes an upper bound of two values that is wider than the least upper bound of the two
    * values. Used to jump to a higher abstraction to allow faster termination of the fixed point
    * computations in {@link Analysis}.
    *
@@ -547,7 +598,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * <p>This is the implementation of {@link #leastUpperBound(CFAbstractValue, TypeMirror)}, {@link
    * #leastUpperBound(CFAbstractValue)}, {@link #widenUpperBound(CFAbstractValue)}, and {@link
-   * #upperBound(CFAbstractValue, boolean)}. Subclasses may override it.
+   * #upperBound(CFAbstractValue, boolean)}. Subclasses can override it.
    *
    * @param other an abstract value
    * @param upperBoundTypeMirror the underlying type of the returned value
@@ -567,7 +618,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Computes the least upper bound or, if {@code shouldWiden} is true, an upper bounds of two sets
+   * Computes the least upper bound or, if {@code shouldWiden} is true, an upper bound of two sets
    * of annotations. The computation accounts for sets that are missing annotations in hierarchies.
    */
   protected class ValueLub extends AnnotationSetCombiner {
@@ -643,7 +694,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Compute the greatest lower bound of two values.
+   * Computes the greatest lower bound of two values.
    *
    * <p><em>Important</em>: This method must fulfill the following contract:
    *
@@ -856,13 +907,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror top);
 
     /**
-     * Returns the primary annotation that result from of combining the two {@link
-     * AnnotatedTypeVariable} that do not have primary annotations.
+     * Returns the primary annotation that results from combining the two {@link
+     * AnnotatedTypeVariable}s that do not have primary annotations.
      *
-     * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
-     * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy
+     * @param aAtv a type variable that does not have a primary annotation in the {@code top}
+     *     hierarchy
+     * @param bAtv a type variable that does not have a primary annotation in the {@code top}
+     *     hierarchy
      * @param top the top annotation in the hierarchy
-     * @return the result of combining the two type variables, which may be null
+     * @return the result of combining the two type variables, which might be null
      */
     protected abstract @Nullable AnnotationMirror combineTwoTypeVarsUsingExtendsBounds(
         AnnotatedTypeVariable aAtv, AnnotatedTypeVariable bAtv, AnnotationMirror top);
@@ -889,7 +942,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * Returns the AnnotatedTypeVariable associated with the given TypeMirror or null.
    *
    * <p>If {@code typeMirror} is a type variable, then the {@link AnnotatedTypeVariable} of its
-   * declaration is returned. If {@code typeMirror} is a wildcard whose extends bounds is a type
+   * declaration is returned. If {@code typeMirror} is a wildcard whose extends bound is a type
    * variable, then the {@link AnnotatedTypeVariable} for its declaration is returned. Otherwise,
    * {@code null} is returned.
    *

@@ -1,4 +1,4 @@
-package org.checkerframework.checker.resourceleak;
+package org.checkerframework.checker.mustcall;
 
 import com.google.common.collect.ImmutableSet;
 import com.sun.tools.javac.code.Type;

@@ -22,11 +22,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * Constraints are between either an expression and a type, two types, or an expression and a thrown
  * type. Defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.2">JLS section
- * 18.1.2</a>
+ * 18.1.2</a>.
  */
 public abstract class TypeConstraint implements Constraint {
 
-  /** T, the type on the right-hand side of the constraint; may contain inference variables. */
+  /** T, the type on the right-hand side of the constraint; might contain inference variables. */
   protected AbstractType T;
 
   /**
@@ -46,6 +46,15 @@ public abstract class TypeConstraint implements Constraint {
    * is null, or if this constraint came from an ordinary reduction of {@code parent}.
    */
   public @Nullable String derivation;
+
+  /**
+   * The invocation that needs unchecked conversion if unchecked conversion is necessary to reduce
+   * this constraint, or null if that is determined by this constraint's {@code parent}. Non-null
+   * for an argument constraint of an invocation or method reference that has no {@code parent} (JLS
+   * 18.5.1 and 18.5.2.2), and for an argument constraint of an exact method reference (JLS 18.2.1).
+   * See {@link #getInvocation}.
+   */
+  public @Nullable ExpressionTree invocation;
 
   /**
    * Creates a type constraint.
@@ -101,9 +110,29 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Returns T which is the type on the right-hand side of the constraint.
+   * Returns the invocation whose argument constraint gave rise to this constraint: the first
+   * non-null {@link #invocation} found by starting at this constraint and following {@link #parent}
+   * links. If unchecked conversion is necessary to reduce this constraint, then that invocation
+   * needs unchecked conversion.
    *
-   * @return t, that is the type on the right-hand side of the constraint
+   * @return the invocation whose argument constraint gave rise to this constraint, or null if none
+   *     did
+   */
+  public @Nullable ExpressionTree getInvocation() {
+    TypeConstraint constraint = this;
+    while (constraint.invocation == null) {
+      if (!(constraint.parent instanceof TypeConstraint tc)) {
+        return null;
+      }
+      constraint = tc;
+    }
+    return constraint.invocation;
+  }
+
+  /**
+   * Returns T, which is the type on the right-hand side of the constraint.
+   *
+   * @return T, that is, the type on the right-hand side of the constraint
    */
   public AbstractType getT() {
     return T;
@@ -119,14 +148,14 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * For lambda and method references constraints, input variables are roughly the inference
+   * For lambda and method reference constraints, input variables are roughly the inference
    * variables mentioned by the function type's parameter types and return types. For conditional
    * expression constraints and switch expression constraints, input variables are the union of the
    * input variables of its subexpressions. For all other constraints, no input variables exist.
    *
    * <p>Defined in <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
-   * 18.5.2.2</a>
+   * 18.5.2.2</a>.
    *
    * @return input variables for this constraint
    */
@@ -138,14 +167,14 @@ public abstract class TypeConstraint implements Constraint {
    *
    * <p>As defined in <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS section
-   * 18.5.2.2</a>
+   * 18.5.2.2</a>.
    *
    * @return output variables for this constraint
    */
   public abstract List<Variable> getOutputVariables();
 
   /**
-   * Implementation of {@link #getInputVariables()} that is used both by expressions constraints and
+   * Implementation of {@link #getInputVariables()} that is used both by expression constraints and
    * checked exception constraints. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.
@@ -243,8 +272,8 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Apply the given instantiations to any type mentioned in this constraint -- meaning replace any
-   * mention of a variable in {@code instantiations} with its proper type.
+   * Applies the given instantiations to any type mentioned in this constraint -- that is, replaces
+   * any mention of a variable in {@code instantiations} with its proper type.
    */
   public void applyInstantiations() {
     T = T.applyInstantiations();

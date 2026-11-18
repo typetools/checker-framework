@@ -2,7 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -13,7 +13,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.MapsP;
 
 /**
  * KeyForValue holds additional information about which maps this value is a key for. This extra
@@ -27,7 +26,7 @@ import org.plumelib.util.MapsP;
  * <pre><code>
  * Map&lt;T, Object&gt; map = ...;
  * &lt;T&gt; T method(T param) {
- *   if (map.contains(param)) {
+ *   if (map.containsKey(param)) {
  *    &nbsp;@NonNull Object o = map.get(param);
  *     return param;
  *   }
@@ -41,11 +40,10 @@ import org.plumelib.util.MapsP;
  */
 public class KeyForValue extends CFAbstractValue<KeyForValue> {
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
-   * this value is a key. Otherwise, it's null.
+   * If the underlying type is a type variable or a wildcard, then this is the possibly-empty set of
+   * maps for which this value is a key. Otherwise, it's null.
    */
-  // Cannot be final because lub re-assigns; add a new constructor to do this cleanly?
-  private @Nullable Set<String> keyForMaps;
+  private final @Nullable Set<String> keyForMaps;
 
   /**
    * Create a KeyForValue.
@@ -61,26 +59,59 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     super(analysis, annotations, underlyingType);
     KeyForAnnotatedTypeFactory atypeFactory =
         (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-    AnnotationMirror keyfor = atypeFactory.getAnnotationByClass(annotations, KeyFor.class);
-    if (keyfor != null
-        && (underlyingType.getKind() == TypeKind.TYPEVAR
-            || underlyingType.getKind() == TypeKind.WILDCARD)) {
-      List<String> list =
-          AnnotationUtils.getElementValueArray(
-              keyfor, atypeFactory.keyForValueElement, String.class);
-      keyForMaps = new LinkedHashSet<>(list.size());
-      keyForMaps.addAll(list);
+    if (underlyingType.getKind() == TypeKind.TYPEVAR
+        || underlyingType.getKind() == TypeKind.WILDCARD) {
+      AnnotationMirror keyfor = atypeFactory.getAnnotationByClass(annotations, KeyFor.class);
+      if (keyfor == null) {
+        keyForMaps = new LinkedHashSet<>();
+      } else {
+        keyForMaps =
+            new LinkedHashSet<>(
+                AnnotationUtils.getElementValueArray(
+                    keyfor, atypeFactory.keyForValueElement, String.class));
+      }
     } else {
       keyForMaps = null;
     }
   }
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
-   * this value is a key. Otherwise, it's null.
+   * Create a KeyForValue with the given keyForMaps.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations
+   * @param underlyingType the underlying type
+   * @param keyForMaps the maps for which this value is a key, or null
+   */
+  private KeyForValue(
+      CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
+      AnnotationMirrorSet annotations,
+      TypeMirror underlyingType,
+      @Nullable Set<String> keyForMaps) {
+    super(analysis, annotations, underlyingType);
+    this.keyForMaps = keyForMaps;
+  }
+
+  /**
+   * Returns the maps for which this value is a key.
+   *
+   * @return if the underlying type is a type variable or a wildcard, then the possibly-empty set of
+   *     maps for which this value is a key; otherwise, null
    */
   public @Nullable Set<String> getKeyForMaps() {
     return keyForMaps;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof KeyForValue other
+        && Objects.equals(keyForMaps, other.keyForMaps);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), keyForMaps);
   }
 
   @Override
@@ -92,13 +123,10 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       return upperBound;
     }
     // Lub the keyForMaps by intersecting the sets.
-    upperBound.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
-    upperBound.keyForMaps.addAll(this.keyForMaps);
-    upperBound.keyForMaps.retainAll(other.keyForMaps);
-    if (upperBound.keyForMaps.isEmpty()) {
-      upperBound.keyForMaps = null;
-    }
-    return upperBound;
+    Set<String> lubKeyForMaps = new LinkedHashSet<>(this.keyForMaps);
+    lubKeyForMaps.retainAll(other.keyForMaps);
+    return new KeyForValue(
+        analysis, upperBound.getAnnotations(), upperBound.getUnderlyingType(), lubKeyForMaps);
   }
 
   @Override
@@ -111,32 +139,35 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       }
       // mostSpecific is null if the two types are not comparable.  This is normally
       // because one of this or other is a type variable and annotations is empty, but the
-      // other annotations are not empty.  In this case, copy the keyForMaps and to the
-      // value with the no annotations and return it as most specific.
+      // other annotations are not empty.  In this case, add the keyForMaps to the value with
+      // no annotations and return it as most specific.
       if (other.getAnnotations().isEmpty()) {
-        other.addKeyFor(this.keyForMaps);
-        return other;
+        return other.withKeyFor(this.keyForMaps, null);
       } else if (this.getAnnotations().isEmpty()) {
-        this.addKeyFor(other.keyForMaps);
-        return this;
+        return this.withKeyFor(other.keyForMaps, null);
       }
       return null;
     }
 
-    mostSpecific.addKeyFor(this.keyForMaps);
-    if (other != null) {
-      mostSpecific.addKeyFor(other.keyForMaps);
-    }
-    return mostSpecific;
+    return mostSpecific.withKeyFor(this.keyForMaps, other == null ? null : other.keyForMaps);
   }
 
-  private void addKeyFor(Set<String> newKeyForMaps) {
-    if (newKeyForMaps == null || newKeyForMaps.isEmpty()) {
-      return;
+  /**
+   * Returns a value that is like this one, but whose keyForMaps also contains {@code
+   * newKeyForMaps1} and {@code newKeyForMaps2}. Does not side-effect this value, which might be
+   * shared by multiple stores.
+   *
+   * @param newKeyForMaps1 maps to add, or null
+   * @param newKeyForMaps2 more maps to add, or null
+   * @return a value like this one whose keyForMaps also contains {@code newKeyForMaps1} and {@code
+   *     newKeyForMaps2}; it is {@code this} if this value's keyForMaps already contains both
+   */
+  private KeyForValue withKeyFor(
+      @Nullable Set<String> newKeyForMaps1, @Nullable Set<String> newKeyForMaps2) {
+    Set<String> resultKeyForMaps = unionIfLarger(keyForMaps, newKeyForMaps1, newKeyForMaps2);
+    if (resultKeyForMaps == null) {
+      return this;
     }
-    if (keyForMaps == null) {
-      keyForMaps = new LinkedHashSet<>(MapsP.mapCapacity(newKeyForMaps.size()));
-    }
-    keyForMaps.addAll(newKeyForMaps);
+    return new KeyForValue(analysis, getAnnotations(), getUnderlyingType(), resultKeyForMaps);
   }
 }

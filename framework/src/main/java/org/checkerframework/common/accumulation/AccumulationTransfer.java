@@ -19,7 +19,7 @@ import org.plumelib.util.CollectionsP;
 /**
  * The default transfer function for an accumulation checker.
  *
- * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate}
+ * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...) accumulate}
  * method to add a string to the estimate at a particular program point.
  */
 public class AccumulationTransfer
@@ -29,7 +29,7 @@ public class AccumulationTransfer
   protected final AccumulationAnnotatedTypeFactory atypeFactory;
 
   /**
-   * Build a new AccumulationTransfer for the given analysis.
+   * Builds a new AccumulationTransfer for the given analysis.
    *
    * @param analysis the analysis
    */
@@ -102,7 +102,7 @@ public class AccumulationTransfer
    *     returned true)
    * @param values a list of newly-accumulated values
    */
-  private void updateValueAndInsertIntoStore(
+  protected void updateValueAndInsertIntoStore(
       AccumulationStore store, JavaExpression target, List<String> values) {
     // Make a modifiable copy of the list.
     List<String> valuesAsList = new ArrayList<>(values);

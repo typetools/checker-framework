@@ -29,8 +29,8 @@ public abstract class DoubleAnnotatedTypeScanner<R>
     extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
 
   /**
-   * Constructs an AnnotatedTypeScanner where the reduce function returns the first result if it is
-   * nonnull; otherwise the second result is returned. The default result is {@code null}.
+   * Constructs a DoubleAnnotatedTypeScanner where the reduce function returns the first result if
+   * it is nonnull; otherwise the second result is returned. The default result is {@code null}.
    */
   protected DoubleAnnotatedTypeScanner() {
     super();
@@ -82,7 +82,7 @@ public abstract class DoubleAnnotatedTypeScanner<R>
   }
 
   /**
-   * Run {@link #scan} on types and p, then run {@link #reduce} on the result (plus r) to return a
+   * Runs {@link #scan} on types and p, then runs {@link #reduce} on the result (plus r) to return a
    * single element.
    */
   protected R scanAndReduce(

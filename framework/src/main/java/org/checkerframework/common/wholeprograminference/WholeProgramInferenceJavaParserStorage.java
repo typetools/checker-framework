@@ -103,7 +103,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsP;
@@ -130,8 +129,14 @@ public class WholeProgramInferenceJavaParserStorage
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /** Determines which inferred qualifiers are redundant. */
+  private final WholeProgramInferenceDefaults wpiDefaults;
+
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
+
+  /** The type utilities for {@code atypeFactory}. */
+  protected final Types types;
 
   /**
    * Memoizes the name lookups that {@link JavaParserUtil#resolveTypeName} performs while writing
@@ -209,7 +214,8 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Is the definition of the given annotation class annotated with {@link InvisibleQualifier}?
+   * Returns true if the definition of the given annotation class is annotated with {@link
+   * InvisibleQualifier}.
    *
    * @param qual an annotation class
    * @return true iff {@code qual} is meta-annotated with {@link InvisibleQualifier}
@@ -221,7 +227,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Constructs a new {@code WholeProgramInferenceJavaParser} that has not yet inferred any
+   * Constructs a new {@code WholeProgramInferenceJavaParserStorage} that has not yet inferred any
    * annotations.
    *
    * @param atypeFactory the associated type factory
@@ -232,7 +238,9 @@ public class WholeProgramInferenceJavaParserStorage
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
+    this.wpiDefaults = new WholeProgramInferenceDefaults(atypeFactory);
     this.elements = atypeFactory.getElementUtils();
+    this.types = atypeFactory.getProcessingEnv().getTypeUtils();
     try {
       this.inferOutputDirectory = Path.of(inferOutputDirectory);
     } catch (InvalidPathException e) {
@@ -258,7 +266,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Set the source file as modified, for the given class.
+   * Sets the source file as modified, for the given class.
    *
    * @param className the binary name of a class that should be written to disk
    */
@@ -273,7 +281,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Set the source files as modified, for all the given classes.
+   * Sets the source files as modified, for all the given classes.
    *
    * @param classNames the binary names of classes that should be written to disk
    */
@@ -287,7 +295,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * For every modified file, consider its subclasses and superclasses modified, too. The reason is
+   * For every modified file, considers its subclasses and superclasses modified, too. The reason is
    * that an annotation change in a class might require annotations in its superclasses and
    * subclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
    * cause it to be written out, and while writing out, the annotations will be made consistent
@@ -746,12 +754,12 @@ public class WholeProgramInferenceJavaParserStorage
            * sourceAnnos}.
            *
            * <p>This method computes the name of the class when the element corresponding to tree is
-           * null and uses it as the key for {@code classToAnnos}
+           * null and uses it as the key for {@code classToAnnos}.
            *
            * @param tree tree to add. Its corresponding name is used as the key for {@code
            *     classToAnnos}.
            * @param javaParserNode the node corresponding to the declaration, which is used to place
-           *     annotations on the class itself. Can be null, e.g. for an anonymous class.
+           *     annotations on the class itself. Can be null, e.g., for an anonymous class.
            */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
@@ -841,7 +849,7 @@ public class WholeProgramInferenceJavaParserStorage
               enclosingClass.callableDeclarations.put(
                   executableSignature,
                   new CallableDeclarationAnnos(
-                      javacClass.getSimpleName().toString(), javaParserNode));
+                      javacClass.getSimpleName().toString(), javaParserNode, element));
             }
           }
 
@@ -904,7 +912,7 @@ public class WholeProgramInferenceJavaParserStorage
             }
             String fieldName = javacTree.getName().toString();
             if (!enclosingClass.fields.containsKey(fieldName)) {
-              enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
+              enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode, elt));
             }
           }
         };
@@ -975,7 +983,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Side-effects the class annotations to make any desired changes before writing to a file.
    *
-   * <p>Because of the side effect, clients may want to pass a copy into this method.
+   * <p>Because of the side effect, clients might want to pass a copy into this method.
    *
    * @param classAnnos the class annotations to modify
    * @param supertypes the binary names of all supertypes, or null if none are known; not
@@ -986,8 +994,12 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos classAnnos,
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
-    if (classAnnos.callableDeclarations.isEmpty()) {
-      return;
+    for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
+      if (fieldAnnos.type != null
+          && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+        wpiDefaults.removeRedundantPrimaryAnnotations(
+            fieldAnnos.type, wpiDefaults.defaultedType(fieldAnnos.element));
+      }
     }
 
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
@@ -996,8 +1008,90 @@ public class WholeProgramInferenceJavaParserStorage
       List<CallableDeclarationAnnos> inSupertypes = findOverrides(jvmSignature, supertypes);
       List<CallableDeclarationAnnos> inSubtypes = findOverrides(jvmSignature, subtypes);
 
-      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
+      CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
+      wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
+      // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
+      removeRedundantPrimaryAnnotations(methodAnnos);
     }
+  }
+
+  /**
+   * Removes, from the inferred types in the signature of the given method or constructor, each
+   * primary annotation that would be redundant, because the type has it even when no annotation is
+   * written on it.
+   *
+   * @param methodAnnos annotations for a method or constructor, which this method side-effects
+   */
+  private void removeRedundantPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+    ExecutableElement methodElt = methodAnnos.element;
+    // A declaration annotation on a method that is an alias for a type qualifier applies to the
+    // method's return type.
+    if (methodAnnos.returnType != null
+        && !containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
+      wpiDefaults.removeRedundantPrimaryAnnotations(
+          methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
+    }
+    if (methodAnnos.receiverType != null) {
+      wpiDefaults.removeRedundantPrimaryAnnotations(
+          methodAnnos.receiverType, wpiDefaults.defaultedReceiverType(methodElt));
+    }
+    if (methodAnnos.parameterTypes != null) {
+      List<? extends VariableElement> paramElts = methodElt.getParameters();
+      for (int i = 0; i < methodAnnos.parameterTypes.size() && i < paramElts.size(); i++) {
+        AnnotatedTypeMirror paramType = methodAnnos.parameterTypes.get(i);
+        if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+          // The parameter's own element is used, rather than the method's type, so that a
+          // `@DefaultQualifier` annotation written on the parameter declaration is respected.
+          wpiDefaults.removeRedundantPrimaryAnnotations(
+              paramType, wpiDefaults.defaultedType(paramElts.get(i)));
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
+   * annotation that is an alias for a type qualifier.
+   *
+   * @param methodAnnos annotations for a method or constructor
+   * @param index1based the 1-based index of one of its formal parameters
+   * @return true if the formal parameter has a declaration annotation that is an alias for a type
+   *     qualifier
+   */
+  private boolean parameterHasAliasForTypeQualifier(
+      CallableDeclarationAnnos methodAnnos, int index1based) {
+    if (methodAnnos.paramsDeclAnnos == null) {
+      return false;
+    }
+    for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
+      if (paramDeclAnno.index1based() == index1based
+          && wpiDefaults.isAliasForTypeQualifier(paramDeclAnno.annotation())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code declarationAnnotations} contains an alias for a type qualifier. Reading
+   * the output file gives the annotated element the aliased type qualifier, so none of the
+   * element's type annotations is redundant, even one that is the default.
+   *
+   * @param declarationAnnotations the declaration annotations that whole-program inference inferred
+   *     for an element, or null if there are none
+   * @return true if {@code declarationAnnotations} contains an alias for a type qualifier
+   */
+  private boolean containsAliasForTypeQualifier(
+      @Nullable AnnotationMirrorSet declarationAnnotations) {
+    if (declarationAnnotations == null) {
+      return false;
+    }
+    for (AnnotationMirror anno : declarationAnnotations) {
+      if (wpiDefaults.isAliasForTypeQualifier(anno)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1027,7 +1121,7 @@ public class WholeProgramInferenceJavaParserStorage
 
   /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
-   * to a file. For example, this method may make inferred annotations consistent with one another
+   * to a file. For example, this method might make inferred annotations consistent with one another
    * between superclasses and subclasses.
    *
    * @param methodAnnos the method or constructor annotations to modify
@@ -1182,8 +1276,9 @@ public class WholeProgramInferenceJavaParserStorage
 
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
-      // declaration, as in `<@Anno T>`, takes this branch.  `typeToTypeMirror` returns null for a
-      // type parameter declaration, so such an annotation is retained.
+      // declaration, as in `<@Anno T>`, takes this branch.
+      // `JavaParserUtil.typeToTypeMirrorUsingTypeVariableBounds` returns null for a type
+      // parameter declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1255,19 +1350,24 @@ public class WholeProgramInferenceJavaParserStorage
    * type is {@code componentType} wrapped in {@code arrayLevels} array levels. This implementation
    * is conservative and only returns false if such a qualifier is definitely not relevant.
    *
+   * <p>A use of a type variable is resolved to the type variable's upper bound, which is sound
+   * because {@link GenericAnnotatedTypeFactory#isRelevant} treats a type variable as relevant
+   * exactly when its upper bound is.
+   *
    * @param gatf the type factory associated with this
    * @param componentType a JavaParser type
-   * @param arrayLevels the number of array levels to wrap {@code componentType} in; may be 0
+   * @param arrayLevels the number of array levels to wrap {@code componentType} in; can be 0
    * @return true if a type qualifier written on the array type might be relevant
    */
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
-    TypeMirror tm = typeToTypeMirror(componentType);
+    TypeMirror tm =
+        JavaParserUtil.typeToTypeMirrorUsingTypeVariableBounds(
+            elements, types, componentType, typeElementCache);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
       return true;
     }
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     for (int i = 0; i < arrayLevels; i++) {
       tm = types.getArrayType(tm);
     }
@@ -1302,76 +1402,6 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
-   *
-   * <p>This differs from {@link JavaParserUtil#typeToTypeMirror} in that a use of a type variable,
-   * for which no TypeMirror can be constructed from its JavaParser declaration, yields the type
-   * variable's effective upper bound as computed by {@link #typeVariableUpperBound}. That is sound
-   * for deciding relevance, because {@code GenericAnnotatedTypeFactory.isRelevant} erases the type
-   * and treats a type variable as relevant exactly when its upper bound is.
-   *
-   * @param type a JavaParser type
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  private @Nullable TypeMirror typeToTypeMirror(Type type) {
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    // An array type's element type is what might name a type variable, and a non-array type is
-    // its own element type.
-    Type elementType = type.getElementType();
-    TypeMirror result;
-    if (elementType instanceof ClassOrInterfaceType classType) {
-      // Resolving the name once yields both what it might name:  a type or a type variable.
-      // Looking each up separately would walk the enclosing scopes twice.
-      JavaParserUtil.ResolvedTypeName resolved =
-          JavaParserUtil.resolveTypeName(elements, classType, typeElementCache);
-      TypeElement typeElt = resolved.typeElement();
-      TypeParameter typeParameter = resolved.typeParameter();
-      if (typeElt != null) {
-        result = typeElt.asType();
-      } else if (typeParameter != null) {
-        // No TypeMirror can be built from a JavaParser type parameter, so use its upper bound.
-        result = typeVariableUpperBound(typeParameter);
-      } else {
-        return null;
-      }
-    } else {
-      result = JavaParserUtil.typeToTypeMirror(elements, types, elementType, typeElementCache);
-    }
-    if (result == null) {
-      return null;
-    }
-    for (int i = type.getArrayLevel(); i > 0; i--) {
-      result = types.getArrayType(result);
-    }
-    return result;
-  }
-
-  /**
-   * Returns the TypeMirror for the given type variable's upper bound, or null if the upper bound
-   * cannot be determined.
-   *
-   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
-   * returns the intersection type's erasure -- that is, its leftmost bound.
-   *
-   * @param typeParameter the declaration of a type variable
-   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
-   *     intersection type, or null
-   */
-  private @Nullable TypeMirror typeVariableUpperBound(TypeParameter typeParameter) {
-    NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
-    if (bounds.isEmpty()) {
-      // The implicit upper bound is `Object`.
-      return TypesUtils.getObjectTypeMirror(atypeFactory.getProcessingEnv());
-    }
-    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
-    // create.  Use its leftmost bound, which is its erasure; that is sufficient because the client,
-    // `GenericAnnotatedTypeFactory.isRelevant`, erases the type before testing relevance.
-    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
-    // recursion terminates because Java forbids a cycle among type variable bounds.
-    return typeToTypeMirror(bounds.get(0));
-  }
-
-  /**
    * Returns the relative directory that corresponds to a package name. For example, if {@code
    * separatorChar} is {@code '/'}, then the package name {@code "org.example"} yields {@code
    * "org/example"}.
@@ -1385,7 +1415,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Write an ajava file to disk.
+   * Writes an ajava file to disk.
    *
    * @param outputPath the path to which the ajava file should be written
    * @param root the compilation unit to be written
@@ -1530,10 +1560,10 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Replace lonely surrogate characters by their unicode escape.
+   * Replaces lonely surrogate characters by their Unicode escape.
    *
    * @param s a string
-   * @return the string, with lonely surrogate characters replaced by their unicode escape
+   * @return the string, with lonely surrogate characters replaced by their Unicode escape
    */
   /*package-private*/ static String escapeLonelySurrogates(String s) {
     int idx = indexOfLonelySurrogateCharacter(s);
@@ -1589,10 +1619,10 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
    * which is the JavaParser node representing the same type. Does nothing if {@code annotatedType}
-   * is null (this may occur if there are no inferred annotations for the type).
+   * is null (this might occur if there are no inferred annotations for the type).
    *
    * @param annotatedType type to transfer annotations from
-   * @param target the JavaParser type to transfer annotation to; must represent the same type as
+   * @param target the JavaParser type to transfer annotations to; must represent the same type as
    *     {@code annotatedType}
    */
   private static void transferAnnotations(
@@ -1655,7 +1685,7 @@ public class WholeProgramInferenceJavaParserStorage
      * repeatedly is harmless because it first removes all annotations from the AST, so each call
      * overwrites the previous call's output rather than adding to it.
      *
-     * @param checker the checker who's name to include in the @AnnotatedFor annotation
+     * @param checker the checker whose name to include in the @AnnotatedFor annotation
      */
     public void transferAnnotations(BaseTypeChecker checker) {
       JavaParserUtil.clearAnnotations(compilationUnit);
@@ -1697,7 +1727,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Stores wrappers for the locations where annotations may be inferred in a class or interface.
+   * Stores wrappers for the locations where annotations can be inferred in a class or interface.
    */
   public static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
     /**
@@ -1727,7 +1757,7 @@ public class WholeProgramInferenceJavaParserStorage
     private @BinaryName String className;
 
     /**
-     * Create a new ClassOrInterfaceAnnos.
+     * Creates a new ClassOrInterfaceAnnos.
      *
      * @param className the binary name of the class
      * @param javaParserNode the JavaParser node corresponding to the class declaration, which is
@@ -1827,6 +1857,9 @@ public class WholeProgramInferenceJavaParserStorage
     /** Wrapped method or constructor declaration. */
     public final CallableDeclaration<?> declaration;
 
+    /** The element for the method or constructor. */
+    public final ExecutableElement element;
+
     /**
      * Inferred annotations for the return type, if the declaration represents a method. Initialized
      * on first usage.
@@ -1881,21 +1914,34 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @param className the class that contains the method, for diagnostics only
      * @param declaration method or constructor declaration to wrap
+     * @param element the element for the method or constructor
      */
-    public CallableDeclarationAnnos(String className, CallableDeclaration<?> declaration) {
+    public CallableDeclarationAnnos(
+        String className, CallableDeclaration<?> declaration, ExecutableElement element) {
       this.className = className;
       this.declaration = declaration;
+      this.element = element;
     }
 
     @Override
     public CallableDeclarationAnnos deepCopy() {
-      CallableDeclarationAnnos result = new CallableDeclarationAnnos(className, declaration);
-      result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
-      result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
-      if (parameterTypes != null) {
-        result.parameterTypes = CollectionsP.deepCopy(this.parameterTypes);
+      CallableDeclarationAnnos result =
+          new CallableDeclarationAnnos(className, declaration, element);
+      if (this.returnType != null) {
+        result.returnType = this.returnType.deepCopy();
       }
-      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      if (this.receiverType != null) {
+        result.receiverType = this.receiverType.deepCopy();
+      }
+      if (parameterTypes != null) {
+        @SuppressWarnings("nullness:type.argument") // CollectionsP.deepCopy permits null elements
+        List<@Nullable AnnotatedTypeMirror> parameterTypesCopy =
+            CollectionsP.deepCopy(this.parameterTypes);
+        result.parameterTypes = parameterTypesCopy;
+      }
+      if (this.declarationAnnotations != null) {
+        result.declarationAnnotations = this.declarationAnnotations.deepCopy();
+      }
 
       if (this.paramsDeclAnnos != null) {
         result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
@@ -1945,8 +1991,8 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @param index_0based index of the parameter to return the inferred annotations of (0-based)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
-     *     at the given index, or null if there's no parameter at {@code index_0based} or if there's
-     *     not inferred annotations for that parameter
+     *     at the given index, or null if there's no parameter at {@code index_0based} or if there
+     *     are no inferred annotations for that parameter
      */
     public @Nullable AnnotatedTypeMirror getParameterType(int index_0based) {
       if (parameterTypes == null || index_0based < 0 || index_0based >= parameterTypes.size()) {
@@ -2064,7 +2110,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred preconditions for this callable declaration. The keys of the returned
      * map use the same string formatting as the {@link
-     * org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g. "#1" for the first
+     * org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g., "#1" for the first
      * parameter.
      *
      * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
@@ -2084,7 +2130,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred postconditions for this callable declaration. The keys of the returned
      * map use the same string formatting as the {@link
-     * org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g. "#1" for the first
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g., "#1" for the first
      * parameter.
      *
      * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
@@ -2247,7 +2293,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Deep copy (according to the {@code DeepCopyable} interface) a pre- or post-condition map.
+   * Deep copies (according to the {@code DeepCopyable} interface) a pre- or post-condition map.
    *
    * @param orig the map to copy
    * @return a deep copy of the map
@@ -2272,6 +2318,9 @@ public class WholeProgramInferenceJavaParserStorage
     /** Wrapped field declaration. */
     public final VariableDeclarator declaration;
 
+    /** The element for the field. */
+    public final VariableElement element;
+
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
 
@@ -2282,16 +2331,22 @@ public class WholeProgramInferenceJavaParserStorage
      * Creates a wrapper for the given field declaration.
      *
      * @param declaration field declaration to wrap
+     * @param element the element for the field
      */
-    public FieldAnnos(VariableDeclarator declaration) {
+    public FieldAnnos(VariableDeclarator declaration, VariableElement element) {
       this.declaration = declaration;
+      this.element = element;
     }
 
     @Override
     public FieldAnnos deepCopy() {
-      FieldAnnos result = new FieldAnnos(declaration);
-      result.type = DeepCopyable.deepCopyOrNull(this.type);
-      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      FieldAnnos result = new FieldAnnos(declaration, element);
+      if (this.type != null) {
+        result.type = this.type.deepCopy();
+      }
+      if (this.declarationAnnotations != null) {
+        result.declarationAnnotations = this.declarationAnnotations.deepCopy();
+      }
       return result;
     }
 

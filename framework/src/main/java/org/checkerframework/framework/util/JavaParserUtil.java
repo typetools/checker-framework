@@ -164,6 +164,25 @@ public final class JavaParserUtil {
     private static final ResolvedTypeName NONE = new ResolvedTypeName(null, null);
 
     /**
+     * Creates a ResolvedTypeName.
+     *
+     * @param typeElement the type that the name refers to, or null if it refers to no type
+     * @param typeParameter the declaration of the type variable that the name refers to, or null if
+     *     it refers to no type variable
+     * @throws IllegalArgumentException if both {@code typeElement} and {@code typeParameter} are
+     *     non-null
+     */
+    public ResolvedTypeName {
+      if (typeElement != null && typeParameter != null) {
+        throw new IllegalArgumentException(
+            "Both typeElement and typeParameter are non-null: "
+                + typeElement
+                + ", "
+                + typeParameter);
+      }
+    }
+
+    /**
      * Returns a ResolvedTypeName for the given type, or {@link #NONE} if it is null.
      *
      * @param typeElement a type, or null
@@ -545,7 +564,7 @@ public final class JavaParserUtil {
    * the AST node.
    *
    * <p>Resolving a name that appears in the body of an anonymous or local class resolves that
-   * class's supertype names, each of which may itself appear in the body of an anonymous or local
+   * class's supertype names, each of which might itself appear in the body of an anonymous or local
    * class. Without memoization, the same supertype name would be resolved once for every path
    * through the enclosing classes, which is exponential in the nesting depth.
    *
@@ -1102,6 +1121,10 @@ public final class JavaParserUtil {
    * cannot be determined for a use of a type variable, an intersection type, a union type, {@code
    * var}, a wildcard, a type parameter declaration, or a type that is not on the classpath.
    *
+   * <p>For a class or interface type, the result is the type of the class or interface declaration,
+   * which ignores the type arguments that {@code type} has. For example, the result for {@code
+   * List<String>} is {@code java.util.List<E>}.
+   *
    * @param elements used for looking up names
    * @param types used for creating types
    * @param type a JavaParser type
@@ -1112,9 +1135,76 @@ public final class JavaParserUtil {
    */
   public static @Nullable TypeMirror typeToTypeMirror(
       Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    return typeToTypeMirror(elements, types, type, false, cache);
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, as {@link #typeToTypeMirror(Elements,
+   * Types, Type, Map)} does, except that a use of a type variable yields the TypeMirror for the
+   * type variable's upper bound. For example, given the declaration {@code class C<T extends
+   * Number>}, this method returns {@code java.lang.Number} for the type {@code T} and {@code
+   * java.lang.Number[]} for the type {@code T[]}.
+   *
+   * <p>The upper bound stands in for the type variable itself, which has no TypeMirror here,
+   * because a type variable has no {@code TypeElement} that {@code Elements} can look up. A caller
+   * that must distinguish a type variable from its bound should call {@link
+   * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
+   *
+   * <p>The result is not erased, but it does not preserve type arguments either. Only a type
+   * variable that is the whole type, or the component type of an array type, is replaced. Like the
+   * result of {@link #typeToTypeMirror(Elements, Types, Type, Map)}, the result for a class or
+   * interface type is the type of its declaration, which contains the declaration's own type
+   * variables in place of any type arguments: for {@code <U extends Comparable<String>>}, the
+   * result for {@code U} is {@code java.lang.Comparable<T>}, where {@code T} is the type parameter
+   * of {@code Comparable}. When a type variable's upper bound is an intersection type, this uses
+   * the intersection type's leftmost bound in its place, because {@code types} has no method that
+   * creates an intersection type: for {@code <U extends Comparable<String> & Serializable>}, the
+   * result for {@code U} is also {@code java.lang.Comparable<T>}. Erasing the result yields the
+   * erasure of {@code type}. A caller that compares the result to another type should therefore
+   * erase it first.
+   *
+   * <p>Returns null if the TypeMirror cannot be determined: for the types for which {@link
+   * #typeToTypeMirror(Elements, Types, Type, Map)} returns null, other than a use of a type
+   * variable, and for a use of a type variable whose upper bound cannot be determined.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeNameAsTypeElement(Elements,
+   *     ClassOrInterfaceType, Map)} for restrictions on it.
+   * @return the TypeMirror for {@code type}, with a type variable replaced by its upper bound, or
+   *     null if it cannot be determined
+   */
+  public static @Nullable TypeMirror typeToTypeMirrorUsingTypeVariableBounds(
+      Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    return typeToTypeMirror(elements, types, type, true, cache);
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param useTypeVariableBounds if true, a use of a type variable yields the TypeMirror for the
+   *     type variable's upper bound, as in {@link
+   *     #typeToTypeMirrorUsingTypeVariableBounds(Elements, Types, Type, Map)}; if false, it yields
+   *     null, as in {@link #typeToTypeMirror(Elements, Types, Type, Map)}
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return the TypeMirror for {@code type}, or null if it cannot be determined
+   */
+  private static @Nullable TypeMirror typeToTypeMirror(
+      Elements elements,
+      Types types,
+      Type type,
+      boolean useTypeVariableBounds,
+      Map<String, @Nullable TypeElement> cache) {
     if (type instanceof ArrayType arrayType) {
       TypeMirror componentType =
-          typeToTypeMirror(elements, types, arrayType.getComponentType(), cache);
+          typeToTypeMirror(
+              elements, types, arrayType.getComponentType(), useTypeVariableBounds, cache);
       return componentType == null ? null : types.getArrayType(componentType);
     }
     if (type instanceof PrimitiveType primitiveType) {
@@ -1124,11 +1214,54 @@ public final class JavaParserUtil {
       return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = resolveTypeNameAsTypeElement(elements, classType, cache);
-      return typeElt == null ? null : typeElt.asType();
+      ResolvedTypeName resolved = resolveTypeName(elements, classType, cache);
+      TypeElement typeElt = resolved.typeElement();
+      if (typeElt != null) {
+        return typeElt.asType();
+      }
+      TypeParameter typeParameter = resolved.typeParameter();
+      if (useTypeVariableBounds && typeParameter != null) {
+        return typeVariableUpperBound(elements, types, typeParameter, cache);
+      }
+      return null;
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
     return null;
+  }
+
+  /**
+   * Returns a TypeMirror whose erasure is the erasure of the upper bound of the given type variable
+   * declaration, or null if the upper bound cannot be determined.
+   *
+   * <p>See {@link #typeToTypeMirrorUsingTypeVariableBounds(Elements, Types, Type, Map)} for which
+   * TypeMirror this returns, including when the upper bound is an intersection type.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param typeParameter the declaration of a type variable
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return a TypeMirror whose erasure is the erasure of the upper bound of {@code typeParameter},
+   *     or null
+   */
+  private static @Nullable TypeMirror typeVariableUpperBound(
+      Elements elements,
+      Types types,
+      TypeParameter typeParameter,
+      Map<String, @Nullable TypeElement> cache) {
+    List<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
+    if (bounds.isEmpty()) {
+      // The implicit upper bound is `Object`.
+      TypeElement objectElt = getTypeElement(elements, "java.lang.Object", cache);
+      return objectElt == null ? null : objectElt.asType();
+    }
+    // If there are multiple bounds, the upper bound is an intersection type, but `types` has no
+    // method that creates an intersection type.  Use its leftmost bound, whose erasure is the
+    // intersection type's erasure; that is sufficient for the clients of this method, which erase
+    // the type anyway.
+    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
+    // recursion terminates because Java forbids a cycle among type variable bounds.
+    return typeToTypeMirror(elements, types, bounds.get(0), true, cache);
   }
 
   //
@@ -1169,11 +1302,11 @@ public final class JavaParserUtil {
    * Side-effects node by combining any added String literals in node's subtree into their
    * concatenation. For example, the expression {@code "a" + "b"} becomes {@code "ab"}. This occurs
    * even if, when reading from left to right, the two string literals are not added directly. For
-   * example, the expression {@code 1 + "a" + "b"} parses as {@code (1 + "a") + "b"}}, but it is
+   * example, the expression {@code 1 + "a" + "b"} parses as {@code (1 + "a") + "b"}, but it is
    * transformed into {@code 1 + "ab"}.
    *
    * <p>This is the same transformation performed by javac automatically. Javac seems to ignore
-   * string literals surrounded in parentheses, so this method does as well.
+   * string literals surrounded by parentheses, so this method does as well.
    *
    * @param node a JavaParser Node
    */
@@ -1181,8 +1314,12 @@ public final class JavaParserUtil {
     node.accept(new StringLiteralConcatenateVisitor(), null);
   }
 
-  /** Visitor that combines added String literals, see {@link #concatenateAddedStringLiterals}. */
+  /** Visitor that combines added String literals; see {@link #concatenateAddedStringLiterals}. */
   public static class StringLiteralConcatenateVisitor extends VoidVisitorAdapter<Void> {
+
+    /** Creates a StringLiteralConcatenateVisitor. */
+    public StringLiteralConcatenateVisitor() {}
+
     @Override
     public void visit(BinaryExpr node, Void p) {
       super.visit(node, p);

@@ -2,9 +2,6 @@ package org.checkerframework.checker.i18nformatter;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -12,15 +9,14 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.SimpleTypeVisitor8;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.FormatterTreeUtil;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
@@ -84,17 +80,25 @@ public class I18nFormatterTreeUtil {
         TreeUtils.getMethod(I18nInvalidFormat.class, "value", 0, processingEnv);
   }
 
-  /** Describe the format annotation type. */
+  /** Describes the format annotation type. */
   public enum FormatType {
+    /** An invalid format string, annotated with {@link I18nInvalidFormat}. */
     I18NINVALID,
+    /** A valid format string, annotated with {@link I18nFormat}. */
     I18NFORMAT,
+    /**
+     * A format string that is associated with an argument, annotated with {@link I18nFormatFor}.
+     */
     I18NFORMATFOR
   }
 
   /**
-   * Takes an exception that describes an invalid formatter string and returns a syntax trees
-   * element that represents a {@link I18nInvalidFormat} annotation with the exception's error
-   * message as value.
+   * Takes an exception that describes an invalid formatter string and returns a syntax tree element
+   * that represents an {@link I18nInvalidFormat} annotation with the exception's error message as
+   * its value.
+   *
+   * @param ex an exception that describes an invalid formatter string
+   * @return an {@link I18nInvalidFormat} annotation whose value is the exception's error message
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());
@@ -123,9 +127,9 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Gets the value() element/field out of an I18NFormatFor annotation.
+   * Gets the value() element/field out of an I18nFormatFor annotation.
    *
-   * @param anno an I18NFormatFor annotation
+   * @param anno an I18nFormatFor annotation
    * @return its value() element/field
    */
   /*package-private*/ String getI18nFormatForValue(AnnotationMirror anno) {
@@ -133,8 +137,8 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation, and returns
-   * its value.
+   * Takes a syntax tree element that represents an {@link I18nInvalidFormat} annotation, and
+   * returns its value.
    *
    * @param anno an I18nInvalidFormat annotation
    * @return its value() element/field, within double-quotes
@@ -146,7 +150,7 @@ public class I18nFormatterTreeUtil {
   /**
    * Creates a {@code @}{@link I18nFormat} annotation with the given list as its value.
    *
-   * @param args conversion categories for the {@code @Format} annotation
+   * @param args conversion categories for the {@code @I18nFormat} annotation
    * @return a {@code @}{@link I18nFormat} annotation with the given list as its value
    */
   public AnnotationMirror categoriesToFormatAnnotation(I18nConversionCategory[] args) {
@@ -340,7 +344,7 @@ public class I18nFormatterTreeUtil {
 
     /**
      * This method checks the validity of the FormatFor. If it is valid, this.args will be set to
-     * the correct parameter arguments. Otherwise, it will be still null.
+     * the correct parameter arguments. Otherwise, it will still be null.
      *
      * @param theargs arguments to the format method call
      * @param method the ExecutableElement of the format method
@@ -422,65 +426,11 @@ public class I18nFormatterTreeUtil {
     /**
      * Returns the type of method invocation.
      *
+     * @return the type of method invocation
      * @see InvocationType
      */
     public final Result<InvocationType> getInvocationType() {
-      InvocationType type = InvocationType.VARARG;
-
-      if (args.size() == 1) {
-        ExpressionTree first = args.get(0);
-        TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
-        // figure out if argType is an array
-        type =
-            argType.accept(
-                new SimpleTypeVisitor8<>() {
-                  @Override
-                  protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
-                    // not an array
-                    return InvocationType.VARARG;
-                  }
-
-                  @Override
-                  public InvocationType visitArray(ArrayType t, Class<Void> p) {
-                    // it's an array, now figure out if it's a
-                    // (Object[])null array
-                    return first.accept(
-                        new SimpleTreeVisitor<InvocationType, Class<Void>>() {
-                          @Override
-                          protected InvocationType defaultAction(Tree tree, Class<Void> p) {
-                            // just a normal array
-                            return InvocationType.ARRAY;
-                          }
-
-                          @Override
-                          public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
-                            // it's a (Object[])null
-                            return atypeFactory
-                                        .getAnnotatedType(tree.getExpression())
-                                        .getUnderlyingType()
-                                        .getKind()
-                                    == TypeKind.NULL
-                                ? InvocationType.NULLARRAY
-                                : InvocationType.ARRAY;
-                          }
-                        },
-                        p);
-                  }
-
-                  @Override
-                  public InvocationType visitNull(NullType t, Class<Void> p) {
-                    return InvocationType.NULLARRAY;
-                  }
-                },
-                Void.TYPE);
-      }
-
-      ExpressionTree loc;
-      loc = tree.getMethodSelect();
-      if (type != InvocationType.VARARG && !args.isEmpty()) {
-        loc = args.get(0);
-      }
-      return new Result<>(type, loc);
+      return FormatterTreeUtil.invocationType(tree, args);
     }
 
     public Result<FormatType> getInvalidInvocationType() {

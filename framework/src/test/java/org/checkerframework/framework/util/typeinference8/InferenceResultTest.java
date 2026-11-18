@@ -66,7 +66,8 @@ public class InferenceResultTest {
    * @return an inference result with exactly one entry, which is not for {@code absentTree}
    */
   private static InferenceResult resultWithoutEntryFor(ExpressionTree absentTree) {
-    InferenceResult result = new InferenceResult(Collections.emptyList(), false, false, "");
+    InferenceResult result =
+        new InferenceResult(Collections.emptyList(), Collections.emptySet(), false, "");
     result.getResults().put(new KeyOnlyExpressionTree(), new HashMap<>());
     Assert.assertFalse(result.getResults().isEmpty());
     Assert.assertFalse(result.getResults().containsKey(absentTree));

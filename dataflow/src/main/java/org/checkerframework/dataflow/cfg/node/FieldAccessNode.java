@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for a field access, including a method accesses:
+ * A node for a field access, including a method access:
  *
  * <pre>
  *   <em>expression</em> . <em>field</em>

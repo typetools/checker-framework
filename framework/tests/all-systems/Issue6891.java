@@ -8,7 +8,10 @@ import java.util.stream.Collectors;
 
 public class Issue6891 {
 
-  @SuppressWarnings("optional") // true positives, but this test is not about Optional
+  // Optional.map is @SideEffectFree, whose declaration comments that "the mapper must not have
+  // side effects", so the mapper below is a true positive under -AcheckPurityAnnotations.  The
+  // expected error is asserted in framework/tests/flow/PurityFunctionalArgumentJdk.java.
+  @SuppressWarnings({"optional", "purity"}) // true positives, but this test is not about them
   private Map<String, String> func(Set<Entity> entities) {
 
     return Optional.ofNullable(entities)

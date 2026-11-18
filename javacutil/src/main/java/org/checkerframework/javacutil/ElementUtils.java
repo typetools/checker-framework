@@ -160,12 +160,12 @@ public final class ElementUtils {
    * Returns the "parent" package element for the given package element. For package "A.B" it gives
    * "A". For package "A" it gives the default package. For the default package it returns null.
    *
-   * <p>Note that packages are not enclosed within each other, we have to manually climb the
+   * <p>Note that packages are not enclosed within each other; we have to manually climb the
    * namespaces. Calling "enclosingPackage" on a package element returns the package element itself
    * again.
    *
    * @param elem the package to start from
-   * @param elements the element
+   * @param elements the element utilities
    * @return the parent package element or {@code null}
    */
   public static @Nullable PackageElement parentPackage(PackageElement elem, Elements elements) {
@@ -184,8 +184,8 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns true if the element is a static element: whether it is a static field, static method,
-   * or static class.
+   * Returns true if the element is a static element: a static field, static method, or static
+   * class.
    *
    * @return true if element is static
    */
@@ -203,7 +203,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns true if the element is a effectively final element.
+   * Returns true if the element is an effectively final element.
    *
    * @return true if the element is effectively final
    */
@@ -357,7 +357,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Check if the element is an element for 'java.lang.Object'
+   * Returns true if the element is an element for 'java.lang.Object'.
    *
    * @param element the type element
    * @return true iff the element is java.lang.Object element
@@ -367,7 +367,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Check if the element is an element for 'java.lang.String'
+   * Returns true if the element is an element for 'java.lang.String'.
    *
    * @param element the type element
    * @return true iff the element is java.lang.String element
@@ -427,7 +427,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
+   * Returns true if the element is declared in ByteCode. Always returns false if elt is a package.
    *
    * @param elt some element
    * @return true if the element is declared in ByteCode
@@ -565,8 +565,8 @@ public final class ElementUtils {
   }
 
   /**
-   * Does the given element need a receiver for accesses? For example, an access to a local variable
-   * does not require a receiver.
+   * Returns true if the given element needs a receiver for accesses. For example, an access to a
+   * local variable does not require a receiver.
    *
    * @param element the element to test
    * @return true if the element requires a receiver for accesses
@@ -593,7 +593,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns a type's superclass, or null if it does not have a superclass (it is object or an
+   * Returns a type's superclass, or null if it does not have a superclass (it is Object or an
    * interface, or the superclass is not on the classpath).
    *
    * @param typeElt a type element
@@ -617,8 +617,8 @@ public final class ElementUtils {
   }
 
   /**
-   * Determine all type elements for the supertypes of the given type element. This is the
-   * transitive closure of the extends and implements clauses.
+   * Returns all type elements for the supertypes of the given type element. This is the transitive
+   * closure of the extends and implements clauses.
    *
    * <p>TODO: can we learn from the implementation of
    * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
@@ -672,7 +672,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Determine all type elements for the direct supertypes of the given type element. This is the
+   * Returns all type elements for the direct supertypes of the given type element. This is the
    * union of the extends and implements clauses.
    *
    * @param type the type whose supertypes to return
@@ -802,10 +802,11 @@ public final class ElementUtils {
   }
 
   /**
-   * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
+   * Returns true if the given element is a type, i.e., a class, enum, interface, or annotation
+   * type.
    *
    * @param element the element to test
-   * @return true, iff the given kind is a class kind
+   * @return true iff the kind of the given element is a type kind
    */
   public static boolean isTypeElement(Element element) {
     return typeElementKinds().contains(element.getKind());
@@ -900,7 +901,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Check that a method Element matches a signature.
+   * Returns true if a method Element matches a signature.
    *
    * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is only
    * populated when annotated.
@@ -950,7 +951,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Given an annotation name, return true if the element has the annotation of that name.
+   * Given an annotation name, returns true if the element has the annotation of that name.
    *
    * <p>It is more efficient to use {@code Element#getAnnotation(Class)}, but note that both methods
    * ignore types from annotation files, such as stub or ajava files.
@@ -1000,6 +1001,82 @@ public final class ElementUtils {
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
     return CollectionsP.<Type, TypeElement>mapList(
         t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
+  }
+
+  /**
+   * Resolves a call {@code receiver.methodName()}, where {@code receiver} is an expression of type
+   * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
+   * there is no such method.
+   *
+   * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
+   * result is the most specific declaration among {@code receiverType} and its supertypes, but at
+   * run time the call might dispatch to an overriding method in a subtype of {@code receiverType}.
+   *
+   * @param receiverType the type of the receiver expression
+   * @param methodName the name of the method
+   * @param env the processing environment
+   * @return the method that the call invokes, or null if {@code receiverType} has no such method
+   */
+  public static @Nullable ExecutableElement resolveNoArgumentCall(
+      TypeMirror receiverType, String methodName, ProcessingEnvironment env) {
+    TypeMirror upperBound = TypesUtils.upperBound(receiverType);
+    if (upperBound.getKind() != TypeKind.DECLARED
+        && upperBound.getKind() != TypeKind.INTERSECTION) {
+      return null;
+    }
+    Context ctx = InternalUtils.getJavacContext(env);
+    com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+    Symbol.TypeSymbol origin = ((Type) upperBound).tsym;
+    com.sun.tools.javac.util.Name name =
+        com.sun.tools.javac.util.Names.instance(ctx).fromString(methodName);
+    // Elements.getAllMembers would find the candidates, but in rare cases it crashes with a
+    // Symbol$CompletionFailure exception.  See
+    // https://github.com/typetools/checker-framework/issues/6396.  Searching the members of every
+    // supertype avoids the crash.
+    MethodSymbol result = null;
+    for (Type supertype : javacTypes.closure((Type) upperBound)) {
+      for (Symbol member : supertype.tsym.members().getSymbolsByName(name)) {
+        // A static or private method is not invoked through the receiver, and neither is a method
+        // that the receiver's type does not inherit, such as a package-private method of a class in
+        // another package.  A synthetic method, such as a bridge method, carries none of the
+        // declaration annotations of the method that it forwards to.
+        if (member instanceof MethodSymbol method
+            && method.getParameters().isEmpty()
+            && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
+            && method.isInheritedIn(origin, javacTypes)
+            && (result == null || takesPrecedence(method, result, origin, javacTypes))) {
+          result = method;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if a call on an expression of type {@code origin}, which inherits both {@code m1}
+   * and {@code m2}, invokes {@code m1} rather than {@code m2}. The two methods have the same
+   * signature. For an interface, a method of an interface takes precedence over a method of {@code
+   * Object}, the only class among its supertypes. For any other type, a method of a class takes
+   * precedence over a method of an interface. Otherwise, a method of a subtype takes precedence
+   * over a method of its supertype. These rules are those of javac's method resolution.
+   *
+   * @param m1 a method
+   * @param m2 a method with the same signature as {@code m1}
+   * @param origin the type of the receiver of the call
+   * @param javacTypes the javac type utilities
+   * @return true if {@code m1} takes precedence over {@code m2}
+   */
+  private static boolean takesPrecedence(
+      MethodSymbol m1,
+      MethodSymbol m2,
+      Symbol.TypeSymbol origin,
+      com.sun.tools.javac.code.Types javacTypes) {
+    Symbol owner1 = m1.owner;
+    Symbol owner2 = m2.owner;
+    if (owner1.isInterface() != owner2.isInterface()) {
+      return owner1.isInterface() == origin.isInterface();
+    }
+    return !owner1.equals(owner2) && owner1.isSubClass(owner2, javacTypes);
   }
 
   /**
@@ -1062,7 +1139,7 @@ public final class ElementUtils {
   }
 
   /**
-   * Check if the given element is a compact canonical record constructor.
+   * Returns true if the given element is a compact canonical record constructor.
    *
    * @param elt the element to check
    * @return true if the element is a compact canonical constructor of a record
@@ -1075,7 +1152,7 @@ public final class ElementUtils {
   /**
    * Returns true iff the given element is a resource variable.
    *
-   * @param elt an element; may be null, in which case this method always returns false
+   * @param elt an element; might be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
   public static boolean isResourceVariable(@Nullable Element elt) {

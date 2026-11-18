@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -14,10 +15,12 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Warner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -373,7 +376,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Check if the type represents a declared type of the given qualified name.
+   * Returns true if the type represents a declared type of the given qualified name.
    *
    * @param type the type
    * @param qualifiedName the name to check {@code type} against
@@ -385,8 +388,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Check if the type represents a declared type whose fully-qualified name is any of the given
-   * names.
+   * Returns true if the type represents a declared type whose fully-qualified name is any of the
+   * given names.
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
@@ -412,7 +415,7 @@ public final class TypesUtils {
               "java.lang.Float"));
 
   /**
-   * Check if the {@code type} represents a boxed primitive type.
+   * Returns true if the {@code type} represents a boxed primitive type.
    *
    * @param type the type to check
    * @return true iff type represents a boxed primitive type
@@ -575,8 +578,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if declaredType is a Class that is used to box primitive type (e.g.
-   * declaredType=java.lang.Double and primitiveType=22.5d )
+   * Returns true if declaredType is a Class that is used to box primitive type primitiveType (e.g.,
+   * declaredType=java.lang.Double and primitiveType=double).
    *
    * @param declaredType a type that might be a boxed type
    * @param primitiveType a type that might be a primitive type
@@ -644,7 +647,7 @@ public final class TypesUtils {
    * Returns true if a TypeMirror represents a class type.
    *
    * @param type a type that might be a class type
-   * @return true if {@code} is a class type
+   * @return true if {@code type} is a class type
    */
   public static boolean isClassType(TypeMirror type) {
     return (type instanceof Type.ClassType);
@@ -724,7 +727,7 @@ public final class TypesUtils {
   /**
    * Returns true if {@code type} has an enclosing type.
    *
-   * @param type type to checker
+   * @param type type to check
    * @return true if {@code type} has an enclosing type
    */
   public static boolean hasEnclosingType(TypeMirror type) {
@@ -735,8 +738,8 @@ public final class TypesUtils {
   // Type variables and wildcards
 
   /**
-   * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
-   * non-wildcard upper bound. Otherwise, return the type itself.
+   * If the argument is a bounded TypeVariable or WildcardType, returns its non-variable,
+   * non-wildcard upper bound. Otherwise, returns the type itself.
    *
    * @param type a type
    * @return the non-variable, non-wildcard upper bound of a type, if it has one, or itself if it
@@ -765,7 +768,13 @@ public final class TypesUtils {
 
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
-   * is sometimes null, in that case this method will return null.
+   * is sometimes null; in that case, this method returns null.
+   *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -776,7 +785,13 @@ public final class TypesUtils {
 
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
-   * is sometimes null, in that case this method will return null.
+   * is sometimes null; in that case, this method returns null.
+   *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -832,7 +847,7 @@ public final class TypesUtils {
    * null type.
    *
    * @param typeVariable a type variable
-   * @param env the proceProcessingEnvironment
+   * @param env the ProcessingEnvironment
    * @return the lower bound of {@code typeVariable} or the null type
    */
   public static TypeMirror getTypeVariableLowerBound(
@@ -865,9 +880,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound. If the
-   * bounded type extends other bounded types, this method will iterate through their bounds until a
-   * class, interface, or intersection is found.
+   * Given a bounded type (wildcard or typevar), returns the concrete type of its upper bound. If
+   * the bounded type extends other bounded types, this method will iterate through their bounds
+   * until a class, interface, or intersection is found.
    *
    * @return a type that is not a wildcard or typevar, or {@code null} if this type is an unbounded
    *     wildcard
@@ -964,6 +979,40 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
+   * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
+   *
+   * @param source the source type
+   * @param target the target type
+   * @param processingEnv the processing environment
+   * @return true if unchecked conversion is necessary for {@code source} to be compatible with
+   *     {@code target}
+   */
+  public static boolean needsUncheckedConversion(
+      TypeMirror source, TypeMirror target, ProcessingEnvironment processingEnv) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(processingEnv));
+    // isConvertible records, in the javac Warner, any lint warnings that the conversion would need.
+    Warner lintRecorder = new Warner();
+    javacTypes.isConvertible((Type) source, (Type) target, lintRecorder);
+    return lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
+  }
+
+  /**
+   * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
+   * type2}.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @param types a Types object
+   * @return true if the erased type of {@code type1} is the same type as the erased type of {@code
+   *     type2}
+   */
+  public static boolean isErasedSameType(TypeMirror type1, TypeMirror type2, Types types) {
+    return types.isSameType(types.erasure(type1), types.erasure(type2));
+  }
+
+  /**
    * Returns true if {@code type} is a type variable created during capture conversion.
    *
    * @param type a type mirror
@@ -999,8 +1048,8 @@ public final class TypesUtils {
    * returns {@code null}.
    *
    * @param typeVar a type variable that might be a captured type variable
-   * @return {@code typeVar} is a captured type variable, then returns its underlying wildcard;
-   *     otherwise returns {@code null}
+   * @return if {@code typeVar} is a captured type variable, its underlying wildcard; otherwise
+   *     {@code null}
    */
   public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
     if (isCapturedTypeVariable(typeVar)) {
@@ -1166,7 +1215,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Given a list of TypeMirror, return a list of Type.
+   * Given a list of TypeMirror, returns a list of Type.
    *
    * @param typeMirrors a list of TypeMirrors
    * @return the argument, converted to a javac list
@@ -1235,9 +1284,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the superclass the given type. If there is no superclass the first interface returned
-   * by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a superclass
-   * nor a superinterface, then null is returned.
+   * Returns the superclass of the given type. If there is no superclass, the first interface
+   * returned by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a
+   * superclass nor a superinterface, then null is returned.
    *
    * @param type a type
    * @param types type utilities
@@ -1442,7 +1491,7 @@ public final class TypesUtils {
    *
    * @param functionalInterfaceType functional interface
    * @param env ProcessingEnvironment
-   * @return the single abstract method declared by the type of the tree
+   * @return the type of the single abstract method declared by {@code functionalInterfaceType}
    */
   public static ExecutableType findFunctionType(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
@@ -1614,7 +1663,7 @@ public final class TypesUtils {
    * is not a subtype of an array.
    *
    * @param type a type
-   * @param types TypesUtils
+   * @param types the type utilities
    * @return the most specific supertype of {@code type} that is an array, or null if {@code type}
    *     is not a subtype of an array
    */
@@ -1666,11 +1715,11 @@ public final class TypesUtils {
   /**
    * Creates a wildcard with the given bounds. If {@code lowerBound} is non-null, the {@code
    * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
-   * {@code Object}, then {@code lowerBound} must be {@code null};
+   * {@code Object}, then {@code lowerBound} must be {@code null}.
    *
    * @param lowerBound the lower bound for the wildcard, or null if it has none
    * @param upperBound the upper bound for the wildcard, or null if it has none
-   * @param types TypesUtils
+   * @param types the type utilities
    * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
@@ -1691,7 +1740,7 @@ public final class TypesUtils {
    *
    * @param type a type
    * @param types the type utilities
-   * @return true if assignment to the type may be a narrowing
+   * @return true if assignment to the type might be a narrowing
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
     // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
@@ -1703,9 +1752,200 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the two type variables are the same type variable. Meaning they have the same
-   * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
-   * they do not have to be the same object.
+   * Returns true if {@code t1} and {@code t2} are the same type, except that captured type
+   * variables in {@code t1} might differ from the corresponding captured type variables in {@code
+   * t2}.
+   *
+   * <p>More precisely, returns true if there is a one-to-one correspondence between the captured
+   * type variables of {@code t1} and those of {@code t2} such that:
+   *
+   * <ul>
+   *   <li>replacing each captured type variable of {@code t1} by its counterpart makes {@code t1}
+   *       the same type as {@code t2}, and
+   *   <li>the upper and lower bounds of each pair of corresponding captured type variables are
+   *       likewise the same, under the same correspondence.
+   * </ul>
+   *
+   * As in {@link Types#isSameType}, {@code ?} is the same as {@code ? extends Object}. Otherwise, a
+   * wildcard that lacks an extends or super bound matches only a wildcard that also lacks that
+   * bound. Bounds that refer, directly or indirectly, back to a captured type variable (such as
+   * {@code CAP#1 extends Comparable<CAP#1>}) are handled by assuming that a pair of captured type
+   * variables corresponds while their bounds are compared.
+   *
+   * <p>This relation is symmetric.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  public static boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2, Types types) {
+    return isSameTypeModuloCaptures(t1, t2, types, new CaptureCorrespondence());
+  }
+
+  /**
+   * A one-to-one correspondence between the captured type variables of a first type and those of a
+   * second type, built up by {@link #isSameTypeModuloCaptures(TypeMirror, TypeMirror, Types,
+   * CaptureCorrespondence)}. Captured type variables are stored without type annotations.
+   *
+   * <p>A pair stays in the correspondence after its bounds are compared. This is sound because
+   * every comparison is a conjunction: if comparing any pair's bounds fails, then the whole
+   * comparison fails. Keeping the pairs also means that each pair's bounds are compared at most
+   * once.
+   *
+   * @param firstToSecond a map from each captured type variable of the first type to its
+   *     counterpart in the second type
+   * @param secondToFirst the inverse of {@code firstToSecond}
+   */
+  private record CaptureCorrespondence(
+      IdentityHashMap<TypeMirror, TypeMirror> firstToSecond,
+      IdentityHashMap<TypeMirror, TypeMirror> secondToFirst) {
+
+    /** Creates an empty correspondence. */
+    CaptureCorrespondence() {
+      this(new IdentityHashMap<>(), new IdentityHashMap<>());
+    }
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type modulo captured type variables.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @param visited the correspondence between the captured type variables of {@code t1} and those
+   *     of {@code t2}; this method might add pairs to it
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  private static boolean isSameTypeModuloCaptures(
+      TypeMirror t1, TypeMirror t2, Types types, CaptureCorrespondence visited) {
+    if (isCapturedTypeVariable(t1) && isCapturedTypeVariable(t2)) {
+      // javac represents a captured type variable by several TypeMirrors that differ only in their
+      // type annotations, but by a single unannotated TypeMirror, so use that one in the
+      // IdentityHashMaps.
+      TypeMirror cap1 = TypeAnnotationUtils.unannotatedType(t1);
+      TypeMirror cap2 = TypeAnnotationUtils.unannotatedType(t2);
+      // The captured type variable that cap1 is already paired with, if any.
+      TypeMirror cap1Counterpart = visited.firstToSecond().get(cap1);
+      if (cap1Counterpart != null || visited.secondToFirst().containsKey(cap2)) {
+        // cap1 or cap2 was paired earlier in this comparison, or is paired because its bounds are
+        // being compared.  The correspondence is one-to-one, so cap1 and cap2 correspond only if
+        // they are paired with each other.
+        return cap1Counterpart != null && types.isSameType(cap1Counterpart, cap2);
+      }
+      visited.firstToSecond().put(cap1, cap2);
+      visited.secondToFirst().put(cap2, cap1);
+      TypeVariable v1 = (TypeVariable) t1;
+      TypeVariable v2 = (TypeVariable) t2;
+      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
+          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
+    }
+    if (t1.getKind() != t2.getKind()) {
+      return false;
+    }
+    switch (t1.getKind()) {
+      case DECLARED -> {
+        DeclaredType d1 = (DeclaredType) t1;
+        DeclaredType d2 = (DeclaredType) t2;
+        return d1.asElement().equals(d2.asElement())
+            && isSameTypeModuloCaptures(
+                d1.getEnclosingType(), d2.getEnclosingType(), types, visited)
+            && isSameTypesModuloCaptures(
+                d1.getTypeArguments(), d2.getTypeArguments(), types, visited);
+      }
+      case ARRAY -> {
+        return isSameTypeModuloCaptures(
+            ((ArrayType) t1).getComponentType(),
+            ((ArrayType) t2).getComponentType(),
+            types,
+            visited);
+      }
+      case INTERSECTION -> {
+        return isSameTypesModuloCaptures(
+            ((IntersectionType) t1).getBounds(),
+            ((IntersectionType) t2).getBounds(),
+            types,
+            visited);
+      }
+      case WILDCARD -> {
+        WildcardType w1 = (WildcardType) t1;
+        WildcardType w2 = (WildcardType) t2;
+        TypeMirror extends1 = w1.getExtendsBound();
+        TypeMirror extends2 = w2.getExtendsBound();
+        // `?` is the same as `? extends Object`.
+        if (extends1 != null && isObject(extends1)) {
+          extends1 = null;
+        }
+        if (extends2 != null && isObject(extends2)) {
+          extends2 = null;
+        }
+        return isSameBoundModuloCaptures(extends1, extends2, types, visited)
+            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound(), types, visited);
+      }
+      case TYPEVAR -> {
+        // At most one of t1 and t2 is a captured type variable.
+        return !isCapturedTypeVariable(t1)
+            && !isCapturedTypeVariable(t2)
+            && areSame((TypeVariable) t1, (TypeVariable) t2);
+      }
+      default -> {
+        return types.isSameType(t1, t2);
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@code ts1} and {@code ts2} have the same length and their corresponding
+   * elements are the same type modulo captured type variables.
+   *
+   * @param ts1 a list of types
+   * @param ts2 a list of types
+   * @param types the type utilities
+   * @param visited the correspondence between captured type variables
+   * @return true if {@code ts1} and {@code ts2} are pairwise the same modulo captured type
+   *     variables
+   */
+  private static boolean isSameTypesModuloCaptures(
+      List<? extends TypeMirror> ts1,
+      List<? extends TypeMirror> ts2,
+      Types types,
+      CaptureCorrespondence visited) {
+    if (ts1.size() != ts2.size()) {
+      return false;
+    }
+    for (int i = 0; i < ts1.size(); i++) {
+      if (!isSameTypeModuloCaptures(ts1.get(i), ts2.get(i), types, visited)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if {@code b1} and {@code b2} are the same wildcard bound, modulo captured type
+   * variables. A missing bound is only the same as another missing bound.
+   *
+   * @param b1 a wildcard bound, or null if the wildcard has no such bound
+   * @param b2 a wildcard bound, or null if the wildcard has no such bound
+   * @param types the type utilities
+   * @param visited the correspondence between captured type variables
+   * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
+   */
+  private static boolean isSameBoundModuloCaptures(
+      @Nullable TypeMirror b1,
+      @Nullable TypeMirror b2,
+      Types types,
+      CaptureCorrespondence visited) {
+    if (b1 == null) {
+      return b2 == null;
+    }
+    return b2 != null && isSameTypeModuloCaptures(b1, b2, types, visited);
+  }
+
+  /**
+   * Returns true if the two type variables are the same type variable, meaning that they have the
+   * same name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror,
+   * TypeMirror)}, they do not have to be the same object.
    *
    * <p>This method is needed when a type has gone through type variable substitution, but only some
    * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
@@ -1713,7 +1953,7 @@ public final class TypesUtils {
    *
    * @param typeVariable1 a type variable
    * @param typeVariable2 a type variable
-   * @return if the two type variables are the same type variable
+   * @return true if the two type variables are the same type variable
    */
   @SuppressWarnings("TypeEquals") // early exit from comparison method
   @EqualsMethod

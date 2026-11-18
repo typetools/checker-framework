@@ -40,7 +40,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
   /**
    * List of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
-   * Call {@link #visited(AnnotatedTypeMirror)} to check if the type have been visited, so that
+   * Call {@link #visited(AnnotatedTypeMirror)} to check if the type has been visited, so that
    * reference equality is used rather than {@link #equals(Object)}.
    */
   private final List<AnnotatedTypeMirror> visited = new ArrayList<>();
@@ -52,7 +52,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
   /**
    * Returns an ATM that is the least upper bound of type1 and type2 and whose Java type is
-   * lubJavaType. lubJavaType must be a super type or convertible to the Java types of type1 and
+   * lubJavaType. lubJavaType must be a supertype of or convertible to the Java types of type1 and
    * type2.
    */
   AnnotatedTypeMirror lub(
@@ -75,7 +75,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
   }
 
   /**
-   * Lub a type with the nulltype.
+   * Returns the lub of a type and the null type.
    *
    * @param nullType an annotated null type
    * @param otherType the other type to lub
@@ -114,6 +114,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotationMirror lowerBound : lowerBounds) {
       AnnotationMirror nullAnno = nullType.getPrimaryAnnotationInHierarchy(lowerBound);
       AnnotationMirror upperBound = otherAsLub.getAnnotationInHierarchy(lowerBound);
+      if (nullAnno == null || upperBound == null) {
+        // One of the types has no annotation in this hierarchy.  Keep otherType's annotation.
+        continue;
+      }
       if (qualHierarchy.isSubtypeShallow(upperBound, otherTM, nullAnno, nullTM)) {
         // @L <: @U <: @N
         lub.replaceAnnotation(nullAnno);
@@ -152,9 +156,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
    * Casts lub to the type of type, or issues an error if type and lub are not the same kind.
    *
    * @param <T> the type to cast to
-   * @param type a values of the type to cast to
+   * @param type a value of the type to cast to
    * @param lub the value to cast to {@code T}
-   * @return {@code lub}, casted to {@code T}
+   * @return {@code lub}, cast to {@code T}
    */
   private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
     if (type.getKind() != lub.getKind()) {
@@ -347,6 +351,12 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotationMirror lower2 = qualHierarchy.findAnnotationInHierarchy(type2LowerBoundAnnos, top);
       AnnotationMirror upper1 = type1.getAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getAnnotationInHierarchy(lower1);
+      if (lower2 == null || upper1 == null || upper2 == null) {
+        // One of the types has no annotation in this hierarchy, as for a type argument of a lower
+        // bound built by AsSuperVisitor.asSuperLowerBound.  Keep the lub of the bounds, which is
+        // already stored in lub.
+        continue;
+      }
 
       if (qualHierarchy.isSubtypeShallow(upper2, typeMirror2, upper1, typeMirror1)
           && qualHierarchy.isSubtypeShallow(upper1, typeMirror1, upper2, typeMirror2)

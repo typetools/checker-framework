@@ -4,8 +4,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A fresh type variable created by resolution for the capture of {@code ? extends T} used to get
- * upper bound {@code Object} rather than {@code T}, which made {@code twoLevel} below report
+ * The fresh type variable that resolution creates for the capture of {@code ? extends T} must have
+ * upper bound {@code T}, and the one for {@code ? super T} must have lower bound {@code T}.
+ * Otherwise, {@code twoLevel} below reports
  *
  * <pre>{@code
  * error: [type.arguments.not.inferred] Could not infer type arguments for Stream.collect
@@ -14,15 +15,14 @@ import java.util.stream.Stream;
  * }</pre>
  *
  * <p>JLS 18.3.2 implies only the bound {@code alphai <: Bi theta} for a capture bound, so the
- * wildcard's own bound is not among the upper bounds that JLS 18.4 uses to build the fresh type
- * variable. Capture conversion (JLS 5.1.10), which javac applies to the return type instead, gives
- * the capture variable the upper bound {@code glb(T, Bi theta)}. {@code CaptureBound#incorporate}
- * now adds that bound.
+ * wildcard's own bound is not among the bounds that JLS 18.4 uses to build the fresh type variable.
+ * javac's inference variable for a capture has the capture's bounds, as capture conversion (JLS
+ * 5.1.10) gives them. {@code CaptureBound#incorporate} adds those bounds.
  *
  * <p>The two-level shape is required: the receiver {@code Stream.of(...)} has no target type, so
  * the inner invocation is resolved -- with capture -- before the outer invocation constrains its
  * result. Where the argument's type is used directly, as in {@code singleton} and {@code
- * throughMk}, real capture conversion applies and the bound was never lost.
+ * throughMk}, real capture conversion applies.
  */
 public class CapturedWildcardBound {
 
@@ -55,15 +55,20 @@ public class CapturedWildcardBound {
     return Stream.of(upperWildOfVar("s")).collect(Collectors.toList());
   }
 
+  // The symmetric case: the target type uses the lower bound of the wildcard.
+  static List<Getter<?, ? super Number>> twoLevelSuper() {
+    return Stream.of(lowerWild("s")).collect(Collectors.toList());
+  }
+
+  static native <P> NumGetter<P, ? super Integer> lowerWildBoundedParam(P p);
+
+  static List<NumGetter<?, ? super Integer>> twoLevelSuperBoundedParam() {
+    return Stream.of(lowerWildBoundedParam("s")).collect(Collectors.toList());
+  }
+
   // Below: shapes that already worked, kept as controls.
 
-  // The symmetric bound is not added for a lower-bounded wildcard, so the capture variable here
-  // still has no lower bound and the target type cannot be tightened to
-  // `List<Getter<?, ? super Number>>`.  Adding it makes this shape pass, but it makes
-  // Issue8053#lowerBoundedWildcard fail under the Value Checker: the super bound of the wildcard
-  // is defaulted to the bottom qualifier where the capture variable is created, and to the top
-  // qualifier where the re-inferred lambda body is checked against it.
-  static List<Getter<?, ?>> twoLevelSuper() {
+  static List<Getter<?, ?>> twoLevelSuperLooseTarget() {
     return Stream.of(lowerWild("s")).collect(Collectors.toList());
   }
 
