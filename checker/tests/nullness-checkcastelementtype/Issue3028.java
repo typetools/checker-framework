@@ -124,10 +124,30 @@ public class Issue3028 {
     List list = (List) c;
   }
 
+  @SuppressWarnings("rawtypes")
+  void rawUpcastToWildcard(List rawList) {
+    List<?> list = (List<?>) rawList;
+    // A raw type determines no type arguments.
+    // :: warning: [cast.unsafe]
+    List<? extends @NonNull Object> list2 = (List<? extends @NonNull Object>) rawList;
+  }
+
+  @SuppressWarnings("rawtypes")
+  void rawDowncastToWildcard(List rawList) {
+    ArrayList<?> list = (ArrayList<?>) rawList;
+    // :: warning: [cast.unsafe]
+    ArrayList<? extends @NonNull Object> list2 = (ArrayList<? extends @NonNull Object>) rawList;
+  }
+
   void primitiveCasts(long l, Integer i) {
     int x = (int) l;
     long y = (long) x;
     int z = (int) i;
+  }
+
+  void boxingCast(int i) {
+    Comparable<Integer> c = (Comparable<Integer>) i;
+    Object o = (Object) i;
   }
 
   void unboundedWildcardDowncast(Object o) {
