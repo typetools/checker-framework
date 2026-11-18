@@ -15,4 +15,12 @@ public class ConstantNarrowingToByte {
     // :: error: [assignment]
     @Interned Short s = (char) 1;
   }
+
+  void widenToShort() {
+    // Assignment conversion widens a constant byte to short before boxing it, so the value is boxed
+    // by Short.valueOf(), not by Byte.valueOf().
+    Short s = (byte) 1;
+    // :: error: [assignment]
+    @Interned Object o = s;
+  }
 }
