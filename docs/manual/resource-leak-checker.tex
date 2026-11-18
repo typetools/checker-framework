@@ -153,7 +153,7 @@ The following annotations express ownership of resource collections.
   express ownership of resource collections. Resource collection formal parameters default to \<@NotOwningCollection>, whereas resource collection fields and return types default to \<@OwningCollection>.
   For more details, see Section~\ref{resource-leak-collections}.
 \item[\refqualclass{checker/collectionownership/qual}{PolyOwningCollection}]
-  is the polymorphic qualifier for collection ownership. For example, \<Iterable.iterator()> returns an iterator with the same ownership as the collection.
+  is the polymorphic qualifier for collection ownership. For example, \<Iterable.iterator()> returns an iterator that never owns the collection's elements.
 \end{description}
 
 The following annotations are written on methods.
@@ -692,12 +692,19 @@ collection's obligation.
 A Java expression is a \textit{resource collection} if:
 
 \begin{enumerate}
-  \item its type is \<java.lang.Iterable> or a subtype of it (which includes every \<java.util.Collection>) with exactly one type argument, and
-  \item the upper bound of that type argument has a non-empty or unknown (\<@MustCallUnknown>) \<MustCall> type.
+  \item its type is \<java.lang.Iterable> or a subtype of it (which includes every \<java.util.Collection>), and
+  \item the upper bound of its element type has a non-empty or unknown (\<@MustCallUnknown>) \<MustCall> type.
 \end{enumerate}
 
 For example, expressions of type \code{List<Socket>} or \code{Iterable<?\ extends @MustCallUnknown Object>} are resource collections, but expressions of type \code{Set<String>} or \code{Map<String, Socket>} are not.
 It is a limitation of the Resource Leak Checker that a map, such as a \code{Map<String, Socket>}, cannot own resources.
+
+A user-defined collection class can contain resources only if the upper bound
+of its element type parameter is \<@MustCallUnknown>:
+
+\begin{verbatim}
+class ResourceList<E extends @MustCallUnknown Object> extends ArrayList<E> { ... }
+\end{verbatim}
 
 \subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 
@@ -738,10 +745,10 @@ The type hierarchy of the ownership type system is:
 A \<@NotOwningCollection> reference can perform only certain ``safe''
 operations on the collection. It can insert only elements that are definitely
 not owning, such as the result of a method whose return type is
-\<@NotOwning>. It cannot clear the collection or discard or overwrite
-elements, for example with \<clear()>, \<remove(Object)>, or \<set()>. Some
-methods that remove and return an element, such as \<Queue.poll()>, are
-permitted; the caller then owns the returned element and must dispose of it.
+\<@NotOwning>. It cannot clear the collection or discard elements, for example
+with \<clear()> or \<remove(Object)>. Methods that remove or replace an element
+and return it, such as \<Queue.poll()> and \<List.set()>, are permitted; the
+caller then owns the returned element and must dispose of it.
 In exchange for these restrictions, a \<@NotOwningCollection> reference has no
 obligation for the elements of the collection.
 
@@ -957,15 +964,12 @@ If the enclosing class should not take responsibility for the resource collectio
 
 \subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
 
-An iterator has the same collection ownership type as the collection it iterates
-over.  (This is implemented by annotating \<Iterable.iterator()> as
-\<@PolyOwningCollection>.) An iterator never has an obligation of its own: the
-collection keeps the obligation.
+An iterator over a resource collection is \<@NotOwningCollection>: it never owns
+the collection's elements, so the collection keeps the obligation.
 
-\<Iterator.next()> returns a \<@NotOwning> element. \<Iterator.remove()> is
-permitted only if the collection has no obligation
-(\<@OwningCollectionWithoutObligation>), because the checker does not track
-whether the removed element was disposed of.
+\<Iterator.next()> returns a \<@NotOwning> element.  \<Iterator.remove()> is not
+permitted on such an iterator, because the checker does not track whether the
+removed element was disposed of.
 
 An implementation of \<Iterator> whose elements are resources must annotate the
 return type of its \<next()> method with \<@NotOwning>, to match

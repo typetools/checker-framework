@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.checkerframework.checker.collectionownership.qual.*;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 
 class CollectionSubclasses {
 
-  static class ResourceList<E> extends ArrayList<E> {}
+  static class ResourceList<E extends @MustCallUnknown Object> extends ArrayList<E> {}
 
   void leakArrayList() {
     List<Resource> list = new ArrayList<>();
