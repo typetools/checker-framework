@@ -33,7 +33,7 @@ public class RecordPatternInitialization {
   }
 
   void initializedExplicit(UnknownInitBox box) {
-    // :: warning: [instanceof.pattern.unsafe]
+    // :: warning: [nested.pattern.unsafe]
     if (box instanceof UnknownInitBox(@Initialized String s)) {
       @Initialized String t = s;
     }

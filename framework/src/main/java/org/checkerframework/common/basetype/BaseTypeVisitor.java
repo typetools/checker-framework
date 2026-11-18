@@ -496,8 +496,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports a warning if the type of the binding variable declared by {@code bindingPattern} is not
-   * a safe downcast from {@code componentType}, as adjusted by {@link
+   * Reports a {@code nested.pattern.unsafe} warning if the type of the binding variable declared by
+   * {@code bindingPattern} is not a safe downcast from {@code componentType}, as adjusted by {@link
    * #instanceofPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
    * unconditional for the record component that it is matched against.
    *
@@ -512,7 +512,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror componentType) {
     if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(componentType))) {
       checker.reportWarning(
-          bindingPattern, "instanceof.pattern.unsafe", componentType, bindingPattern.getVariable());
+          bindingPattern, "nested.pattern.unsafe", componentType, bindingPattern.getVariable());
     }
   }
 

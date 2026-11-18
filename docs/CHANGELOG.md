@@ -22,7 +22,7 @@ A type pattern nested in a record pattern, such as `String s` in
 `Box(String s)`, is checked against the type of the record component: as an
 assignment if the pattern is unconditional for that type, and like an
 `instanceof` type pattern otherwise.  This can issue new `assignment` errors and
-`instanceof.pattern.unsafe` warnings.
+`nested.pattern.unsafe` warnings.
 
 ### Changes for type system implementers
 
