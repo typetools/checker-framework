@@ -27,7 +27,7 @@ public class BindingVariableClass {
 
   void notInterned(Object value) {
     if (value instanceof String s) {
-      // :: error: (argument)
+      // :: error: [argument]
       takeString(s);
     }
   }

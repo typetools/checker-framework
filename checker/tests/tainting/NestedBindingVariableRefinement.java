@@ -13,14 +13,14 @@ public class NestedBindingVariableRefinement {
 
   void nested(@Untainted Object o) {
     if (o instanceof Box(String s)) {
-      // :: error: (argument)
+      // :: error: [argument]
       sink(s);
     }
   }
 
   void accessor(@Untainted Object o) {
     if (o instanceof Box b) {
-      // :: error: (argument)
+      // :: error: [argument]
       sink(b.s());
     }
   }
