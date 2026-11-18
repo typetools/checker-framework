@@ -178,7 +178,7 @@ final class EnhancedForDisposalLoopMatcher {
     VariableTree loopVariable = tree.getVariable();
 
     // Walk forward from the iterator `next()` node to find the assignment that initializes the
-    // loop variable from `next()`. The successor after that assignment is the loop-body entry
+    // loop variable from `next()`. The loop body starts right after that assignment, in the same
     // block.
     Block blockContainingNext = methodInvocationNode.getBlock();
     if (!(blockContainingNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
@@ -206,7 +206,7 @@ final class EnhancedForDisposalLoopMatcher {
             iteratorVariableDeclaration.getName() == loopVariable.getName();
       }
     } while (!isAssignmentOfLoopVariable);
-    Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
+    Block loopBodyEntryBlock = singleSuccessorBlock;
 
     // Walk backward from the iterator `next()` node to recover the `hasNext()` loop-condition node
     // for this desugared enhanced-for.
@@ -256,7 +256,7 @@ final class EnhancedForDisposalLoopMatcher {
     // later block, because the call can throw an exception.
     Block loopUpdateBlock =
         ((MethodInvocationNode) loopConditionNode).getTarget().getReceiver().getBlock();
-    if (loopVariableNode == null || loopBodyEntryBlock == null || loopUpdateBlock == null) {
+    if (loopVariableNode == null || loopUpdateBlock == null) {
       return null;
     }
     Tree loopVariableTree = loopVariableNode.getTree();

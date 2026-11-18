@@ -25,4 +25,15 @@ class EnhancedForLoopVariableReassigned {
       t.flush();
     }
   }
+
+  // The loop closes `other` through `r`; the alias `t` refers to the element but is never closed.
+  // :: error: unfulfilled.collection.obligations
+  void aliasThenReassignThenDispose(@OwningCollection List<Resource> resources, Resource other) {
+    for (Resource r : resources) {
+      Resource t = r;
+      r = other;
+      r.close();
+      r.flush();
+    }
+  }
 }

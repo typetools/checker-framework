@@ -1316,8 +1316,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code var}
    *                 might alias the receiver <em>a</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
-   *                 parameters contains {@code var}, including about iterated collection elements
-   *                 whose reference is such a method call, such as {@code list.get(i)}.
+   *                 parameters contains {@code var}.
+   *   <li value="4">Remove any information about iterated collection elements whose reference
+   *                 contains {@code var}, such as {@code list.get(i)}, or {@code r} in {@code for
+   *                 (Resource r : list)}.
    * </ol>
    *
    * @param var the local variable that is assigned
@@ -1354,13 +1356,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    // case 3, for iterated collection elements such as `list.get(i)`:
+    // case 4:
     iteratedCollectionElements
         .keySet()
-        .removeIf(
-            ice ->
-                ice.reference instanceof MethodCall
-                    && ice.reference.containsSyntacticEqualJavaExpression(var));
+        .removeIf(ice -> ice.reference.containsSyntacticEqualJavaExpression(var));
   }
 
   /**

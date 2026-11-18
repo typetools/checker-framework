@@ -3615,11 +3615,6 @@ public class MustCallConsistencyAnalyzer {
     Block loopUpdateBlock = disposalLoopInfo.loopUpdateBlock();
     Tree collectionElement = disposalLoopInfo.iteratedElementTree();
 
-    boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
-    if (emptyLoopBody) {
-      return null;
-    }
-
     // Add an obligation for the element of the collection iterated over
     Obligation collectionElementObligation;
     if (collectionElement instanceof VariableTree variableTree) {
@@ -3661,7 +3656,14 @@ public class MustCallConsistencyAnalyzer {
         Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
         for (Node node : currentBlock.getNodes()) {
           if (node instanceof AssignmentNode assignmentNode) {
-            updateObligationsForAssignment(obligations, cfg, assignmentNode);
+            // Skip an enhanced-for loop's initialization of its loop variable: the element's
+            // obligation already has the loop variable as its alias.
+            @SuppressWarnings("interning:not.interned")
+            boolean initializesLoopVariable =
+                assignmentNode.getTarget() == disposalLoopInfo.iteratedElementNode();
+            if (!initializesLoopVariable) {
+              updateObligationsForAssignment(obligations, cfg, assignmentNode);
+            }
           }
         }
 
