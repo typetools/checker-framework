@@ -36,7 +36,7 @@ public class Issue3028 {
     List<@Nullable String> list = (List<@Nullable String>) c;
   }
 
-  void safeParameterizedDowncast2(Collection<@NonNull String> c) {
+  void safeParameterizedDowncastToArrayList(Collection<@NonNull String> c) {
     ArrayList<@NonNull String> list = (ArrayList<@NonNull String>) c;
   }
 
@@ -64,6 +64,15 @@ public class Issue3028 {
   }
 
   <T extends Collection<@Nullable String>> void safeTypeVariableDowncast(T t) {
+    List<@Nullable String> list = (List<@Nullable String>) t;
+  }
+
+  <U extends Collection<@Nullable String>, T extends U> void nestedTypeVariableDowncast(T t) {
+    // :: warning: [cast.unsafe]
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  <U extends Collection<@Nullable String>, T extends U> void safeNestedTypeVariableDowncast(T t) {
     List<@Nullable String> list = (List<@Nullable String>) t;
   }
 
@@ -156,5 +165,11 @@ public class Issue3028 {
   void fBoundedWildcardDowncast(Object o) {
     Enum<?> e = (Enum<?>) o;
     Comparable<?> c = (Comparable<?>) o;
+  }
+
+  void unrelatedWildcardCast(Runnable r) {
+    List<?> list = (List<?>) r;
+    // :: warning: [cast.unsafe]
+    List<? extends @NonNull Object> list2 = (List<? extends @NonNull Object>) r;
   }
 }
