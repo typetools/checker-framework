@@ -111,10 +111,8 @@ abstract class FinallyRethrowsException {
   void closedOnOneExceptionalPath() throws MyChecked {
     // An IOException reaches the finally block while r is open, and the outer catch block closes
     // r.  A MyChecked exception reaches the finally block after r is closed, and it propagates out
-    // of the method.  So r is closed on every path.  However, one copy of the finally block serves
-    // both exceptions, so the end of that copy might throw MyChecked while r is open.
-    // TODO: This error is a false positive.
-    // :: error: [required.method.not.called]
+    // of the method.  So r is closed on every path.  The finally block must not merge those two
+    // paths and then throw MyChecked while r is open.
     QuietCloseable r = allocQuietCloseable();
     try {
       try {
