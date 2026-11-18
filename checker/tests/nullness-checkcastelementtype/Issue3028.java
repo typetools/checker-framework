@@ -120,4 +120,41 @@ public class Issue3028 {
     long y = (long) x;
     int z = (int) i;
   }
+
+  void unboundedWildcardDowncast(Object o) {
+    List<?> list = (List<?>) o;
+    List<? extends @Nullable Object> list2 = (List<? extends @Nullable Object>) o;
+  }
+
+  void nonNullWildcardDowncast(Object o) {
+    // The run-time check does not verify that the list has no null elements.
+    // :: warning: [cast.unsafe]
+    List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) o;
+  }
+
+  void nonNullWildcardDowncastFromCollection(Collection<? extends @NonNull Object> c) {
+    List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) c;
+  }
+
+  void nullableWildcardDowncastFromCollection(Collection<? extends @Nullable Object> c) {
+    // :: warning: [cast.unsafe]
+    List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) c;
+  }
+
+  void wildcardArrayDowncast(Object[] o) {
+    List<?>[] lists = (List<?>[]) o;
+    // :: warning: [cast.unsafe]
+    List<? extends @NonNull Object>[] lists2 = (List<? extends @NonNull Object>[]) o;
+  }
+
+  void wildcardIntersectionDowncast(Object o) {
+    Object x = (List<?> & Serializable) o;
+    // :: warning: [cast.unsafe]
+    Object y = (List<? extends @NonNull Object> & Serializable) o;
+  }
+
+  void fBoundedWildcardDowncast(Object o) {
+    Enum<?> e = (Enum<?>) o;
+    Comparable<?> c = (Comparable<?>) o;
+  }
 }
