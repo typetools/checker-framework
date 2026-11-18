@@ -14,6 +14,9 @@ key `contracts.toptype`, when a pre- or post-condition annotation (such as
 
 ### Changes for type system implementers
 
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
