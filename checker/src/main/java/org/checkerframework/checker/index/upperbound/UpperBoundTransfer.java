@@ -267,7 +267,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       return;
     }
     UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
-    UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
+    UBQualifier newInfo = offsetByComparedNode(typeOfSubtraction, node.getRightOperand(), '-');
 
     UBQualifier newLeft = left.glb(newInfo);
     insertValueForNodesWithValueOf(
@@ -298,7 +298,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // comparison. The lower bound of `other` below is a fact about the value that was added, so it
     // holds regardless.
     if (!mayBeChangedByLaterOperand(other)) {
-      newQual = newQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
+      newQual = newQual.glb(offsetByComparedNode(typeOfAddition, other, '+'));
     }
 
     // If the node is NonNegative, add an LTEL to the qual. If Positive, add an LTL.
@@ -309,6 +309,42 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
     insertValueForNodesWithValueOf(
         store, operand, atypeFactory.convertUBQualifierToAnnotation(newQual));
+  }
+
+  /**
+   * Returns {@code qualifier} plus or minus the value of {@code offsetNode}, for a qualifier that
+   * will be inserted into the store after the comparison that contains {@code offsetNode}
+   * completes.
+   *
+   * <p>A symbolic offset such as {@code z} denotes the value of {@code z} at the point where the
+   * store is used, but the fact being recorded is about the value that {@code offsetNode} had when
+   * it was evaluated. If that value might change before the comparison completes, as {@code z} does
+   * in {@code (x = y) + z < (z = a.length)}, then this method uses only the compile-time constant
+   * value of {@code offsetNode}, if there is one, and otherwise returns UNKNOWN.
+   *
+   * @param qualifier the qualifier to offset
+   * @param offsetNode a node in an operand of a comparison, whose value is the offset
+   * @param op '+' to add the value of {@code offsetNode}, or '-' to subtract it
+   * @return {@code qualifier} plus or minus the value of {@code offsetNode}
+   */
+  private UBQualifier offsetByComparedNode(UBQualifier qualifier, Node offsetNode, char op) {
+    if (nodesWithValueOf(offsetNode).contains(offsetNode)) {
+      return op == '+'
+          ? qualifier.plusOffset(offsetNode, atypeFactory)
+          : qualifier.minusOffset(offsetNode, atypeFactory);
+    }
+    Tree offsetTree = offsetNode.getTree();
+    if (offsetTree == null || !TreeUtils.isExpressionTree(offsetTree)) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    Long value =
+        ValueCheckerUtils.getExactValue(offsetTree, atypeFactory.getValueAnnotatedTypeFactory());
+    if (value == null || value <= Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    return op == '+'
+        ? qualifier.plusOffset(value.intValue())
+        : qualifier.minusOffset(value.intValue());
   }
 
   /**
@@ -416,7 +452,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
       UBQualifier newQual =
           subtrahendQual.glb(
-              minuendQual.plusOffset(offsetNode, atypeFactory).plusOffset(offsetAddOne ? 1 : 0));
+              offsetByComparedNode(minuendQual, offsetNode, '+').plusOffset(offsetAddOne ? 1 : 0));
       insertValueForNodesWithValueOf(
           store, subtrahend, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }

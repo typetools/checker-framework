@@ -977,7 +977,11 @@ public abstract class CFAbstractTransfer<
    * (s = t)} are the cast, {@code s}, and {@code t}. Otherwise, the only candidate is {@code node}
    * itself. A widening conversion that does not change the value of its operand (see {@link
    * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
-   * {@code (int) s == 5L}, is looked through.
+   * {@code (int) s == 5L}, is looked through. There is no candidate if {@code node} is (after
+   * looking through value-preserving widening conversions) a conversion that might change the value
+   * of its operand, such as the binary numeric promotion of {@code i} in {@code i == 16_777_216f}:
+   * {@link JavaExpression#fromNode} ignores the conversion, so the expression for the conversion is
+   * its operand, which might have a different value.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
    * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
@@ -1021,8 +1025,9 @@ public abstract class CFAbstractTransfer<
    *
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return the nodes that have the value of {@code node} when the comparison completes: the sides
-   *     of {@code node} if it is an assignment or a value-preserving cast, and otherwise {@code
-   *     node} itself, except for those that might have a different value by then
+   *     of {@code node} if it is an assignment or a value-preserving cast, none if it is a
+   *     conversion that might change the value, and otherwise {@code node} itself, except for those
+   *     that might have a different value by then
    */
   protected List<Node> nodesWithValueOf(Node node) {
     return nodesWithValueOfResult(node).sides();
@@ -1163,11 +1168,19 @@ public abstract class CFAbstractTransfer<
         && isValuePreservingConversion(widening)) {
       unwrapped = widening.getOperand();
     }
-    List<Node> candidates =
-        unwrapped instanceof AssignmentNode
-                || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))
-            ? sidesOfAssignment(unwrapped)
-            : Collections.singletonList(node);
+    List<Node> candidates;
+    if (unwrapped instanceof AssignmentNode
+        || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))) {
+      candidates = sidesOfAssignment(unwrapped);
+    } else if (unwrapped instanceof WideningConversionNode
+        || unwrapped instanceof NarrowingConversionNode) {
+      // The loop above looks through value-preserving widening conversions, so this conversion
+      // might change the value, as in `i == 16_777_216f` where `i` is converted to `float`.
+      // JavaExpression.fromNode ignores the conversion, so no expression has the value of `node`.
+      candidates = Collections.emptyList();
+    } else {
+      candidates = Collections.singletonList(node);
+    }
     // Find the written locations only if a candidate might be omitted because of them, because
     // finding them requires the path to the tree of `node`, which can be costly to compute.
     WrittenLocations locationsWrittenUntilComparison = null;
@@ -1206,7 +1219,8 @@ public abstract class CFAbstractTransfer<
    * chain, such as {@code a} and {@code b}; each value-preserving cast in the chain; and the
    * operand of the last assignment or cast in the chain, such as {@code c}. The result omits each
    * side that is tracked (see {@link #isTrackedSide}) and whose value the rest of the chain might
-   * change. For example, the result for {@code (String) (s = s + "x")} omits {@code s + "x"}.
+   * change. For example, the result for {@code s = s + "x"} or {@code (String) (s = s + "x")} omits
+   * {@code s + "x"}.
    *
    * @param assignment an assignment node or a value-preserving cast
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1388,7 +1402,13 @@ public abstract class CFAbstractTransfer<
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return isTrackedSide(expr) && written.mayChange(expr, true);
+    if (CFAbstractStore.canInsertJavaExpression(expr)) {
+      return written.mayChange(expr, true);
+    }
+    // No store holds a value for a unary or binary operation, but a client such as the SameLen
+    // Checker can relate it to other expressions. An operation denotes no location, so a write to
+    // any location that it reads changes its value, as for `s + "x"` in `s = s + "x"`.
+    return isTrackedSide(expr) && written.mayChange(expr, false);
   }
 
   /**

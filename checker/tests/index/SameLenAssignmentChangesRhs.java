@@ -6,6 +6,25 @@
 public class SameLenAssignmentChangesRhs {
 
   void changedByAssignment(String s, String t) {
+    if ((s = s + "x").length() == t.length()) {
+      String u = s + "x";
+      for (int k = 0; k < u.length(); k++) {
+        // :: error: (argument)
+        t.charAt(k);
+      }
+    }
+  }
+
+  void unchanged(String s, String t, String v) {
+    if ((s = v + "x").length() == t.length()) {
+      String u = v + "x";
+      for (int k = 0; k < u.length(); k++) {
+        t.charAt(k);
+      }
+    }
+  }
+
+  void changedByAssignmentInCast(String s, String t) {
     if (((String) (s = s + "x")).length() == t.length()) {
       String u = s + "x";
       for (int k = 0; k < t.length(); k++) {
@@ -15,7 +34,7 @@ public class SameLenAssignmentChangesRhs {
     }
   }
 
-  void unchanged(String s, String t, String v) {
+  void unchangedInCast(String s, String t, String v) {
     if (((String) (v = s + "x")).length() == t.length()) {
       String u = s + "x";
       for (int k = 0; k < t.length(); k++) {
