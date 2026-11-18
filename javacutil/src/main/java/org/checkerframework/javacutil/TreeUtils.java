@@ -2449,7 +2449,7 @@ public final class TreeUtils {
   /**
    * Returns true if the {@code variableTree} is declared using the {@code var} Java keyword.
    *
-   * @param variableTree the variableTree to check
+   * @param variableTree a variable declaration, including a binding variable
    * @return true if the variableTree is declared using the {@code var} Java keyword
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
@@ -2458,10 +2458,12 @@ public final class TreeUtils {
       return true;
     }
     if (variableDecl.sym != null && variableDecl.sym.getKind() == ElementKind.BINDING_VARIABLE) {
-      // Before javac 27, declaredUsingVar() is false for a pattern variable, and after attribution
-      // its type tree may be null (javac 21) or have a source position (javac 25).  The parser
-      // sets the start position of a pattern variable only if its type is not written.  Javac 27
-      // has no start position, but declaredUsingVar() is correct for a pattern variable.
+      // Before javac 27, `declaredUsingVar()` is false for a binding variable, and after
+      // attribution its type tree may be null (javac 21) or have a source position (javac 25), so
+      // the test of the type tree's position below does not work for a binding variable.  The
+      // parser sets the start position of a binding variable only if its type is not written.  In
+      // javac 27, `JCVariableDecl` has no `startPos` field, but `declaredUsingVar()` is correct
+      // for a binding variable.
       if (JC_VARIABLE_DECL_START_POS == null) {
         return false;
       }

@@ -8,8 +8,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// A binding variable nested in a record pattern, whose type is a type variable, has the type of its
-// record component: it may be null if the type variable's bound is @Nullable.
+// A nested binding variable whose type is a type variable has the type of the corresponding record
+// component, so the binding variable may be null if the type variable's upper bound is @Nullable.
 public class RecordPatternTypeVariable {
 
   record Box<T>(T value) {}

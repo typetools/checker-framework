@@ -389,8 +389,8 @@ public class NullnessTransfer
     assert recordPattern != null : "@AssumeAssertion(nullness): a pattern node has a tree";
     List<Node> nestedPatterns = n.getNestedPatterns();
     for (int i = 0; i < nestedPatterns.size(); i++) {
-      // A type pattern that is not unconditional for its record component does not match null
-      // (JLS 14.30.2).
+      // A type pattern that is not unconditional for the type of its record component does not
+      // match null (JLS 14.30.2).
       if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar
           && !nullnessTypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
         makeNonNull(result, bindingVar);

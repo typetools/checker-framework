@@ -272,8 +272,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
       return;
     }
-    // This is resolve(MethodInvocationTree, AnnotatedExecutableType) for an invocation that has no
-    // arguments.
+    // This method does what `resolve(MethodInvocationTree, AnnotatedExecutableType)` does for an
+    // invocation that has no arguments.
     AnnotatedTypeMirror declaredReceiverType = type.getReceiverType();
     assert declaredReceiverType != null : "@AssumeAssertion(nullness): an instance method";
     AnnotationMirrorMap<AnnotationMirror> instantiationMapping =

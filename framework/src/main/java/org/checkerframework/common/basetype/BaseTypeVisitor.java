@@ -452,6 +452,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
+    // JDK 17's `TreeVisitor` has no `visitDeconstructionPattern` method.
     if (TreeUtils.isDeconstructionPatternTree(tree)) {
       checkRecordPatternTypeInference(tree);
       checkNestedTypePatterns(tree);
@@ -460,13 +461,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Checks that the type of each binding variable that is declared by a type pattern nested in the
-   * record pattern {@code recordPattern} is compatible with the type of the record component that
-   * the type pattern is matched against.
+   * Checks each type pattern that is a nested pattern of the record pattern {@code recordPattern}
+   * and whose type is written explicitly (not {@code var}): the type of its binding variable must
+   * be compatible with the type of the record component that the type pattern is matched against.
    *
-   * <p>If the type pattern is unconditional for the record component (JLS 14.30.3), the pattern
-   * always matches, so the check is an assignment check. Otherwise, the check is the same as for a
-   * type pattern in an {@code instanceof}.
+   * <p>If the type pattern is unconditional for the type of the record component (JLS 14.30.3), the
+   * pattern always matches, so the check is an assignment check. Otherwise, the check is the same
+   * as for a type pattern in an {@code instanceof}.
    *
    * @param recordPattern a {@code DeconstructionPatternTree}
    */
@@ -496,10 +497,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports a {@code nested.pattern.unsafe} warning if the type of the binding variable declared by
    * {@code bindingPattern} is not a safe downcast from {@code componentType}, as adjusted by {@link
-   * #instanceofPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
-   * unconditional for the record component that it is matched against.
+   * #instanceofPatternMatchedType}.
    *
-   * @param bindingPattern a type pattern nested in a record pattern
+   * @param bindingPattern a type pattern nested in a record pattern; must not be unconditional for
+   *     the type of the record component that it is matched against
    * @param variableType the type of the binding variable declared by {@code bindingPattern}
    * @param componentType the type of the record component that {@code bindingPattern} is matched
    *     against
@@ -515,8 +516,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports a "type.arguments.not.inferred" or "type.argument.inference.crashed" error if the type
-   * arguments of the record pattern {@code recordPattern} cannot be inferred.
+   * Reports a {@code type.arguments.not.inferred} or {@code type.argument.inference.crashed} error
+   * if the type arguments of the record pattern {@code recordPattern} cannot be inferred.
    *
    * @param recordPattern a {@code DeconstructionPatternTree}
    */
@@ -3889,8 +3890,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           checkInstanceofPattern(tree);
         }
       } else {
-        // A record pattern is checked by checkRecordPatternTypeInference and
-        // checkNestedTypePatterns.
+        // A record pattern is checked by `checkRecordPatternTypeInference` and
+        // `checkNestedTypePatterns`.
       }
     } else {
       Tree refTypeTree = tree.getType();

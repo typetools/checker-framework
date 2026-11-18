@@ -9,8 +9,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Tests for record patterns whose matched type mentions captured type variables, such as a record
-// pattern nested in another one, whose record component has the type Box<CAP#1>.
+// Tests for record patterns whose matched type mentions captured type variables, such as a nested
+// record pattern whose matched type is Box<CAP#1>.
 public class RecordPatternCapturedTypeArguments {
 
   record Box<T extends @Nullable Object>(T t) {}

@@ -35,25 +35,37 @@ import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPattern
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Infers the annotated type of a record pattern, as specified by <a
- * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.5">JLS 18.5.5</a>.
+ * Infers the annotated type of a record pattern, the way that <a
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.5">JLS 18.5.5</a>
+ * infers its Java type.
  *
- * <p>The type arguments of a record pattern are inferred even when they are written explicitly,
- * because the type of a record pattern cannot be annotated (JLS 14.30.1). The inferred type can
- * then be more specific than the written type: for example, it is {@code Box<String>} when {@code
- * Box<? extends CharSequence>(var x)} is matched against a {@code Supplier<String>}.
+ * <p>This class differs from JLS 18.5.5 in these ways:
+ *
+ * <ul>
+ *   <li>This class infers the type arguments of a record pattern even when the programmer writes
+ *       them, because the type of a record pattern cannot be annotated (JLS 14.30.1). The inferred
+ *       type can then be more specific than the written type: for example, it is {@code
+ *       Box<String>} when a value of type {@code Supplier<String>} is matched against {@code Box<?
+ *       extends CharSequence>(var x)}.
+ *   <li>This class omits step 1, because javac has already checked that the matched type is checked
+ *       cast convertible to the raw record class.
+ *   <li>If the bound set contains the bound false, this class throws {@link BugInCF} rather than
+ *       failing, because javac accepted the record pattern.
+ *   <li>Inference fails if the qualifier bounds cannot be satisfied, or if two proper equal bounds
+ *       of an inference variable have different qualifiers. JLS 18.5.5 has no qualifiers.
+ * </ul>
  */
 public class RecordPatternTypeInference {
 
   /** The type factory. */
   private final AnnotatedTypeFactory typeFactory;
 
-  /** The {@code DeconstructionPatternTree} whose type is inferred. */
+  /** The {@code DeconstructionPatternTree} whose type this object infers. */
   private final Tree pattern;
 
   /**
-   * The deconstructor of {@link #pattern}. It identifies the inference variables that are created
-   * for {@link #pattern}.
+   * The deconstructor of {@link #pattern}: the tree for which this object creates inference
+   * variables.
    */
   private final ExpressionTree deconstructor;
 
@@ -65,18 +77,20 @@ public class RecordPatternTypeInference {
    *
    * @param message a description of the failure
    * @param crashed true if inference failed because of a bug in the Checker Framework, rather than
-   *     because of a qualifier
+   *     because the qualifier bounds cannot be satisfied or conflict
    */
   public record Failure(String message, boolean crashed) {}
 
   /**
-   * The result of inferring the type of a record pattern.
+   * The result of inferring the type of a record pattern: the matched type, why inference failed
+   * (if it did), and the types of the record components as members of the inferred type.
    *
    * @param matchedType the type of the values that are matched against the record pattern
    * @param failure why inference failed, or null if it did not fail
-   * @param componentTypes the types of the record components of the record pattern, in declaration
-   *     order; if inference failed, these are the types for the record pattern's Java type with
-   *     default annotations
+   * @param componentTypes the types of the record components as members of the type of the record
+   *     pattern, in declaration order; if inference failed, the type of the record pattern is its
+   *     Java type with default annotations, except that its primary qualifiers are those of {@code
+   *     matchedType}, limited to the qualifier upper bound of the record class
    */
   public record Result(
       AnnotatedTypeMirror matchedType,
@@ -87,7 +101,8 @@ public class RecordPatternTypeInference {
    * Creates a {@code RecordPatternTypeInference}.
    *
    * @param typeFactory the type factory
-   * @param pathToPattern the path to the {@code DeconstructionPatternTree} whose type is inferred
+   * @param pathToPattern the path to the {@code DeconstructionPatternTree} whose type this object
+   *     infers
    */
   public RecordPatternTypeInference(AnnotatedTypeFactory typeFactory, TreePath pathToPattern) {
     this.typeFactory = typeFactory;
@@ -99,6 +114,14 @@ public class RecordPatternTypeInference {
   /**
    * Infers the annotated type of the record pattern when values of {@code matchedType} are matched
    * against it.
+   *
+   * <p>If the record class is not generic, the type of the record pattern is its Java type with
+   * default annotations, except that its primary qualifiers are those of {@code matchedType},
+   * limited to the qualifier upper bound of the record class.
+   *
+   * <p>If inference throws an exception, this method throws {@link BugInCF} if the option {@code
+   * -AconvertTypeArgInferenceCrashToWarning} is false, and otherwise returns a failed result whose
+   * {@code crashed} is true.
    *
    * @param matchedType the type of the values that are matched against the record pattern
    * @return the result of inference
@@ -112,7 +135,7 @@ public class RecordPatternTypeInference {
     try {
       return inferForGenericRecord(record, matchedType);
     } catch (Exception ex) {
-      // javac inferred the type arguments of the pattern, so the Checker Framework should too.
+      // javac accepted the record pattern, so an exception here is a bug in the Checker Framework.
       if (!typeFactory
           .getChecker()
           .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
@@ -136,8 +159,8 @@ public class RecordPatternTypeInference {
       AnnotatedTypeMirror matchedType,
       @Nullable Failure failure,
       AnnotatedDeclaredType patternType) {
-    // The primary qualifiers of the pattern type are those of the receiver of each accessor, which
-    // determine the accessor's polymorphic qualifiers.
+    // The primary qualifiers of the pattern type are the receiver qualifiers of each accessor call,
+    // so they determine how each accessor's polymorphic qualifiers are resolved.
     patternType.replaceAnnotations(
         typeFactory
             .getQualifierUpperBounds()
@@ -147,8 +170,9 @@ public class RecordPatternTypeInference {
   }
 
   /**
-   * Returns the result of inference when it fails. The record pattern then has its Java type with
-   * default annotations.
+   * Returns the result of inference when it fails. The type of the record pattern is its Java type
+   * with default annotations, except that its primary qualifiers are those of {@code matchedType},
+   * limited to the qualifier upper bound of the record class.
    *
    * @param matchedType the type of the values that are matched against the record pattern
    * @param failure why inference failed
@@ -159,28 +183,33 @@ public class RecordPatternTypeInference {
   }
 
   /**
-   * Infers the annotated type of the record pattern for the generic record class {@code record}.
+   * Infers the annotated type of the record pattern, whose record class is {@code record}.
    *
-   * @param record the record class of the record pattern; it is generic
+   * @param record the record class of the record pattern; must be generic
    * @param matchedType the type of the values that are matched against the record pattern
    * @return the result of inference
    */
   private Result inferForGenericRecord(TypeElement record, AnnotatedTypeMirror matchedType) {
     Java8InferenceContext context = new InvocationTypeInference(typeFactory, pathToPattern).context;
-    // Step 2: the inference variables alpha1, ..., alphan, with bounds from the declared bounds.
+    // Step 2: create inference variables alpha1, ..., alphan (`alphas`) for the type parameters
+    // P1, ..., Pn of the record class R (`record`), with bounds from the declared bounds of P1,
+    // ..., Pn.
     Theta map = context.inferenceTypeFactory.createThetaForTypeParameters(deconstructor, record);
     List<Variable> alphas = new ArrayList<>(map.values());
 
-    // Step 3: capture each parameterized type T (or each one that bounds T), and replace the
-    // captured type variables by the inference variables beta1, ..., betak.
+    // Step 3: capture the matched type T (`matchedType`) if it is a parameterized type, or else
+    // each parameterized type among its upper bounds, recursively.  Create inference variables
+    // beta1, ..., betak to replace the captured type variables that are type arguments of the
+    // captures.
     List<AnnotatedDeclaredType> capturedTypes = new ArrayList<>();
     addCapturedParameterizedTypes(matchedType, capturedTypes);
     context.inferenceTypeFactory.addVariablesForCapturedTypeArguments(
         deconstructor, capturedTypes, map);
     BoundSet boundSet = BoundSet.initialBounds(map, context);
 
-    // Step 4: reduce <T' = R'>, where R' is the supertype of R<alpha1, ..., alphan> that is a
-    // parameterization of the same generic class as T'.
+    // Step 4: for each capture T' (`tPrime`, with each captured type variable replaced by its
+    // beta), reduce <T' = R'>, where R' (`rPrime`) is the supertype of R<alpha1, ..., alphan>
+    // (`recordType`) that is a parameterization of the same generic class as T'.
     AbstractType recordType = context.inferenceTypeFactory.getTypeOfElement(record, map);
     for (AnnotatedDeclaredType capturedType : capturedTypes) {
       AbstractType rPrime = recordType.asSuper(capturedType.getUnderlyingType());
@@ -197,13 +226,15 @@ public class RecordPatternTypeInference {
       boundSet.incorporateToFixedPoint(constraints.reduce(context));
     }
     if (boundSet.containsFalse()) {
+      // javac accepted the record pattern, so a false bound is a bug in the Checker Framework.
       throw new BugInCF("Record pattern inference produced the false bound for %s", pattern);
     }
     if (boundSet.annoInferenceFailed) {
       return createFailedResult(matchedType, new Failure(boundSet.errorMsg, false));
     }
-    // Two proper bounds v = S and v = T reduce to <S = T>, which ignores qualifiers, so check that
-    // the qualifiers of all of them agree.
+    // Incorporation of two proper bounds v = S1 and v = S2 implies <S1 = S2>, whose reduction
+    // ignores qualifiers, so check that each proper equal bound of v has the same qualifiers as
+    // v's instantiation.
     for (Variable v : map.values()) {
       ProperType instantiation = v.getInstantiation();
       if (instantiation == null) {
@@ -220,7 +251,8 @@ public class RecordPatternTypeInference {
       }
     }
 
-    // Step 5: resolve, skipping straight to fresh type variables.
+    // Step 5: resolve alpha1, ..., alphan, skipping directly to the resolution step that introduces
+    // fresh type variables.
     List<Variable> uninstantiated = new ArrayList<>();
     for (Variable v : map.values()) {
       if (v.getInstantiation() == null) {
@@ -228,7 +260,8 @@ public class RecordPatternTypeInference {
       }
     }
     Resolution.resolveWithFreshTypeVariablesOnly(new ArrayList<>(alphas), boundSet, context);
-    // Resolution instantiates each variable in `uninstantiated` with a fresh type variable.
+    // Each fresh type variable Y1, ..., Yp that resolution introduced is the instantiation of a
+    // variable in `uninstantiated`.
     List<TypeVariable> freshTypeVariables = new ArrayList<>();
     for (Variable v : uninstantiated) {
       ProperType instantiation = v.getInstantiation();
@@ -237,7 +270,9 @@ public class RecordPatternTypeInference {
       }
     }
 
-    // Step 6: the upward projection of R<A1, ..., An> with respect to the fresh type variables.
+    // Step 6: let A1, ..., An be the instantiations of alpha1, ..., alphan.  The type of the record
+    // pattern is the upward projection of R<A1, ..., An> (`patternType`) with respect to
+    // Y1, ..., Yp (`freshTypeVariables`).
     List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(alphas.size());
     TypeMirror[] javaTypeArgs = new TypeMirror[alphas.size()];
     for (int i = 0; i < alphas.size(); i++) {
@@ -260,10 +295,12 @@ public class RecordPatternTypeInference {
   }
 
   /**
-   * Adds to {@code capturedTypes} the capture of {@code type} if it is a parameterized type, or of
-   * each of its bounds if it is a type variable or intersection type (JLS 18.5.5, step 3).
+   * Adds to {@code capturedTypes} the capture of {@code type} if {@code type} is a parameterized
+   * type. If {@code type} is a type variable, recurs on its upper bound; if {@code type} is an
+   * intersection type, recurs on each of its bounds (JLS 18.5.5, step 3).
    *
-   * @param type the type of values that are matched against the record pattern, or a bound of it
+   * @param type the type of values that are matched against the record pattern, or, recursively, an
+   *     upper bound of it
    * @param capturedTypes the list to add to
    */
   private void addCapturedParameterizedTypes(

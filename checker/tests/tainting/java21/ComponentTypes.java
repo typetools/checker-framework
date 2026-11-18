@@ -6,11 +6,9 @@
 
 // Once the type of a record pattern is inferred (JLS 26 section 18.5.5, step 6), "we can find its
 // component types, which are matched against the component patterns of the record pattern".  These
-// tests pin down what those component types must be, by comparing each pattern variable against the
-// corresponding accessor invocation on the matched expression: the two must always have the same
-// annotated
-// type.  Any implementation that disagrees between the two is wrong regardless of which one is
-// right.
+// tests pin down what those component types must be, by comparing most pattern variables with the
+// corresponding accessor invocation on the matched expression: the two must have the same
+// qualifiers.
 //
 // The `failToMatch` example is copied from JEP 440: Record Patterns
 // (https://openjdk.org/jeps/440), section "Record patterns".
@@ -68,7 +66,9 @@ public class ComponentTypes {
     }
   }
 
-  /** The component's declared type is a parameterized type built from the type parameter. */
+  /**
+   * The declared type of component `items` is a parameterized type built from the type parameter.
+   */
   record Listy<T>(List<T> items, T first) {}
 
   static void parameterizedComponent(Listy<@Untainted String> l) {
@@ -110,8 +110,8 @@ public class ComponentTypes {
     }
   }
 
-  // Copied verbatim from JEP 440.  `Pair` is not generic, so no inference happens here; this is a
-  // regression guard that nested type patterns still work at all.
+  // `Pair` is not generic, so no inference happens here; this is a regression guard that nested
+  // type patterns still work at all.
   static void failToMatch() {
     record Pair(Object x, Object y) {}
     Pair p = new Pair(42, 42);
@@ -123,9 +123,9 @@ public class ComponentTypes {
   }
 
   /**
-   * A nested type pattern that narrows the component type is not unconditional, so the declared
-   * type of `s` has the default qualifier for the written type `String`, but dataflow refines `s`
-   * by the qualifier of the component type.
+   * A nested type pattern that narrows the component type is not unconditional. The declared type
+   * of `s` has the default qualifier for the written type `String`, but dataflow refines `s` to the
+   * qualifier of the component type.
    */
   static void narrowingNestedTypePattern(Box<@Untainted Object> b) {
     if (b instanceof Box(String s)) {
@@ -134,8 +134,8 @@ public class ComponentTypes {
   }
 
   /**
-   * The component type is a type variable, whose qualifier is on its upper bound, so a nested type
-   * pattern is refined by the qualifier of the bound.
+   * The component type is a type variable, whose qualifier is on its upper bound, so dataflow
+   * refines the nested pattern variable `s` to the qualifier of the bound.
    */
   static <T extends @Untainted String> void typeVariableComponent(Box<T> b) {
     if (b instanceof Box(String s)) {

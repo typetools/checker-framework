@@ -4,10 +4,10 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Record pattern inference happens in every context in which values of a type T are matched against
-// a record pattern (JLS 26 section 18.5.5), not just `instanceof`.  These tests cover switch
-// statements, switch expressions, guarded patterns, and nested patterns, where T comes from the
-// selector expression or from an enclosing pattern's inferred component type.
+// Record pattern inference happens in every context in which values are matched against a record
+// pattern (JLS 26 section 18.5.5), not just `instanceof`.  These tests cover switch statements,
+// switch expressions, guarded case labels, and nested patterns, where the matched type comes from
+// the selector expression or from an enclosing pattern's inferred component type.
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
@@ -22,7 +22,7 @@ public class SwitchPatterns {
 
   record Square<T>(T corner, double side) implements Shape<T> {}
 
-  /** T comes from the selector expression's type. */
+  /** The matched type is the type of the selector expression. */
   static void switchStatement(Box<@Untainted String> b) {
     switch (b) {
       case Box(var s) -> {
@@ -54,7 +54,10 @@ public class SwitchPatterns {
     };
   }
 
-  /** Exhaustive switch over a sealed generic hierarchy: T is Shape<@Untainted String>. */
+  /**
+   * Exhaustive switch over a sealed generic hierarchy: the matched type is {@code Shape<@Untainted
+   * String>}.
+   */
   static void sealedHierarchy(Shape<@Untainted String> shape) {
     switch (shape) {
       case Circle(var center, var radius) -> {

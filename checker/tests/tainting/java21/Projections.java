@@ -47,7 +47,8 @@ public class Projections {
 
   /**
    * The matched type, {@code Supplier<List<CAP#1>>}, mentions a captured type variable that
-   * resolution did not introduce, so it is not projected away from the type of the pattern.
+   * resolution did not introduce, so upward projection does not remove CAP#1 from the type of the
+   * pattern.
    */
   static void capturedInMatchedType(List<? extends @Untainted String> list) {
     if (wrap(list) instanceof Box(var l)) {
@@ -60,7 +61,10 @@ public class Projections {
 
   record ArrayBox<T>(T[] items) {}
 
-  /** The upward projection of the array type {@code CAP#1[]} is an array of the projection. */
+  /**
+   * The upward projection of the array type {@code CAP#1[]} is an array of the upward projection of
+   * CAP#1.
+   */
   static void arrayUpward(ArrayBox<? extends @Untainted String> a) {
     if (a instanceof ArrayBox(var items)) {
       @Untainted String s = items[0];
@@ -77,8 +81,9 @@ public class Projections {
   record SuperArray<T>(List<? super T[]> sink) {}
 
   /**
-   * The lower bound of the wildcard in {@code List<? super CAP#1[]>} is replaced by its downward
-   * projection, {@code @Untainted String[]}, the array of the lower bound of CAP#1.
+   * Upward projection of the component type replaces {@code CAP#1[]}, the lower bound of the
+   * wildcard in {@code List<? super CAP#1[]>}, with the downward projection of {@code CAP#1[]},
+   * which is {@code @Untainted String[]}, the array of the lower bound of CAP#1.
    */
   static void arrayDownward(SuperArray<? super @Untainted String> s) {
     if (s instanceof SuperArray(var sink)) {
@@ -103,8 +108,10 @@ public class Projections {
   record SuperList<T>(List<? super List<? extends T>> sink) {}
 
   /**
-   * The lower bound of the wildcard in {@code List<? super List<? extends CAP#1>>} is replaced by
-   * its downward projection, the parameterized type {@code List<? extends @Untainted String>}.
+   * Upward projection of the component type replaces {@code List<? extends CAP#1>}, the lower bound
+   * of the wildcard in {@code List<? super List<? extends CAP#1>>}, with the downward projection of
+   * {@code List<? extends CAP#1>}, which is the parameterized type {@code List<? extends @Untainted
+   * String>}.
    */
   static void declaredDownwardInLowerBound(SuperList<? super @Untainted String> s) {
     if (s instanceof SuperList(var sink)) {
@@ -237,9 +244,10 @@ public class Projections {
   record HolderBox<T>(ListHolder<List<? extends T>> holder) {}
 
   /**
-   * The type argument {@code List<? extends CAP#1>} is replaced by {@code ? super L}, where L is
-   * its downward projection, because the declared bound of E, {@code List<?>}, is a subtype of its
-   * upward projection, {@code List<?>} (JLS 4.10.5).
+   * Upward projection of the component type replaces the type argument {@code List<? extends
+   * CAP#1>} with {@code ? super L}, where L is the downward projection of the type argument,
+   * because the declared bound of E, {@code List<?>}, is a subtype of the upward projection of the
+   * type argument, {@code List<?>} (JLS 4.10.5).
    */
   static void declaredDownwardInTypeArgument(HolderBox<? super @Untainted String> h) {
     if (h instanceof HolderBox(var holder)) {

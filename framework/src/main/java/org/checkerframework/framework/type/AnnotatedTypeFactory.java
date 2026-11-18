@@ -559,17 +559,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   protected final Map<Tree, AnnotatedTypeMirror> fromMemberTreeCache;
 
   /**
-   * Mapping from a record pattern to the most recent result of inferring its type. The result is
-   * valid only for the matched type that it records, which can differ at different points in the
-   * dataflow analysis. Created by the first inference if {@link #shouldCache} is true; null until
-   * then.
+   * Mapping from a record pattern to the most recent result of inferring its type. A cached result
+   * is valid only while the type that the record pattern is matched against equals the result's
+   * {@code matchedType()}; that type can differ at different points in the dataflow analysis.
+   * Created by the first inference if {@link #shouldCache} is true; null until then.
    */
   private @MonotonicNonNull Map<Tree, RecordPatternTypeInference.Result>
       recordPatternTypeInferenceCache;
 
   /**
-   * Compares two types by their primary annotations and those of their component types, but not by
-   * their underlying types.
+   * Compares two types by their primary annotations and the primary annotations of the types nested
+   * in them (type arguments, array component types, and bounds), but not by their underlying types.
    */
   private static final EqualityAtmComparer ANNOTATION_EQUALITY_COMPARER =
       new EqualityAtmComparer() {
@@ -5428,14 +5428,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the annotated types of the record components of a record pattern whose type is {@code
-   * patternType}, in declaration order.
+   * patternType}, in declaration order. Each component type is the return type of the component's
+   * accessor as a member of the capture of {@code patternType}, with polymorphic qualifiers
+   * resolved: the type of an invocation of that accessor on a receiver of that captured type.
+   *
+   * <p>Unlike {@link #getRecordPatternComponentTypes}, this method does no inference: it uses
+   * {@code patternType} as given.
    *
    * @param patternType the type of a record pattern
    * @return the annotated types of the record components
    */
   public List<AnnotatedTypeMirror> getRecordComponentTypes(AnnotatedDeclaredType patternType) {
-    // Use the accessors' return types, so that a pattern variable has the same type as an
-    // invocation of the corresponding accessor.
     AnnotatedTypeMirror receiverType = applyCaptureConversion(patternType);
     TypeElement record = TypesUtils.getTypeElement(patternType.getUnderlyingType());
     assert record != null : "@AssumeAssertion(nullness): a record pattern's type is a record";
@@ -5469,17 +5472,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param recordPattern a {@code DeconstructionPatternTree}
    * @param index the index of a pattern nested in {@code recordPattern}
-   * @return true if the pattern at {@code index} is a type pattern that is unconditional for its
-   *     record component
+   * @return true if the pattern at {@code index} is a type pattern that is unconditional for the
+   *     type of its record component
    */
   public boolean isUnconditionalNestedTypePattern(Tree recordPattern, int index) {
     Tree nestedPattern = DeconstructionPatternUtils.getNestedPatterns(recordPattern).get(index);
     if (!(nestedPattern instanceof BindingPatternTree bindingPattern)) {
       return false;
     }
-    // Use javac's type of the record pattern, not the inferred type, whose type arguments can be
-    // more specific than the type arguments written in the record pattern.  The type of a record
-    // component is its type in the capture of the record pattern's type (JLS 14.30.1 and 4.5.2).
+    // Use the Java type of the record pattern, not the qualified type that
+    // `RecordPatternTypeInference` infers, whose type arguments can be more specific than the type
+    // arguments written in the record pattern.  The type of a record component is its type in the
+    // capture of the record pattern's type (JLS 14.30.1 and 4.5.2).
     DeclaredType capturedPatternType =
         (DeclaredType) types.capture(TreeUtils.typeOf(recordPattern));
     TypeElement record = TypesUtils.getTypeElement(capturedPatternType);
@@ -5501,10 +5505,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     annotations
    */
   private boolean isSameTypeAndAnnotations(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-    // AnnotatedTypeMirror#equals compares underlying types by reference, but the type of an
+    // `AnnotatedTypeMirror#equals` compares underlying types by reference, but the type of an
     // expression, such as a method invocation, can be a new javac type each time it is computed.
     // For example, in `l.stream().map(x -> switch (box(x)) { case Box(var t) -> t; })`, the type
-    // of `box(x)` is a different javac type on different lookups.
+    // of `box(x)` is a different javac type each time it is computed.
     return types.isSameType(type1.getUnderlyingType(), type2.getUnderlyingType())
         && ANNOTATION_EQUALITY_COMPARER.visit(type1, type2, null);
   }
@@ -5515,8 +5519,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * or {@code bindingVariable} is not in the current compilation unit.
    *
    * @param bindingVariable a binding variable
-   * @return the annotated type of the record component that {@code bindingVariable} is matched
-   *     against, or null
+   * @return the annotated type of the record component that the pattern declaring {@code
+   *     bindingVariable} is matched against, or null
    */
   public @Nullable AnnotatedTypeMirror getRecordComponentTypeOfBindingVariable(
       VariableTree bindingVariable) {

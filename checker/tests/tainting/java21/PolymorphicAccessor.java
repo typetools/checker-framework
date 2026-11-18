@@ -4,7 +4,7 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// The binding variable of a record pattern has the type that the record component's accessor
+// A binding variable nested in a record pattern has the type that the record component's accessor
 // returns when invoked on the matched value, including when the accessor has polymorphic
 // qualifiers.
 

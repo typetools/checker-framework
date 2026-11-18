@@ -1166,7 +1166,7 @@ public abstract class CFAbstractTransfer<
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
     // A binding variable nested in a record pattern holds a record component, not the value that
-    // `node` tests, so visitDeconstructorPattern refines it instead.
+    // `node` tests, so `visitDeconstructorPattern` refines it instead.
     if (node.getPatternNode() instanceof LocalVariableNode bindingVar) {
       refineBindingVariable(store, JavaExpression.fromNode(bindingVar), expType);
     }
@@ -1442,8 +1442,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Refines, in {@code store}, the binding variable {@code varTree} of a type pattern that is a
-   * case label by the qualifiers of {@code selector}, the selector expression of the switch.
+   * Refines, in {@code store}, the binding variable {@code varTree} of a type pattern in a case
+   * label as {@link #refineBindingVariable} does, using the type of {@code selector}, the selector
+   * expression of the switch.
    *
    * @param store the store to refine; side-effected by this method
    * @param varTree the binding variable of a type pattern that is a case label

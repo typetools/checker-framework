@@ -71,8 +71,9 @@ public class RecordPatternTypeArguments {
     }
   }
 
-  // The inferred component type, ArrayList<@Nullable String>, is a subtype of the written type,
-  // List<? extends String>, so the binding variable keeps the type argument's qualifier.
+  // The inferred component type, ArrayList<@Nullable String>, is a Java subtype of the bound of the
+  // written type argument, List<? extends String>, so the binding variable keeps the @Nullable on
+  // String.
   void explicitBoundedTypeArgument(Supplier<ArrayList<@Nullable String>> s) {
     if (s instanceof Box<? extends List<? extends String>>(var x)) {
       // :: error: [dereference.of.nullable]

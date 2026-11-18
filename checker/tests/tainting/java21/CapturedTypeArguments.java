@@ -4,8 +4,9 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Tests for record patterns whose matched type mentions captured type variables, such as a record
-// pattern nested in another one, whose record component has the type Box<CAP#1>.
+// Tests for record patterns whose matched type mentions captured type variables, such as a nested
+// record pattern, when the record component that the nested pattern is matched against has type
+// Box<CAP#1>.
 
 import org.checkerframework.checker.tainting.qual.Untainted;
 

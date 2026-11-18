@@ -757,12 +757,14 @@ public class InferenceFactory {
   }
 
   /**
-   * Creates inference variables for the type parameters of {@code typeEle}, whose bounds are the
-   * declared bounds of the type parameters.
+   * Creates an inference variable for each type parameter of {@code typeEle}; the bounds of each
+   * variable are the declared bounds of its type parameter. Unlike {@link #createThetaForLambda},
+   * this method neither reads nor writes {@code context.maps}, so it creates new variables on every
+   * call.
    *
-   * @param tree the tree for which the inference variables are created
+   * @param tree the tree for which this method creates the inference variables
    * @param typeEle a generic class or interface
-   * @return a mapping of the type parameters of {@code typeEle} to inference variables
+   * @return a mapping of the type parameters of {@code typeEle} to the new inference variables
    */
   public Theta createThetaForTypeParameters(ExpressionTree tree, TypeElement typeEle) {
     AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
@@ -787,7 +789,8 @@ public class InferenceFactory {
    * each new variable are the bounds of the captured type variable that it replaces (JLS 18.5.5,
    * step 3).
    *
-   * @param deconstructor the deconstructor of the record pattern
+   * @param deconstructor the deconstructor of a record pattern whose type is being inferred (JLS
+   *     18.5.5); the tree for which this method creates the new variables
    * @param capturedTypes the captures of the matched type, or of the parameterized types that bound
    *     it (JLS 18.5.5, step 3)
    * @param map the mapping to add to
@@ -797,11 +800,12 @@ public class InferenceFactory {
     // This replaces every captured type variable that is a type argument of a captured type,
     // including one that the matched type already mentions.  JLS 18.5.5 step 3 requires this:
     // "This includes type variables produced by the capture conversion in this step, and type
-    // variables produced by capture conversion elsewhere."  For example, if a record component has
-    // the type Box<CAP#1>, where CAP#1 is the capture of ? extends B, then a record pattern nested
-    // in another one is matched against Box<CAP#1>.  Resolution instantiates the new variable for
-    // CAP#1 as a fresh type variable, and upward projection then removes that fresh type variable,
-    // so the type of the nested record pattern is Box<? extends B>.
+    // variables produced by capture conversion elsewhere."  For example, if an outer record
+    // pattern has type Pair<? extends B> and the record class Pair<T> has a component of type
+    // Box<T>, then a record pattern nested at that component is matched against Box<CAP#1>, where
+    // CAP#1 is the capture of ? extends B.  Resolution instantiates the new variable for CAP#1 with
+    // a fresh type variable, and upward projection then removes that fresh type variable, so the
+    // type of the nested record pattern is Box<? extends B>.
     //
     // Every variable is added to map before the bounds of any are initialized, because the bound
     // of a captured type variable of one captured type can mention a captured type variable of

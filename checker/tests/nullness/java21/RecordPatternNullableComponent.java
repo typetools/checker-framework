@@ -42,10 +42,11 @@ public class RecordPatternNullableComponent {
     }
   }
 
-  // The pattern's explicit type arguments give `x` javac's type List<? extends CharSequence>, which
-  // is wider than the inferred List<@Nullable String>.  `x` should have javac's shape with the
-  // inferred qualifiers, List<? extends @Nullable CharSequence>, but it has the type
-  // List<@Nullable String>.  See the TODO in TypeFromMemberVisitor.varPatternType.
+  // The pattern's explicit type arguments make javac give `x` the Java type
+  // List<? extends CharSequence>, a Java supertype of the inferred List<@Nullable String>.  `x`
+  // should have javac's Java type with the inferred qualifiers,
+  // List<? extends @Nullable CharSequence>, but `x` has the type List<@Nullable String>.  See the
+  // TODO in `TypeFromMemberVisitor.varPatternType`.
   void varPatternLosesJavacWildcard(Supplier<List<@Nullable String>> s) {
     if (s instanceof Box<? extends List<? extends CharSequence>>(var x)) {
       // :: error: [dereference.of.nullable]
@@ -67,7 +68,7 @@ public class RecordPatternNullableComponent {
   }
 
   // Like other local variables, an unannotated binding variable defaults to @Nullable, so it can be
-  // assigned null.  Dataflow refines it by the qualifier of the record component.
+  // assigned null.  Dataflow refines the binding variable to the qualifier of the record component.
   void assignNullToBindingOfNonNullComponent(Box<String> box) {
     if (box instanceof Box(var s)) {
       s.length();
@@ -101,9 +102,9 @@ public class RecordPatternNullableComponent {
     }
   }
 
-  // The written type argument makes the component type a capture of `? extends CharSequence`, so
-  // `String s` is not unconditional and does not match null, even though the inferred component
-  // type is `@Nullable String`.
+  // The written type argument makes javac's component type a capture of `? extends CharSequence`,
+  // so `String s` is not unconditional for that type and does not match null, even though the
+  // inferred qualified component type is `@Nullable String`.
   void conditionalWithExplicitTypeArgument(Supplier<@Nullable String> supplier) {
     if (supplier instanceof Box<? extends CharSequence>(String s)) {
       s.length();
@@ -185,7 +186,7 @@ public class RecordPatternNullableComponent {
     }
   }
 
-  // `s` is refined by the type of the record component.
+  // Dataflow refines `s` to the qualifier of the record component, @NonNull.
   void explicitNullable(Box<String> box) {
     if (box instanceof Box(@Nullable String s)) {
       s.length();

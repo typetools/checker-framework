@@ -17,14 +17,12 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class JlsExample {
 
-  // Copied from JLS Example 18.5.5-1.
   record Mapper<T>(T in, T out) implements UnaryOperator<T> {
     public T apply(T arg) {
       return in.equals(arg) ? out : null;
     }
   }
 
-  // Copied from JLS Example 18.5.5-1.
   static class IllustrateRecordPatternTypeInference {
     void test(UnaryOperator<? extends CharSequence> op) {
       if (op instanceof Mapper(var in, var out)) {
@@ -34,9 +32,9 @@ public class JlsExample {
   }
 
   /**
-   * The JLS walks through this exact case: T is {@code UnaryOperator<? extends CharSequence>}, so
-   * the inferred type of the pattern is {@code Mapper<? extends CharSequence>} and both pattern
-   * variables have type {@code CharSequence}.
+   * The JLS walks through this exact case: the matched type is {@code UnaryOperator<? extends
+   * CharSequence>}, so the inferred type of the pattern is {@code Mapper<? extends CharSequence>}
+   * and both pattern variables have type {@code CharSequence}.
    *
    * <p>Annotated, the wildcard's upper bound is {@code @Untainted CharSequence}, so both pattern
    * variables should have type {@code @Untainted CharSequence}.
@@ -59,8 +57,8 @@ public class JlsExample {
   }
 
   /**
-   * No wildcard: alpha is inferred exactly, by the constraint <UnaryOperator<T'> =
-   * UnaryOperator<alpha>>.
+   * No wildcard: alpha, the inference variable for Mapper's type parameter, is inferred exactly, by
+   * the constraint <UnaryOperator<@Untainted CharSequence> = UnaryOperator<alpha>>.
    */
   void invariantUntainted(UnaryOperator<@Untainted CharSequence> op) {
     if (op instanceof Mapper(var in, var out)) {
@@ -80,12 +78,11 @@ public class JlsExample {
   /**
    * Control test: the type arguments are written explicitly.
    *
-   * <p>NOTE: javac (checked through JDK 25) rejects type annotations anywhere inside a record
-   * pattern's type -- {@code Mapper<@Untainted CharSequence>(var in, var out)} is "error:
-   * annotations not allowed on record patterns". So a programmer can never write the qualifiers of
-   * a record pattern's type arguments; they must always be inferred. That makes this test a control
-   * only for the erased shape of the pattern, and it makes 18.5.5 inference the only way for a
-   * pattern variable to get a qualifier other than the default.
+   * <p>NOTE: JLS 14.30.1 forbids type annotations anywhere in a record pattern's type: javac
+   * rejects {@code Mapper<@Untainted CharSequence>(var in, var out)} with "error: annotations not
+   * allowed on record patterns". So a programmer can never write the qualifiers of a record
+   * pattern's type arguments, and this test is a control only for the unannotated Java type of the
+   * pattern; the qualifiers of the pattern's type arguments always come from 18.5.5 inference.
    */
   void explicitTypeArguments(UnaryOperator<@Untainted CharSequence> op) {
     if (op instanceof Mapper<CharSequence>(var in, var out)) {
@@ -95,9 +92,9 @@ public class JlsExample {
   }
 
   /**
-   * The component patterns are type patterns rather than `var` patterns. They are unconditional for
-   * the component types, so each pattern variable gets the qualifier of the inferred component type
-   * rather than the default for the written type `CharSequence`.
+   * The nested patterns are type patterns rather than `var` patterns. Dataflow refines each pattern
+   * variable to the qualifier of the inferred type of its record component, rather than leaving the
+   * default for the written type `CharSequence`.
    */
   void typePatternComponents(UnaryOperator<? extends @Untainted CharSequence> op) {
     if (op instanceof Mapper(CharSequence in, CharSequence out)) {

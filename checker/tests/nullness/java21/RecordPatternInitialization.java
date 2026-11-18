@@ -23,7 +23,7 @@ public class RecordPatternInitialization {
     }
   }
 
-  // An unannotated binding variable has the qualifiers of the record component.
+  // An unannotated binding variable has the initialization qualifier of the record component.
   void unknownInitializationComponent(UnknownInitBox box) {
     if (box instanceof UnknownInitBox(String s)) {
       @UnknownInitialization String t = s;

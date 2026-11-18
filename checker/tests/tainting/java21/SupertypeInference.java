@@ -24,7 +24,10 @@ public class SupertypeInference {
     }
   }
 
-  /** R<alpha> has supertype Supplier<alpha>; <Supplier<@Untainted String> = Supplier<alpha>>. */
+  /**
+   * Producer<alpha> has supertype Supplier<alpha>, so inference reduces the constraint
+   * <Supplier<@Untainted String> = Supplier<alpha>>.
+   */
   static void throughInterface(Supplier<@Untainted String> s) {
     if (s instanceof Producer(var v)) {
       @Untainted String vv = v;
@@ -39,9 +42,8 @@ public class SupertypeInference {
   }
 
   /**
-   * The supertype's type argument is a parameterized type mentioning the record's type parameter,
-   * so the constraint <Supplier<List<@Untainted String>> = Supplier<List<alpha>>> has to be reduced
-   * structurally to get alpha.
+   * A record whose supertype's type argument is a parameterized type that mentions the record's
+   * type parameter.
    */
   record ListProducer<T>(T value) implements Supplier<List<T>> {
     @Override
@@ -50,6 +52,10 @@ public class SupertypeInference {
     }
   }
 
+  /**
+   * Inference has to reduce the constraint <Supplier<List<@Untainted String>> =
+   * Supplier<List<alpha>>> structurally to get alpha.
+   */
   static void nestedSupertypeArgument(Supplier<List<@Untainted String>> s) {
     if (s instanceof ListProducer(var v)) {
       @Untainted String vv = v;
@@ -64,8 +70,8 @@ public class SupertypeInference {
   }
 
   /**
-   * Two type parameters, both constrained by the supertype. Note that the record's type parameters
-   * appear in the supertype in a different order than they are declared.
+   * Two type parameters, both constrained by the supertype. The record's type parameters appear in
+   * the supertype in a different order than they are declared.
    */
   record Swapped<A, B>(A a, B b) implements BiFunction<B, A, String> {
     @Override
@@ -83,11 +89,7 @@ public class SupertypeInference {
     }
   }
 
-  /**
-   * The record has a type parameter that the supertype does not mention, so alpha2 gets no
-   * constraint beyond its declared bound. Per step 5 it resolves to a fresh type variable, and per
-   * step 6 the upward projection turns it into a wildcard: {@code Pair<@Untainted String, ?>}.
-   */
+  /** A record with a type parameter, B, that its supertype does not mention. */
   record Pair<A, B>(A a, B b) implements Supplier<A> {
     @Override
     public A get() {
@@ -95,6 +97,11 @@ public class SupertypeInference {
     }
   }
 
+  /**
+   * The inference variable for B, alpha2, gets no constraint beyond the declared bound of B. Per
+   * step 5, alpha2 resolves to a fresh type variable, and per step 6 the upward projection replaces
+   * that type variable with a wildcard: {@code Pair<@Untainted String, ?>}.
+   */
   static void unconstrainedTypeParameter(Supplier<@Untainted String> s) {
     if (s instanceof Pair(var a, var b)) {
       @Untainted String aa = a;
@@ -106,9 +113,8 @@ public class SupertypeInference {
   }
 
   /**
-   * The unconstrained type parameter has a declared bound carrying a qualifier, so per step 2 the
-   * initial bound set B0 already constrains it and the fresh type variable's upper bound is
-   * {@code @Untainted CharSequence}.
+   * A record with a type parameter, B, that its supertype does not mention and whose declared bound
+   * has a qualifier.
    */
   record BoundedPair<A, B extends @Untainted CharSequence>(A a, B b) implements Supplier<A> {
     @Override
@@ -117,6 +123,11 @@ public class SupertypeInference {
     }
   }
 
+  /**
+   * Per step 2, the initial bound set B0 already constrains alpha2, the inference variable for B,
+   * so the upper bound of the fresh type variable that alpha2 resolves to is {@code @Untainted
+   * CharSequence}.
+   */
   static void boundedUnconstrainedTypeParameter(Supplier<@Tainted String> s) {
     if (s instanceof BoundedPair(var a, var b)) {
       @Untainted CharSequence bb = b;
@@ -125,7 +136,7 @@ public class SupertypeInference {
     }
   }
 
-  /** The declared bound refers to the type parameter itself (an f-bound). */
+  /** The declared bound refers to the type parameter itself (an F-bound). */
   record SelfBounded<A extends Comparable<A>>(A a) implements Supplier<A> {
     @Override
     public A get() {
@@ -134,8 +145,9 @@ public class SupertypeInference {
   }
 
   /**
-   * String's supertype is {@code Comparable<@Tainted String>}, so {@code @Untainted String} does
-   * not satisfy the f-bound, just as {@code SelfBounded<@Untainted String>} is not a valid type.
+   * String's supertype {@code Comparable<String>} is {@code Comparable<@Tainted String>}, so
+   * {@code @Untainted String} does not satisfy the F-bound, just as {@code SelfBounded<@Untainted
+   * String>} is not a valid type.
    */
   static void fBoundedTypeParameter(Supplier<@Untainted String> s) {
     // :: error: [type.arguments.not.inferred]
@@ -154,12 +166,13 @@ public class SupertypeInference {
 
   interface Two<X, Y> {}
 
-  /**
-   * The supertype mentions the record's type parameter twice, so alpha and both of the wildcards'
-   * inference variables are equal to one another and must be resolved to the same type.
-   */
+  /** A record whose supertype mentions the record's type parameter twice. */
   record Diag<T>(T a) implements Two<T, T> {}
 
+  /**
+   * Inference makes alpha and the inference variables for both wildcards equal to one another, so
+   * resolution must give all three the same type.
+   */
   static void equalInferenceVariables(Two<? extends @Untainted Object, ?> o) {
     if (o instanceof Diag(var a)) {
       @Untainted Object aa = a;

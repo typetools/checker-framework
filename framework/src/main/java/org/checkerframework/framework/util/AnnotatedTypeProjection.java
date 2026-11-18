@@ -28,37 +28,46 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Computes the upward and downward projections of annotated types, as defined in <a
- * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>.
- * The restricted type variables are either every captured type variable, including the fresh type
- * variables that type inference creates, or a set of type variables that the caller passes.
+ * Computes the upward projection of an annotated type, and the downward projections that it uses,
+ * as defined in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>. A
+ * projection is with respect to a set of restricted type variables: either every captured type
+ * variable, including the fresh type variables that the Checker Framework's type inference creates,
+ * or the type variables that the caller passes to {@link #upward(AnnotatedTypeFactory,
+ * AnnotatedTypeMirror, Collection)}.
  *
- * <p>JLS 4.10.5 defines projection only for Java types. This class chooses the annotations of the
- * result as follows:
+ * <p>JLS 4.10.5 defines projection only for Java types. This class handles annotations as follows:
  *
  * <ul>
- *   <li>The projection of a restricted type variable that has primary annotations has those
- *       annotations, not the annotations of the projection of its bound.
- *   <li>A wildcard whose Java type is {@code ?} or {@code ? super L} has the upper bound {@code
- *       Object}, with the primary annotations of the projection of the type argument or wildcard
- *       bound that the wildcard replaces. Those annotations can be more precise than the
- *       annotations of the declared bound of the type parameter.
- *   <li>A wildcard with no lower bound has the null type, with the bottom annotations, as its lower
- *       bound.
- *   <li>The conditions of JLS 4.10.5 that compare types, such as whether a declared bound is a
- *       subtype of U, compare Java types and ignore annotations.
+ *   <li>The upward projection of a restricted type variable that has primary annotations has those
+ *       annotations, not the annotations of the upward projection of the type variable's upper
+ *       bound. Likewise, the downward projection of such a type variable has its primary
+ *       annotations, not the annotations of the downward projection of its lower bound.
+ *   <li>A wildcard that this class creates and whose Java type is {@code ?} or a {@code ? super}
+ *       wildcard has the upper bound {@code Object}, with the effective annotations (see {@link
+ *       AnnotatedTypeMirror#getAnnotations}) of the projection of the type argument that the
+ *       wildcard replaces, or of that type argument's extends bound if the type argument is a
+ *       wildcard. Those annotations can be more precise than the annotations of the corresponding
+ *       type parameter's declared bound.
+ *   <li>A wildcard that this class creates and whose Java type has no {@code super} bound has, as
+ *       its lower bound, the null type with the bottom annotations.
+ *   <li>The conditions of JLS 4.10.5 that compare types, such as whether the declared bound of a
+ *       type parameter is a subtype of the upward projection of the type argument for that type
+ *       parameter, compare Java types and ignore annotations.
  * </ul>
  *
  * <p>This class also differs from JLS 4.10.5 in two ways:
  *
  * <ul>
  *   <li>The upward projection of a restricted type variable is the upward projection of its upper
- *       bound, which can mention the type variable itself, as in {@code T extends Comparable<T>}.
- *       JLS 4.10.5 does not say how this recursion ends. In this class, the upward projection of a
- *       type variable that is reached again while its own upward projection is being computed is
- *       the erasure of its leftmost bound.
- *   <li>Where JLS 4.10.5 gives {@code ? extends U} and U is an intersection type, this class gives
- *       {@code ?}, because the bound of a wildcard cannot be an intersection type.
+ *       bound, which can mention the type variable itself, as in the capture of {@code C<?>} where
+ *       {@code class C<T extends Comparable<T>>}. JLS 4.10.5 notes that this recursion can produce
+ *       an infinite type. If computing the upward projection of a restricted type variable T needs
+ *       the upward projection of T again, this class uses the erasure of T's leftmost bound as the
+ *       inner projection.
+ *   <li>Where JLS 4.10.5 gives a wildcard {@code ? extends U} whose bound U is an intersection
+ *       type, this class gives {@code ?}, because the bound of a wildcard cannot be an intersection
+ *       type.
  * </ul>
  */
 public final class AnnotatedTypeProjection {
@@ -76,8 +85,9 @@ public final class AnnotatedTypeProjection {
   private final @Nullable Collection<TypeVariable> restricted;
 
   /**
-   * The restricted type variables whose upward projection is being computed. Projecting one of
-   * these again would not terminate, because its bound mentions itself.
+   * The restricted type variables whose upward projection is being computed. Computing the upward
+   * projection of one of these type variables again would not terminate, because its upper bound
+   * mentions the type variable.
    */
   private final List<TypeVariable> typeVariablesBeingProjected = new ArrayList<>();
 
@@ -128,7 +138,8 @@ public final class AnnotatedTypeProjection {
   }
 
   /**
-   * Returns the upward projection of {@code type}.
+   * Returns the upward projection of {@code type} with respect to the restricted type variables
+   * (see {@link #restricted}).
    *
    * @param type the type to project; not a wildcard
    * @return the upward projection of {@code type}
@@ -182,20 +193,20 @@ public final class AnnotatedTypeProjection {
         }
         return withBounds((AnnotatedIntersectionType) type, bounds);
       }
-      // A wildcard is a type argument, not a type; upwardTypeArgument projects wildcards.
+      // A wildcard is a type argument, not a type; `upwardTypeArgument` projects wildcards.
       case WILDCARD -> throw new BugInCF("Upward projection of a wildcard: %s", type);
       default -> throw new BugInCF("Upward projection of a %s: %s", type.getKind(), type);
     }
   }
 
   /**
-   * Returns the type argument of the upward projection of {@code type} at index {@code
-   * typeArgIndex}.
+   * Returns the type argument at index {@code typeArgIndex} of the upward projection of {@code
+   * type}.
    *
    * @param type a parameterized type
    * @param typeArgIndex the index of a type argument of {@code type}
-   * @return the type argument of the upward projection of {@code type} at index {@code
-   *     typeArgIndex}
+   * @return the type argument at index {@code typeArgIndex} of the upward projection of {@code
+   *     type}
    */
   private AnnotatedTypeMirror upwardTypeArgument(AnnotatedDeclaredType type, int typeArgIndex) {
     AnnotatedTypeMirror typeArg = type.getTypeArguments().get(typeArgIndex);
@@ -303,17 +314,27 @@ public final class AnnotatedTypeProjection {
   }
 
   /**
-   * Creates a wildcard. Its Java type is {@code ? super lowerBound} if {@code lowerBound} is
-   * non-null, {@code ? extends upperBound} if {@code preferExtendsBound} is true and {@code
-   * upperBound} is not an intersection type, and {@code ?} otherwise. Its annotated upper bound is
-   * {@code upperBound} if its Java type is {@code ? extends upperBound}, and otherwise {@code
-   * Object} with the qualifiers of {@code upperBound}.
+   * Creates a wildcard. Its Java type is:
    *
-   * @param upperBound the upper bound of the wildcard
-   * @param lowerBound the lower bound of the wildcard, or null if it has none
-   * @param preferExtendsBound true if the Java type of the wildcard should be {@code ? extends
-   *     upperBound}; ignored if {@code lowerBound} is non-null
-   * @return a wildcard with the given bounds
+   * <ul>
+   *   <li>{@code ? super lowerBound}, if {@code lowerBound} is non-null;
+   *   <li>{@code ? extends upperBound}, if {@code lowerBound} is null, {@code preferExtendsBound}
+   *       is true, and {@code upperBound} is not an intersection type;
+   *   <li>{@code ?}, otherwise.
+   * </ul>
+   *
+   * <p>Its annotated upper bound is {@code upperBound} if its Java type is {@code ? extends
+   * upperBound}, and otherwise {@code Object} with the effective annotations of {@code upperBound}.
+   * Its annotated lower bound is {@code lowerBound} if {@code lowerBound} is non-null, and
+   * otherwise the null type with the bottom annotations.
+   *
+   * @param upperBound the upper bound of the wildcard if its Java type is {@code ? extends
+   *     upperBound}; otherwise, the source of the annotations on its {@code Object} upper bound
+   * @param lowerBound the lower bound of the wildcard, or null if its Java type has no lower bound
+   * @param preferExtendsBound if true, the Java type of the wildcard is {@code ? extends
+   *     upperBound} unless {@code lowerBound} is non-null or {@code upperBound} is an intersection
+   *     type; if false, the Java type of the wildcard is {@code ? super lowerBound} or {@code ?}
+   * @return the wildcard described above
    */
   private AnnotatedWildcardType createWildcard(
       AnnotatedTypeMirror upperBound,
@@ -336,7 +357,8 @@ public final class AnnotatedTypeProjection {
     if (hasExtendsBound) {
       wildcard.setExtendsBound(upperBound);
     } else {
-      // See the class Javadoc for why the Object bound has the qualifiers of `upperBound`.
+      // See the class Javadoc for why the Object bound has the effective annotations of
+      // `upperBound`.
       AnnotatedTypeMirror objectUpperBound =
           AnnotatedTypeMirror.createType(
               TypesUtils.getObjectTypeMirror(atypeFactory.getProcessingEnv()), atypeFactory, false);
@@ -383,12 +405,13 @@ public final class AnnotatedTypeProjection {
   }
 
   /**
-   * Returns a copy of {@code type} whose bounds are {@code bounds}. A bound that is itself an
-   * intersection type contributes its own bounds.
+   * Returns a copy of {@code type} whose bounds are {@code bounds}, with each intersection type in
+   * {@code bounds} replaced by its bounds.
    *
    * @param type an intersection type
    * @param bounds the new bounds
-   * @return a copy of {@code type} whose bounds are {@code bounds}
+   * @return a copy of {@code type} whose bounds are {@code bounds}, with each intersection type in
+   *     {@code bounds} replaced by its bounds
    */
   private AnnotatedIntersectionType withBounds(
       AnnotatedIntersectionType type, List<AnnotatedTypeMirror> bounds) {

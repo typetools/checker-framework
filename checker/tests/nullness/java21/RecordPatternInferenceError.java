@@ -23,7 +23,8 @@ public class RecordPatternInferenceError {
     }
   }
 
-  // The two elements of the intersection give alpha = @Nullable String and alpha = @NonNull String.
+  // alpha is the inference variable for Both's type parameter T (JLS 18.5.5).  The two elements of
+  // the intersection give alpha = @Nullable String and alpha = @NonNull String.
   <X extends First<@Nullable String> & Second<String>> void conflictingBounds(X x) {
     // :: error: [type.arguments.not.inferred]
     if (x instanceof Both(var s)) {}

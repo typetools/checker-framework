@@ -4,10 +4,11 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Tests for step 3 of JLS 26 section 18.5.5: when T is a parameterized type, capture conversion is
-// applied and the captured type variables Z1..Zk are replaced by fresh inference variables
-// beta1..betak whose bounds come from the captures' bounds.  Also tests step 6, the upward
-// projection of R<A1,...,An> with respect to the fresh type variables introduced by resolution.
+// Tests for step 3 of JLS 26 section 18.5.5: when the matched type is a parameterized type,
+// capture conversion is applied and the captured type variables Z1..Zk are replaced by fresh
+// inference variables beta1..betak whose bounds come from the captures' bounds.  Also tests step 6,
+// the upward projection of R<A1,...,An> with respect to the fresh type variables introduced by
+// resolution.
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
@@ -17,10 +18,11 @@ public class Wildcards {
   record Box<T>(T t) {}
 
   /**
-   * T is {@code Box<? extends @Untainted String>}. Capture gives {@code Box<Z>} with Z <:
-   * {@code @Untainted String}; beta replaces Z with the same upper bound; alpha = beta; resolution
-   * yields a fresh Y with upper bound {@code @Untainted String}; the upward projection of {@code
-   * Box<Y>} is {@code Box<? extends @Untainted String>}. So `s` is {@code @Untainted String}.
+   * The matched type is {@code Box<? extends @Untainted String>}. Capture gives {@code Box<Z>} with
+   * Z <: {@code @Untainted String}; beta replaces Z with the same upper bound; alpha, the inference
+   * variable for Box's type parameter, equals beta; resolution yields a fresh Y with upper bound
+   * {@code @Untainted String}; the upward projection of {@code Box<Y>} is {@code Box<?
+   * extends @Untainted String>}. So `s` is {@code @Untainted String}.
    */
   static void extendsWildcardUntainted(Box<? extends @Untainted String> b) {
     if (b instanceof Box(var s)) {
@@ -84,7 +86,8 @@ public class Wildcards {
 
   /**
    * In {@code @Untainted ? extends String}, the qualifier before {@code ?} annotates the lower
-   * bound, so it does not affect {@code s}, whose upper bound is the unannotated {@code String}.
+   * bound. That qualifier does not affect {@code s}, because the wildcard's upper bound is the
+   * unannotated {@code String}.
    */
   static void qualifierOnExtendsWildcardIsLowerBound(Box<@Untainted ? extends String> b) {
     if (b instanceof Box(var s)) {
@@ -93,7 +96,10 @@ public class Wildcards {
     }
   }
 
-  /** A nested wildcard: the inner pattern's T is itself a wildcard-parameterized type. */
+  /**
+   * A nested wildcard: the type that the inner pattern is matched against is itself a
+   * wildcard-parameterized type.
+   */
   static void nestedWildcard(Box<? extends @Untainted Box<? extends @Untainted String>> bbs) {
     if (bbs instanceof Box(Box(var s))) {
       @Untainted String ss = s;
@@ -108,7 +114,10 @@ public class Wildcards {
     }
   }
 
-  /** The bound is a parameterized type, so the projection has to keep the nested type argument. */
+  /**
+   * The component type is a parameterized type, so the projection has to keep the nested type
+   * argument.
+   */
   record Holder<T>(java.util.List<T> list) {}
 
   static void listComponent(Holder<? extends @Untainted String> h) {

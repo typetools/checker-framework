@@ -53,7 +53,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       if (elt != null && elt.getKind() == ElementKind.BINDING_VARIABLE) {
         result = varPatternType(variableTree, f);
         // As for a local variable declared using var, let normal defaulting happen for the
-        // primary annotation.  Dataflow refines it by the qualifiers of the record component.
+        // primary annotation.  Dataflow refines the binding variable to the qualifiers of its
+        // record component.
         result.clearPrimaryAnnotations();
       } else {
         result = f.type(variableTree);
@@ -134,9 +135,18 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * Returns the type of the binding variable declared by a {@code var} pattern: the upward
+   * Returns the type of the binding variable declared by a {@code var} pattern. Let P be the upward
    * projection of the type of the record component that the pattern is matched against (JLS
-   * 14.30.1).
+   * 14.30.1). The result is:
+   *
+   * <ul>
+   *   <li>P, if P has the same erasure as the Java type of {@code bindingVariable};
+   *   <li>otherwise, if the erasure of P is a subtype of the erasure of the Java type of {@code
+   *       bindingVariable}, the Java type of {@code bindingVariable} with the qualifiers of P, as
+   *       computed by {@link AnnotatedTypes#asSuper};
+   *   <li>otherwise, or if {@code bindingVariable} is not in the current compilation unit, the Java
+   *       type of {@code bindingVariable}, without annotations.
+   * </ul>
    *
    * @param bindingVariable a binding variable declared by a {@code var} pattern
    * @param f the annotated type factory
@@ -152,19 +162,20 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     AnnotatedTypeMirror projectedType = AnnotatedTypeProjection.upward(f, recordComponentType);
     TypeMirror javacType = TreeUtils.typeOf(bindingVariable);
     // javac does not always project the type of a `var` pattern, so compare only erasures.
-    // TODO: When javac's type has the same erasure but a different shape, keep javac's shape and
-    // give it the qualifiers of the projected type.  For Box<? extends List<? extends
-    // CharSequence>>(var x) matched against a Supplier<List<@Nullable String>>, javac's type for x
-    // is List<? extends CharSequence>, but x gets the type List<@Nullable String>, so assigning an
-    // ArrayList<StringBuilder> to x is a false positive.  (AnnotatedTypes.asSuper cannot do this:
-    // for types with the same erasure, it returns the subtype unchanged.)
+    // TODO: When the Java type has the same erasure but different type arguments, keep the Java
+    // type's type arguments and give them the qualifiers of the projected type.  For `record
+    // Box<T>(T t) implements Supplier<T>`, if Box<? extends List<? extends CharSequence>>(var x) is
+    // matched against a Supplier<List<@Nullable String>>, the Java type of x is List<? extends
+    // CharSequence>, but x gets the type List<@Nullable String>, so assigning an
+    // ArrayList<StringBuilder> to x is a false positive.  (`AnnotatedTypes.asSuper` cannot do
+    // this: for types with the same erasure, `asSuper(type, superType)` returns `type` unchanged.)
     if (TypesUtils.isErasedSameType(projectedType.getUnderlyingType(), javacType, f.types)) {
       return projectedType;
     }
-    // The inferred type of the record pattern can be more specific than the type written in the
-    // source code, such as Box<String> for Box<? extends CharSequence>(var x).  A `var` pattern
-    // matches every value of the record component, so it takes the qualifiers of the component's
-    // type arguments.
+    // The qualified type that `RecordPatternTypeInference` infers for the record pattern can be
+    // more specific than the record pattern's Java type, such as Box<String> for Box<? extends
+    // CharSequence>(var x).  A `var` pattern matches every value of the record component, so its
+    // binding variable takes the qualifiers of the type arguments of the component's type.
     AnnotatedTypeMirror defaultedType = f.type(bindingVariable);
     if (TypesUtils.isErasedSubtype(projectedType.getUnderlyingType(), javacType, f.types)) {
       return AnnotatedTypes.asSuper(f, projectedType, defaultedType);
