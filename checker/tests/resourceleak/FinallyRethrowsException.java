@@ -6,7 +6,15 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 abstract class FinallyRethrowsException {
 
+  /** A resource whose close() method throws no checked exception. */
+  interface QuietResource extends AutoCloseable {
+    @Override
+    void close();
+  }
+
   public abstract @Owning Closeable alloc() throws IOException;
+
+  public abstract @Owning QuietResource allocQuiet();
 
   public abstract void mightThrow() throws IOException;
 
@@ -34,6 +42,15 @@ abstract class FinallyRethrowsException {
       }
     } finally {
       log();
+    }
+    c.close();
+  }
+
+  void leakAfterTryWithResources() throws IOException {
+    // :: error: [required.method.not.called]
+    Closeable c = alloc();
+    try (QuietResource r = allocQuiet()) {
+      mightThrow();
     }
     c.close();
   }
