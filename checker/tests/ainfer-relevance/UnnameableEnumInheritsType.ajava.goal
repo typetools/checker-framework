@@ -28,6 +28,7 @@ public class UnnameableEnumInheritsType {
 
                 @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence charSequenceField;
 
+                @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
                 @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.enumDescField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
                 @org.checkerframework.dataflow.qual.Impure
                 void assignFields(EnumDesc e, CharSequence c) {
