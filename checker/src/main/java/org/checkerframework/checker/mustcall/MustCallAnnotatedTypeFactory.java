@@ -483,7 +483,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       }
       if (elementType instanceof AnnotatedWildcardType wildcard) {
         if (wildcard.getUnderlyingType().getSuperBound() != null) {
-          // List<? super T>: T is handled below.
+          // List<? super T>: widen the wildcard's upper bound; T is handled below.
+          wildcard.removePrimaryAnnotationInHierarchy(TOP);
+          wildcard.getExtendsBound().replaceAnnotation(TOP);
           elementType = wildcard.getSuperBound();
         } else if (wildcard.getExtendsBound() instanceof AnnotatedTypeVariable) {
           // List<? extends T>: T is handled below.

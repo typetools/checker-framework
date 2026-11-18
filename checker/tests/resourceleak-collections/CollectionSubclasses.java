@@ -11,6 +11,13 @@ class CollectionSubclasses {
 
   static class ResourceList<E extends @MustCallUnknown Object> extends ArrayList<E> {}
 
+  // Without a @MustCallUnknown bound, the elements of a user-defined collection class cannot be
+  // resources.
+  static class PlainList<E> extends ArrayList<E> {}
+
+  // :: error: type.argument
+  void plainListOfResources(PlainList<Resource> list) {}
+
   void leakArrayList() {
     List<Resource> list = new ArrayList<>();
     // :: error: unfulfilled.collection.obligations
