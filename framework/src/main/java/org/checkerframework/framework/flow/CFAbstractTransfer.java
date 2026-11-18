@@ -1563,6 +1563,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
    *     lacks an annotation in some hierarchy and its type is not a type variable
    */
+  @SideEffectFree
   protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
     if (annotatedValue == null) {
       return null;

@@ -95,12 +95,27 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getAnnotations();
+        // The type that `annos` describes.
+        TypeMirror annosTM = initType.getUnderlyingType();
+        boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
+        if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
+          // The initializer is boxed or unboxed (JLS 5.2).  A primitive initializer is boxed to the
+          // component type if that is a boxed primitive, as in `new Byte[] {1}`.
+          annos =
+              initIsPrimitive
+                  ? atypeFactory.getBoxedAnnotations(
+                      annos,
+                      TypesUtils.isBoxedPrimitive(componentTM)
+                          ? atypeFactory.types.unboxedType(componentTM).getKind()
+                          : annosTM.getKind())
+                  : atypeFactory.getUnboxedAnnotations(annos, componentTM.getKind());
+          annosTM = componentTM;
+        }
 
         prev =
             (prev == null)
                 ? annos
-                : qualHierarchy.leastUpperBoundsShallow(
-                    prev, componentTM, annos, initType.getUnderlyingType());
+                : qualHierarchy.leastUpperBoundsShallow(prev, componentTM, annos, annosTM);
       }
     } else {
       prev = componentType.getPrimaryAnnotations();
@@ -352,18 +367,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    */
   private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
     log("addAnnoOrBound(%s, %s)%n", type, annos);
-    TypeMirror tm = type.getUnderlyingType();
-    AnnotationMirrorSet boundAnnos = atypeFactory.getQualifierUpperBounds().getBoundQualifiers(tm);
-    AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
-    for (AnnotationMirror boundAnno : boundAnnos) {
-      AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annos, boundAnno);
-      if (anno != null && !qualHierarchy.isSubtypeShallow(anno, tm, boundAnno, tm)) {
-        annosToAdd.add(boundAnno);
-      }
-    }
-    type.addMissingAnnotations(annosToAdd);
+    type.addMissingAnnotations(
+        atypeFactory.getQualifierUpperBounds().limitToBound(type.getUnderlyingType(), annos));
     log("addAnnoOrBound#2(%s, %s)%n", type, annos);
-    type.addMissingAnnotations(annos);
-    log("addAnnoOrBound#3(%s, %s)%n", type, annos);
   }
 }
