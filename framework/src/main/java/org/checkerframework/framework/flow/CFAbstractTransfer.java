@@ -993,9 +993,9 @@ public abstract class CFAbstractTransfer<
    * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
    * {@code (int) s == 5L}, is looked through. There is no candidate if {@code node} is (after
    * looking through value-preserving widening conversions) a conversion that might change the value
-   * of its operand, such as the binary numeric promotion of {@code i} in {@code i ==
-   * 16_777_216f}: {@link JavaExpression#fromNode} ignores the conversion, so the expression for the
-   * conversion is its operand, which might have a different value.
+   * of its operand, such as the binary numeric promotion of {@code i} in {@code i == 16_777_216f}:
+   * {@link JavaExpression#fromNode} ignores the conversion, so the expression for the conversion is
+   * its operand, which might have a different value.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
    * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
@@ -1035,9 +1035,9 @@ public abstract class CFAbstractTransfer<
    *
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return the nodes that have the value of {@code node} when the comparison completes: the sides
-   *     of {@code node} if it is an assignment or a value-preserving cast, none if it is a conversion
-   *     that might change the value, and otherwise {@code node} itself, except for those that might
-   *     have a different value by then
+   *     of {@code node} if it is an assignment or a value-preserving cast, none if it is a
+   *     conversion that might change the value, and otherwise {@code node} itself, except for those
+   *     that might have a different value by then
    */
   protected List<Node> nodesWithValueOf(Node node) {
     List<Node> result = analysis.nodesWithValueOfCache.get(node);
@@ -1092,9 +1092,7 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (CFAbstractStore.canInsertJavaExpression(expr)
-          || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
-              && !expr.containsUnknown())) {
+      if (isCheckedForChanges(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1119,7 +1117,9 @@ public abstract class CFAbstractTransfer<
    * {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in the
    * chain, such as {@code a} and {@code b}; each value-preserving cast in the chain; and the
    * operand of the last assignment or cast in the chain, such as {@code c}. The result omits each
-   * side that a store can hold a value for and whose value the rest of the chain might change.
+   * side whose value the rest of the chain might change and that a store can hold a value for or
+   * that is a unary or binary operation (see {@link #mayBeChanged}). For example, the result for
+   * {@code s = "x" + s} is just {@code s}.
    *
    * @param assignment an assignment node or a value-preserving cast
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1269,8 +1269,11 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, and
-   * writing the given locations might change the side's value.
+   * Returns true if a store can hold a value for the given side of a chain of assignments, or the
+   * side is a unary or binary operation that does not contain {@link Unknown}, and writing the
+   * given locations might change the side's value. As in {@link #computeNodesWithValueOf}, an
+   * operation is checked because a client such as the SameLen Checker can relate it to other
+   * expressions.
    *
    * @param side a side of a chain of assignments and casts (see {@link #sidesOfAssignment}): an
    *     entire target, such as {@code a[i]} (not {@code a} or {@code i}), a cast in the chain, or
@@ -1281,12 +1284,26 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} and writing {@code written} might
-   *     change its value
+   * @return true if a store can hold a value for {@code side} or it is an operation that does not
+   *     contain {@link Unknown}, and writing {@code written} might change its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
+    return isCheckedForChanges(expr) && written.mayChange(expr, true);
+  }
+
+  /**
+   * Returns true if {@link #nodesWithValueOf} omits the given expression when its value might
+   * change: that is, if a store can hold a value for it, or it is a unary or binary operation that
+   * does not contain {@link Unknown}.
+   *
+   * @param expr an expression
+   * @return true if {@link #nodesWithValueOf} omits {@code expr} when its value might change
+   */
+  private static boolean isCheckedForChanges(JavaExpression expr) {
+    return CFAbstractStore.canInsertJavaExpression(expr)
+        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+            && !expr.containsUnknown());
   }
 
   /**
