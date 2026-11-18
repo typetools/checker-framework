@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 /**
  * A default implementation of the node visitor interface. The class introduces several 'summary'
- * methods, that can be overridden to change the behavior of several related visit methods at once.
+ * methods that can be overridden to change the behavior of several related visit methods at once.
  * An example is the {@link #visitValueLiteral} method, which is called for every {@link
  * ValueLiteralNode}.
  *
@@ -13,7 +13,7 @@ package org.checkerframework.dataflow.cfg.node;
  * @param <P> parameter type of the visitor
  */
 public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
-  /** Creates a AbstractNodeVisitor. */
+  /** Creates an AbstractNodeVisitor. */
   public AbstractNodeVisitor() {}
 
   /**

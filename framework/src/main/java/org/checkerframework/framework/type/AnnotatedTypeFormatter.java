@@ -9,8 +9,8 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public interface AnnotatedTypeFormatter {
   /**
-   * Formats type into a String. Uses an implementation specific default for printing "invisible
-   * annotations"
+   * Formats type into a String. Uses an implementation-specific default for printing "invisible
+   * annotations".
    *
    * @see org.checkerframework.framework.qual.InvisibleQualifier
    * @param type the type to be converted

@@ -64,7 +64,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * The fully qualified name of the custom <i>AnnotatedTypeFactory</i> is specified through an {@code
- * -Afactory} command-line argument (e.g. {@code
+ * -Afactory} command-line argument (e.g., {@code
  * -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory}). The factory needs to have a
  * constructor of the form {@code <init>(ProcessingEnvironment, CompilationUnitTree)}.
  */
@@ -209,8 +209,8 @@ public class FactoryTestChecker extends BaseTypeChecker {
   }
 
   /**
-   * A data structure that encapsulate a string and the line number that string appears in the
-   * buffer
+   * A data structure that encapsulates a string and the line number that string appears on in the
+   * buffer.
    */
   private record TreeSpec(String treeString, long lineNumber) {
 
@@ -227,7 +227,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
 
   /**
    * A specialized visitor that compares the actual and expected types for the specified trees and
-   * report an error if they differ
+   * reports an error if they differ.
    */
   private class ToStringVisitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
     Map<TreeSpec, String> expected;

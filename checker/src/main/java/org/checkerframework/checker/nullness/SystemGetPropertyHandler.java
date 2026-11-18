@@ -15,13 +15,13 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>The result of the method call is assumed to be non-null if the argument is a literal key that
  * is guaranteed to be present in the system properties (according to the documentation of {@link
- * java.lang.System#getProperty(String)}), as in {@code System.getProperties("line.separator")}.
+ * java.lang.System#getProperty(String)}), as in {@code System.getProperty("line.separator")}.
  */
 public class SystemGetPropertyHandler {
 
   /**
-   * If true, client code may clear system properties, and this class (SystemGetPropertyHandler) has
-   * no effect.
+   * If true, client code might clear system properties, and this class (SystemGetPropertyHandler)
+   * has no effect.
    */
   private final boolean permitClearProperty;
 
@@ -34,7 +34,7 @@ public class SystemGetPropertyHandler {
   /** The System.getProperty(String) method. */
   private final ExecutableElement systemGetProperty;
 
-  /** The System.setProperty(String) method. */
+  /** The System.setProperty(String, String) method. */
   private final ExecutableElement systemSetProperty;
 
   /**
@@ -89,7 +89,7 @@ public class SystemGetPropertyHandler {
    *
    * @param env the processing environment
    * @param factory the factory for constructing and looking up types
-   * @param permitClearProperty if true, client code may clear system properties, and this object
+   * @param permitClearProperty if true, client code might clear system properties, and this object
    *     does nothing
    */
   public SystemGetPropertyHandler(

@@ -5,11 +5,11 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 
 /**
  * An insertion for a method receiver. This supports inserting an annotation on an existing receiver
- * and creating a new (annotated) receiver if none are present.
+ * and creating a new (annotated) receiver if none is present.
  */
 public class ReceiverInsertion extends TypedInsertion {
   /**
-   * If true a comma will be added at the end of the insertion (only if also inserting the
+   * If true, a comma will be added at the end of the insertion (only if also inserting the
    * receiver).
    */
   private boolean addComma;
@@ -18,18 +18,18 @@ public class ReceiverInsertion extends TypedInsertion {
   private boolean qualifyThis;
 
   /**
-   * Construct a ReceiverInsertion.
+   * Constructs a ReceiverInsertion.
    *
    * <p>If the receiver parameter already exists in the method declaration, then pass a DeclaredType
    * whose name is the empty String. This will only insert an annotation on the existing receiver.
    *
-   * <p>To insert the annotation and the receiver (for example, {@code @Anno Type this}) the
+   * <p>To insert the annotation and the receiver (for example, {@code @Anno Type this}), the
    * DeclaredType's name should be set to the type to insert. This can either be done before calling
    * this constructor, or by modifying the return value of {@link #getType()}.
    *
-   * <p>A comma will not be added to the end of the receiver. In the case that there is a parameter
-   * following the inserted receiver pass {@code true} to {@link #setAddComma(boolean)} to add a
-   * comma to the end of the receiver.
+   * <p>A comma will not be added to the end of the receiver. If there is a parameter following the
+   * inserted receiver, pass {@code true} to {@link #setAddComma(boolean)} to add a comma to the end
+   * of the receiver.
    *
    * @param type the type to use when inserting the receiver
    * @param criteria where to insert the text
@@ -43,7 +43,7 @@ public class ReceiverInsertion extends TypedInsertion {
   }
 
   /**
-   * If {@code true} a comma will be added at the end of the receiver. This will only happen if a
+   * If {@code true}, a comma will be added at the end of the receiver. This will only happen if a
    * receiver is inserted (see {@link #ReceiverInsertion(DeclaredType, Criteria, List)} for a
    * description of when a receiver is inserted). This is useful if the method already has one or
    * more parameters.

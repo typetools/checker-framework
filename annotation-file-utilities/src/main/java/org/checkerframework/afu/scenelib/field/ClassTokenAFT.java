@@ -11,7 +11,7 @@ package org.checkerframework.afu.scenelib.field;
  */
 public final class ClassTokenAFT extends ScalarAFT {
 
-  /** Create the singleton {@link #ctaft}. */
+  /** Creates the singleton {@link #ctaft}. */
   private ClassTokenAFT() {}
 
   /** The singleton {@link ClassTokenAFT}. */

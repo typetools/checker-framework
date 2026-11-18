@@ -13,11 +13,18 @@ import org.checkerframework.framework.util.element.ElementAnnotationUtil.Unexpec
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
+ * Applies annotations to a variable declaration (provided they are not the use of a
+ * TYPE_PARAMETER).
  */
 public class VariableApplier extends TargetedElementAnnotationApplier {
 
-  /** Apply annotations from {@code element} to {@code type}. */
+  /**
+   * Applies annotations from {@code element} to {@code type}.
+   *
+   * @param type the type to annotate
+   * @param element the variable element whose annotations to apply
+   * @throws UnexpectedAnnotationLocationException if an annotation has an unexpected location
+   */
   public static void apply(AnnotatedTypeMirror type, Element element)
       throws UnexpectedAnnotationLocationException {
     new VariableApplier(type, element).extractAndApply();
@@ -28,10 +35,11 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
   };
 
   /**
-   * Returns true if this is a variable declaration including fields an enum constants.
+   * Returns true if this is a variable declaration, including fields and enum constants.
    *
    * @param typeMirror ignored
-   * @return true if this is a variable declaration including fields an enum constants
+   * @param element the element to test
+   * @return true if this is a variable declaration, including fields and enum constants
    */
   public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
     return ElementAnnotationUtil.contains(element.getKind(), acceptedKinds)

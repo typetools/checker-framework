@@ -1,6 +1,6 @@
 \chapterAndLabel{Non-Empty Checker for container classes}{non-empty-checker}
 
-The Non-Empty Checker tracks whether a container is possibly-empty or is
+The Non-Empty Checker tracks whether a container is possibly empty or is
 definitely non-empty.  It works on containers such as
 \<Collection>s, \<Iterator>s, \<Iterable>s, and \<Map>s, but not \<Optional>s.
 
@@ -40,7 +40,7 @@ These qualifiers make up the Non-Empty type system:
 \begin{description}
 
 \item[\refqualclass{checker/nonempty/qual}{UnknownNonEmpty}]
-  The annotated collection, iterator, iterable, or map may or may not be empty.
+  The annotated collection, iterator, iterable, or map might or might not be empty.
   This is the top type; programmers need not explicitly write it.
 
 \item[\refqualclass{checker/nonempty/qual}{NonEmpty}]
@@ -95,7 +95,7 @@ apply to the annotated method itself rather than to some particular type.
 The default annotation for collections, iterators, iterables, and maps is
 \<@UnknownNonEmpty>.
 Refinement to the \<@NonEmpty> type occurs in certain cases, such as after
-conditional checks for empty/non-emptiness (see Section~\ref{type-refinement} for
+conditional checks for emptiness/non-emptiness (see Section~\ref{type-refinement} for
 more details):
 
 \begin{Verbatim}
@@ -155,10 +155,10 @@ of \<Optional>, even though misuse can lead to the same exception,
 
 \sectionAndLabel{Suppressing non-empty warnings}{suppressing-non-empty-warnings}
 
-Like any sound static analysis tool, the Non-Empty Checker may issue a warning
+Like any sound static analysis tool, the Non-Empty Checker might issue a warning
 for code that is correct.
 It is often best to change your code or annotations in this case.
-Alternatively, you may choose to suppress the warning.
+Alternatively, you might choose to suppress the warning.
 This does not change the code, but prevents the warning from being presented to
 you.
 The Checker Framework supplies several mechanisms to suppress warnings (see

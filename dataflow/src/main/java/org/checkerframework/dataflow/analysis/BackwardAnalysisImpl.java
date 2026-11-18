@@ -23,8 +23,8 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * An implementation of a backward analysis to solve a org.checkerframework.dataflow problem given a
- * control flow graph and a backward transfer function.
+ * An implementation of a backward analysis to solve an org.checkerframework.dataflow problem given
+ * a control flow graph and a backward transfer function.
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
@@ -50,7 +50,7 @@ public class BackwardAnalysisImpl<
 
   // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
   /**
-   * Construct an object that can perform a org.checkerframework.dataflow backward analysis over a
+   * Constructs an object that can perform an org.checkerframework.dataflow backward analysis over a
    * control flow graph. When using this constructor, the transfer function is set later by the
    * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
    */
@@ -59,7 +59,7 @@ public class BackwardAnalysisImpl<
   }
 
   /**
-   * Construct an object that can perform a org.checkerframework.dataflow backward analysis over a
+   * Constructs an object that can perform an org.checkerframework.dataflow backward analysis over a
    * control flow graph given a transfer function.
    *
    * @param transferFunction the transfer function
@@ -215,13 +215,13 @@ public class BackwardAnalysisImpl<
   }
 
   /**
-   * Add a store after the basic block {@code pred} by merging with the existing stores for that
+   * Adds a store after the basic block {@code pred} by merging with the existing stores for that
    * location.
    *
    * @param pred the basic block
-   * @param node the node of the basic block {@code b}
+   * @param node the successor node
    * @param s the store being added
-   * @param addBlockToWorklist true if the basic block {@code b} should be added back to {@code
+   * @param addBlockToWorklist true if the basic block {@code pred} should be added back to {@code
    *     Worklist}
    */
   protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {

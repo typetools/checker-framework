@@ -385,7 +385,7 @@ public class LubGlbChecker extends BaseTypeChecker {
   }
 
   /**
-   * Throws an exception if glb(arg1, arg2) != result.
+   * Throws an exception if glb(arg1, arg2) != expected.
    *
    * @param arg1 the first argument
    * @param arg2 the second argument
@@ -402,7 +402,7 @@ public class LubGlbChecker extends BaseTypeChecker {
   }
 
   /**
-   * Throws an exception if lub(arg1, arg2) != result.
+   * Throws an exception if lub(arg1, arg2) != expected.
    *
    * @param arg1 the first argument
    * @param arg2 the second argument

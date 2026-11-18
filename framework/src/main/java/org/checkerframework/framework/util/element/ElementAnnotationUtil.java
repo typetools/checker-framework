@@ -38,7 +38,7 @@ import org.plumelib.util.StringsP;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
- * represents that element (or a use of that Element). This class also contains package private
+ * represents that element (or a use of that Element). This class also contains package-private
  * methods used by the ElementAnnotationAppliers that do most of the work.
  */
 public class ElementAnnotationUtil {
@@ -49,11 +49,11 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * For each type/element pair, add all of the annotations stored in Element to type. See apply for
-   * more details.
+   * For each type/element pair, adds all of the annotations stored in Element to type. See apply
+   * for more details.
    *
    * @param types the types to which we wish to apply element annotations
-   * @param elements the elements that may contain annotations to apply. elements.size must ==
+   * @param elements the elements that might contain annotations to apply. elements.size must ==
    *     types.size
    * @param typeFactory the type factory used to create the AnnotatedTypeMirrors contained by types
    */
@@ -79,8 +79,8 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * When a declaration annotation is an alias for a type annotation, then the Checker Framework may
-   * move the annotation before replacing it by the canonical version.
+   * When a declaration annotation is an alias for a type annotation, then the Checker Framework
+   * might move the annotation before replacing it by the canonical version.
    *
    * <p>If the annotation is one of the Checker Framework compatibility annotations, for example
    * org.checkerframework.checker.nullness.compatqual.NonNullDecl, then it is interpreted as a type
@@ -109,7 +109,7 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * Does expectedValues contain enumValue. This is just a linear search.
+   * Returns true if expectedValues contains enumValue. This is just a linear search.
    *
    * @param enumValue value to search for, a needle
    * @param expectedValues values to search through, a haystack
@@ -126,9 +126,9 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * Use a map to partition annotations with the given TargetTypes into Lists, where each target
+   * Uses a map to partition annotations with the given TargetTypes into Lists, where each target
    * type is a key in the output map. Any annotation that does not have one of these target types
-   * will be added to unmatched
+   * will be added to unmatched.
    *
    * @param annos the collection of annotations to partition
    * @param unmatched a list to add annotations with unmatched target types to
@@ -162,8 +162,8 @@ public class ElementAnnotationUtil {
    * <p>Wildcard annotations are applied as follows:
    *
    * <ul>
-   *   <li>a) If an Annotation is in front of a extends or super bounded wildcard, it applies to the
-   *       bound that is NOT explicitly present. e.g.
+   *   <li>a) If an Annotation is in front of an extends- or super-bounded wildcard, it applies to
+   *       the bound that is NOT explicitly present. e.g.
    *       <pre>{@code
    * <@A ? extends Object> -- @A is placed on the super bound (Void)
    * <@B ? super CharSequence> -- @B is placed on the extends bound (probably Object)
@@ -173,7 +173,7 @@ public class ElementAnnotationUtil {
    * <? extends @A Object> -- @A is placed on the extends bound (Object)
    * <? super @B CharSequence> -- @B is placed on the super bound (CharSequence)
    * }</pre>
-   *   <li>c) If an Annotation is on an unbounded wildcard there are two subcases.
+   *   <li>c) If an Annotation is on an unbounded wildcard, there are two subcases.
    *       <ul>
    *         <li>c.1 The user wrote the annotation explicitly -- these annotations apply to both
    *             bounds e.g. the user wrote
@@ -181,7 +181,7 @@ public class ElementAnnotationUtil {
    * <@C ?> -- the annotation is placed on the extends/super bounds
    * }</pre>
    *         <li>c.2 Previous calls to getAnnotatedType have annotated this wildcard with BOTH
-   *             bounds e.g. the user wrote {@code <?>} but the checker framework added {@code <@C ?
+   *             bounds e.g. the user wrote {@code <?>} but the Checker Framework added {@code <@C ?
    *             extends @D Object>} to the corresponding element.
    *             <pre>
    *             {@code <?> -- @C is placed on the lower bound and @D is placed on the upper bound
@@ -258,7 +258,7 @@ public class ElementAnnotationUtil {
     }
 
     /**
-     * Apply the annotations to wildcard according to the rules outlined in the comment at the
+     * Applies the annotations to wildcard according to the rules outlined in the comment at the
      * beginning of this class.
      */
     void apply() {
@@ -290,7 +290,7 @@ public class ElementAnnotationUtil {
    * location on type by interpreting the TypeAnnotationPosition.
    *
    * <p>Note: We handle all of the Element annotations on a type at once because we need to identify
-   * whether or not the element annotation in front of an unbound wildcard (e.g. {@code <@HERE ?>})
+   * whether or not the element annotation in front of an unbound wildcard (e.g., {@code <@HERE ?>})
    * should apply to only the super bound or both the super bound and the extends bound.
    *
    * @see org.checkerframework.framework.util.element.ElementAnnotationUtil.WildcardBoundAnnos
@@ -316,7 +316,7 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * Creates an entry in wildcardToAnnos for wildcard if one does not already exists. Adds anno to
+   * Creates an entry in wildcardToAnnos for wildcard if one does not already exist. Adds anno to
    * the WildcardBoundAnnos object for wildcard.
    */
   private static void addWildcardToBoundMap(
@@ -329,10 +329,11 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * Returns true if the typeCompound is a primary annotation for the type it targets (or lower
-   * bound if this is a type variable or wildcard ). If you think of a type as a tree-like structure
-   * then a nested type any type that is not the root. E.g. {@code @T List< @N String>}, @T is on a
-   * top-level NON-nested type whereas the annotation @N is on a nested type.
+   * Returns true if the typeCompound is on a nested type, rather than being a primary annotation
+   * for the type it targets (or lower bound if this is a type variable or wildcard). If you think
+   * of a type as a tree-like structure, then a nested type is any type that is not the root. For
+   * example, in {@code @T List< @N String>}, @T is on a top-level NON-nested type whereas the
+   * annotation @N is on a nested type.
    *
    * @param typeCompound the type compound to inspect
    * @return true if typeCompound is placed on a nested type, false otherwise
@@ -348,9 +349,9 @@ public class ElementAnnotationUtil {
    * <p>TypeAnnotationPositions have bound indices when they represent an upper bound on a
    * TypeVariable. The index 0 ALWAYS refers to the superclass type. If that supertype is implied to
    * be Object (because we didn't specify an extends) then the actual types will be offset by 1
-   * (because index 0 is ALWAYS a class.
+   * (because index 0 is ALWAYS a class).
    *
-   * <p>Therefore, These indices will be offset by -1 if the first type in the bound is an interface
+   * <p>Therefore, these indices will be offset by -1 if the first type in the bound is an interface
    * which implies the specified type itself is an interface.
    *
    * <p>Reminder: There will only be multiple bound types if the upperBound is an intersection.
@@ -382,7 +383,7 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * Given a TypePath into a type, return the component type that is located at the end of the
+   * Given a TypePath into a type, returns the component type that is located at the end of the
    * TypePath.
    *
    * @param type a type containing the type specified by location
@@ -424,7 +425,7 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * Given a TypePath into a declared type, return the component type that is located at the end of
+   * Given a TypePath into a declared type, returns the component type that is located at the end of
    * the TypePath.
    *
    * @param type a type containing the type specified by location
@@ -537,11 +538,17 @@ public class ElementAnnotationUtil {
   }
 
   /**
-   * When we have an (e.g. @Odd int @NonNull []) the type-annotation position of the array
-   * annotation (@NonNull) is really the outermost type in the TypeAnnotationPosition and it will
-   * NOT have TypePathEntryKind.ARRAY at the end of its position. The position of the component type
-   * (@Odd) is considered deeper in the type and therefore has the TypePathEntryKind.ARRAY in its
-   * position.
+   * When we have an array type (e.g., @Odd int @NonNull []), the type-annotation position of the
+   * array annotation (@NonNull) is really the outermost type in the TypeAnnotationPosition and it
+   * will NOT have TypePathEntryKind.ARRAY at the end of its position. The position of the component
+   * type (@Odd) is considered deeper in the type and therefore has the TypePathEntryKind.ARRAY in
+   * its position.
+   *
+   * @param type an array type
+   * @param location the type path of the annotation, relative to {@code type}
+   * @param anno the annotation whose location is being sought
+   * @return the type within {@code type} at the given location
+   * @throws UnexpectedAnnotationLocationException if the location is not valid for {@code type}
    */
   private static AnnotatedTypeMirror getLocationTypeAAT(
       AnnotatedArrayType type,
