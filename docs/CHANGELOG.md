@@ -31,7 +31,7 @@ issue new `assignment` errors and `nested.pattern.unsafe` warnings.
 `ElementUtils.isLocalVariable()` returns true for pattern variables.
 
 New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
-pattern variable of an `instanceof` type pattern.  A subclass can override the
+binding variable of an `instanceof` type pattern.  A subclass can override the
 new method `BaseTypeVisitor.instanceofPatternMatchedType()` to exclude values
 that `instanceof` never matches, such as null.
 
