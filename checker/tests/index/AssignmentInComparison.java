@@ -1,4 +1,5 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
+import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
@@ -134,6 +135,21 @@ public class AssignmentInComparison {
     h.arr = new int[(i = x) + (h = other).arr.length];
     // :: error: [assignment]
     @LTEqLengthOf("h.arr") int y = i;
+  }
+
+  static void otherOperandReassignsOffset(int[] a, int x, int y, int z) {
+    if ((x = y) + z < (z = a.length)) {
+      // `z` is `a.length`, not the value that was added to `x`.
+      // :: error: [assignment]
+      @LTLengthOf(value = "a", offset = "z") int w = x;
+    }
+  }
+
+  static void offsetUnchanged(int[] a, int x, int y, int z) {
+    if ((x = y) + z < a.length) {
+      @LTLengthOf(value = "a", offset = "z") int w = x;
+      @LTLengthOf(value = "a", offset = "z") int v = y;
+    }
   }
 
   void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
