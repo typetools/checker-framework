@@ -28,7 +28,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -100,7 +99,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -1510,9 +1508,9 @@ public abstract class CFAbstractTransfer<
     if (n.isBoxing()) {
       // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
       // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
-      // of `x`, the value being boxed.
+      // of `x`, the value being boxed.  Where the two are incomparable, the qualifier of `x` wins.
       V operandValue = in.getValueOfSubNode(n.getArgument(0));
-      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
+      resValue = moreSpecificValue(getBoxedValue(n.getType(), operandValue), resValue);
     }
 
     store.updateForMethodCall(n, resValue);
@@ -1566,9 +1564,12 @@ public abstract class CFAbstractTransfer<
     V resValue = moreSpecificValue(factoryValue, storeValue);
     // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type factory
     // computes for the call) comes from the declared return type of `intValue()`, which lacks the
-    // qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
+    // qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.  Where the
+    // two
+    // are incomparable, the qualifier of `x` wins, because the declared return type, such as
+    // `@FenumUnqualified int`, says nothing about `x`.
     V receiverValue = in.getValueOfSubNode(n.getTarget().getReceiver());
-    resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), receiverValue));
+    resValue = moreSpecificValue(getUnboxedValue(n.getType(), receiverValue), resValue);
 
     JavaExpression unboxingCall = JavaExpression.fromNode(n);
     thenStore.replaceValue(unboxingCall, resValue);
@@ -1980,34 +1981,20 @@ public abstract class CFAbstractTransfer<
    * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
    * This is only called at an unboxing conversion.
    *
-   * <p>If {@code annotatedValue}'s type is a type variable, such as {@code T extends @Odd Integer},
-   * and {@code annotatedValue} lacks an annotation in some hierarchy, then this method uses the
-   * annotation of the type variable's upper bound in that hierarchy.
-   *
    * @param type the primitive type to unbox to
    * @param annotatedValue a value to unbox
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
-   *     lacks an annotation in some hierarchy and its type is not a type variable
+   *     lacks an annotation in some hierarchy, as a value whose type is a type variable can
    */
+  @SideEffectFree
   protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }
-    AnnotationMirrorSet annos = annotatedValue.getAnnotations();
-    if (annotatedValue.getUnderlyingType() instanceof TypeVariable typeVariable) {
-      AnnotationMirrorSet upperBoundAnnos =
-          analysis.atypeFactory.getAnnotatedType(typeVariable.asElement()).getAnnotations();
-      QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
-      annos = new AnnotationMirrorSet(annos);
-      for (AnnotationMirror upperBoundAnno : upperBoundAnnos) {
-        if (qualHierarchy.findAnnotationInSameHierarchy(annos, upperBoundAnno) == null) {
-          annos.add(upperBoundAnno);
-        }
-      }
-    }
     AnnotationMirrorSet unboxedAnnos =
-        analysis.atypeFactory.getUnboxedAnnotations(annos, type.getKind());
+        analysis.atypeFactory.getUnboxedAnnotations(
+            annotatedValue.getAnnotations(), type.getKind());
     return analysis.createAbstractValue(unboxedAnnos, type);
   }
 
