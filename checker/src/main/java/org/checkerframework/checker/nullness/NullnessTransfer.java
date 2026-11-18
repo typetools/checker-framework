@@ -89,6 +89,9 @@ public class NullnessTransfer
   /** True if -AassumeKeyFor was provided on the command line. */
   private final boolean assumeKeyFor;
 
+  /** True if the Path Shape Checker is run, that is, -AnoPathShape was not provided. */
+  private final boolean usePathShape;
+
   /**
    * True if the invocationPreservesArgumentNullness flag is turned on, meaning that after a method
    * call or constructor invocation, non-null arguments of the invocation (including the receiver)
@@ -115,6 +118,7 @@ public class NullnessTransfer
       this.keyForTypeFactory =
           nullnessTypeFactory.getTypeFactoryOfSubchecker(KeyForSubchecker.class);
     }
+    usePathShape = !checker.hasOption("noPathShape");
 
     NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
     NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
@@ -415,6 +419,11 @@ public class NullnessTransfer
    *   <li>Given a call m.get(k), if k is @KeyFor("m") and m's value type is @NonNull, then the
    *       result is @NonNull in the thenStore and elseStore of the transfer result.
    * </ul>
+   *
+   * <p>Given a call p.getParent() or p.getFileName() on a {@code Path}, or f.getParent() or
+   * f.getParentFile() on a {@code File}, if the Path Shape Checker determines that the receiver has
+   * a parent or a name, then the result is @NonNull in the thenStore and elseStore of the transfer
+   * result.
    */
   @Override
   public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
@@ -469,6 +478,18 @@ public class NullnessTransfer
           refineToNonNull(result);
         }
       }
+    }
+
+    // Refine result to @NonNull if n is an invocation of Path.getParent() or a similar method,
+    // and the receiver's path shape guarantees a non-null result.
+    // The subfactory is retrieved at each use, rather than stored in a field, so that it has the
+    // current visitor path.
+    if (usePathShape
+        && nullnessTypeFactory
+            .<PathShapeAnnotatedTypeFactory>getTypeFactoryOfSubchecker(PathShapeSubchecker.class)
+            .returnsNonNullPathComponent(tree, method)) {
+      makeNonNull(result, n);
+      refineToNonNull(result);
     }
 
     return result;
