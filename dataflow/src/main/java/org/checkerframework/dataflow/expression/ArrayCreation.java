@@ -14,7 +14,7 @@ import org.plumelib.util.StringsP;
 public class ArrayCreation extends JavaExpression {
 
   /**
-   * List of dimensions expressions. A {code null} element means that there is no dimension
+   * List of dimension expressions. A {@code null} element means that there is no dimension
    * expression for the given array level.
    */
   protected final List<@Nullable JavaExpression> dimensions;
@@ -41,7 +41,7 @@ public class ArrayCreation extends JavaExpression {
   }
 
   /**
-   * Returns a list representing the dimensions of this array creation. A {code null} element means
+   * Returns a list representing the dimensions of this array creation. A {@code null} element means
    * that there is no dimension expression for the given array level.
    *
    * @return a list representing the dimensions of this array creation

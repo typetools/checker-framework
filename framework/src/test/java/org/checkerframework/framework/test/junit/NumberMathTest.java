@@ -52,6 +52,14 @@ public class NumberMathTest {
     Assert.assertEquals(Integer.valueOf(-6), math((byte) 5).bitwiseComplement());
   }
 
+  /** Tests that an integral operation reports its non-integral operand. */
+  @Test
+  public void nonIntegralOperand() {
+    UnsupportedOperationException e =
+        Assert.assertThrows(UnsupportedOperationException.class, () -> math(5).bitwiseAnd(1.0f));
+    Assert.assertEquals("Not an integral number: 1.0 of type java.lang.Float", e.getMessage());
+  }
+
   /** Tests unary numeric promotion and comparisons. */
   @Test
   public void unaryAndComparisonOperations() {

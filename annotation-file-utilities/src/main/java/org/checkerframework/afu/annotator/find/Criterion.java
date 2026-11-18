@@ -62,7 +62,7 @@ public interface Criterion {
   /**
    * Determines if the given tree path is satisfied by this criterion.
    *
-   * @param path the tree path to check against. May be null (in which case the result is false),
+   * @param path the tree path to check against. Can be null (in which case the result is false),
    *     for example in a call such as {@code this.isSatisfiedBy(path.getParentPath())}.
    * @return true if this criterion is satisfied by the given path, false otherwise
    */
@@ -72,7 +72,7 @@ public interface Criterion {
   /**
    * Determines if the given tree path is satisfied by this criterion.
    *
-   * @param path the tree path to check against. May be null (in which case the result is false),
+   * @param path the tree path to check against. Can be null (in which case the result is false),
    *     for example in a call such as {@code this.isSatisfiedBy(path.getParentPath())}.
    * @return true if this criterion is satisfied by the given path, false otherwise
    */
@@ -87,7 +87,7 @@ public interface Criterion {
   public boolean isOnlyTypeAnnotationCriterion();
 
   /**
-   * Gets the type of this criterion.
+   * Returns the kind of this criterion.
    *
    * @return this criterion's kind
    */

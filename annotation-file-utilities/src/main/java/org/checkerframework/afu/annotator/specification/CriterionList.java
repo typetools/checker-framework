@@ -20,7 +20,7 @@ import org.checkerframework.afu.annotator.find.Criterion;
 /**
  * A CriterionList is a singly-linked list of Criterion meant to be treated as a stack. It is useful
  * for creating base criteria and passing independent copies to different parts of a specification
- * that creates all the criterion. A CriterionList is immutable, and so copies created by the add()
+ * that creates all the criteria. A CriterionList is immutable, and so copies created by the add()
  * function can safely be passed anywhere. It is supposed to be easier to manipulate than a
  * Criteria.
  */
@@ -56,7 +56,7 @@ public class CriterionList {
    * result. Does not modify its argument.
    *
    * @param c the criterion to add
-   * @return a new list containing the given criterion and the rest of the criterion already in this
+   * @return a new list containing the given criterion and the rest of the criteria already in this
    *     list
    */
   public CriterionList add(Criterion c) {
@@ -64,9 +64,9 @@ public class CriterionList {
   }
 
   /**
-   * Creates a Criteria object representing all the criterion in this list.
+   * Creates a Criteria object representing all the criteria in this list.
    *
-   * @return a Criteria that contains all the criterion in this list
+   * @return a Criteria that contains all the criteria in this list
    */
   public Criteria criteria() {
     Criteria criteria = new Criteria();

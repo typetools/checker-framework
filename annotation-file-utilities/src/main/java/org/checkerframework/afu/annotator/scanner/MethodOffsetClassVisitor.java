@@ -14,8 +14,8 @@ import org.objectweb.asm.Opcodes;
  * MethodOffsetClassVisitor is a class visitor that should be passed to ASM's ClassReader in order
  * to retrieve extra information about method offsets needed by all of the
  * org.checkerframework.afu.annotator.scanner classes. This visitor should visit every class that is
- * to be annotated, and should be done before trying to match elements in the tree to the various
- * criterion.
+ * to be annotated, and it should do so before trying to match elements in the tree to the various
+ * criteria.
  */
 // Note: in order to ensure all labels are visited, this class
 // needs to extend ClassWriter and not other class visitor classes.
@@ -28,7 +28,7 @@ public class MethodOffsetClassVisitor extends ClassVisitor {
   /** The MethodVisitor to use. */
   MethodVisitor methodCodeOffsetAdapter;
 
-  /** The name of the method currently being visisted. */
+  /** The name of the method currently being visited. */
   private String methodName;
 
   /**

@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
   /**
-   * Create a new accumulation checker's annotated type factory.
+   * Creates a new accumulation checker's annotated type factory.
    *
    * @param checker the checker
    */

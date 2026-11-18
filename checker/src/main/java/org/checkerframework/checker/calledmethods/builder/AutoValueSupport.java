@@ -179,7 +179,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    * annotation contains all the required setters.
    *
    * @param builderElement the element for the Builder class
-   * @param classElement the element for the AutoValue class (i.e. the class that is built by the
+   * @param classElement the element for the AutoValue class (i.e., the class that is built by the
    *     builder)
    * @return an @CalledMethods annotation representing that all the required setters have been
    *     called

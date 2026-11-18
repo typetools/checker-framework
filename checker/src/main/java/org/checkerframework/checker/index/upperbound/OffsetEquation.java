@@ -250,8 +250,8 @@ public class OffsetEquation {
   /**
    * Returns the int part of this equation.
    *
-   * <p>The equation may or may not have other terms. Use {@link #isOnlyInt()} to determine if the
-   * equation is only this int value.
+   * <p>The equation might or might not have other terms. Use {@link #isOnlyInt()} to determine if
+   * the equation is only this int value.
    *
    * @return the int part of this equation
    */
@@ -287,7 +287,7 @@ public class OffsetEquation {
   }
 
   /**
-   * Adds the term to this equation. If string is an integer, then it is added or subtracted,
+   * Adds the term to this equation. If {@code term} is an integer, then it is added or subtracted,
    * depending on operator, from the int value of this equation. Otherwise, the term is placed in
    * the added or subtracted terms set, depending on operator.
    *
@@ -355,8 +355,8 @@ public class OffsetEquation {
   }
 
   /**
-   * Creates an offset equation from the expressionEquation. The expressionEquation may be several
-   * Java expressions added or subtracted from each other. The expressionEquation may also start
+   * Creates an offset equation from the expressionEquation. The expressionEquation can be several
+   * Java expressions added or subtracted from each other. The expressionEquation can also start
    * with + or -. If the expressionEquation is the empty string, then the offset equation returned
    * is zero.
    *
@@ -441,14 +441,14 @@ public class OffsetEquation {
 
   /**
    * If node is an int value known at compile time, then the returned equation is just the int value
-   * or if op is '-', the return equation is the negation of the int value.
+   * or, if op is '-', the returned equation is the negation of the int value.
    *
    * <p>Otherwise, null is returned.
    *
    * @param node the Node from which to create an offset equation
-   * @param factory an AnnotationTypeFactory
+   * @param factory a ValueAnnotatedTypeFactory
    * @param op '+' or '-'
-   * @return an offset equation from value of known or null if the value isn't known
+   * @return an offset equation from the known value, or null if the value isn't known
    */
   public static @Nullable OffsetEquation createOffsetFromNodesValue(
       Node node, ValueAnnotatedTypeFactory factory, char op) {
@@ -470,16 +470,16 @@ public class OffsetEquation {
   /**
    * Creates an offset equation from the Node.
    *
-   * <p>If node is an addition or subtracted node, then this method is called recursively on the
+   * <p>If node is an addition or subtraction node, then this method is called recursively on the
    * left and right-hand nodes and the two equations are added/subtracted to each other depending on
    * the value of op.
    *
-   * <p>Otherwise the return equation is created by converting the node to a {@link
+   * <p>Otherwise, the returned equation is created by converting the node to a {@link
    * org.checkerframework.dataflow.expression.JavaExpression} and then added as a term to the
    * returned equation. If op is '-' then it is a subtracted term.
    *
    * @param node the Node from which to create an offset equation
-   * @param factory an AnnotationTypeFactory
+   * @param factory an AnnotationProvider
    * @param op '+' or '-'
    * @return an offset equation from the Node
    */
@@ -495,7 +495,7 @@ public class OffsetEquation {
    * Updates an offset equation from a Node.
    *
    * @param node the Node from which to create an offset equation
-   * @param factory an AnnotationTypeFactory
+   * @param factory an AnnotationProvider
    * @param eq an OffsetEquation to update
    * @param op '+' or '-'
    */

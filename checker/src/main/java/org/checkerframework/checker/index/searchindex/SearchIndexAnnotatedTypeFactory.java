@@ -52,7 +52,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Create a new SearchIndexAnnotatedTypeFactory.
    *
-   * @param checker the type-checker associated with this
+   * @param checker the type-checker associated with this type factory
    */
   @SuppressWarnings("this-escape")
   public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {

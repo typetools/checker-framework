@@ -114,7 +114,7 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   private final @Nullable List<FormalParameter> parameters;
 
   /**
-   * Create a new ExpressionTreeToJavaExpressionVisitor.
+   * Creates a new ExpressionTreeToJavaExpressionVisitor.
    *
    * @param enclosingType type of the class that encloses the JavaExpression
    * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
@@ -197,7 +197,7 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   }
 
   /**
-   * If the expression is not supported, throw a {@link JavaExpressionParseExceptionUnchecked} by
+   * If the expression is not supported, throws a {@link JavaExpressionParseExceptionUnchecked} by
    * default.
    */
   @Override
@@ -354,7 +354,7 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
    * <p>The user writes formal parameters like "#2", which is not a legal Java identifier. The
    * Checker Framework converts that string to "_param_2" before passing it to the Java parser.
    *
-   * @param s a String that may be a parameter in the "_param_NN" syntax
+   * @param s a String that might be a parameter in the "_param_NN" syntax
    * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
    *     parameter
    */
@@ -412,8 +412,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   }
 
   /**
-   * If {@code identifier} is the simple class name of any inner class of {@code type}, return the
-   * {@link ClassName} for the inner class. If not, return null.
+   * If {@code identifier} is the simple class name of any inner class of {@code type}, returns the
+   * {@link ClassName} for the inner class. If not, returns null.
    *
    * @param type the type in which to search for {@code identifier}
    * @param identifier possible simple class name
@@ -439,9 +439,9 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
 
   /**
    * If {@code identifier} is a class name that can be referenced using only its simple name within
-   * {@code enclosingType}, return the {@link ClassName} for the class. If not, return null.
+   * {@code enclosingType}, returns the {@link ClassName} for the class. If not, returns null.
    *
-   * <p>{@code identifier} may be
+   * <p>{@code identifier} might be
    *
    * <ol>
    *   <li>the simple name of {@code type}.

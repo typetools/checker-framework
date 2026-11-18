@@ -49,7 +49,7 @@ public class GenericArrayLocationCriterion implements Criterion {
 
   /**
    * Creates a new GenericArrayLocationCriterion specifying that the element is an outer type, such
-   * as: {@code @A List<Integer>} or {@code Integer @A []}
+   * as: {@code @A List<Integer>} or {@code Integer @A []}.
    */
   public GenericArrayLocationCriterion() {
     this(null, null);

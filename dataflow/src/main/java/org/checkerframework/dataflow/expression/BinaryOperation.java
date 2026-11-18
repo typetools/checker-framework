@@ -22,7 +22,7 @@ public class BinaryOperation extends JavaExpression {
   protected final JavaExpression right;
 
   /**
-   * Create a binary operation.
+   * Creates a binary operation.
    *
    * @param type the result type
    * @param operationKind the operator
@@ -38,7 +38,7 @@ public class BinaryOperation extends JavaExpression {
   }
 
   /**
-   * Create a binary operation.
+   * Creates a binary operation.
    *
    * @param node the binary operation node
    * @param left the left operand
@@ -166,13 +166,49 @@ public class BinaryOperation extends JavaExpression {
 
   @Override
   public String toString() {
-    return left.toString() + " " + operationKindToString(operationKind) + " " + right.toString();
+    int precedence = precedence(operationKind);
+    String leftString = left.toString();
+    // Binary operators are left-associative, so a left operand needs parentheses only if its
+    // operator binds less tightly, but a right operand also needs them if its operator binds
+    // equally tightly:  "a - (b - c)" differs from "a - b - c".
+    if (left instanceof BinaryOperation leftOp && precedence(leftOp.operationKind) < precedence) {
+      leftString = "(" + leftString + ")";
+    }
+    String rightString = right.toString();
+    if (right instanceof BinaryOperation rightOp
+        && precedence(rightOp.operationKind) <= precedence) {
+      rightString = "(" + rightString + ")";
+    }
+    return leftString + " " + operationKindToString(operationKind) + " " + rightString;
+  }
+
+  /**
+   * Returns the precedence of the given binary operator. A larger number means that the operator
+   * binds more tightly.
+   *
+   * @param operationKind a binary operation kind
+   * @return the precedence of the given binary operator
+   */
+  private static int precedence(Tree.Kind operationKind) {
+    return switch (operationKind) {
+      case MULTIPLY, DIVIDE, REMAINDER -> 10;
+      case PLUS, MINUS -> 9;
+      case LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> 8;
+      case LESS_THAN, GREATER_THAN, LESS_THAN_EQUAL, GREATER_THAN_EQUAL -> 7;
+      case EQUAL_TO, NOT_EQUAL_TO -> 6;
+      case AND -> 5;
+      case XOR -> 4;
+      case OR -> 3;
+      case CONDITIONAL_AND -> 2;
+      case CONDITIONAL_OR -> 1;
+      default -> throw new BugInCF("unhandled " + operationKind);
+    };
   }
 
   /**
    * Returns the Java source code representation of the given operation.
    *
-   * @param operationKind an unary operation kind
+   * @param operationKind a binary operation kind
    * @return the Java source code representation of the given operation
    */
   private String operationKindToString(Tree.Kind operationKind) {

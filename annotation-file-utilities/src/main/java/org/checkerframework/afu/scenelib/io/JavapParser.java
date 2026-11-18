@@ -103,7 +103,7 @@ public final class JavapParser {
   }
 
   /**
-   * Parse the head of an annotation definition.
+   * Parses the head of an annotation definition.
    *
    * @return the binary name of the annotation
    * @throws IOException if there is trouble reading the index file
