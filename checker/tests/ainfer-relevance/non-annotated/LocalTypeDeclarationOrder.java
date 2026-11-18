@@ -5,8 +5,10 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // scope; it refers to some other type.  The name "Foo" in `UseBefore` refers to the member class
 // `LocalTypeDeclarationOrder.Foo`, which is irrelevant because it is not a subtype of
 // `CharSequence`, so inference must not write an annotation on it.  The name "Foo" in `UseAfter`
-// refers to the local class, which `Elements` cannot look up by name, so inference conservatively
-// writes the annotation `@AinferSibling1`, which is not the default.
+// refers to the local class, which is relevant, so inference must write the inferred
+// `@AinferSibling1` annotation on it.  If inference resolves that name incorrectly, to the member
+// class, and therefore discards the annotation, then the second (validation) pass of this test
+// issues the warning that is written below.
 public class LocalTypeDeclarationOrder {
 
   static class Foo {}
@@ -45,6 +47,13 @@ public class LocalTypeDeclarationOrder {
       void assignField() {
         field = getSibling1();
       }
+
+      void useField() {
+        // :: warning: [argument]
+        expectsSibling1(field);
+      }
+
+      void expectsSibling1(@AinferSibling1 Foo f) {}
 
       @AinferSibling1 Foo getSibling1() {
         return null;
