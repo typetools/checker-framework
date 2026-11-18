@@ -4,7 +4,7 @@
 // @below-java17-jdk-skip-test
 
 @SuppressWarnings("all") // Just check for crashes.
-public class SwitchConstantNarrowingBoxing {
+public class ConstantNarrowingBoxingInSwitch {
 
   static final int CONSTANT = 3;
 
