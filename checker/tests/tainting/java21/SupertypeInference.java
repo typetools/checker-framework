@@ -33,7 +33,7 @@ public class SupertypeInference {
 
   static void throughInterfaceTainted(Supplier<@Tainted String> s) {
     if (s instanceof Producer(var v)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String vv = v;
     }
   }
@@ -58,7 +58,7 @@ public class SupertypeInference {
 
   static void nestedSupertypeArgumentTainted(Supplier<List<@Tainted String>> s) {
     if (s instanceof ListProducer(var v)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String vv = v;
     }
   }
@@ -78,7 +78,7 @@ public class SupertypeInference {
     if (f instanceof Swapped(var a, var b)) {
       // B = @Untainted String, A = @Tainted Number
       @Untainted String bb = b;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Number aa = a;
     }
   }
@@ -100,7 +100,7 @@ public class SupertypeInference {
       @Untainted String aa = a;
       // `b`'s type comes from a wildcard, so it is only known to be a (top-qualified) Object.
       @Tainted Object bb = b;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = b;
     }
   }
@@ -120,7 +120,7 @@ public class SupertypeInference {
   static void boundedUnconstrainedTypeParameter(Supplier<@Tainted String> s) {
     if (s instanceof BoundedPair(var a, var b)) {
       @Untainted CharSequence bb = b;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String aa = a;
     }
   }
@@ -138,16 +138,16 @@ public class SupertypeInference {
    * not satisfy the f-bound, just as {@code SelfBounded<@Untainted String>} is not a valid type.
    */
   static void fBoundedTypeParameter(Supplier<@Untainted String> s) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     if (s instanceof SelfBounded(var a)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String aa = a;
     }
   }
 
   static void fBoundedTypeParameterTainted(Supplier<@Tainted String> s) {
     if (s instanceof SelfBounded(var a)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String aa = a;
     }
   }
@@ -168,7 +168,7 @@ public class SupertypeInference {
 
   static void equalInferenceVariablesTainted(Two<?, ?> o) {
     if (o instanceof Diag(var a)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object aa = a;
     }
   }

@@ -28,9 +28,9 @@ public class CapturedTypeArguments {
 
   void nestedSuper(Outer<? super @Untainted String> o) {
     if (o instanceof Outer(Box(var s), var u)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object x = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object y = u;
     }
   }
@@ -79,7 +79,7 @@ public class CapturedTypeArguments {
 
   void captureInBoundTainted(Pair<? extends String, ?> p) {
     if (p instanceof Pair(var a, Box(var t))) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String y = t;
     }
   }

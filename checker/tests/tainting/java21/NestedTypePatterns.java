@@ -19,7 +19,7 @@ public class NestedTypePatterns {
 
   static void unconditional(Box<@Tainted String> b) {
     if (b instanceof Box(String s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
@@ -29,12 +29,12 @@ public class NestedTypePatterns {
   }
 
   static void unconditionalExplicitBad(Box<@Tainted String> b) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     if (b instanceof Box(@Untainted String s)) {}
   }
 
   static void conditionalExplicitBad(ObjectBox b) {
-    // :: warning: (instanceof.pattern.unsafe)
+    // :: warning: [instanceof.pattern.unsafe]
     if (b instanceof ObjectBox(@Untainted String s)) {}
   }
 

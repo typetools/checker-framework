@@ -45,14 +45,14 @@ public class ExplicitTypeArguments {
 
   static void explicitTainted(Supplier<@Tainted String> s) {
     if (s instanceof Box<? extends CharSequence>(var x)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted CharSequence u = x;
     }
   }
 
   static void noInformation(Object o) {
     if (o instanceof Box<?>(var x)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object u = x;
     }
   }

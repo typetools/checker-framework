@@ -31,9 +31,9 @@ public class ComponentTypes {
 
   static void agreesWithAccessorTainted(Box<@Tainted String> b) {
     if (b instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromPattern = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromAccessor = b.t();
     }
   }
@@ -47,9 +47,9 @@ public class ComponentTypes {
 
   static void agreesWithAccessorSuperWildcard(Box<? super @Untainted String> b) {
     if (b instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object fromPattern = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object fromAccessor = b.t();
     }
   }
@@ -58,11 +58,11 @@ public class ComponentTypes {
     if (bbs instanceof Box(var inner)) {
       @Untainted Box<@Tainted String> fromPattern = inner;
       @Untainted Box<@Tainted String> fromAccessor = bbs.t();
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String innerFromAccessor = inner.t();
     }
     if (bbs instanceof Box(Box(var s))) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromPattern = s;
     }
   }
@@ -95,7 +95,7 @@ public class ComponentTypes {
   static void nonGenericComponent(Mixed<@Tainted String> m) {
     if (m instanceof Mixed(var g, var f)) {
       @Untainted String fixedOk = f;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String genericBad = g;
     }
   }
@@ -150,9 +150,9 @@ public class ComponentTypes {
 
   static <T extends @Tainted String> void typeVariableComponentTainted(Box<T> b) {
     if (b instanceof Box(String s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromPattern = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromAccessor = b.t();
     }
   }

@@ -16,14 +16,14 @@ public class RecordPatternTypeVariable {
 
   <T extends @Nullable Object> void varPattern(Box<T> b) {
     if (b instanceof Box<T>(var value)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       value.toString();
     }
   }
 
   <T extends @Nullable Object> void explicitPattern(Box<T> b) {
     if (b instanceof Box<T>(T value)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       value.toString();
     }
   }
@@ -31,7 +31,7 @@ public class RecordPatternTypeVariable {
   <T extends @Nullable Object> void caseLabel(Box<T> b) {
     switch (b) {
       case Box<T>(var value) -> {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         value.toString();
       }
     }

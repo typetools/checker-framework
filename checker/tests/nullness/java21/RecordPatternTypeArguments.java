@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
@@ -20,14 +20,14 @@ public class RecordPatternTypeArguments {
 
   void explicit(Supplier<@Nullable String> s) {
     if (s instanceof Box<String>(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.length();
     }
   }
 
   void explicitUnbounded(Supplier<@Nullable String> s) {
     if (s instanceof Box<?>(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.toString();
     }
   }
@@ -36,14 +36,14 @@ public class RecordPatternTypeArguments {
   // type.
   void explicitBounded(Supplier<@Nullable String> s) {
     if (s instanceof Box<? extends CharSequence>(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.length();
     }
   }
 
   void explicitBoundedTypePattern(Supplier<@Nullable String> s) {
     if (s instanceof Box<? extends CharSequence>(CharSequence x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.length();
     }
   }
@@ -57,7 +57,7 @@ public class RecordPatternTypeArguments {
   // The matched type is already a captured type variable.
   void captured(List<? extends Supplier<@Nullable String>> l) {
     if (l.get(0) instanceof Box(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.length();
     }
   }
@@ -66,7 +66,7 @@ public class RecordPatternTypeArguments {
   void nestedWildcard(Supplier<List<? extends @Nullable String>> s) {
     if (s instanceof Box(var list)) {
       list.size();
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       list.get(0).length();
     }
   }
@@ -75,7 +75,7 @@ public class RecordPatternTypeArguments {
   // List<? extends String>, so the binding variable keeps the type argument's qualifier.
   void explicitBoundedTypeArgument(Supplier<ArrayList<@Nullable String>> s) {
     if (s instanceof Box<? extends List<? extends String>>(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.get(0).length();
     }
   }

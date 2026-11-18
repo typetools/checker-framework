@@ -68,7 +68,7 @@ public class Projections {
 
   static void arrayUpwardTainted(ArrayBox<? extends @Tainted String> a) {
     if (a instanceof ArrayBox(var items)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String s = items[0];
     }
   }
@@ -82,7 +82,7 @@ public class Projections {
   static void arrayDownward(SuperArray<? super @Untainted String> s) {
     if (s instanceof SuperArray(var sink)) {
       List<? super @Untainted String[]> ok = sink;
-      // :: error: (assignment)
+      // :: error: [assignment]
       List<? super @Tainted String[]> bad = sink;
     }
   }
@@ -96,7 +96,7 @@ public class Projections {
   static void declaredDownwardInLowerBound(SuperList<? super @Untainted String> s) {
     if (s instanceof SuperList(var sink)) {
       List<? super List<? extends @Untainted String>> ok = sink;
-      // :: error: (assignment)
+      // :: error: [assignment]
       List<? super List<? extends @Tainted String>> bad = sink;
     }
   }
@@ -113,7 +113,7 @@ public class Projections {
   static void declaredDownwardInTypeArgument(HolderBox<? super @Untainted String> h) {
     if (h instanceof HolderBox(var holder)) {
       ListHolder<? super List<? extends @Untainted String>> ok = holder;
-      // :: error: (assignment)
+      // :: error: [assignment]
       ListHolder<? super List<? extends @Tainted String>> bad = holder;
     }
   }
@@ -137,7 +137,7 @@ public class Projections {
 
   static void intersectionUpwardTainted(TaintedBounded<?> b) {
     if (b instanceof TaintedBounded(var t)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Number n = t;
     }
   }

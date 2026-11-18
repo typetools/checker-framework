@@ -31,7 +31,7 @@ public class Wildcards {
   /** Same, but the wildcard's upper bound is @Tainted. */
   static void extendsWildcardTainted(Box<? extends @Tainted String> b) {
     if (b instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
@@ -44,7 +44,7 @@ public class Wildcards {
   static void superWildcard(Box<? super @Untainted String> b) {
     if (b instanceof Box(var s)) {
       @Tainted Object o = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = s;
     }
   }
@@ -53,7 +53,7 @@ public class Wildcards {
   static void unboundedWildcard(Box<?> b) {
     if (b instanceof Box(var s)) {
       @Tainted Object o = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = s;
     }
   }
@@ -77,7 +77,7 @@ public class Wildcards {
 
   static void taintedQualifierOnUnboundedWildcard(Box<@Tainted ?> b) {
     if (b instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object ss = s;
     }
   }
@@ -88,7 +88,7 @@ public class Wildcards {
    */
   static void qualifierOnExtendsWildcardIsLowerBound(Box<@Untainted ? extends String> b) {
     if (b instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
@@ -103,7 +103,7 @@ public class Wildcards {
   static void nestedWildcardInnerTainted(
       Box<? extends @Untainted Box<? extends @Tainted String>> bbs) {
     if (bbs instanceof Box(Box(var s))) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
@@ -119,7 +119,7 @@ public class Wildcards {
 
   static void listComponentTainted(Holder<? extends @Tainted String> h) {
     if (h instanceof Holder(var list)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String first = list.get(0);
     }
   }

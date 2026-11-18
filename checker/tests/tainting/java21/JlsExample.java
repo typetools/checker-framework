@@ -51,9 +51,9 @@ public class JlsExample {
   /** Same, but the upper bound is {@code @Tainted}, so both assignments should be errors. */
   void jlsExampleTainted(UnaryOperator<? extends @Tainted CharSequence> op) {
     if (op instanceof Mapper(var in, var out)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted CharSequence a = in;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted CharSequence b = out;
     }
   }
@@ -72,7 +72,7 @@ public class JlsExample {
   /** No wildcard, tainted. */
   void invariantTainted(UnaryOperator<@Tainted CharSequence> op) {
     if (op instanceof Mapper(var in, var out)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted CharSequence a = in;
     }
   }

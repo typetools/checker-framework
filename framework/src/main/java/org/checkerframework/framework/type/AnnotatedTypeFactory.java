@@ -5476,7 +5476,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // Use javac's type of the record pattern, not the inferred type, whose type arguments can be
     // more specific than the type arguments written in the record pattern.  The type of a record
-    // component is its type in the capture of the record pattern's type (JLS 14.30.1).
+    // component is its type in the capture of the record pattern's type (JLS 14.30.1 and 4.5.2).
     DeclaredType patternType = (DeclaredType) types.capture(TreeUtils.typeOf(recordPattern));
     TypeElement record = TypesUtils.getTypeElement(patternType);
     assert record != null : "@AssumeAssertion(nullness): a record pattern's type is a record";

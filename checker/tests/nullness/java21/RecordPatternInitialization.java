@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
@@ -27,13 +27,13 @@ public class RecordPatternInitialization {
   void unknownInitializationComponent(UnknownInitBox box) {
     if (box instanceof UnknownInitBox(String s)) {
       @UnknownInitialization String t = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Initialized String u = s;
     }
   }
 
   void initializedExplicit(UnknownInitBox box) {
-    // :: warning: (instanceof.pattern.unsafe)
+    // :: warning: [instanceof.pattern.unsafe]
     if (box instanceof UnknownInitBox(@Initialized String s)) {
       @Initialized String t = s;
     }
@@ -41,7 +41,7 @@ public class RecordPatternInitialization {
 
   void unknownInitializationVar(UnknownInitBox box) {
     if (box instanceof UnknownInitBox(var o)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Initialized Object t = o;
     }
   }

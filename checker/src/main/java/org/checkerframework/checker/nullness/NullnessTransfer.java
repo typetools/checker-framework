@@ -377,7 +377,7 @@ public class NullnessTransfer
   protected void refineCaseLabelBindingVariable(
       NullnessStore store, VariableTree varTree, ExpressionTree selector) {
     super.refineCaseLabelBindingVariable(store, varTree, selector);
-    // A type pattern that is a case label does not match null (JLS 14.11.1).
+    // A type pattern that is a case label does not match null (JLS 14.11.1.2).
     store.insertValue(JavaExpression.fromVariableTree(varTree), NONNULL);
   }
 

@@ -35,7 +35,7 @@ public class TypeVarAndIntersection {
   static void matchedAgainstObject(@Tainted Object o) {
     if (o instanceof Box(var s)) {
       @Tainted Object oo = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = s;
     }
   }
@@ -46,7 +46,7 @@ public class TypeVarAndIntersection {
    */
   static void matchedAgainstUntaintedObject(@Untainted Object o) {
     if (o instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = s;
     }
   }
@@ -67,7 +67,7 @@ public class TypeVarAndIntersection {
    */
   static void matchedAgainstNonGenericInterface(UntaintedStringSupplier u) {
     if (u instanceof Holder(var t)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = t;
     }
   }
@@ -81,7 +81,7 @@ public class TypeVarAndIntersection {
 
   static <Q extends Supplier<@Tainted String>> void typeVariableTainted(Q q) {
     if (q instanceof Producer(var v)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String vv = v;
     }
   }
@@ -136,9 +136,9 @@ public class TypeVarAndIntersection {
    */
   static <Q extends Supplier<@Untainted String> & Consumer<@Tainted String>>
       void inconsistentIntersection(Q q) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     if (q instanceof Both(var a)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String aa = a;
     }
   }

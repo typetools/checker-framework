@@ -46,7 +46,7 @@ public class DeclaredBounds {
   static void topBound(@Tainted Object o) {
     if (o instanceof TaintedBox(var t)) {
       @Tainted Object tt = t;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = t;
     }
   }
@@ -65,7 +65,7 @@ public class DeclaredBounds {
   @SuppressWarnings("rawtypes")
   static void rawScrutineeTopBound(TaintedBox b) {
     if (b instanceof TaintedBox(var t)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = t;
     }
   }
@@ -83,7 +83,7 @@ public class DeclaredBounds {
   static void lowerBoundOnly(Box<? super @Untainted String> b) {
     if (b instanceof Box(var t)) {
       @Tainted Object tt = t;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = t;
     }
   }
@@ -124,7 +124,7 @@ public class DeclaredBounds {
    * {@code @Untainted Object}.
    */
   static void scrutineeViolatesBound(Supplier<@Tainted String> s) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     if (s instanceof UntaintedSupplier(var t)) {
       @Tainted Object tt = t;
     }

@@ -8,9 +8,6 @@
 // a record pattern (JLS 26 section 18.5.5), not just `instanceof`.  These tests cover switch
 // statements, switch expressions, guarded patterns, and nested patterns, where T comes from the
 // selector expression or from an enclosing pattern's inferred component type.
-//
-// The `Pair` example is adapted from JEP 440: Record Patterns (https://openjdk.org/jeps/440),
-// section "Record patterns and exhaustive switch".
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
@@ -37,7 +34,7 @@ public class SwitchPatterns {
   static void switchStatementTainted(Box<@Tainted String> b) {
     switch (b) {
       case Box(var s) -> {
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Untainted String ss = s;
       }
     }
@@ -52,7 +49,7 @@ public class SwitchPatterns {
 
   static @Untainted String switchExpressionTainted(Box<@Tainted String> b) {
     return switch (b) {
-      // :: error: (switch.expression)
+      // :: error: [switch.expression]
       case Box(var s) -> s;
     };
   }
@@ -72,11 +69,11 @@ public class SwitchPatterns {
   static void sealedHierarchyTainted(Shape<@Tainted String> shape) {
     switch (shape) {
       case Circle(var center, var radius) -> {
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Untainted String c = center;
       }
       case Square(var corner, var side) -> {
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Untainted String c = corner;
       }
     }
@@ -92,7 +89,7 @@ public class SwitchPatterns {
 
   static void guardedPatternTainted(Box<@Tainted String> b) {
     switch (b) {
-      // :: error: (argument)
+      // :: error: [argument]
       case Box(var s) when requiresUntainted(s) -> {}
       default -> {}
     }
@@ -118,7 +115,7 @@ public class SwitchPatterns {
   static void objectSelector(@Tainted Object o) {
     switch (o) {
       case Box(var s) -> {
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Untainted Object bad = s;
       }
       default -> {}

@@ -39,7 +39,7 @@ public class BindingVariableClass {
 
   void recordPatternNotInterned(Object o) {
     if (o instanceof Box(String s)) {
-      // :: error: (argument)
+      // :: error: [argument]
       takeString(s);
     }
   }

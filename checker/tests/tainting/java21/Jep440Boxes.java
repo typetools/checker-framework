@@ -43,7 +43,7 @@ public class Jep440Boxes {
   /** Same, but tainted. */
   static void oneLevelTainted(Box<@Tainted String> b) {
     if (b instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
@@ -62,7 +62,7 @@ public class Jep440Boxes {
   /** Only the inner String is tainted, so only the inner assignment is an error. */
   static void twoLevelsInnerTainted(Box<@Untainted Box<@Tainted String>> bbs) {
     if (bbs instanceof Box(Box(var s))) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
     if (bbs instanceof Box(var inner)) {
@@ -80,7 +80,7 @@ public class Jep440Boxes {
       @Untainted String ss = s;
     }
     if (bbs instanceof Box(var inner)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Box<@Untainted String> bad = inner;
       @Tainted Box<@Untainted String> ok = inner;
     }
@@ -117,7 +117,7 @@ public class Jep440Boxes {
   static void twoTypeArguments(Pair<@Untainted String, @Tainted String> p) {
     if (p instanceof Pair(var a, var b)) {
       @Untainted String aa = a;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String bb = b;
     }
   }
@@ -132,7 +132,7 @@ public class Jep440Boxes {
   static void deeplyNestedInnermostTainted(
       Box<@Untainted Box<@Untainted Box<@Tainted String>>> bbbs) {
     if (bbbs instanceof Box(Box(Box(var s)))) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
