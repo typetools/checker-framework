@@ -76,8 +76,8 @@ public class RecordPatternTypeInference {
    * Why inference failed.
    *
    * @param message a description of the failure
-   * @param crashed true if inference failed because of a bug in the Checker Framework, rather than
-   *     because the qualifier bounds cannot be satisfied or conflict
+   * @param crashed if true, inference failed because of a bug in the Checker Framework; if false,
+   *     inference failed because the qualifier bounds cannot be satisfied or conflict
    */
   public record Failure(String message, boolean crashed) {}
 

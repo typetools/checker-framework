@@ -90,9 +90,9 @@ public final class Resolution {
    * @param as the set of variables to resolve; this method removes elements from it
    * @param boundSet the bound set that includes {@code as}
    * @param context the inference context
-   * @param freshTypeVariablesOnly true to skip directly to the resolution step that introduces
-   *     fresh type variables, rather than instantiate a variable from its proper lower or upper
-   *     bounds
+   * @param freshTypeVariablesOnly if true, skip directly to the resolution step that introduces
+   *     fresh type variables; if false, first try to instantiate each variable from its proper
+   *     lower or upper bounds
    * @return bound set where {@code as} have instantiations
    */
   private static BoundSet resolve(
@@ -184,9 +184,9 @@ public final class Resolution {
    *
    * @param context the context
    * @param dependencies the dependencies
-   * @param freshTypeVariablesOnly true to skip directly to the resolution step that introduces
-   *     fresh type variables, rather than instantiate a variable from its proper lower or upper
-   *     bounds
+   * @param freshTypeVariablesOnly if true, skip directly to the resolution step that introduces
+   *     fresh type variables; if false, first try to instantiate each variable from its proper
+   *     lower or upper bounds
    */
   private Resolution(
       Java8InferenceContext context, Dependencies dependencies, boolean freshTypeVariablesOnly) {
