@@ -1067,9 +1067,7 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (CFAbstractStore.canInsertJavaExpression(expr)
-          || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
-              && !expr.containsUnknown())) {
+      if (isCheckedForChanges(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1091,8 +1089,9 @@ public abstract class CFAbstractTransfer<
    * assignment, and so on. For example, {@code a = b = c} is parsed as {@code a = (b = c)}, and its
    * chain is {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in
    * the chain, such as {@code a} and {@code b}, and the rhs of the last assignment in the chain,
-   * such as {@code c}. The result omits each side that a store can hold a value for and whose value
-   * the rest of the chain might change.
+   * such as {@code c}. The result omits each side whose value the rest of the chain might change
+   * and that a store can hold a value for or that is a unary or binary operation (see {@link
+   * #mayBeChanged}). For example, the result for {@code s = "x" + s} is just {@code s}.
    *
    * @param assignment an assignment node
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1156,8 +1155,11 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, and
-   * writing the given locations might change the side's value.
+   * Returns true if a store can hold a value for the given side of a chain of assignments, or the
+   * side is a unary or binary operation that does not contain {@link Unknown}, and writing the
+   * given locations might change the side's value. As in {@link #computeNodesWithValueOf}, an
+   * operation is checked because a client such as the SameLen Checker can relate it to other
+   * expressions.
    *
    * @param side a side of a chain of assignments (see {@link #sidesOfAssignment}): an entire
    *     target, such as {@code a[i]} (not {@code a} or {@code i}), or the entire rhs of the last
@@ -1168,12 +1170,26 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} and writing {@code written} might
-   *     change its value
+   * @return true if a store can hold a value for {@code side} or it is an operation that does not
+   *     contain {@link Unknown}, and writing {@code written} might change its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
+    return isCheckedForChanges(expr) && written.mayChange(expr, true);
+  }
+
+  /**
+   * Returns true if {@link #nodesWithValueOf} omits the given expression when its value might
+   * change: that is, if a store can hold a value for it, or it is a unary or binary operation that
+   * does not contain {@link Unknown}.
+   *
+   * @param expr an expression
+   * @return true if {@link #nodesWithValueOf} omits {@code expr} when its value might change
+   */
+  private static boolean isCheckedForChanges(JavaExpression expr) {
+    return CFAbstractStore.canInsertJavaExpression(expr)
+        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+            && !expr.containsUnknown());
   }
 
   /**

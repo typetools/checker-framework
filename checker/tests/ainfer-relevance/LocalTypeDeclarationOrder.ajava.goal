@@ -1,10 +1,14 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
 // The scope of a local class declaration is the rest of the block that contains it, including the
 // declaration itself.  A use of the same name that appears earlier in the block is not in that
 // scope; it refers to some other type.  The name "Foo" in `UseBefore` refers to the member class
 // `LocalTypeDeclarationOrder.Foo`, which is irrelevant because it is not a subtype of
 // `CharSequence`, so inference must not write an annotation on it.  The name "Foo" in `UseAfter`
-// refers to the local class, which `Elements` cannot look up by name, so inference conservatively
-// writes the annotation.
+// refers to the local class, which is relevant, so inference must write the inferred
+// `@AinferSibling1` annotation on it.  If inference resolves that name incorrectly, to the member
+// class, and therefore discards the annotation, then the second (validation) pass of this test
+// issues the warning that is written below.
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
 public class LocalTypeDeclarationOrder {
 
@@ -25,27 +29,43 @@ public class LocalTypeDeclarationOrder {
         class Foo implements CharSequence {
 
             @org.checkerframework.dataflow.qual.Pure
-            public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this) {
+            public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(Foo this) {
                 return 0;
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            public char charAt(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int index) {
+            public char charAt(Foo this, int index) {
                 return ' ';
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            public @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence subSequence(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int start,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int end) {
+            public CharSequence subSequence(Foo this, int start, int end) {
                 return this;
             }
         }
         class UseAfter {
 
-            @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo field;
+            @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Foo field;
 
+            @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.field" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
             @org.checkerframework.dataflow.qual.Impure
             void assignField() {
-                field = new Foo();
+                field = getSibling1();
+            }
+
+            @org.checkerframework.dataflow.qual.Impure
+            void useField() {
+                // :: warning: [argument]
+                expectsSibling1(field);
+            }
+
+            @org.checkerframework.dataflow.qual.SideEffectFree
+            void expectsSibling1(UseAfter this, Foo f) {
+            }
+
+            @org.checkerframework.dataflow.qual.Pure
+            Foo getSibling1(UseAfter this) {
+                return null;
             }
         }
     }
