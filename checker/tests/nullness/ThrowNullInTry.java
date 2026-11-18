@@ -1,5 +1,5 @@
-// Test case for a crash on `throw null` in a `try` block that has a `catch` clause.
-// `throw null` throws a NullPointerException.
+// `throw null` in a `try` block throws a NullPointerException, which goes to the matching `catch`
+// clause.
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -23,6 +23,23 @@ public class ThrowNullInTry {
       // This catch clause is unreachable, because a NullPointerException is not an
       // IllegalStateException.
       s = null;
+    } catch (NullPointerException e) {
+    }
+    return s;
+  }
+
+  String catchNullPointerExceptionInOuterTry() {
+    @Nullable String s = null;
+    try {
+      try {
+        s = "hello";
+        // :: error: [throwing.nullable]
+        throw null;
+      } catch (IllegalStateException e) {
+        // This catch clause is unreachable, because a NullPointerException is not an
+        // IllegalStateException.
+        s = null;
+      }
     } catch (NullPointerException e) {
     }
     return s;
