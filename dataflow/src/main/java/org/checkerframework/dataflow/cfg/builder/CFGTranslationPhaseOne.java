@@ -1897,7 +1897,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setInSource(false);
       extendWithMethodInvocationNode(nextCallNode);
 
-      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      AssignmentNode assignNode =
+          translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      // If the return type of next() is a boxed primitive type and the loop variable is a
+      // primitive, the assignment unboxes the result of next().  Save the iterable expression in
+      // the unboxing conversion, too.
+      setLoopOfBoxingConversion(assignNode.getExpression(), nextCallNode, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1990,10 +1995,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
-      // translateAssignment() might box the element.  The boxing conversion is typed as any other
-      // boxing conversion is, not with the element type:  a boxed element need not have every
-      // qualifier of the element.  For example, an int is @Interned but a boxed int is not.
-      translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+      AssignmentNode arrayAccessAssignNode =
+          translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+      // If the loop variable's type and the array's component type differ by a boxing or
+      // unboxing conversion, treat that conversion as an iterator.
+      setLoopOfBoxingConversion(arrayAccessAssignNode.getExpression(), arrayAccessNode, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -2058,6 +2064,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             variableElement.getEnclosingElement(),
             iteratorCall);
     return iteratorVariable;
+  }
+
+  /**
+   * Records the given enhanced for loop, and its iterable expression, in the boxing or unboxing
+   * conversion of the loop's element within the expression that is assigned to the loop variable.
+   * Does nothing if that expression contains no such conversion. For example, if {@code array} is
+   * an {@code Integer[]}, then in {@code for (long x : array)}, the expression that is assigned to
+   * {@code x} widens the unboxing conversion of the array access.
+   *
+   * @param assignedExpression the expression assigned to the loop's variable
+   * @param element the loop's element, before any conversion: a call to {@code next()} or an array
+   *     access
+   * @param loop an enhanced for loop
+   */
+  @SuppressWarnings("interning:not.interned") // identity comparison of nodes
+  private static void setLoopOfBoxingConversion(
+      Node assignedExpression, Node element, EnhancedForLoopTree loop) {
+    Node unwidened =
+        assignedExpression instanceof WideningConversionNode widening
+            ? widening.getOperand()
+            : assignedExpression;
+    if (unwidened != element && unwidened instanceof MethodInvocationNode conversion) {
+      conversion.setIterableExpression(loop.getExpression());
+      conversion.setEnhancedForLoop(loop);
+    }
   }
 
   /**
