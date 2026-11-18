@@ -61,7 +61,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -164,7 +163,6 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.AssertMethod;
@@ -1164,14 +1162,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if the node is a compile-time constant expression
    */
   private static boolean isCompileTimeConstant(Node node) {
-    if (node instanceof ValueLiteralNode) {
-      return true;
-    }
     Tree tree = node.getTree();
-    if (!(tree instanceof ExpressionTree)) {
+    if (tree == null) {
       return false;
     }
-    Type type = ((JCTree) tree).type;
+    Type type = (Type) TreeUtils.typeOf(tree);
     return type != null && type.constValue() != null;
   }
 
