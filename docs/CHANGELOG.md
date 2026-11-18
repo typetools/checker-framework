@@ -33,7 +33,7 @@ issue new `assignment` errors and `nested.pattern.unsafe` warnings.
 New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
 binding variable of an `instanceof` type pattern.  A subclass can override the
 new method `BaseTypeVisitor.instanceofPatternMatchedType()` to exclude values
-that `instanceof` never matches, such as null.
+that a type pattern never matches, such as null.
 
 New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
 pattern variable.

@@ -449,8 +449,10 @@ public class NullnessVisitor
 
   @Override
   protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
-    // instanceof is false for null (JLS 15.20.2), so the nullness qualifier of the left operand
-    // does not restrict the binding variable.
+    // A type pattern in an instanceof (JLS 15.20.2), or a nested type pattern that is not
+    // unconditional for the type of its record component (JLS 14.30.2), does not match null, so
+    // the nullness qualifier of the value that the pattern is matched against does not restrict
+    // the binding variable.
     return withNonNull(expType);
   }
 
