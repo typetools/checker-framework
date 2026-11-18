@@ -142,6 +142,29 @@ public class QualifierUpperBounds {
   }
 
   /**
+   * Returns {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
+   * of {@code type} in the same hierarchy replaced by that bound.
+   *
+   * @param type the type whose qualifier upper bounds limit {@code annos}
+   * @param annos the qualifiers to limit
+   * @return {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
+   *     of {@code type} in the same hierarchy replaced by that bound
+   */
+  public AnnotationMirrorSet limitToBound(TypeMirror type, Set<? extends AnnotationMirror> annos) {
+    AnnotationMirrorSet boundAnnos = getBoundQualifiers(type);
+    AnnotationMirrorSet limitedAnnos = new AnnotationMirrorSet();
+    for (AnnotationMirror anno : annos) {
+      AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
+      if (bound == null) {
+        throw new BugInCF(
+            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
+      }
+      limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
+    }
+    return limitedAnnos;
+  }
+
+  /**
    * Returns the explicit annotations on the element. Subclasses can override this behavior to add
    * annotations.
    *
