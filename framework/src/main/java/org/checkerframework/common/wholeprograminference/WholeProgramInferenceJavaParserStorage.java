@@ -129,6 +129,9 @@ public class WholeProgramInferenceJavaParserStorage
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /** Determines which inferred qualifiers are redundant. */
+  private final WholeProgramInferenceDefaults wpiDefaults;
+
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
 
@@ -235,6 +238,7 @@ public class WholeProgramInferenceJavaParserStorage
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
+    this.wpiDefaults = new WholeProgramInferenceDefaults(atypeFactory);
     this.elements = atypeFactory.getElementUtils();
     this.types = atypeFactory.getProcessingEnv().getTypeUtils();
     try {
@@ -845,7 +849,7 @@ public class WholeProgramInferenceJavaParserStorage
               enclosingClass.callableDeclarations.put(
                   executableSignature,
                   new CallableDeclarationAnnos(
-                      javacClass.getSimpleName().toString(), javaParserNode));
+                      javacClass.getSimpleName().toString(), javaParserNode, element));
             }
           }
 
@@ -908,7 +912,7 @@ public class WholeProgramInferenceJavaParserStorage
             }
             String fieldName = javacTree.getName().toString();
             if (!enclosingClass.fields.containsKey(fieldName)) {
-              enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode));
+              enclosingClass.fields.put(fieldName, new FieldAnnos(javaParserNode, elt));
             }
           }
         };
@@ -990,8 +994,12 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos classAnnos,
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
-    if (classAnnos.callableDeclarations.isEmpty()) {
-      return;
+    for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
+      if (fieldAnnos.type != null
+          && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+        wpiDefaults.removeRedundantPrimaryAnnotations(
+            fieldAnnos.type, wpiDefaults.defaultedType(fieldAnnos.element));
+      }
     }
 
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
@@ -1000,8 +1008,90 @@ public class WholeProgramInferenceJavaParserStorage
       List<CallableDeclarationAnnos> inSupertypes = findOverrides(jvmSignature, supertypes);
       List<CallableDeclarationAnnos> inSubtypes = findOverrides(jvmSignature, subtypes);
 
-      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
+      CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
+      wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
+      // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
+      removeRedundantPrimaryAnnotations(methodAnnos);
     }
+  }
+
+  /**
+   * Removes, from the inferred types in the signature of the given method or constructor, each
+   * primary annotation that would be redundant, because the type has it even when no annotation is
+   * written on it.
+   *
+   * @param methodAnnos annotations for a method or constructor, which this method side-effects
+   */
+  private void removeRedundantPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+    ExecutableElement methodElt = methodAnnos.element;
+    // A declaration annotation on a method that is an alias for a type qualifier applies to the
+    // method's return type.
+    if (methodAnnos.returnType != null
+        && !containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
+      wpiDefaults.removeRedundantPrimaryAnnotations(
+          methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
+    }
+    if (methodAnnos.receiverType != null) {
+      wpiDefaults.removeRedundantPrimaryAnnotations(
+          methodAnnos.receiverType, wpiDefaults.defaultedReceiverType(methodElt));
+    }
+    if (methodAnnos.parameterTypes != null) {
+      List<? extends VariableElement> paramElts = methodElt.getParameters();
+      for (int i = 0; i < methodAnnos.parameterTypes.size() && i < paramElts.size(); i++) {
+        AnnotatedTypeMirror paramType = methodAnnos.parameterTypes.get(i);
+        if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+          // The parameter's own element is used, rather than the method's type, so that a
+          // `@DefaultQualifier` annotation written on the parameter declaration is respected.
+          wpiDefaults.removeRedundantPrimaryAnnotations(
+              paramType, wpiDefaults.defaultedType(paramElts.get(i)));
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
+   * annotation that is an alias for a type qualifier.
+   *
+   * @param methodAnnos annotations for a method or constructor
+   * @param index1based the 1-based index of one of its formal parameters
+   * @return true if the formal parameter has a declaration annotation that is an alias for a type
+   *     qualifier
+   */
+  private boolean parameterHasAliasForTypeQualifier(
+      CallableDeclarationAnnos methodAnnos, int index1based) {
+    if (methodAnnos.paramsDeclAnnos == null) {
+      return false;
+    }
+    for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
+      if (paramDeclAnno.index1based() == index1based
+          && wpiDefaults.isAliasForTypeQualifier(paramDeclAnno.annotation())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code declarationAnnotations} contains an alias for a type qualifier. Reading
+   * the output file gives the annotated element the aliased type qualifier, so none of the
+   * element's type annotations is redundant, even one that is the default.
+   *
+   * @param declarationAnnotations the declaration annotations that whole-program inference inferred
+   *     for an element, or null if there are none
+   * @return true if {@code declarationAnnotations} contains an alias for a type qualifier
+   */
+  private boolean containsAliasForTypeQualifier(
+      @Nullable AnnotationMirrorSet declarationAnnotations) {
+    if (declarationAnnotations == null) {
+      return false;
+    }
+    for (AnnotationMirror anno : declarationAnnotations) {
+      if (wpiDefaults.isAliasForTypeQualifier(anno)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1767,6 +1857,9 @@ public class WholeProgramInferenceJavaParserStorage
     /** Wrapped method or constructor declaration. */
     public final CallableDeclaration<?> declaration;
 
+    /** The element for the method or constructor. */
+    public final ExecutableElement element;
+
     /**
      * Inferred annotations for the return type, if the declaration represents a method. Initialized
      * on first usage.
@@ -1821,21 +1914,34 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @param className the class that contains the method, for diagnostics only
      * @param declaration method or constructor declaration to wrap
+     * @param element the element for the method or constructor
      */
-    public CallableDeclarationAnnos(String className, CallableDeclaration<?> declaration) {
+    public CallableDeclarationAnnos(
+        String className, CallableDeclaration<?> declaration, ExecutableElement element) {
       this.className = className;
       this.declaration = declaration;
+      this.element = element;
     }
 
     @Override
     public CallableDeclarationAnnos deepCopy() {
-      CallableDeclarationAnnos result = new CallableDeclarationAnnos(className, declaration);
-      result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
-      result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
-      if (parameterTypes != null) {
-        result.parameterTypes = CollectionsP.deepCopy(this.parameterTypes);
+      CallableDeclarationAnnos result =
+          new CallableDeclarationAnnos(className, declaration, element);
+      if (this.returnType != null) {
+        result.returnType = this.returnType.deepCopy();
       }
-      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      if (this.receiverType != null) {
+        result.receiverType = this.receiverType.deepCopy();
+      }
+      if (parameterTypes != null) {
+        @SuppressWarnings("nullness:type.argument") // CollectionsP.deepCopy permits null elements
+        List<@Nullable AnnotatedTypeMirror> parameterTypesCopy =
+            CollectionsP.deepCopy(this.parameterTypes);
+        result.parameterTypes = parameterTypesCopy;
+      }
+      if (this.declarationAnnotations != null) {
+        result.declarationAnnotations = this.declarationAnnotations.deepCopy();
+      }
 
       if (this.paramsDeclAnnos != null) {
         result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
@@ -2212,6 +2318,9 @@ public class WholeProgramInferenceJavaParserStorage
     /** Wrapped field declaration. */
     public final VariableDeclarator declaration;
 
+    /** The element for the field. */
+    public final VariableElement element;
+
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
 
@@ -2222,16 +2331,22 @@ public class WholeProgramInferenceJavaParserStorage
      * Creates a wrapper for the given field declaration.
      *
      * @param declaration field declaration to wrap
+     * @param element the element for the field
      */
-    public FieldAnnos(VariableDeclarator declaration) {
+    public FieldAnnos(VariableDeclarator declaration, VariableElement element) {
       this.declaration = declaration;
+      this.element = element;
     }
 
     @Override
     public FieldAnnos deepCopy() {
-      FieldAnnos result = new FieldAnnos(declaration);
-      result.type = DeepCopyable.deepCopyOrNull(this.type);
-      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      FieldAnnos result = new FieldAnnos(declaration, element);
+      if (this.type != null) {
+        result.type = this.type.deepCopy();
+      }
+      if (this.declarationAnnotations != null) {
+        result.declarationAnnotations = this.declarationAnnotations.deepCopy();
+      }
       return result;
     }
 

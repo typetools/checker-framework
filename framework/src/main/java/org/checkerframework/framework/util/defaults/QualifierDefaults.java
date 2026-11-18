@@ -11,6 +11,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1038,14 +1039,27 @@ public class QualifierDefaults {
         impl.boundType = BoundType.UNBOUNDED;
       }
 
-      // are we currently defaulting the lower bound of a type variable or wildcard
+      /** True if the lower bound of a type variable or wildcard is currently being defaulted. */
       private boolean isLowerBound = false;
 
-      // are we currently defaulting the upper bound of a type variable or wildcard
+      /** True if the upper bound of a type variable or wildcard is currently being defaulted. */
       private boolean isUpperBound = false;
 
-      // the bound type of the current wildcard or type variable being defaulted
+      /** The bound type of the wildcard or type variable that is currently being defaulted. */
       private BoundType boundType = BoundType.UNBOUNDED;
+
+      /** The declared types that enclose the type being scanned, innermost first. */
+      private final ArrayDeque<AnnotatedDeclaredType> enclosingDeclaredTypes = new ArrayDeque<>();
+
+      @Override
+      public Void visitDeclared(AnnotatedDeclaredType type, AnnotationMirror qual) {
+        enclosingDeclaredTypes.addFirst(type);
+        try {
+          return super.visitDeclared(type, qual);
+        } finally {
+          enclosingDeclaredTypes.removeFirst();
+        }
+      }
 
       @Override
       public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
@@ -1086,7 +1100,7 @@ public class QualifierDefaults {
         boolean prevIsLowerBound = isLowerBound;
         BoundType prevBoundType = boundType;
 
-        boundType = getBoundType(boundedType);
+        boundType = getBoundType(boundedType, enclosingDeclaredTypes.peekFirst());
 
         try {
           isLowerBound = true;
@@ -1145,15 +1159,17 @@ public class QualifierDefaults {
    *
    * @param type the type whose boundType is returned. type must be an AnnotatedWildcardType or
    *     AnnotatedTypeVariable.
+   * @param enclosingType a declared type of which {@code type} might be a type argument, or null
    * @return the boundType for type
    */
-  private BoundType getBoundType(AnnotatedTypeMirror type) {
+  private BoundType getBoundType(
+      AnnotatedTypeMirror type, @Nullable AnnotatedDeclaredType enclosingType) {
     if (type instanceof AnnotatedTypeVariable atv) {
       return getTypeVarBoundType(atv);
     }
 
     if (type instanceof AnnotatedWildcardType awt) {
-      return getWildcardBoundType(awt);
+      return getWildcardBoundType(awt, enclosingType);
     }
 
     throw new BugInCF("Unexpected type kind: type=" + type);
@@ -1226,13 +1242,32 @@ public class QualifierDefaults {
    * Returns the BoundType of wildcardType. If it is unbounded, uses the type parameter to which it
    * is an argument.
    *
+   * <p>If the declared type of which {@code wildcardType} is a type argument is known, call {@link
+   * #getWildcardBoundType(AnnotatedWildcardType, AnnotatedDeclaredType)} instead, which determines
+   * the type parameter more reliably.
+   *
    * @param wildcardType the annotated wildcard type
    * @return the BoundType of wildcardType. If it is unbounded, uses the type parameter to which it
    *     is an argument
    */
   public BoundType getWildcardBoundType(AnnotatedWildcardType wildcardType) {
+    return getWildcardBoundType(wildcardType, null);
+  }
+
+  /**
+   * Returns the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
+   * its an argument.
+   *
+   * @param wildcardType the annotated wildcard type
+   * @param enclosingType a declared type of which {@code wildcardType} might be a type argument, or
+   *     null
+   * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
+   *     its an argument
+   */
+  public BoundType getWildcardBoundType(
+      AnnotatedWildcardType wildcardType, @Nullable AnnotatedDeclaredType enclosingType) {
     if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {
-      TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
+      TypeParameterElement e = AnnotatedTypes.wildcardToTypeParam(wildcardType, enclosingType);
       if (e != null) {
         return getTypeVarBoundType(e);
       } else {
