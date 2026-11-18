@@ -61,6 +61,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1113,7 +1114,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // For narrowing conversion, see JLS 5.1.3
     assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
         : "narrowing must be applied to primitive types";
-    if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
+    // Do not test `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a
+    // supertype of byte and short, but a constant char can be narrowed to byte or short (and a
+    // constant byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between
+    // distinct numeric primitive types that is not a widening conversion is a narrowing conversion
+    // (or, for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
@@ -1156,8 +1162,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         unboxedVarKind == TypeKind.BYTE
             || unboxedVarKind == TypeKind.SHORT
             || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+    return isLeftNarrowableTo && isCompileTimeConstant(node);
+  }
+
+  /**
+   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
+   * {@code 1 + 2}, or a use of a constant variable.
+   *
+   * @param node a node
+   * @return true if the node is a compile-time constant expression
+   */
+  private static boolean isCompileTimeConstant(Node node) {
+    if (node instanceof ValueLiteralNode) {
+      return true;
+    }
+    Tree tree = node.getTree();
+    if (!(tree instanceof ExpressionTree)) {
+      return false;
+    }
+    Type type = ((JCTree) tree).type;
+    return type != null && type.constValue() != null;
   }
 
   /**
