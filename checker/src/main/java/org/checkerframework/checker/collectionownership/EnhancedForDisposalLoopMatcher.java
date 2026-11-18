@@ -11,6 +11,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
@@ -49,15 +50,33 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo} if the enhanced-for-loop iterates over a resource
-   * collection and its body does not assign to the variable that holds the collection.
+   * Returns a {@link DisposalLoopInfo} for each CFG copy of the enhanced-for-loop, if the loop
+   * iterates over a resource collection and its body does not assign to the variable that holds the
+   * collection.
+   *
+   * <p>A loop can have several CFG copies, because the CFG copies a {@code finally} block for each
+   * way of leaving its {@code try} block. For example, the CFG has one copy of this loop that the
+   * {@code return} reaches, and another that normal completion of the {@code try} block reaches:
+   *
+   * <pre>{@code
+   * try {
+   *   if (b) {
+   *     return;
+   *   }
+   * } finally {
+   *   for (Resource r : list) {
+   *     r.close();
+   *   }
+   * }
+   * }</pre>
    *
    * @param tree the enhanced-for-loop to inspect
-   * @return the matched disposal loop info, or {@code null} if the loop does not match
+   * @return a disposal loop info for each CFG copy of the loop, or an empty set if the loop does
+   *     not match
    */
-  @Nullable DisposalLoopInfo match(EnhancedForLoopTree tree) {
+  Set<DisposalLoopInfo> match(EnhancedForLoopTree tree) {
     if (!coAtf.isResourceCollection(tree.getExpression())) {
-      return null;
+      return Set.of();
     }
     // If the body reassigns the collection variable, the loop still iterates over the original
     // collection, but after the loop the variable refers to a different collection.
@@ -65,7 +84,7 @@ final class EnhancedForDisposalLoopMatcher {
         CollectionOwnershipUtils.getNameFromExpressionTree(
             TreeUtils.withoutParens(tree.getExpression()));
     if (collectionName != null && assignsTo(tree.getStatement(), collectionName)) {
-      return null;
+      return Set.of();
     }
     return resolveEnhancedForLoop(tree);
   }
@@ -97,22 +116,23 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Searches the method CFG for the first occurrence of {@code tree} and resolves it to {@link
-   * DisposalLoopInfo}.
+   * Searches the method CFG for every copy of {@code tree} and resolves each to a {@link
+   * DisposalLoopInfo}. See {@link #match}.
    *
    * <p>This performs a CFG traversal, looking for the desugared iterator {@code next()} node tagged
    * with the target enhanced-for-loop. (Only the {@code next()} node is tagged; the {@code
    * hasNext()} node is not.)
    *
    * @param tree the enhanced-for-loop to resolve
-   * @return the CFG-resolved loop info, or {@code null} if it cannot be resolved
+   * @return the CFG-resolved loop infos, one per CFG copy that can be resolved
    */
-  private @Nullable DisposalLoopInfo resolveEnhancedForLoop(EnhancedForLoopTree tree) {
+  private Set<DisposalLoopInfo> resolveEnhancedForLoop(EnhancedForLoopTree tree) {
     Block entryBlock = cfg.getEntryBlock();
     Set<Block> visitedBlocks = new HashSet<>();
     Deque<Block> worklist = new ArrayDeque<>();
     worklist.add(entryBlock);
     visitedBlocks.add(entryBlock);
+    Set<DisposalLoopInfo> resolvedLoops = new LinkedHashSet<>();
 
     while (!worklist.isEmpty()) {
       Block currentBlock = worklist.removeFirst();
@@ -121,15 +141,13 @@ final class EnhancedForDisposalLoopMatcher {
             && isTargetEnhancedForInvocation(methodInvocationNode, tree)) {
           DisposalLoopInfo resolvedLoop = resolveEnhancedForLoop(methodInvocationNode, tree);
           if (resolvedLoop != null) {
-            return resolvedLoop;
+            resolvedLoops.add(resolvedLoop);
           }
         }
       }
 
-      // One AST enhanced-for can have multiple CFG occurrences (for example around duplicated
-      // finally paths for normal and exceptional flow). This resolver returns the first matching
-      // occurrence it finds, so avoid traversing ignored exceptional successors here; otherwise
-      // the search can bind to an exceptional clone before the normal one.
+      // Ignored exceptional successors are not traversed: dataflow does not analyze a copy that
+      // is reachable only through them, and the consistency analysis never reaches it.
       for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
           CollectionOwnershipUtils.getSuccessorsExceptIgnoredExceptions(currentBlock, coAtf)) {
         Block successorBlock = successorAndExceptionType.first;
@@ -139,7 +157,7 @@ final class EnhancedForDisposalLoopMatcher {
       }
     }
 
-    return null;
+    return resolvedLoops;
   }
 
   /**

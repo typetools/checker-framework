@@ -84,10 +84,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    */
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-    DisposalLoopInfo disposalLoopInfo = enhancedForDisposalLoopMatcher.match(tree);
-    if (disposalLoopInfo != null) {
-      disposalLoopInfos.add(disposalLoopInfo);
-    }
+    disposalLoopInfos.addAll(enhancedForDisposalLoopMatcher.match(tree));
     return super.visitEnhancedForLoop(tree, p);
   }
 }
