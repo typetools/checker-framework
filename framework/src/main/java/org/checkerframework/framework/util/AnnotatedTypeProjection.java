@@ -4,7 +4,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -30,8 +29,8 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * Computes the upward and downward projections of annotated types, as defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>.
- * The restricted type variables are the captured type variables, including the fresh type variables
- * that type inference creates, except for any that are explicitly left unrestricted.
+ * The restricted type variables are either every captured type variable, including the fresh type
+ * variables that type inference creates, or a set of type variables that the caller passes.
  *
  * <p>JLS 4.10.5 defines projection only for Java types. This class chooses the annotations of the
  * result as follows:
@@ -72,8 +71,8 @@ public final class AnnotatedTypeProjection {
   /** The javac type utilities. */
   private final com.sun.tools.javac.code.Types javacTypes;
 
-  /** The captured type variables that are not restricted. */
-  private final Collection<TypeVariable> unrestricted;
+  /** The restricted type variables, or null if every captured type variable is restricted. */
+  private final @Nullable Collection<TypeVariable> restricted;
 
   /**
    * The restricted type variables whose upward projection is being computed. Projecting one of
@@ -85,16 +84,17 @@ public final class AnnotatedTypeProjection {
    * Creates an {@code AnnotatedTypeProjection}.
    *
    * @param atypeFactory the type factory
-   * @param unrestricted the captured type variables that are not restricted
+   * @param restricted the restricted type variables, or null if every captured type variable is
+   *     restricted
    */
   private AnnotatedTypeProjection(
-      AnnotatedTypeFactory atypeFactory, Collection<TypeVariable> unrestricted) {
+      AnnotatedTypeFactory atypeFactory, @Nullable Collection<TypeVariable> restricted) {
     this.atypeFactory = atypeFactory;
     this.types = atypeFactory.types;
     this.javacTypes =
         com.sun.tools.javac.code.Types.instance(
             ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext());
-    this.unrestricted = unrestricted;
+    this.restricted = restricted;
   }
 
   /**
@@ -107,24 +107,23 @@ public final class AnnotatedTypeProjection {
    */
   public static AnnotatedTypeMirror upward(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type) {
-    return upward(atypeFactory, type, Collections.emptyList());
+    return new AnnotatedTypeProjection(atypeFactory, null).upward(type);
   }
 
   /**
-   * Returns the upward projection of {@code type} with respect to all captured type variables
-   * except {@code unrestricted}: a supertype of {@code type} that does not mention any captured
-   * type variable other than those in {@code unrestricted}.
+   * Returns the upward projection of {@code type} with respect to the type variables in {@code
+   * restricted}: a supertype of {@code type} that does not mention any of them.
    *
    * @param atypeFactory the type factory
    * @param type the type to project; not a wildcard
-   * @param unrestricted the captured type variables that are not restricted
+   * @param restricted the restricted type variables
    * @return the upward projection of {@code type}
    */
   public static AnnotatedTypeMirror upward(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedTypeMirror type,
-      Collection<TypeVariable> unrestricted) {
-    return new AnnotatedTypeProjection(atypeFactory, unrestricted).upward(type);
+      Collection<TypeVariable> restricted) {
+    return new AnnotatedTypeProjection(atypeFactory, restricted).upward(type);
   }
 
   /**
@@ -184,9 +183,7 @@ public final class AnnotatedTypeProjection {
       }
       // A wildcard is a type argument, not a type; upwardTypeArgument projects wildcards.
       case WILDCARD -> throw new BugInCF("Upward projection of a wildcard: %s", type);
-      default -> {
-        return type.deepCopy();
-      }
+      default -> throw new BugInCF("Upward projection of a %s: %s", type.getKind(), type);
     }
   }
 
@@ -224,8 +221,8 @@ public final class AnnotatedTypeProjection {
   }
 
   /**
-   * Returns the downward projection of {@code type} with respect to all captured type variables, or
-   * null if it is undefined.
+   * Returns the downward projection of {@code type} with respect to the restricted type variables,
+   * or null if it is undefined.
    *
    * @param type a type
    * @return the downward projection of {@code type}, or null if it is undefined
@@ -296,9 +293,7 @@ public final class AnnotatedTypeProjection {
         }
         return withBounds((AnnotatedIntersectionType) type, bounds);
       }
-      default -> {
-        return null;
-      }
+      default -> throw new BugInCF("Downward projection of a %s: %s", type.getKind(), type);
     }
   }
 
@@ -364,16 +359,10 @@ public final class AnnotatedTypeProjection {
       javaTypeArgs[i] = typeArgs.get(i).getUnderlyingType();
     }
     TypeElement element = (TypeElement) javaType.asElement();
-    DeclaredType newJavaType;
-    if (javaType.getEnclosingType().getKind() == TypeKind.DECLARED) {
-      DeclaredType javaEnclosingType =
-          enclosingType == null
-              ? (DeclaredType) javaType.getEnclosingType()
-              : enclosingType.getUnderlyingType();
-      newJavaType = types.getDeclaredType(javaEnclosingType, element, javaTypeArgs);
-    } else {
-      newJavaType = types.getDeclaredType(element, javaTypeArgs);
-    }
+    DeclaredType newJavaType =
+        enclosingType == null
+            ? types.getDeclaredType(element, javaTypeArgs)
+            : types.getDeclaredType(enclosingType.getUnderlyingType(), element, javaTypeArgs);
     AnnotatedDeclaredType result =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(newJavaType, atypeFactory, false);
     result.addAnnotations(type.getPrimaryAnnotations());
@@ -439,7 +428,32 @@ public final class AnnotatedTypeProjection {
    * @return true if the upward projection of {@code typeVariable} is being computed
    */
   private boolean isInProgress(TypeVariable typeVariable) {
-    for (TypeVariable t : inProgress) {
+    return containsSame(inProgress, typeVariable);
+  }
+
+  /**
+   * Returns true if {@code typeVariable} is restricted.
+   *
+   * @param typeVariable a type variable
+   * @return true if {@code typeVariable} is restricted
+   */
+  private boolean isRestricted(TypeVariable typeVariable) {
+    return restricted == null
+        ? TypesUtils.isCapturedTypeVariable(typeVariable)
+        : containsSame(restricted, typeVariable);
+  }
+
+  /**
+   * Returns true if {@code typeVariables} contains a type variable that is the same as {@code
+   * typeVariable}, according to {@link TypesUtils#areSame}.
+   *
+   * @param typeVariables a collection of type variables
+   * @param typeVariable a type variable
+   * @return true if {@code typeVariables} contains {@code typeVariable}
+   */
+  private static boolean containsSame(
+      Collection<TypeVariable> typeVariables, TypeVariable typeVariable) {
+    for (TypeVariable t : typeVariables) {
       if (TypesUtils.areSame(t, typeVariable)) {
         return true;
       }
@@ -456,15 +470,7 @@ public final class AnnotatedTypeProjection {
   private boolean mentionsRestricted(TypeMirror type) {
     switch (type.getKind()) {
       case TYPEVAR -> {
-        if (!TypesUtils.isCapturedTypeVariable(type)) {
-          return false;
-        }
-        for (TypeVariable t : unrestricted) {
-          if (TypesUtils.areSame(t, (TypeVariable) type)) {
-            return false;
-          }
-        }
-        return true;
+        return isRestricted((TypeVariable) type);
       }
       case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;

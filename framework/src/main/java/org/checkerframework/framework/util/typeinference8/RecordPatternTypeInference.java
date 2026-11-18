@@ -6,12 +6,10 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -120,8 +118,7 @@ public class RecordPatternTypeInference {
           .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
         throw BugInCF.addLocation(pattern, ex);
       }
-      return createFailedResult(
-          matchedType, new Failure("An exception occurred: " + ex.getLocalizedMessage(), true));
+      return createFailedResult(matchedType, new Failure("An exception occurred: " + ex, true));
     }
   }
 
@@ -187,7 +184,10 @@ public class RecordPatternTypeInference {
     for (AnnotatedDeclaredType capturedType : capturedTypes) {
       AbstractType rPrime = recordType.asSuper(capturedType.getUnderlyingType());
       if (rPrime == null) {
-        continue;
+        // javac checked that the matched type is castable to the record class, which is final, so
+        // the record class is a subtype of every parameterized type that bounds the matched type.
+        throw new BugInCF(
+            "Record pattern %s: %s is not a supertype of %s", pattern, capturedType, recordType);
       }
       AbstractType tPrime = InferenceType.create(capturedType, map, context);
       ConstraintSet constraints =
@@ -220,9 +220,23 @@ public class RecordPatternTypeInference {
     }
 
     // Step 5: resolve, skipping straight to fresh type variables.
+    List<Variable> uninstantiated = new ArrayList<>();
+    for (Variable v : map.values()) {
+      if (v.getInstantiation() == null) {
+        uninstantiated.add(v);
+      }
+    }
     Resolution.resolveWithFreshTypeVariables(new ArrayList<>(alphas), boundSet, context);
+    // Resolution instantiates each variable in `uninstantiated` with a fresh type variable.
+    List<TypeVariable> freshTypeVariables = new ArrayList<>();
+    for (Variable v : uninstantiated) {
+      ProperType instantiation = v.getInstantiation();
+      if (instantiation != null && instantiation.getJavaType().getKind() == TypeKind.TYPEVAR) {
+        freshTypeVariables.add((TypeVariable) instantiation.getJavaType());
+      }
+    }
 
-    // Step 6: the upward projection of R<A1, ..., An>.
+    // Step 6: the upward projection of R<A1, ..., An> with respect to the fresh type variables.
     List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(alphas.size());
     TypeMirror[] javaTypeArgs = new TypeMirror[alphas.size()];
     for (int i = 0; i < alphas.size(); i++) {
@@ -239,54 +253,11 @@ public class RecordPatternTypeInference {
     patternType.addAnnotations(
         typeFactory.getDefaultRecordPatternType(pattern).getPrimaryAnnotations());
     patternType.setTypeArguments(typeArgs);
-    // Project only the fresh type variables that resolution introduced, not the captured type
-    // variables that the matched type already mentions.
-    List<TypeVariable> matchedTypeVariables = new ArrayList<>();
-    addCapturedTypeVariables(matchedType.getUnderlyingType(), matchedTypeVariables);
     return createResult(
         matchedType,
         null,
         (AnnotatedDeclaredType)
-            AnnotatedTypeProjection.upward(typeFactory, patternType, matchedTypeVariables));
-  }
-
-  /**
-   * Adds to {@code typeVariables} each captured type variable that {@code type} mentions.
-   *
-   * @param type a type
-   * @param typeVariables the list to add to
-   */
-  private static void addCapturedTypeVariables(TypeMirror type, List<TypeVariable> typeVariables) {
-    switch (type.getKind()) {
-      case TYPEVAR -> {
-        if (TypesUtils.isCapturedTypeVariable(type)) {
-          typeVariables.add((TypeVariable) type);
-        }
-      }
-      case DECLARED -> {
-        DeclaredType declaredType = (DeclaredType) type;
-        for (TypeMirror typeArg : declaredType.getTypeArguments()) {
-          addCapturedTypeVariables(typeArg, typeVariables);
-        }
-        addCapturedTypeVariables(declaredType.getEnclosingType(), typeVariables);
-      }
-      case ARRAY -> addCapturedTypeVariables(((ArrayType) type).getComponentType(), typeVariables);
-      case WILDCARD -> {
-        WildcardType wildcard = (WildcardType) type;
-        if (wildcard.getExtendsBound() != null) {
-          addCapturedTypeVariables(wildcard.getExtendsBound(), typeVariables);
-        }
-        if (wildcard.getSuperBound() != null) {
-          addCapturedTypeVariables(wildcard.getSuperBound(), typeVariables);
-        }
-      }
-      case INTERSECTION -> {
-        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-          addCapturedTypeVariables(bound, typeVariables);
-        }
-      }
-      default -> {}
-    }
+            AnnotatedTypeProjection.upward(typeFactory, patternType, freshTypeVariables));
   }
 
   /**

@@ -68,7 +68,8 @@ public interface QualifierPolymorphism {
    * on a receiver of type {@code receiverType}.
    *
    * @param receiverType the type of the receiver of the invocation
-   * @param type the type of a method that has no parameters; is side-effected by this method
+   * @param type the type of an instance method that has no parameters; is side-effected by this
+   *     method
    */
   void resolveWithReceiver(AnnotatedTypeMirror receiverType, AnnotatedExecutableType type);
 }

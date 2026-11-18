@@ -29,6 +29,19 @@ public class RecordPatternInferenceError {
     if (x instanceof Both(var s)) {}
   }
 
+  // When inference fails, an explicitly typed nested pattern is checked against the record
+  // pattern's Java type, Both<String>, and no other diagnostic is issued.
+  <X extends First<@Nullable String> & Second<String>> void conflictingBoundsExplicit(X x) {
+    // :: error: [type.arguments.not.inferred]
+    if (x instanceof Both(String s)) {
+      s.length();
+    }
+    // :: error: [type.arguments.not.inferred]
+    if (x instanceof Both(@Nullable String s)) {
+      s.length();
+    }
+  }
+
   <X extends First<@Nullable String> & Second<String>> void conflictingBoundsSwitch(X x) {
     switch (x) {
       // :: error: [type.arguments.not.inferred]

@@ -5358,13 +5358,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns why the type arguments of the record pattern {@code recordPattern} cannot be inferred,
    * or null if they can be.
    *
-   * @param recordPattern a {@code DeconstructionPatternTree}
+   * @param recordPattern a {@code DeconstructionPatternTree} in the current compilation unit
    * @return why inference fails for {@code recordPattern}, or null
    */
   public RecordPatternTypeInference.@Nullable Failure getRecordPatternInferenceFailure(
       Tree recordPattern) {
     TreePath path = getPath(recordPattern);
-    return path == null ? null : inferRecordPatternType(path).failure();
+    if (path == null) {
+      throw new BugInCF("No path to record pattern %s", recordPattern);
+    }
+    return inferRecordPatternType(path).failure();
   }
 
   /**

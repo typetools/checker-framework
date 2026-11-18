@@ -11,6 +11,7 @@
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
@@ -87,6 +88,18 @@ public class Projections {
     }
   }
 
+  /**
+   * CAP#1 has no lower bound, so the downward projection of {@code CAP#1[]} is undefined, and the
+   * wildcard {@code ? super CAP#1[]} becomes {@code ?}.
+   */
+  static void arrayDownwardUndefined(SuperArray<? extends @Untainted String> s) {
+    if (s instanceof SuperArray(var sink)) {
+      List<?> ok = sink;
+      // :: error: [assignment]
+      List<? extends @Untainted Object> bad = sink;
+    }
+  }
+
   record SuperList<T>(List<? super List<? extends T>> sink) {}
 
   /**
@@ -98,6 +111,124 @@ public class Projections {
       List<? super List<? extends @Untainted String>> ok = sink;
       // :: error: [assignment]
       List<? super List<? extends @Tainted String>> bad = sink;
+    }
+  }
+
+  /**
+   * CAP#1 has no lower bound, so the downward projection of {@code List<? extends CAP#1>} is
+   * undefined, and the wildcard {@code ? super List<? extends CAP#1>} becomes {@code ?}.
+   */
+  static void wildcardDownwardUndefined(SuperList<? extends @Untainted String> s) {
+    if (s instanceof SuperList(var sink)) {
+      List<?> ok = sink;
+      // :: error: [assignment]
+      List<? extends @Untainted Object> bad = sink;
+    }
+  }
+
+  record ExactSuperList<T>(List<? super List<T>> sink) {}
+
+  /**
+   * The downward projection of {@code List<CAP#1>} is undefined, because its type argument mentions
+   * CAP#1 and is not a wildcard, so the wildcard {@code ? super List<CAP#1>} becomes {@code ?}.
+   */
+  static void typeArgumentDownwardUndefined(ExactSuperList<? super @Untainted String> s) {
+    if (s instanceof ExactSuperList(var sink)) {
+      List<?> ok = sink;
+      // :: error: [assignment]
+      List<? extends @Untainted Object> bad = sink;
+    }
+  }
+
+  record SuperSuperList<T>(List<? super List<? super T>> sink) {}
+
+  /**
+   * The downward projection of {@code List<? super CAP#1>} is {@code List<? super U>}, where U is
+   * the upward projection of CAP#1.
+   */
+  static void superWildcardDownward(SuperSuperList<? extends @Untainted String> s) {
+    if (s instanceof SuperSuperList(var sink)) {
+      List<? super List<? super @Untainted String>> ok = sink;
+    }
+  }
+
+  static void superWildcardDownwardTainted(SuperSuperList<? extends @Tainted String> s) {
+    if (s instanceof SuperSuperList(var sink)) {
+      // :: error: [assignment]
+      List<? super List<? super @Untainted String>> bad = sink;
+    }
+  }
+
+  record AnnotatedSuperList<T>(List<? super @Untainted T> sink) {}
+
+  /**
+   * The downward projection of {@code @Untainted CAP#1} is the lower bound of CAP#1 with the
+   * primary qualifier of {@code @Untainted CAP#1}, not that of the lower bound.
+   */
+  static void annotatedTypeVariableDownward(AnnotatedSuperList<? super @Tainted String> s) {
+    if (s instanceof AnnotatedSuperList(var sink)) {
+      List<? super @Untainted String> ok = sink;
+      // :: error: [assignment]
+      List<? super @Tainted String> bad = sink;
+    }
+  }
+
+  static class Outer<T> {
+    class In {}
+  }
+
+  record SuperInner<T>(List<? super Outer<T>.In> sink) {}
+
+  /**
+   * The downward projection of the enclosing type {@code Outer<CAP#1>} is undefined, so the
+   * wildcard {@code ? super Outer<CAP#1>.In} becomes {@code ?}.
+   */
+  static void enclosingTypeDownwardUndefined(SuperInner<? extends @Untainted String> s) {
+    if (s instanceof SuperInner(var sink)) {
+      List<?> ok = sink;
+      // :: error: [assignment]
+      List<? extends @Untainted Object> bad = sink;
+    }
+  }
+
+  record ConsumerBox<T>(Consumer<? super T> consumer) {}
+
+  /**
+   * CAP#1 has no lower bound, so the upward projection of {@code Consumer<? super CAP#1>} is {@code
+   * Consumer<?>}, whose wildcard has the upper bound of {@code ? super CAP#1}.
+   */
+  static void superWildcardUpward(ConsumerBox<? extends @Untainted String> b) {
+    if (b instanceof ConsumerBox(var consumer)) {
+      Consumer<?> ok = consumer;
+      // :: error: [assignment]
+      Consumer<? extends @Untainted Object> bad = consumer;
+    }
+  }
+
+  static class ListBoxHolder<A, B extends Box<List<A>>> {
+    B box() {
+      throw new Error();
+    }
+  }
+
+  /**
+   * The matched type is the captured type variable CAP#2, whose upper bound {@code
+   * Box<List<CAP#1>>} mentions CAP#1. The type of the pattern is {@code Box<List<CAP#1>>}: only the
+   * fresh type variables that resolution introduces are projected away, and there are none.
+   */
+  static void capturedInBoundOfMatchedType(ListBoxHolder<? extends @Untainted String, ?> h) {
+    if (h.box() instanceof Box(var l)) {
+      @Untainted String s = l.get(0);
+    }
+    if (h.box() instanceof Box(List<? extends @Untainted String> l)) {
+      @Untainted String s = l.get(0);
+    }
+  }
+
+  static void capturedInBoundOfMatchedTypeTainted(ListBoxHolder<? extends @Tainted String, ?> h) {
+    if (h.box() instanceof Box(var l)) {
+      // :: error: [assignment]
+      @Untainted String s = l.get(0);
     }
   }
 
