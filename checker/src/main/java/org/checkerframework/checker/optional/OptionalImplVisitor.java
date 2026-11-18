@@ -95,7 +95,7 @@ public class OptionalImplVisitor
    *   <li>Has any formal parameters annotated with {@link NonEmpty}
    *   <li>Has pre- or post-conditions from the {@link NonEmpty} type system (e.g., {@link
    *       RequiresNonEmpty}, {@link org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty},
-   *       {@link org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf}
+   *       {@link org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf})
    *   <li>Its body contains a variable or value that is annotated with {@link NonEmpty}
    * </ul>
    *
@@ -123,7 +123,7 @@ public class OptionalImplVisitor
   private final Map<String, Set<String>> calleesToCallers = new HashMap<>();
 
   /**
-   * Create an OptionalImplVisitor.
+   * Creates an OptionalImplVisitor.
    *
    * @param checker the associated instance of {@link
    *     org.checkerframework.checker.optional.OptionalImplChecker}
@@ -228,7 +228,7 @@ public class OptionalImplVisitor
 
   /**
    * Returns true iff the method being called is annotated with {@code @}{@link OptionalCreator}.
-   * This is the Optional creation methods: empty, of, ofNullable.
+   * These are the Optional creation methods: empty, of, ofNullable.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional creation: empty, of, ofNullable
@@ -240,7 +240,7 @@ public class OptionalImplVisitor
 
   /**
    * Returns true iff the method being called is annotated with {@code @}{@link OptionalPropagator}.
-   * This is the Optional propagation methods: filter, flatMap, map, or.
+   * These are the Optional propagation methods: filter, flatMap, map, or.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional propagation: filter, flatMap, map, or
@@ -252,7 +252,7 @@ public class OptionalImplVisitor
 
   /**
    * Returns true iff the method being called is annotated with {@code @}{@link OptionalEliminator}.
-   * This is the Optional elimination methods: get, orElse, orElseGet, orElseThrow.
+   * These are the Optional elimination methods: get, orElse, orElseGet, orElseThrow.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional elimination: get, orElse, orElseGet,
@@ -538,7 +538,7 @@ public class OptionalImplVisitor
    * the callers of any methods that have programmer-written annotations from the {@link NonEmpty}
    * system.
    *
-   * <p>These annotations may appear on the return type, formal parameters, or on the declaration of
+   * <p>These annotations can appear on the return type, formal parameters, or on the declaration of
    * local variables within method bodies.
    *
    * @param tree a method invocation tree
@@ -695,7 +695,7 @@ public class OptionalImplVisitor
    * <p>Pattern match for: {@code CREATION().PROPAGATION()*.ELIMINATION()}
    *
    * <p>{@code CREATION()} wraps a value in an instance of {@link java.util.Optional}, and {@code
-   * PROPAGATION()} is a method (or a sequence of methods) that operate on and return {@link
+   * PROPAGATION()} is a method (or a sequence of methods) that operates on and returns {@link
    * java.util.Optional}. {@code ELIMINATION()} is the terminal operation that unwraps the {@link
    * java.util.Optional} value (i.e., {@link Optional#get()}).
    *
@@ -738,8 +738,8 @@ public class OptionalImplVisitor
    *
    * <p>Rule #7: Don't use Optional to wrap any collection type.
    *
-   * <p>Certain types are illegal, such as {@code Optional<Optional>}. The type validator may see a
-   * supertype of the most precise run-time type; for example, it may see the type as {@code
+   * <p>Certain types are illegal, such as {@code Optional<Optional>}. The type validator might see
+   * a supertype of the most precise run-time type; for example, it might see the type as {@code
    * Optional<? extends Object>}, and it would not flag any problem with such a type. This method
    * checks at {@code Optional} creation sites.
    *
@@ -751,7 +751,7 @@ public class OptionalImplVisitor
    * <p>TODO: Also check at collection creation sites, but there are so many of them, and there
    * often are not values of the element type at the collection creation site.
    *
-   * @param tree a method invocation that might create {@code Optional<X>} where X is impermissable:
+   * @param tree a method invocation that might create {@code Optional<X>} where X is impermissible:
    *     Optional or Collection
    */
   public void handleNestedOptionalCreation(MethodInvocationTree tree) {
@@ -800,7 +800,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Given a variable declaration annotated with @{@link NonEmpty}, add the enclosing method in
+   * Given a variable declaration annotated with @{@link NonEmpty}, adds the enclosing method in
    * which it is found (if one exists) to the set of methods that must be verified with the
    * Non-Empty Checker.
    *
@@ -836,7 +836,7 @@ public class OptionalImplVisitor
   private final class OptionalImplTypeValidator extends BaseTypeValidator {
 
     /**
-     * Create an OptionalImplTypeValidator.
+     * Creates an OptionalImplTypeValidator.
      *
      * @param checker the type-checker associated with this type validator
      * @param visitor the visitor associated with this type validator
@@ -916,8 +916,8 @@ public class OptionalImplVisitor
   }
 
   /**
-   * If the given tree is a block tree with a single element, return the enclosed non-block
-   * statement. Otherwise, return the same tree.
+   * If the given tree is a block tree with a single element, returns the enclosed non-block
+   * statement. Otherwise, returns the same tree.
    *
    * @param tree a statement tree
    * @return the single enclosed statement, if it exists; otherwise, the same tree
@@ -955,7 +955,7 @@ public class OptionalImplVisitor
    * Stream.filter(Optional::isPresent).map(Optional::get)}.
    *
    * @param memberRefTree a member reference tree
-   * @return true if {@code memberRefTree} the {@code Optional::get} in {@code
+   * @return true if {@code memberRefTree} is the {@code Optional::get} in {@code
    *     Stream.filter(Optional::isPresent).map(Optional::get)}
    */
   private boolean isFilterIsPresentMapGet(MemberReferenceTree memberRefTree) {

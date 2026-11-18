@@ -82,8 +82,8 @@ public class TestSceneLib {
           "Ready", Annotations.asRetentionClass, Annotations.noFieldTypes, "TestSceneLib.java");
 
   /**
-   * Parse indexFileContents as an annotation file, merging the results into s; the final state of s
-   * should equal expectScene.
+   * Parses indexFileContents as an annotation file, merging the results into s; the final state of
+   * s should equal expectScene.
    */
   void doParseTest(String indexFileContents, String indexFileName, AScene s, AScene expectScene) {
     try {

@@ -26,7 +26,7 @@ public class QualifierUpperBounds {
   /** Map from canonical class name strings to annotations. */
   private final Map<@CanonicalName String, AnnotationMirrorSet> types;
 
-  /** {@link QualifierHierarchy} */
+  /** The {@link QualifierHierarchy}. */
   private final QualifierHierarchy qualHierarchy;
 
   private final AnnotatedTypeFactory atypeFactory;
@@ -76,7 +76,12 @@ public class QualifierUpperBounds {
     return TypeKind.valueOf(typeKind.name());
   }
 
-  /** Add default qualifier, {@code theQual}, for the given TypeKind. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given TypeKind.
+   *
+   * @param typeKind the TypeKind
+   * @param theQual the default qualifier for {@code typeKind}
+   */
   public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
@@ -86,7 +91,12 @@ public class QualifierUpperBounds {
     }
   }
 
-  /** Add default qualifier, {@code theQual}, for the given class. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given class.
+   *
+   * @param type the class
+   * @param theQual the default qualifier for {@code type}
+   */
   public void addType(Class<?> type, AnnotationMirror theQual) {
     String typeNameString = type.getCanonicalName();
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
@@ -132,7 +142,30 @@ public class QualifierUpperBounds {
   }
 
   /**
-   * Returns the explicit annotations on the element. Subclass can override this behavior to add
+   * Returns {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
+   * of {@code type} in the same hierarchy replaced by that bound.
+   *
+   * @param type the type whose qualifier upper bounds limit {@code annos}
+   * @param annos the qualifiers to limit
+   * @return {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
+   *     of {@code type} in the same hierarchy replaced by that bound
+   */
+  public AnnotationMirrorSet limitToBound(TypeMirror type, Set<? extends AnnotationMirror> annos) {
+    AnnotationMirrorSet boundAnnos = getBoundQualifiers(type);
+    AnnotationMirrorSet limitedAnnos = new AnnotationMirrorSet();
+    for (AnnotationMirror anno : annos) {
+      AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
+      if (bound == null) {
+        throw new BugInCF(
+            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
+      }
+      limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
+    }
+    return limitedAnnos;
+  }
+
+  /**
+   * Returns the explicit annotations on the element. Subclasses can override this behavior to add
    * annotations.
    *
    * @param element element whose annotations to return

@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Whenever a method with {@link I18nFormatFor} annotation is invoked, it will perform the format
+ * Whenever a method with an {@link I18nFormatFor} annotation is invoked, it will perform the format
  * string verification.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker

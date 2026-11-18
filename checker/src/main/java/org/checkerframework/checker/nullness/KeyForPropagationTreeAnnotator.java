@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * the right-hand side or vice versa:
  *
  * <p>1. If a keySet is being saved to a newly declared set, we transfer the annotations from the
- * keySet to the lhs. e.g.,
+ * keySet to the lhs. E.g.,
  *
  * <pre>{@code
  * // The user is not required to explicitly annotate the LHS's type argument with @KeyFor("m")
@@ -32,8 +32,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * }</pre>
  *
  * 2. If a variable declaration contains type arguments with an @KeyFor annotation and its
- * initializer is a new class tree with corresponding type arguments that have an @UknownKeyFor
- * primary annotation, we transfer from the LHS to RHS. e.g.,
+ * initializer is a new class tree with corresponding type arguments that have an @UnknownKeyFor
+ * primary annotation, we transfer from the LHS to RHS. E.g.,
  *
  * <pre>{@code
  * // The user does not have to write @KeyFor("m") on both sides
@@ -43,13 +43,13 @@ import org.checkerframework.javacutil.TreeUtils;
  * 3. IMPORTANT NOTE: The following case must be (and is) handled in KeyForAnnotatedTypeFactory. In
  * BaseTypeVisitor we check to make sure that the constructor called in a NewClassTree is actually
  * compatible with the annotations placed on the NewClassTree. This requires that, prior to this
- * check we also propagate the annotations to this constructor in constructorFromUse so that the
+ * check, we also propagate the annotations to this constructor in constructorFromUse so that the
  * constructor call matches the type given to the NewClassTree.
  *
- * @see
- *     org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
- *     <p>Note propagation only occurs between two AnnotatedDeclaredTypes. If either side is not an
- *     AnnotatedDeclaredType then this class does nothing.
+ * <p>Note that propagation only occurs between two AnnotatedDeclaredTypes. If either side is not an
+ * AnnotatedDeclaredType, then this class does nothing.
+ *
+ * @see KeyForAnnotatedTypeFactory#constructorFromUse(NewClassTree, boolean)
  */
 public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   private final KeyForPropagator keyForPropagator;
@@ -64,9 +64,10 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Returns true iff expression is a call to java.util.Map.KeySet.
+   * Returns true iff expression is a call to java.util.Map.keySet.
    *
-   * @return true iff expression is a call to java.util.Map.KeySet
+   * @param expression an expression
+   * @return true iff expression is a call to java.util.Map.keySet
    */
   public boolean isCallToKeyset(ExpressionTree expression) {
     return TreeUtils.isMethodInvocation(expression, keySetMethod, atypeFactory.getProcessingEnv());

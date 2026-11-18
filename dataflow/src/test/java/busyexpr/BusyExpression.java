@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 
 /**
- * Run the busy-expression analysis create a text file of the CFG.
+ * Runs the busy-expression analysis and creates a text file of the CFG.
  *
  * <p>Used in busyExpressionTest Gradle task to test the BusyExpression analysis.
  */

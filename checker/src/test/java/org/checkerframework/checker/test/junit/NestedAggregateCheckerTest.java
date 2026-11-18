@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NestedAggregateCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NestedAggregateCheckerTest.
+   * Creates a NestedAggregateCheckerTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

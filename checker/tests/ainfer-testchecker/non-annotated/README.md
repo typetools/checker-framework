@@ -15,8 +15,8 @@ are two requirements for test inputs that are typechecked as part of
 these tests (that is, the test files in this directory and all all-systems
 tests):
 
-* The fully-qualified name of each test class must be unique, because
-  annotation files use a naming scheme based on the fully-qualified name of
+* The fully qualified name of each test class must be unique, because
+  annotation files use a naming scheme based on the fully qualified name of
   the class. This means, for example, that this directory cannot contain
   any test files with the same name as any all-systems test.
 * Every class must either be or be contained by a class whose name matches

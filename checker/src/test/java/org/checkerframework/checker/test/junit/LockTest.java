@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class LockTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a LockTest.
+   * Creates a LockTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

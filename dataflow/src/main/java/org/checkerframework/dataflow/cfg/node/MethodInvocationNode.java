@@ -22,7 +22,7 @@ import org.plumelib.util.StringsP;
  *   <em>target(arg1, arg2, ...)</em>
  * </pre>
  *
- * CFGs may contain {@link MethodInvocationNode}s that correspond to no AST {@link Tree}, in which
+ * CFGs can contain {@link MethodInvocationNode}s that correspond to no AST {@link Tree}, in which
  * case, the tree field will be null.
  */
 public class MethodInvocationNode extends Node {
@@ -32,7 +32,7 @@ public class MethodInvocationNode extends Node {
 
   /**
    * The MethodAccessNode for the method being invoked. Includes the receiver if any. For a static
-   * method, the receiver may be a class name.
+   * method, the receiver might be a class name.
    */
   protected final MethodAccessNode target;
 
@@ -45,7 +45,7 @@ public class MethodInvocationNode extends Node {
   /**
    * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
    * enhanced for loop, then the {@code iterExpression} field is the expression in the for loop,
-   * e.g., {@code iter} in {@code for(Object o: iter}.
+   * e.g., {@code iter} in {@code for(Object o: iter)}.
    *
    * <p>Is set by {@link #setIterableExpression}.
    */
@@ -61,9 +61,9 @@ public class MethodInvocationNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
-   * Create a MethodInvocationNode.
+   * Creates a MethodInvocationNode.
    *
-   * @param tree for the method invocation
+   * @param tree the tree for the method invocation
    * @param target the MethodAccessNode for the method being invoked
    * @param arguments arguments of the method invocation
    * @param treePath path to the method invocation
@@ -102,10 +102,10 @@ public class MethodInvocationNode extends Node {
 
   /**
    * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
-   * enhanced for loop, then return the expression in the for loop, e.g., {@code iter} in {@code
-   * for(Object o: iter}. Otherwise, return null.
+   * enhanced for loop, then returns the expression in the for loop, e.g., {@code iter} in {@code
+   * for(Object o: iter)}. Otherwise, returns null.
    *
-   * @return the iter expression, or null if this is not a {@link Iterator#next()} from an enhanced
+   * @return the iter expression, or null if this is not an {@link Iterator#next()} from an enhanced
    *     for loop
    */
   public @Nullable ExpressionTree getIterableExpression() {
@@ -114,10 +114,10 @@ public class MethodInvocationNode extends Node {
 
   /**
    * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
-   * enhanced for loop, then return the corresponding {@code EnhancedForLoopTree} AST node.
-   * Otherwise, return null.
+   * enhanced for loop, then returns the corresponding {@code EnhancedForLoopTree} AST node.
+   * Otherwise, returns null.
    *
-   * @return the {@code EnhancedForLoopTree}, or null if this is not a {@link Iterator#next()} from
+   * @return the {@code EnhancedForLoopTree}, or null if this is not an {@link Iterator#next()} from
    *     an enhanced for loop
    */
   public @Nullable EnhancedForLoopTree getEnhancedForLoop() {
@@ -125,7 +125,7 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
-   * Set the iterable expression from a for loop.
+   * Sets the iterable expression from a for loop.
    *
    * @param iterableExpression iterable expression
    * @see #getIterableExpression()
@@ -135,7 +135,7 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
-   * Set the enhanced for loop for which {@code this} is the desugared loop update.
+   * Sets the enhanced for loop for which {@code this} is the desugared loop update.
    *
    * @param enhancedForLoop the {@code EnhancedForLoopTree}
    * @see #getEnhancedForLoop()

@@ -27,14 +27,14 @@ import javax.tools.Diagnostic;
  */
 public abstract class AggregateChecker extends SourceChecker {
 
-  /** Create a new AggregateChecker. */
+  /** Creates a new AggregateChecker. */
   protected AggregateChecker() {}
 
   /**
    * Returns the list of independent subcheckers to be run together. An aggregate checker overrides
    * this method to indicate its immediate subcheckers.
    *
-   * @return the list of immediate subcheckers checkers to be run
+   * @return the list of immediate subcheckers to be run
    */
   protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 

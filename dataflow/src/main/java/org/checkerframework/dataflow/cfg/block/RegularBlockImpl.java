@@ -13,7 +13,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
   protected final List<Node> contents;
 
   /**
-   * Initialize an empty basic block to be filled with contents and linked to other basic blocks
+   * Initializes an empty basic block to be filled with contents and linked to other basic blocks
    * later.
    */
   public RegularBlockImpl() {
@@ -22,7 +22,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
   }
 
   /**
-   * Add a node to the contents of this basic block.
+   * Adds a node to the contents of this basic block.
    *
    * @param n a node to add to this basic block
    */
@@ -32,7 +32,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
   }
 
   /**
-   * Add multiple nodes to the contents of this basic block.
+   * Adds multiple nodes to the contents of this basic block.
    *
    * @param ns the nodes to add to this basic block
    */
@@ -45,7 +45,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
   /**
    * {@inheritDoc}
    *
-   * <p>This implementation returns an non-empty list.
+   * <p>This implementation returns a non-empty list.
    */
   @Override
   public List<Node> getNodes() {
