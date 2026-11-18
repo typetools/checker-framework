@@ -14,20 +14,27 @@ public class ReceiverReassignedInArgument {
   @SideEffectFree
   void sefTake(@Nullable Object o) {}
 
-  void take(Object first, @Nullable Object second) {}
-
-  // An argument passed to a non-null parameter is refined to non-null after the call, but not if a
-  // later argument reassigns it.
-  void assignInLaterArgument() {
+  void assignInNestedArgument() {
     ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
-    r.take(r, r = null);
+    r.take(String.valueOf(r = null));
     // :: error: (dereference.of.nullable)
     r.toString();
   }
 
-  void assignInNestedArgument() {
+  void take2(Object first, @Nullable Object second) {}
+
+  // A later argument reassigns an earlier argument that is passed to a non-null parameter.
+  void assignEarlierArgument() {
+    Object r = new Object();
+    take2(r, r = null);
+    // :: error: (dereference.of.nullable)
+    r.toString();
+  }
+
+  // A later argument reassigns both the receiver and an earlier argument.
+  void assignReceiverAndEarlierArgument() {
     ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
-    r.take(String.valueOf(r = null));
+    r.take2(r, r = null);
     // :: error: (dereference.of.nullable)
     r.toString();
   }

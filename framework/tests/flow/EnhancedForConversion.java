@@ -41,6 +41,12 @@ public class EnhancedForConversion {
     }
   }
 
+  <T extends @Odd Integer> void unboxWildcardTypeVariableList(List<? extends T> list) {
+    for (int x : list) {
+      @Odd int y = x;
+    }
+  }
+
   // The return type of iterator() is Iterator<@Odd Integer>, so next() returns an @Odd Integer.
   abstract static class OddIntegers implements Iterable<@Odd Integer> {
     @Override
@@ -57,6 +63,20 @@ public class EnhancedForConversion {
     for (long x : odds) {
       @Odd long y = x;
     }
+  }
+
+  // RawSource.iterator() returns a raw type, which is return-type-substitutable for
+  // Iterator<String> only by unchecked conversion.  Neither iterator() method overrides the other.
+  @SuppressWarnings("rawtypes")
+  interface RawSource {
+    Iterator iterator();
+  }
+
+  @SuppressWarnings("unchecked")
+  interface RawIterable extends RawSource, Iterable<String> {}
+
+  void rawIterator(RawIterable strings) {
+    for (String s : strings) {}
   }
 
   void unboxArray(@Odd Integer[] array) {

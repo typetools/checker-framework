@@ -80,4 +80,18 @@ public class TypeVarUnboxing {
       @IntVal(4) long z = x;
     }
   }
+
+  <U extends @IntVal(1) Integer> void enhancedForWildcardBoundedByTypeVar(
+      java.util.List<? extends U> list, java.util.Map<String, ? extends U> map) {
+    for (int x : list) {
+      @IntVal(1) int y = x;
+      // :: error: [assignment]
+      @IntVal(2) int z = x;
+    }
+    for (int x : map.values()) {
+      @IntVal(1) int y = x;
+      // :: error: [assignment]
+      @IntVal(2) int z = x;
+    }
+  }
 }

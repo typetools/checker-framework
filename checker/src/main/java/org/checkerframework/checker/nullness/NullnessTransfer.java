@@ -36,6 +36,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -444,7 +445,7 @@ public class NullnessTransfer
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
     // case FlowNullness.java.
     // As for the receiver, the refinement is skipped if evaluating a later argument might reassign
-    // the argument expression, as in `r.m(r, r = null)`.
+    // the argument expression, as in `m(r, r = null)`.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
@@ -488,7 +489,8 @@ public class NullnessTransfer
    * subexpression of it. The expression is the receiver or an argument of the invocation, and
    * {@code arguments} are the arguments that are evaluated after it. This is conservative. It
    * returns true if an argument assigns any part of the expression. If the expression is assignable
-   * by other code, it also returns true if an argument assigns a non-local variable or (unless
+   * by other code or contains a method call (whose value might depend on state that does not appear
+   * in the expression), it also returns true if an argument assigns a non-local variable or (unless
    * {@link #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
    *
@@ -506,7 +508,12 @@ public class NullnessTransfer
     if (arguments.isEmpty()) {
       return false;
     }
-    boolean exprAssignableByOtherCode = expr.isAssignableByOtherCode();
+    // A method call's value can depend on state that does not appear in the expression, such as a
+    // static field that the method reads.  (MethodCall.isAssignableByOtherCode() examines only the
+    // receiver and arguments.)  So, an assignment to a non-local variable or a call with side
+    // effects might change the value of an expression that contains a method call.
+    boolean exprMayChangeByOtherCode =
+        expr.isAssignableByOtherCode() || expr.containsOfClass(MethodCall.class);
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -573,7 +580,7 @@ public class NullnessTransfer
             if (expr.containsSyntacticEqualJavaExpression(assigned)) {
               return true;
             }
-            return exprAssignableByOtherCode && !(assigned instanceof LocalVariable);
+            return exprMayChangeByOtherCode && !(assigned instanceof LocalVariable);
           }
 
           /*
@@ -583,7 +590,7 @@ public class NullnessTransfer
            * @return true if invoking {@code executable} might reassign {@code expr}
            */
           private boolean mayHaveSideEffect(ExecutableElement executable) {
-            return exprAssignableByOtherCode
+            return exprMayChangeByOtherCode
                 && !nonNullAssumptionAfterInvocation
                 && !atypeFactory.isSideEffectFree(executable)
                 && !PurityUtils.isSideEffectFree(atypeFactory, executable);

@@ -1,3 +1,5 @@
+import org.checkerframework.checker.interning.qual.Interned;
+
 // A switch expression whose results are boxed booleans is interned.
 
 // @below-java17-jdk-skip-test
@@ -9,10 +11,13 @@ public class SwitchExpressionBoxing {
   }
 
   Boolean equalTo(Kind k, int x, int y) {
-    return switch (k) {
-      case A -> x == y;
-      case B -> x != y;
-    };
+    Boolean result =
+        switch (k) {
+          case A -> x == y;
+          case B -> x != y;
+        };
+    @Interned Boolean interned = result;
+    return interned;
   }
 
   Integer sum(Kind k, int x, int y) {

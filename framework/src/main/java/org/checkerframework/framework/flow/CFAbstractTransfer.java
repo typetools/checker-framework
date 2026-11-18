@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -1552,8 +1553,9 @@ public abstract class CFAbstractTransfer<
    * This is only called at an unboxing conversion.
    *
    * <p>If {@code annotatedValue}'s type is a type variable, such as {@code T extends @Odd Integer},
-   * and {@code annotatedValue} lacks an annotation in some hierarchy, then this method uses the
-   * annotation of the type variable's upper bound in that hierarchy.
+   * or a wildcard whose upper bound is a type variable, such as {@code ? extends T}, and {@code
+   * annotatedValue} lacks an annotation in some hierarchy, then this method uses the annotation of
+   * the type variable's upper bound in that hierarchy.
    *
    * @param type the primitive type to unbox to
    * @param annotatedValue a value to unbox
@@ -1561,12 +1563,19 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
    *     lacks an annotation in some hierarchy and its type is not a type variable
    */
+  @SideEffectFree
   protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }
     AnnotationMirrorSet annos = annotatedValue.getAnnotations();
-    if (annotatedValue.getUnderlyingType() instanceof TypeVariable typeVariable) {
+    TypeMirror underlyingType = annotatedValue.getUnderlyingType();
+    // For a wildcard such as `? extends T`, use the type variable that is its upper bound.
+    if (underlyingType instanceof WildcardType wildcardType
+        && wildcardType.getExtendsBound() != null) {
+      underlyingType = wildcardType.getExtendsBound();
+    }
+    if (underlyingType instanceof TypeVariable typeVariable) {
       AnnotationMirrorSet upperBoundAnnos =
           analysis.atypeFactory.getAnnotatedType(typeVariable.asElement()).getAnnotations();
       QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
