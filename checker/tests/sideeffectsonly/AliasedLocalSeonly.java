@@ -1,0 +1,101 @@
+// A local variable that is assigned only expressions that the `@SideEffectsOnly` annotation covers
+// is an alias of them, so modifying the variable's value is covered too.
+
+import java.util.ArrayList;
+import java.util.List;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+
+public class AliasedLocalSeonly {
+
+  List<Integer> covered = new ArrayList<>();
+
+  static List<Integer> uncovered = new ArrayList<>();
+
+  @SideEffectsOnly("this")
+  void aliasOfField() {
+    List<Integer> alias = this.covered;
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("#1")
+  void aliasOfParameter(List<Integer> lst) {
+    List<Integer> alias;
+    alias = lst;
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfAlias() {
+    List<Integer> alias1 = covered;
+    List<Integer> alias2 = alias1;
+    alias2.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfParenthesized() {
+    List<Integer> alias = (this.covered);
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfCast() {
+    Object obj = covered;
+    @SuppressWarnings("unchecked")
+    List<Integer> alias = ((List<Integer>) (obj));
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfCastUncovered() {
+    @SuppressWarnings("unchecked")
+    List<Integer> alias = (List<Integer>) (Object) uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfUncovered() {
+    List<Integer> alias = uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasReassigned(boolean b) {
+    List<Integer> alias = covered;
+    if (b) {
+      alias = uncovered;
+    }
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasInLoop() {
+    // An enhanced `for` loop's variable is not an alias of any expression.
+    for (List<Integer> alias : List.of(covered)) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      alias.add(1);
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void loopVariableReassigned(List<List<Integer>> lists) {
+    // Each iteration assigns the loop variable, so assigning a covered expression to it in the
+    // body does not make it an alias.
+    for (List<Integer> alias : lists) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      alias.add(1);
+      alias = covered;
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void fieldReassignedAfterAliasing() {
+    // The alias holds the list that `this.covered` referred to on entry to the method.  That list
+    // was reachable from `this`, so modifying it is covered even after the field is reassigned.
+    List<Integer> alias = this.covered;
+    this.covered = new ArrayList<>();
+    alias.add(1);
+  }
+}
