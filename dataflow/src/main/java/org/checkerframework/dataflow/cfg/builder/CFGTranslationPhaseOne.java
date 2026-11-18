@@ -1135,23 +1135,40 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if a conversion from the type of the node to varType requires narrowing.
+   * Returns true if the node is a compile-time constant and varType is byte, short, char, Byte,
+   * Short, or Character. Assignment conversion converts such a constant to the primitive type of
+   * varType, even by a narrowing conversion, before boxing it if varType is a boxed type (JLS 5.2),
+   * as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code Short s = (byte) 1;}.
    *
    * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return true if this conversion requires narrowing to succeed
+   * @return true if the node is a compile-time constant and varType is byte, short, char, Byte,
+   *     Short, or Character
    */
-  protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
-    // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
-        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
-    return isLeftNarrowableTo && isCompileTimeConstant(node);
+  protected boolean isConstantToByteShortOrChar(TypeMirror varType, Node node) {
+    return TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
+        && isCompileTimeConstant(node);
+  }
+
+  /**
+   * Converts the given compile-time constant to the given type, which is byte, short, char, Byte,
+   * Short, or Character, as assignment conversion does (JLS 5.2). The conversion widens or narrows
+   * the constant to the primitive type of varType, then boxes it if varType is a boxed type. For
+   * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
+   *
+   * @param node a node producing a compile-time constant of primitive type
+   * @param varType the type to convert the constant to
+   * @return a Node with the value converted to varType, which might be the input node
+   * @see #isConstantToByteShortOrChar
+   */
+  protected Node convertConstant(Node node, TypeMirror varType) {
+    boolean isBoxed = TypesUtils.isBoxedPrimitive(varType);
+    TypeMirror primitiveType = isBoxed ? types.unboxedType(varType) : varType;
+    Node converted =
+        types.isSubtype(node.getType(), primitiveType)
+            ? widen(node, primitiveType)
+            : narrow(node, primitiveType);
+    return isBoxed ? box(converted) : converted;
   }
 
   /**
@@ -1208,8 +1225,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrowAndBox(node, varType);
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+        node = convertConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1221,8 +1238,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrow(node, varType);
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+        node = convertConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.
