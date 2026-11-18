@@ -1450,7 +1450,8 @@ public class InferenceFactory {
 
   /**
    * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
-   * replaced by the corresponding element of {@code typeArgs}. An instantiation might mention
+   * replaced by the corresponding element of {@code typeArgs}, and every use of a variable in
+   * {@code instantiated} has been replaced by its instantiation. An instantiation might mention
    * another variable that is being resolved at the same time, so the instantiations are not final
    * until this substitution has been performed.
    *
@@ -1459,12 +1460,21 @@ public class InferenceFactory {
    *
    * @param typeArgs the instantiations of {@code variables}
    * @param variables the variables that {@code typeArgs} instantiates
-   * @return {@code typeArgs}, with uses of {@code variables} replaced by their instantiations
+   * @param instantiated variables, not in {@code variables}, each of which has an instantiation
+   * @return {@code typeArgs}, with uses of {@code variables} and {@code instantiated} replaced by
+   *     their instantiations
    */
-  public List<AbstractType> getSubsTypeArgs(List<AbstractType> typeArgs, List<Variable> variables) {
+  public List<AbstractType> getSubsTypeArgs(
+      List<AbstractType> typeArgs, List<Variable> variables, Collection<Variable> instantiated) {
     Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
+    }
+    for (Variable variable : instantiated) {
+      ProperType instantiation = variable.getInstantiation();
+      assert instantiation != null
+          : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
     }
 
     // TODO: If the instantiation of a variable mentions that same variable, then substitution does
