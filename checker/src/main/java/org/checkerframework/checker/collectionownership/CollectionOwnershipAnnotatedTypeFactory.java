@@ -54,6 +54,7 @@ import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -145,6 +146,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The {@code value} element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
+
+  /** The {@code element} element of the {@code @}{@link CreatesCollectionObligation} annotation. */
+  private final ExecutableElement createsCollectionObligationElementElement =
+      TreeUtils.getMethod(CreatesCollectionObligation.class, "element", 0, processingEnv);
 
   /** The {@code Iterator.hasNext()} method. */
   private final ExecutableElement iteratorHasNext =
@@ -616,34 +621,63 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or {@code null} if the call has no such argument.
-   *
-   * <p>The current heuristic is that the inserted element is the last argument at the call site.
-   * TODO: Make @CreatesCollectionObligation accept an index for the inserted elements position.
+   * call, or {@code null} if the call has no such argument. See {@link
+   * CreatesCollectionObligation#element}.
    *
    * @param tree a method invocation tree
    * @return the inserted argument tree, or null if there is none
    */
   public @Nullable ExpressionTree getInsertedArgumentTree(MethodInvocationTree tree) {
-    if (tree.getArguments().isEmpty()) {
-      return null;
-    }
-    return tree.getArguments().get(tree.getArguments().size() - 1);
+    List<? extends ExpressionTree> args = tree.getArguments();
+    int index = getInsertedParameterIndex(TreeUtils.elementFromUse(tree));
+    return index >= 0 && index < args.size() ? args.get(index) : null;
   }
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or {@code null} if the call has no such argument.
+   * call, or {@code null} if the call has no such argument. See {@link
+   * CreatesCollectionObligation#element}.
    *
    * @param node a method invocation node
    * @return the inserted argument node, or null if there is none
    */
   public @Nullable Node getInsertedArgumentNode(MethodInvocationNode node) {
     List<Node> args = node.getArguments();
-    if (args.isEmpty()) {
-      return null;
+    int index = getInsertedParameterIndex(node.getTarget().getMethod());
+    return index >= 0 && index < args.size() ? args.get(index) : null;
+  }
+
+  /**
+   * Returns the {@code element} of the given method's {@code @CreatesCollectionObligation}
+   * annotation, which names the inserted parameter, or the empty string if it names none.
+   *
+   * @param method a method, which may inherit {@code @CreatesCollectionObligation}
+   * @return the {@code element} of the method's {@code @CreatesCollectionObligation} annotation
+   */
+  public String getInsertedParameterReference(ExecutableElement method) {
+    AnnotationMirror anno = getDeclAnnotation(method, CreatesCollectionObligation.class);
+    return anno == null
+        ? ""
+        : AnnotationUtils.getElementValue(
+            anno, createsCollectionObligationElementElement, String.class, "");
+  }
+
+  /**
+   * Returns the index of the parameter that the given {@code @CreatesCollectionObligation} method
+   * inserts: the parameter named by the annotation's {@code element}, or else the last parameter.
+   *
+   * @param method a method, which may inherit {@code @CreatesCollectionObligation}
+   * @return the index of the inserted parameter, or -1 if the method has no parameters or {@code
+   *     element} does not name one
+   */
+  public int getInsertedParameterIndex(ExecutableElement method) {
+    int numParams = method.getParameters().size();
+    String element = getInsertedParameterReference(method);
+    if (element.isEmpty()) {
+      return numParams - 1;
     }
-    return args.get(args.size() - 1);
+    int paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    return paramIndex >= 0 && paramIndex < numParams ? paramIndex : -1;
   }
 
   /**

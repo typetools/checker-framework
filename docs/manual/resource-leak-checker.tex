@@ -162,8 +162,9 @@ The following annotations are written on methods.
 \item[\refqualclasswithparams{checker/collectionownership/qual}{CollectionFieldDestructor}{String[] value}]
   expresses that the annotated method fulfills the obligations of the given resource collection fields.
   For more details, see Section~\ref{resource-leak-collections-fields}.
-\item[\refqualclass{checker/collectionownership/qual}{CreatesCollectionObligation}]
+\item[\refqualclasswithparams{checker/collectionownership/qual}{CreatesCollectionObligation}{String element}]
   expresses that the annotated method might insert an element into its receiver collection, as \<Collection.add> does.
+  The inserted element is the method's last parameter, or the parameter that the optional \<element> names.
   For more details, see Section~\ref{resource-leak-collections-defaults}.
 \end{description}
 
@@ -814,6 +815,11 @@ receiver collection, such as \<Collection.add>, is annotated with
 \<@CreatesCollectionObligation>.  At a call to such a method, the Resource Leak
 Checker changes the type of the receiver collection to \<@OwningCollection> and
 creates a tracked obligation for the collection in the dataflow analysis.
+By default, the inserted element is the method's last parameter, as in
+\<add(E)> and \<add(int, E)>.  A method whose inserted element is not its last
+parameter names it with \<element>.  For example,
+\<BlockingQueue.offer(E, long, TimeUnit)> is annotated with
+\<@CreatesCollectionObligation(element = "\#1")>.
 
 The default type of a resource collection parameter is
 \<@NotOwningCollection>.
