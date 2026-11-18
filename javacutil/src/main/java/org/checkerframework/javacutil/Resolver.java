@@ -15,6 +15,7 @@ import com.sun.tools.javac.comp.DeferredAttr;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
@@ -95,6 +96,9 @@ public class Resolver {
   /** True if we are running on at least Java 23. */
   private static final boolean atLeastJava23 = sourceVersionNumber >= 23;
 
+  /** True if we are running on at least Java 28. */
+  private static final boolean atLeastJava28 = sourceVersionNumber >= 28;
+
   static {
     try {
       FIND_METHOD =
@@ -109,7 +113,13 @@ public class Resolver {
               boolean.class);
       FIND_METHOD.setAccessible(true);
 
-      if (atLeastJava23) {
+      if (atLeastJava28) {
+        // Changed in
+        // https://github.com/openjdk/jdk/commit/f1c7c3e9bc0c8794dbf16b4fdc31464d5abe473b
+        FIND_VAR =
+            Resolve.class.getDeclaredMethod(
+                "findVar", DiagnosticPosition.class, Env.class, Name.class, boolean.class);
+      } else if (atLeastJava23) {
         FIND_VAR =
             Resolve.class.getDeclaredMethod(
                 "findVar", DiagnosticPosition.class, Env.class, Name.class);
@@ -123,14 +133,28 @@ public class Resolver {
               "findIdent", DiagnosticPosition.class, Env.class, Name.class, KindSelector.class);
       FIND_IDENT.setAccessible(true);
 
-      FIND_IDENT_IN_TYPE =
-          Resolve.class.getDeclaredMethod(
-              "findIdentInType",
-              DiagnosticPosition.class,
-              Env.class,
-              Type.class,
-              Name.class,
-              KindSelector.class);
+      if (atLeastJava28) {
+        // Changed in
+        // https://github.com/openjdk/jdk/commit/850c789a827e21cda3096276d9638f56fae76c3e
+        FIND_IDENT_IN_TYPE =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInType",
+                DiagnosticPosition.class,
+                Env.class,
+                Type.class,
+                Name.class,
+                KindSelector.class,
+                JCTree.class);
+      } else {
+        FIND_IDENT_IN_TYPE =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInType",
+                DiagnosticPosition.class,
+                Env.class,
+                Type.class,
+                Name.class,
+                KindSelector.class);
+      }
       FIND_IDENT_IN_TYPE.setAccessible(true);
 
       FIND_IDENT_IN_PACKAGE =
@@ -253,9 +277,26 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
-      res =
-          resolve(
-              FIND_IDENT_IN_TYPE, null, env, type, names.fromString(name), Kinds.KindSelector.VAR);
+      if (atLeastJava28) {
+        res =
+            resolve(
+                FIND_IDENT_IN_TYPE,
+                null,
+                env,
+                type,
+                names.fromString(name),
+                Kinds.KindSelector.VAR,
+                null);
+      } else {
+        res =
+            resolve(
+                FIND_IDENT_IN_TYPE,
+                null,
+                env,
+                type,
+                names.fromString(name),
+                Kinds.KindSelector.VAR);
+      }
 
       if (res.getKind().isField()) {
         return (VariableElement) res;
@@ -285,7 +326,9 @@ public class Resolver {
       Env<AttrContext> env = getEnvForPath(path);
       // Either a VariableElement or a SymbolNotFoundError.
       Element res;
-      if (atLeastJava23) {
+      if (atLeastJava28) {
+        res = resolve(FIND_VAR, null, env, names.fromString(name), false);
+      } else if (atLeastJava23) {
         res = resolve(FIND_VAR, null, env, names.fromString(name));
       } else {
         res = resolve(FIND_VAR, env, names.fromString(name));
