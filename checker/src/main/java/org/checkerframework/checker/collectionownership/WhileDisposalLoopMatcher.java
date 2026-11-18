@@ -796,7 +796,7 @@ final class WhileDisposalLoopMatcher {
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
       // See visitIdentifier.
-      if (TreeUtils.elementFromTree(tree) == headerVarElement) {
+      if (TreeUtils.elementFromUse(tree) == headerVarElement) {
         illegal = true;
         return null;
       }
@@ -914,7 +914,7 @@ final class WhileDisposalLoopMatcher {
 
           @Override
           public Boolean visitMemberSelect(MemberSelectTree t, Void p) {
-            if (TreeUtils.elementFromTree(t) == element) {
+            if (TreeUtils.elementFromUse(t) == element) {
               return true;
             }
             return super.visitMemberSelect(t, p);
