@@ -271,7 +271,7 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror otherATM = otherAsSuper.getAnnotatedType();
     Set<AnnotatedTypeMirror> ignored = ignoredPositions(typeAsSuper, atm, qh);
     Set<AnnotatedTypeMirror> otherIgnored = ignoredPositions(otherAsSuper, otherATM, qh);
-    return allCorrespondingPositions(
+    return allCorrespondingPositionsMatch(
         atm,
         otherATM,
         (position, otherPosition) ->
@@ -635,7 +635,7 @@ final class IgnoredAnnotations {
       AnnotatedTypeMirror atm2,
       Set<AnnotatedTypeMirror> ignored1,
       Set<AnnotatedTypeMirror> ignored2) {
-    allCorrespondingPositions(
+    allCorrespondingPositionsMatch(
         atm1,
         atm2,
         (position1, position2) -> {
@@ -664,17 +664,18 @@ final class IgnoredAnnotations {
    * @param test the test to apply to each pair of corresponding positions; it may side-effect them
    * @return true if {@code test} holds for each pair of corresponding positions
    */
-  private static boolean allCorrespondingPositions(
+  private static boolean allCorrespondingPositionsMatch(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
-    return allCorrespondingPositions(atm1, atm2, test, new IdentityHashMap<>());
+    return allCorrespondingPositionsMatch(atm1, atm2, test, new IdentityHashMap<>());
   }
 
   /**
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
-   * {@code atm2}; see {@link #allCorrespondingPositions(AnnotatedTypeMirror, AnnotatedTypeMirror,
-   * BiPredicate)}. A pair of positions at least one of which is a wildcard is tested at most once.
+   * {@code atm2}; see {@link #allCorrespondingPositionsMatch(AnnotatedTypeMirror,
+   * AnnotatedTypeMirror, BiPredicate)}. A pair of positions at least one of which is a wildcard is
+   * tested at most once.
    *
    * @param atm1 a type
    * @param atm2 a type
@@ -683,7 +684,7 @@ final class IgnoredAnnotations {
    *     been tested (see {@link #addPair})
    * @return true if {@code test} holds for each pair of corresponding positions
    */
-  private static boolean allCorrespondingPositions(
+  private static boolean allCorrespondingPositionsMatch(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
@@ -702,9 +703,9 @@ final class IgnoredAnnotations {
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument is compared with a wildcard's bound; see #boundOf.
       if (atm1.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositions(boundOf(atm1), atm2, test, visitedWildcards);
+        return allCorrespondingPositionsMatch(boundOf(atm1), atm2, test, visitedWildcards);
       } else if (atm2.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositions(atm1, boundOf(atm2), test, visitedWildcards);
+        return allCorrespondingPositionsMatch(atm1, boundOf(atm2), test, visitedWildcards);
       }
       return true;
     }
@@ -712,7 +713,7 @@ final class IgnoredAnnotations {
       case DECLARED -> {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
-        if (!allCorrespondingPositionsPairwise(
+        if (!allCorrespondingPositionsMatchPairwise(
             dt1.getTypeArguments(), dt2.getTypeArguments(), test, visitedWildcards)) {
           return false;
         }
@@ -720,10 +721,10 @@ final class IgnoredAnnotations {
         AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
         return enclosing1 == null
             || enclosing2 == null
-            || allCorrespondingPositions(enclosing1, enclosing2, test, visitedWildcards);
+            || allCorrespondingPositionsMatch(enclosing1, enclosing2, test, visitedWildcards);
       }
       case ARRAY -> {
-        return allCorrespondingPositions(
+        return allCorrespondingPositionsMatch(
             ((AnnotatedArrayType) atm1).getComponentType(),
             ((AnnotatedArrayType) atm2).getComponentType(),
             test,
@@ -732,13 +733,13 @@ final class IgnoredAnnotations {
       case WILDCARD -> {
         AnnotatedWildcardType wt1 = (AnnotatedWildcardType) atm1;
         AnnotatedWildcardType wt2 = (AnnotatedWildcardType) atm2;
-        return allCorrespondingPositions(
+        return allCorrespondingPositionsMatch(
                 wt1.getExtendsBound(), wt2.getExtendsBound(), test, visitedWildcards)
-            && allCorrespondingPositions(
+            && allCorrespondingPositionsMatch(
                 wt1.getSuperBound(), wt2.getSuperBound(), test, visitedWildcards);
       }
       case INTERSECTION -> {
-        return allCorrespondingPositionsPairwise(
+        return allCorrespondingPositionsMatchPairwise(
             ((AnnotatedIntersectionType) atm1).getBounds(),
             ((AnnotatedIntersectionType) atm2).getBounds(),
             test,
@@ -751,7 +752,7 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if {@link #allCorrespondingPositions} holds for each pair of corresponding
+   * Returns true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
    * elements of the two lists. If the lists have different lengths, no positions correspond, so
    * returns true without testing any. That is not an error: the lists can be the type arguments of
    * declared types of different classes, which can be nested within types of the same class, as in
@@ -763,10 +764,10 @@ final class IgnoredAnnotations {
    * @param test the test to apply to each pair of corresponding positions; it may side-effect them
    * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
    *     been tested (see {@link #addPair})
-   * @return true if {@link #allCorrespondingPositions} holds for each pair of corresponding
+   * @return true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
    *     elements
    */
-  private static boolean allCorrespondingPositionsPairwise(
+  private static boolean allCorrespondingPositionsMatchPairwise(
       List<? extends AnnotatedTypeMirror> types1,
       List<? extends AnnotatedTypeMirror> types2,
       BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
@@ -776,7 +777,7 @@ final class IgnoredAnnotations {
     }
     Iterator<? extends AnnotatedTypeMirror> iter2 = types2.iterator();
     for (AnnotatedTypeMirror type1 : types1) {
-      if (!allCorrespondingPositions(type1, iter2.next(), test, visitedWildcards)) {
+      if (!allCorrespondingPositionsMatch(type1, iter2.next(), test, visitedWildcards)) {
         return false;
       }
     }
