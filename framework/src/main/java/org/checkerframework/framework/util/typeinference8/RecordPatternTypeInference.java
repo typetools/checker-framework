@@ -217,7 +217,8 @@ public class RecordPatternTypeInference {
         // javac checked that the matched type is castable to the record class, which is final, so
         // the record class is a subtype of every parameterized type that bounds the matched type.
         throw new BugInCF(
-            "Record pattern %s: %s is not a supertype of %s", pattern, capturedType, recordType);
+            "Record pattern %s: %s is not a supertype of %s",
+            TreeUtils.toStringTruncated(pattern, 65), capturedType, recordType);
       }
       AbstractType tPrime = InferenceType.create(capturedType, map, context);
       ConstraintSet constraints =
@@ -227,7 +228,9 @@ public class RecordPatternTypeInference {
     }
     if (boundSet.containsFalse()) {
       // javac accepted the record pattern, so a false bound is a bug in the Checker Framework.
-      throw new BugInCF("Record pattern inference produced the false bound for %s", pattern);
+      throw new BugInCF(
+          "Record pattern inference produced the false bound for %s",
+          TreeUtils.toStringTruncated(pattern, 65));
     }
     if (boundSet.annoInferenceFailed) {
       return createFailedResult(matchedType, new Failure(boundSet.errorMsg, false));

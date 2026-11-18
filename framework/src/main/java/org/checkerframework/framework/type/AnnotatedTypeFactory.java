@@ -5365,7 +5365,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Tree recordPattern) {
     TreePath path = getPath(recordPattern);
     if (path == null) {
-      throw new BugInCF("No path to record pattern %s", recordPattern);
+      throw new BugInCF(
+          "No path to record pattern %s", TreeUtils.toStringTruncated(recordPattern, 65));
     }
     return inferRecordPatternType(path).failure();
   }
@@ -5554,7 +5555,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(parent)) {
       return getAnnotatedType(TreePathUtil.switchSelectorOfCaseLabel(parentPath));
     }
-    throw new BugInCF("Unexpected parent of pattern %s: %s", pattern, parent);
+    throw new BugInCF(
+        "Unexpected parent of pattern %s: %s",
+        TreeUtils.toStringTruncated(pattern, 65), TreeUtils.toStringTruncated(parent, 65));
   }
 
   /**
