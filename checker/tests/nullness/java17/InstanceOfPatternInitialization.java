@@ -17,7 +17,7 @@ public class InstanceOfPatternInitialization {
   void unknownInitialization(@UnknownInitialization Object o) {
     if (o instanceof String s) {
       @UnknownInitialization String t = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Initialized String u = s;
     }
   }
@@ -27,7 +27,7 @@ public class InstanceOfPatternInitialization {
   InstanceOfPatternInitialization() {
     if (this instanceof Sub s) {
       @UnknownInitialization Sub t = s;
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       s.hashCode();
     }
   }
