@@ -590,7 +590,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * @param elt a method
    * @return true if that method is one of the must-call methods for its enclosing class
    */
-  private boolean isMustCallMethod(ExecutableElement elt) {
+  public boolean isMustCallMethod(ExecutableElement elt) {
     TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);

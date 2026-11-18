@@ -3669,7 +3669,10 @@ public class MustCallConsistencyAnalyzer {
         boolean isLastBlockOfBody = successorAndExceptionType.successor() == loopUpdateBlock;
         boolean staysInLoop = loopRegion.contains(successorAndExceptionType.successor());
         if (!isLastBlockOfBody && !staysInLoop) {
-          return null;
+          // A path that leaves the loop, such as by an exception, `break`, or `return`, does not
+          // reach the loop's exit edge, which is the only edge where the loop fulfills the
+          // collection's obligation. The consistency analysis checks the obligation on that path.
+          continue;
         }
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =

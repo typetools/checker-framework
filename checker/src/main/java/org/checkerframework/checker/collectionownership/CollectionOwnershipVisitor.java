@@ -24,6 +24,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -319,6 +320,41 @@ public class CollectionOwnershipVisitor
           method.getSimpleName(),
           param.getSimpleName(),
           elementType);
+    }
+  }
+
+  /**
+   * Also checks that the {@code @CollectionFieldDestructor} postcondition of a destructor, that is,
+   * a must-call method of its class, holds when the destructor throws an exception. Calling the
+   * destructor fulfills the caller's obligation even if the destructor throws, so nothing else
+   * disposes of the fields.
+   */
+  @Override
+  protected void checkPostcondition(
+      MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
+    super.checkPostcondition(methodTree, annotation, expression);
+    ExecutableElement method = TreeUtils.elementFromDeclaration(methodTree);
+    if (!ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory)
+        .isMustCallMethod(method)) {
+      return;
+    }
+    CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
+    if (exitStore == null) {
+      return;
+    }
+    CFAbstractValue<?> value = exitStore.getValue(expression);
+    AnnotationMirror inferredAnno =
+        value == null
+            ? null
+            : qualHierarchy.findAnnotationInSameHierarchy(value.getAnnotations(), annotation);
+    if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+      String expressionString = expression.toString();
+      checker.reportError(
+          methodTree,
+          "contracts.exceptional.postcondition",
+          methodTree.getName(),
+          contractExpressionAndType(expressionString, inferredAnno),
+          contractExpressionAndType(expressionString, annotation));
     }
   }
 
