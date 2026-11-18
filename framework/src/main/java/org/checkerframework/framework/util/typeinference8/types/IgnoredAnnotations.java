@@ -652,9 +652,12 @@ final class IgnoredAnnotations {
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}, starting with {@code atm1} and {@code atm2} themselves. A position is tested
    * before the positions nested in it, and no position is tested after {@code test} returns false.
-   * Positions correspond only where the two types have the same structure, except that a wildcard
-   * corresponds both to the type at the other position and, through its bound (see {@link
-   * #boundOf}), to the positions nested in that type.
+   * Positions correspond only where the two types have the same structure, with one exception:
+   * where one type has a wildcard and the other does not, the wildcard and its bound (see {@link
+   * #boundOf}) both correspond to the other type, so the positions nested in the bound correspond
+   * to those nested in the other type. For example, in {@code List<? extends Box<@A String>>} and
+   * {@code List<Box<@B String>>}, both {@code ? extends Box<@A String>} and {@code Box<@A String>}
+   * correspond to {@code Box<@B String>}, and {@code @A String} corresponds to {@code @B String}.
    *
    * @param atm1 a type
    * @param atm2 a type
