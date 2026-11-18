@@ -2570,13 +2570,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Map<Name, Label> oldContinueLabels = continueLabels;
 
     Label finallyLabel = null;
-    Label exceptionalFinallyLabel = null;
+    TryFinallyFrame exceptionalFinallyFrame = null;
 
     if (finallyBlock != null) {
       finallyLabel = new Label();
 
-      exceptionalFinallyLabel = new Label();
-      tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+      exceptionalFinallyFrame = new TryFinallyFrame(types, new Label());
+      tryStack.pushFrame(exceptionalFinallyFrame);
 
       returnTargetLC = new LabelCell();
 
@@ -2623,7 +2623,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           tree,
           doneLabel,
           finallyLabel,
-          exceptionalFinallyLabel,
+          exceptionalFinallyFrame,
           () -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
@@ -2690,8 +2690,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label doneLabel = new Label();
     Label finallyLabel = new Label();
 
-    Label exceptionalFinallyLabel = new Label();
-    tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+    TryFinallyFrame exceptionalFinallyFrame = new TryFinallyFrame(types, new Label());
+    tryStack.pushFrame(exceptionalFinallyFrame);
 
     returnTargetLC = new LabelCell();
 
@@ -2721,7 +2721,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         resourceDeclarationTree,
         doneLabel,
         finallyLabel,
-        exceptionalFinallyLabel,
+        exceptionalFinallyFrame,
         () -> addCloseCallForResource(resourceDeclarationTree, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
@@ -2815,8 +2815,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param doneLabel label for the normal successor of the try block (no exceptions, returns,
    *     breaks, or continues)
    * @param finallyLabel label for the entry of the finally block for the normal case
-   * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
-   *     throws an exception
+   * @param exceptionalFinallyFrame the frame that the exceptions of the try block reach; its label
+   *     is the entry of the finally block for when the try block throws an exception
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
@@ -2833,7 +2833,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Tree markerTree,
       Label doneLabel,
       Label finallyLabel,
-      Label exceptionalFinallyLabel,
+      TryFinallyFrame exceptionalFinallyFrame,
       Runnable finallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
@@ -2860,8 +2860,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    Set<TypeMirror> exceptionalFinallyCauses = exceptionsReaching(exceptionalFinallyLabel);
+    Set<TypeMirror> exceptionalFinallyCauses = exceptionalFinallyFrame.getReachingExceptions();
     if (!exceptionalFinallyCauses.isEmpty()) {
+      Label exceptionalFinallyLabel = exceptionalFinallyFrame.finallyLabel;
       // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
       // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
       // is no successful path, it will be removed in later phase.
@@ -2873,7 +2874,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(
           new MarkerNode(
               markerTree,
-              "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
+              "start of finally block for exceptions #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
       finallyBlockCFGGenerator.run();
@@ -2882,7 +2883,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           extendWithNodeWithExceptions(
               new MarkerNode(
                   markerTree,
-                  "end of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
+                  "end of finally block for exceptions #" + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
               exceptionalFinallyCauses);
 
@@ -3007,30 +3008,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       continueLabels = oldContinueLabels;
     }
-  }
-
-  /**
-   * Returns the types of the exceptions that a node in {@link #nodeList} throws to the given label,
-   * without duplicates.
-   *
-   * @param target a label, such as the entry of a finally block for exceptions
-   * @return the exception types, such as {@code java.io.IOException}, for which some node in {@link
-   *     #nodeList} has an exceptional edge to {@code target}; empty if no node does
-   */
-  private Set<TypeMirror> exceptionsReaching(Label target) {
-    Set<TypeMirror> result = new ArraySet<>();
-    for (ExtendedNode node : nodeList) {
-      if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
-        for (Map.Entry<TypeMirror, Set<Label>> entry : exceptionalNode.getExceptions().entrySet()) {
-          TypeMirror cause = entry.getKey();
-          if (entry.getValue().contains(target)
-              && !CollectionsP.anyMatch(result, t -> types.isSameType(t, cause))) {
-            result.add(cause);
-          }
-        }
-      }
-    }
-    return result;
   }
 
   @Override
