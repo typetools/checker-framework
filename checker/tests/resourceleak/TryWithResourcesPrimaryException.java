@@ -10,24 +10,25 @@ abstract class TryWithResourcesPrimaryException {
 
   public abstract @Owning Closeable alloc() throws IOException;
 
+  public abstract @Owning Closeable allocWithoutException();
+
   public abstract void mightThrow() throws IOException;
 
-  void leakAfterTryWithResources() throws IOException {
+  void leakWhenTryBlockThrows() throws IOException {
     // :: error: [required.method.not.called]
     Closeable c = alloc();
-    try (Closeable r = alloc()) {
+    try (Closeable r = allocWithoutException()) {
+      // If mightThrow() throws, c is not closed.
       mightThrow();
+      c.close();
     }
-    c.close();
   }
 
-  void closedAfterTryWithResourcesWithCatch() throws IOException {
+  void closedInTryBlock() throws IOException {
     Closeable c = alloc();
-    try (Closeable r = alloc()) {
+    try (Closeable r = allocWithoutException()) {
+      c.close();
       mightThrow();
-    } catch (IOException e) {
-      // The exception does not propagate.
     }
-    c.close();
   }
 }
