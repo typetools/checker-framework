@@ -110,7 +110,7 @@ public class RecordPatternTypeInference {
       return createResult(matchedType, null, typeFactory.getDefaultRecordPatternType(pattern));
     }
     try {
-      return inferGeneric(record, matchedType);
+      return inferForGenericRecord(record, matchedType);
     } catch (Exception ex) {
       // javac inferred the type arguments of the pattern, so the Checker Framework should too.
       if (!typeFactory
@@ -165,7 +165,7 @@ public class RecordPatternTypeInference {
    * @param matchedType the type of the values that are matched against the record pattern
    * @return the result of inference
    */
-  private Result inferGeneric(TypeElement record, AnnotatedTypeMirror matchedType) {
+  private Result inferForGenericRecord(TypeElement record, AnnotatedTypeMirror matchedType) {
     Java8InferenceContext context = new InvocationTypeInference(typeFactory, pathToPattern).context;
     // Step 2: the inference variables alpha1, ..., alphan, with bounds from the declared bounds.
     Theta map = context.inferenceTypeFactory.createThetaForTypeParameters(deconstructor, record);
@@ -227,7 +227,7 @@ public class RecordPatternTypeInference {
         uninstantiated.add(v);
       }
     }
-    Resolution.resolveWithFreshTypeVariables(new ArrayList<>(alphas), boundSet, context);
+    Resolution.resolveWithFreshTypeVariablesOnly(new ArrayList<>(alphas), boundSet, context);
     // Resolution instantiates each variable in `uninstantiated` with a fresh type variable.
     List<TypeVariable> freshTypeVariables = new ArrayList<>();
     for (Variable v : uninstantiated) {

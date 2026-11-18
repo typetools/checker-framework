@@ -46,7 +46,7 @@ public class RecordPatternNullableComponent {
   // is wider than the inferred List<@Nullable String>.  `x` should have javac's shape with the
   // inferred qualifiers, List<? extends @Nullable CharSequence>, but it has the type
   // List<@Nullable String>.  See the TODO in TypeFromMemberVisitor.varPatternType.
-  void varPatternKeepsJavacWildcard(Supplier<List<@Nullable String>> s) {
+  void varPatternLosesJavacWildcard(Supplier<List<@Nullable String>> s) {
     if (s instanceof Box<? extends List<? extends CharSequence>>(var x)) {
       // :: error: [dereference.of.nullable]
       x.get(0).length();
@@ -68,7 +68,7 @@ public class RecordPatternNullableComponent {
 
   // Like other local variables, an unannotated binding variable defaults to @Nullable, so it can be
   // assigned null.  Dataflow refines it by the qualifier of the record component.
-  void assignNullToNonNullComponent(Box<String> box) {
+  void assignNullToBindingOfNonNullComponent(Box<String> box) {
     if (box instanceof Box(var s)) {
       s.length();
       s = null;

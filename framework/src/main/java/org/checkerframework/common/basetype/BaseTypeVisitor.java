@@ -454,7 +454,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     if (TreeUtils.isDeconstructionPatternTree(tree)) {
       checkRecordPatternTypeInference(tree);
-      checkNestedBindingPatterns(tree);
+      checkNestedTypePatterns(tree);
     }
     return super.scan(tree, p);
   }
@@ -470,7 +470,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param recordPattern a {@code DeconstructionPatternTree}
    */
-  protected void checkNestedBindingPatterns(Tree recordPattern) {
+  protected void checkNestedTypePatterns(Tree recordPattern) {
     List<? extends Tree> nestedPatterns =
         DeconstructionPatternUtils.getNestedPatterns(recordPattern);
     List<AnnotatedTypeMirror> componentTypes =
@@ -488,7 +488,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (atypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
         commonAssignmentCheck(variableType, componentType, bindingPattern, "assignment");
       } else {
-        checkConditionalNestedBindingPattern(bindingPattern, variableType, componentType);
+        checkConditionalNestedTypePattern(bindingPattern, variableType, componentType);
       }
     }
   }
@@ -504,7 +504,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param componentType the type of the record component that {@code bindingPattern} is matched
    *     against
    */
-  protected void checkConditionalNestedBindingPattern(
+  protected void checkConditionalNestedTypePattern(
       BindingPatternTree bindingPattern,
       AnnotatedTypeMirror variableType,
       AnnotatedTypeMirror componentType) {
@@ -522,7 +522,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkRecordPatternTypeInference(Tree recordPattern) {
     RecordPatternTypeInference.Failure failure =
-        atypeFactory.getRecordPatternInferenceFailure(recordPattern);
+        atypeFactory.getRecordPatternTypeInferenceFailure(recordPattern);
     if (failure != null) {
       checker.reportError(
           recordPattern,
@@ -3890,7 +3890,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       } else {
         // A record pattern is checked by checkRecordPatternTypeInference and
-        // checkNestedBindingPatterns.
+        // checkNestedTypePatterns.
       }
     } else {
       Tree refTypeTree = tree.getType();

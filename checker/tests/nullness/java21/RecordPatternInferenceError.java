@@ -50,13 +50,14 @@ public class RecordPatternInferenceError {
     }
   }
 
-  // The scrutinee gives alpha = @Nullable String, which violates alpha's declared bound.
-  void scrutineeViolatesBound(Supplier<@Nullable String> s) {
+  // The matched type gives alpha = @Nullable String, which violates the declared bound of
+  // NonNullSupplier's T.
+  void matchedTypeViolatesBound(Supplier<@Nullable String> s) {
     // :: error: [type.arguments.not.inferred]
     if (s instanceof NonNullSupplier(var t)) {}
   }
 
-  void scrutineeViolatesBoundSwitch(Supplier<@Nullable String> s) {
+  void matchedTypeViolatesBoundSwitch(Supplier<@Nullable String> s) {
     switch (s) {
       // :: error: [type.arguments.not.inferred]
       case NonNullSupplier(var t) -> {}
@@ -64,7 +65,7 @@ public class RecordPatternInferenceError {
     }
   }
 
-  void scrutineeSatisfiesBound(Supplier<String> s) {
+  void matchedTypeSatisfiesBound(Supplier<String> s) {
     if (s instanceof NonNullSupplier(var t)) {
       t.length();
     }

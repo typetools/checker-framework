@@ -40,8 +40,8 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <p>The entry points are the static methods {@link #resolve(Collection, BoundSet,
  * Java8InferenceContext)}, {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, and {@link
- * #resolveWithFreshTypeVariables}, which create {@link Resolution} objects that actually perform
- * the resolution.
+ * #resolveWithFreshTypeVariablesOnly}, which create {@link Resolution} objects that actually
+ * perform the resolution.
  */
 public final class Resolution {
 
@@ -72,7 +72,7 @@ public final class Resolution {
    * @param context Java8InferenceContext
    * @return bound set where {@code as} have instantiations
    */
-  public static BoundSet resolveWithFreshTypeVariables(
+  public static BoundSet resolveWithFreshTypeVariablesOnly(
       Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
     return resolve(as, boundSet, context, true);
   }

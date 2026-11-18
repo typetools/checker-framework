@@ -165,11 +165,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // source code, such as Box<String> for Box<? extends CharSequence>(var x).  A `var` pattern
     // matches every value of the record component, so it takes the qualifiers of the component's
     // type arguments.
-    AnnotatedTypeMirror type = f.type(bindingVariable);
+    AnnotatedTypeMirror defaultedType = f.type(bindingVariable);
     if (TypesUtils.isErasedSubtype(projectedType.getUnderlyingType(), javacType, f.types)) {
-      return AnnotatedTypes.asSuper(f, projectedType, type);
+      return AnnotatedTypes.asSuper(f, projectedType, defaultedType);
     }
-    return type;
+    return defaultedType;
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That

@@ -38,8 +38,8 @@ New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
 pattern variable.
 
 New overridable methods `BaseTypeVisitor.checkRecordPatternTypeInference()`,
-`BaseTypeVisitor.checkNestedBindingPatterns()`, and
-`BaseTypeVisitor.checkConditionalNestedBindingPattern()` check a record pattern.
+`BaseTypeVisitor.checkNestedTypePatterns()`, and
+`BaseTypeVisitor.checkConditionalNestedTypePattern()` check a record pattern.
 New method `AnnotatedTypeFactory.getRecordPatternComponentTypes()` returns the
 inferred types of the record components of a record pattern.  New class
 `RecordPatternTypeInference` infers the type of a record pattern, and new class

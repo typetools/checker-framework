@@ -7,7 +7,8 @@
 // Once the type of a record pattern is inferred (JLS 26 section 18.5.5, step 6), "we can find its
 // component types, which are matched against the component patterns of the record pattern".  These
 // tests pin down what those component types must be, by comparing each pattern variable against the
-// corresponding accessor invocation on the scrutinee: the two must always have the same annotated
+// corresponding accessor invocation on the matched expression: the two must always have the same
+// annotated
 // type.  Any implementation that disagrees between the two is wrong regardless of which one is
 // right.
 //
@@ -89,14 +90,14 @@ public class ComponentTypes {
     }
   }
 
-  /** A non-generic component type is unaffected by inference. */
-  record Mixed<T>(T generic, @Untainted String fixed) {}
+  /** A component type that does not mention a type parameter is unaffected by inference. */
+  record Mixed<T>(T dependent, @Untainted String fixed) {}
 
-  static void nonGenericComponent(Mixed<@Tainted String> m) {
-    if (m instanceof Mixed(var g, var f)) {
+  static void fixedComponent(Mixed<@Tainted String> m) {
+    if (m instanceof Mixed(var d, var f)) {
       @Untainted String fixedOk = f;
       // :: error: [assignment]
-      @Untainted String genericBad = g;
+      @Untainted String dependentBad = d;
     }
   }
 

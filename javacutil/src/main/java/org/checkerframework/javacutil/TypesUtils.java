@@ -1964,7 +1964,8 @@ public final class TypesUtils {
     if (typeVariable1 == typeVariable2) {
       return true;
     }
-    if (isCapturedElement(typeVariable1) || isCapturedElement(typeVariable2)) {
+    if (hasCapturedTypeVariableElement(typeVariable1)
+        || hasCapturedTypeVariableElement(typeVariable2)) {
       return typeVariable1.asElement().equals(typeVariable2.asElement());
     }
     Name otherName = typeVariable2.asElement().getSimpleName();
@@ -1991,7 +1992,7 @@ public final class TypesUtils {
     // converted to a String because areSame compares names with Name.contentEquals, and Name does
     // not specify that its hashCode is consistent with contentEquals.
     Element element = typeVariable.asElement();
-    if (isCapturedElement(typeVariable)) {
+    if (hasCapturedTypeVariableElement(typeVariable)) {
       return System.identityHashCode(element);
     }
     return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
@@ -2003,7 +2004,7 @@ public final class TypesUtils {
    * @param typeVariable a type variable
    * @return true if the element of {@code typeVariable} is the element of a captured type variable
    */
-  private static boolean isCapturedElement(TypeVariable typeVariable) {
+  private static boolean hasCapturedTypeVariableElement(TypeVariable typeVariable) {
     // typeVariable need not be a javac type, but its element's type is.
     return isCapturedTypeVariable(typeVariable.asElement().asType());
   }

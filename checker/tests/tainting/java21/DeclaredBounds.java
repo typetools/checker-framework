@@ -10,7 +10,8 @@
 // or proper upper bounds; instead, any new instantiations are created by skipping directly to the
 // step that introduces fresh type variables").
 //
-// When the scrutinee supplies no information, the annotations on the record's declared bounds are
+// When the matched type supplies no information, the annotations on the record's declared bounds
+// are
 // the only source of qualifiers for the component types.
 
 import java.util.List;
@@ -35,14 +36,16 @@ public class DeclaredBounds {
     }
   }
 
-  /** The same record, but now the scrutinee pins the type argument. */
-  static void boundAndScrutinee(UntaintedBox<@Untainted String> b) {
+  /** The same record, but now the matched type pins the type argument. */
+  static void boundAndMatchedType(UntaintedBox<@Untainted String> b) {
     if (b instanceof UntaintedBox(var t)) {
       @Untainted String tt = t;
     }
   }
 
-  /** With a @Tainted declared bound and no information from the scrutinee, the component is top. */
+  /**
+   * With a @Tainted declared bound and no information from the matched type, the component is top.
+   */
   static void topBound(@Tainted Object o) {
     if (o instanceof TaintedBox(var t)) {
       @Tainted Object tt = t;
@@ -52,18 +55,19 @@ public class DeclaredBounds {
   }
 
   /**
-   * A raw scrutinee. A raw type is neither a parameterized type nor a parameterization of a generic
-   * class, so steps 3 and 4 add nothing and alpha is resolved from its declared bound alone.
+   * A raw matched type. A raw type is neither a parameterized type nor a parameterization of a
+   * generic class, so steps 3 and 4 add nothing and alpha is resolved from its declared bound
+   * alone.
    */
   @SuppressWarnings("rawtypes")
-  static void rawScrutinee(UntaintedBox b) {
+  static void rawMatchedType(UntaintedBox b) {
     if (b instanceof UntaintedBox(var t)) {
       @Untainted Object tt = t;
     }
   }
 
   @SuppressWarnings("rawtypes")
-  static void rawScrutineeTopBound(TaintedBox b) {
+  static void rawMatchedTypeTopBound(TaintedBox b) {
     if (b instanceof TaintedBox(var t)) {
       // :: error: [assignment]
       @Untainted Object bad = t;
@@ -120,10 +124,10 @@ public class DeclaredBounds {
   }
 
   /**
-   * The scrutinee gives alpha = @Tainted String, which violates alpha's declared bound
-   * {@code @Untainted Object}.
+   * The matched type gives alpha = @Tainted String, which violates the declared bound
+   * {@code @Untainted Object} of UntaintedSupplier's T.
    */
-  static void scrutineeViolatesBound(Supplier<@Tainted String> s) {
+  static void matchedTypeViolatesBound(Supplier<@Tainted String> s) {
     // :: error: [type.arguments.not.inferred]
     if (s instanceof UntaintedSupplier(var t)) {
       @Tainted Object tt = t;

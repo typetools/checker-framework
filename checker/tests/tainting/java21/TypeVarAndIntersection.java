@@ -41,8 +41,9 @@ public class TypeVarAndIntersection {
   }
 
   /**
-   * Even when the scrutinee is @Untainted, its type argument is unknown, so the component type is
-   * still top-qualified. (The @Untainted on `o` describes the Box, not its contents.)
+   * Even when the matched expression is @Untainted, Box's type argument is unknown, so the
+   * component type is still top-qualified. (The @Untainted on `o` describes the Box, not its
+   * contents.)
    */
   static void matchedAgainstUntaintedObject(@Untainted Object o) {
     if (o instanceof Box(var s)) {
