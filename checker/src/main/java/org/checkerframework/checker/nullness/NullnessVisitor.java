@@ -435,7 +435,7 @@ public class NullnessVisitor
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, validate the reference type and scan the expression and the pattern or type.
     Tree patternTree = tree.getPattern();
-    // super.visitInstanceOf is not called, so check the binding variable here.
+    // Check the binding variable, as `super.visitInstanceOf` would.
     if (patternTree instanceof BindingPatternTree) {
       checkInstanceofPattern(tree);
     }

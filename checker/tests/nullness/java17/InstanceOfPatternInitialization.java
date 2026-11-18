@@ -30,7 +30,8 @@ public class InstanceOfPatternInitialization {
     }
   }
 
-  // instanceof does not check initialization, so the binding variable cannot be @Initialized.
+  // instanceof does not check initialization, so writing @Initialized on the binding variable is
+  // unsafe.
   void initializedExplicit(@UnknownInitialization Object o) {
     // :: warning: [instanceof.pattern.unsafe]
     if (o instanceof @Initialized String s) {
