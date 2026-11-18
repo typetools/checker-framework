@@ -20,6 +20,11 @@ import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.interning.qual.UnknownInterned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -90,6 +95,12 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     addAliasedTypeAnnotation("com.sun.istack.internal.Interned", INTERNED);
 
     this.postInit();
+  }
+
+  @Override
+  public CFTransfer createFlowTransferFunction(
+      CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+    return new InterningTransfer((CFAnalysis) analysis);
   }
 
   @Override
