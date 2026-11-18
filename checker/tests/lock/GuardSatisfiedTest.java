@@ -218,15 +218,19 @@ public class GuardSatisfiedTest {
   // definition, fields and non-parameter local variables cannot be in one of these locations on a
   // method declaration, but other locations can be.
 
+  // :: error: [type.annotations.on.location]
   // :: error: [guardsatisfied.location.disallowed]
   @GuardSatisfied Object field;
 
+  // :: error: [type.annotations.on.location]
   // :: error: [guardsatisfied.location.disallowed]
   void testGuardSatisfiedOnArrayElementAndLocalVariable(@GuardSatisfied Object[] array) {
+    // :: error: [type.annotations.on.location]
     // :: error: [guardsatisfied.location.disallowed]
     @GuardSatisfied Object local;
   }
 
+  // :: error: [type.annotations.on.location]
   // :: error: [guardsatisfied.location.disallowed]
   <T extends @GuardSatisfied Object> T testGuardSatisfiedOnBound(T t) {
     return t;
@@ -240,15 +244,18 @@ public class GuardSatisfiedTest {
         MyParameterizedClass1<T> @GuardSatisfied [] array) {}
 
     void testGuardSatisfiedOnArrayComponentOfParameterizedType(
+        // :: error: [type.annotations.on.location]
         // :: error: [guardsatisfied.location.disallowed]
         @GuardSatisfied MyParameterizedClass1<T>[] array) {}
   }
 
   void testGuardSatisfiedOnWildCardExtendsBound(
+      // :: error: [type.annotations.on.location]
       // :: error: [guardsatisfied.location.disallowed]
       MyParameterizedClass1<? extends @GuardSatisfied Object> l) {}
 
   void testGuardSatisfiedOnWildCardSuperBound(
+      // :: error: [type.annotations.on.location]
       // :: error: [guardsatisfied.location.disallowed]
       MyParameterizedClass1<? super @GuardSatisfied String> l) {}
 
@@ -262,12 +269,15 @@ public class GuardSatisfiedTest {
 
   void testGuardSatisfiedOnArray1(Object @GuardSatisfied [][][] array) {}
 
+  // :: error: [type.annotations.on.location]
   // :: error: [guardsatisfied.location.disallowed]
   void testGuardSatisfiedOnArray2(@GuardSatisfied Object[][][] array) {}
 
+  // :: error: [type.annotations.on.location]
   // :: error: [guardsatisfied.location.disallowed]
   void testGuardSatisfiedOnArray3(Object[] @GuardSatisfied [][] array) {}
 
+  // :: error: [type.annotations.on.location]
   // :: error: [guardsatisfied.location.disallowed]
   void testGuardSatisfiedOnArray4(Object[][] @GuardSatisfied [] array) {}
 }

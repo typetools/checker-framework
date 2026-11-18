@@ -565,8 +565,13 @@ public class ChapterExamples {
 
   private static final Object NULL_KEY = new Object();
 
-  // A guardsatisfied.location.disallowed error is issued for the cast.
-  @SuppressWarnings({"cast.unsafe", "guardsatisfied.location.disallowed"})
+  // A guardsatisfied.location.disallowed error and a type.annotations.on.location error are issued
+  // for the cast.
+  @SuppressWarnings({
+    "cast.unsafe",
+    "guardsatisfied.location.disallowed",
+    "type.annotations.on.location"
+  })
   private static @GuardSatisfied(1) Object maskNull(@GuardSatisfied(1) Object key) {
     return (key == null ? (@GuardSatisfied(1) Object) NULL_KEY : key);
   }
