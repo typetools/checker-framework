@@ -44,7 +44,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
 
 /**
- * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
+ * Adds {@link Format} to the type of a tree, if it is a {@code String} or {@code char} literal that
  * represents a satisfiable format. The annotation's value is set to be a list of appropriate {@link
  * ConversionCategory} values for every parameter of the format.
  *
@@ -281,7 +281,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The tree annotator for the Format String Checker. */
   private class FormatterTreeAnnotator extends TreeAnnotator {
     /**
-     * Create the tree annotator for the Format String Checker.
+     * Creates the tree annotator for the Format String Checker.
      *
      * @param atypeFactory the Format String Checker type factory
      */

@@ -31,8 +31,8 @@ public interface ReflectionResolver {
   public boolean isReflectiveMethodInvocation(MethodInvocationTree tree);
 
   /**
-   * Resolve reflection and return the result of {@code factory.methodFromUse} for the actual,
-   * resolved method or constructor call. If the reflective method cannot be resolved the original
+   * Resolves reflection and returns the result of {@code factory.methodFromUse} for the actual,
+   * resolved method or constructor call. If the reflective method cannot be resolved, the original
    * result ({@code origResult}) is returned.
    *
    * @param factory the currently used AnnotatedTypeFactory

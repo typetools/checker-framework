@@ -53,7 +53,7 @@ The Tainting type system uses the following annotations:
   a type that includes only untainted (trusted) values.
 \item[\refqualclass{checker/tainting/qual}{Tainted}]
   indicates
-  a type that may include tainted (untrusted) or untainted (trusted) values.
+  a type that might include tainted (untrusted) or untainted (trusted) values.
   \code{@Tainted} is a supertype of \code{@Untainted}.
   It is the default qualifier.
 \item[\refqualclass{checker/tainting/qual}{PolyTainted}]
@@ -67,7 +67,7 @@ The Tainting type system uses the following annotations:
 
 Most programs are designed with a boundary that surrounds sensitive
 computations, separating them from untrusted values.  Outside this
-boundary, the program may manipulate malicious values, but no malicious
+boundary, the program might manipulate malicious values, but no malicious
 values ever pass the boundary to be operated upon by sensitive
 computations.
 
@@ -89,7 +89,7 @@ The Tainting Checker's standard default qualifier is \code{@Tainted} (see
 Section~\ref{defaults} for overriding this default).  This is the safest
 default, and the one that should be used for all code outside the boundary
 (for example, code that reads user input).  You can set the default
-qualifier to \code{@Untainted} in code that may contain sensitive sinks.
+qualifier to \code{@Untainted} in code that might contain sensitive sinks.
 
 The Tainting Checker does not know the intended semantics of your program,
 so it cannot warn you if you mis-annotate a sensitive sink as taking
@@ -102,7 +102,7 @@ information flows exist.
 As an example, suppose that you wish to prevent SQL injection attacks.  You
 would start by annotating the
 \sunjavadoc{java.sql/java/sql/Statement.html}{Statement} class to indicate that the
-\code{execute} operations may only operate on untainted queries
+\code{execute} operations can operate only on untainted queries
 (Chapter~\ref{annotating-libraries} describes how to annotate external
 libraries):
 
@@ -130,7 +130,7 @@ the annotations can serve many different purposes, such as:
   \code{@Untainted} has been checked for JavaScript syntax.
 \item
   Prevent information leakage:  \code{@Tainted} is secret data,
-  \code{@Untainted} may be displayed to a user.
+  \code{@Untainted} can be displayed to a user.
 \end{itemize}
 
 The second consequence is that the Tainting Checker is not useful unless
@@ -202,7 +202,7 @@ This invocation is permitted because, in the expression, all
 \<@Tainted>, the top annotation, and each argument is a subtype of the
 corresponding formal parameter.
 
-Beware this problem both in code you write, and also in annotated libraries
+Beware this problem both in code you write and also in annotated libraries
 (such as stub files).  The correct way to annotate this class is to
 add a class qualifier parameter; see Section~\ref{class-qualifier-polymorphism}.
 

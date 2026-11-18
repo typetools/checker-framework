@@ -169,11 +169,11 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Creates abstract types for each TypeMirror. The created type is an {@link InferenceType} if it
-   * contains any type variables that are mapped to inference variables as specified by {@code map}.
-   * Or if the type is a type variable that is mapped to an inference variable, it will return that
-   * {@link Variable}. Or if the type contains no type variables that are mapped in an inference
-   * variable, a {@link ProperType} is returned.
+   * Creates an abstract type for each TypeMirror. The created type is an {@link InferenceType} if
+   * it contains any type variables that are mapped to inference variables as specified by {@code
+   * map}. Or if the type is a type variable that is mapped to an inference variable, it will return
+   * that {@link Variable}. Or if the type contains no type variables that are mapped to an
+   * inference variable, a {@link ProperType} is returned.
    *
    * @param types the annotated type mirrors
    * @param map a mapping from type variable to inference variable, or null to treat no type
@@ -325,7 +325,7 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Is {@code this} a subtype of {@code superType}?
+   * Determines whether {@code this} is a subtype of {@code superType}.
    *
    * @param superType the potential supertype; is a declared type with no parameters
    * @return if {@code this} is a subtype of {@code superType}, then return {@link

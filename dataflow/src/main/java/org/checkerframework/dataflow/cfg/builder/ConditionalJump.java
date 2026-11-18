@@ -27,7 +27,7 @@ public class ConditionalJump extends ExtendedNode {
   protected FlowRule falseFlowRule;
 
   /**
-   * Construct a ConditionalJump.
+   * Constructs a ConditionalJump.
    *
    * @param trueSucc true successor label
    * @param falseSucc false successor label
@@ -85,7 +85,7 @@ public class ConditionalJump extends ExtendedNode {
   }
 
   /**
-   * Produce a string representation.
+   * Produces a string representation.
    *
    * @return a string representation
    * @see org.checkerframework.dataflow.cfg.builder.PhaseOneResult#nodeToString

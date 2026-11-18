@@ -50,7 +50,7 @@ public abstract class UnderlyingAST implements UniqueId {
   }
 
   /**
-   * Returns the code that corresponds to the CFG. For a method or lamdda, this returns the body.
+   * Returns the code that corresponds to the CFG. For a method or lambda, this returns the body.
    * For other constructs, it returns the tree itself (a statement or expression).
    *
    * @return the code that corresponds to the CFG
@@ -131,7 +131,7 @@ public abstract class UnderlyingAST implements UniqueId {
     private final @Nullable MethodTree enclosingMethod;
 
     /**
-     * Create a new CFGLambda.
+     * Creates a new CFGLambda.
      *
      * @param lambda the lambda expression
      * @param classTree the enclosing class of the lambda
@@ -208,9 +208,10 @@ public abstract class UnderlyingAST implements UniqueId {
    */
   public static class CFGStatement extends UnderlyingAST {
 
+    /** The statement or expression: a field definition or an initializer block. */
     protected final Tree code;
 
-    /** The class tree this method belongs to. */
+    /** The class tree this statement belongs to. */
     protected final ClassTree classTree;
 
     public CFGStatement(Tree code, ClassTree classTree) {

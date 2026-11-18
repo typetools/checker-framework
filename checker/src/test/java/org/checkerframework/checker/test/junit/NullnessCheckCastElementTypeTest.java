@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessCheckCastElementTypeTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessCheckCastElementTypeTest.
+   * Creates a NullnessCheckCastElementTypeTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

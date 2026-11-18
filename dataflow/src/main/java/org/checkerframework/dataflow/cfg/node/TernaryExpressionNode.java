@@ -31,7 +31,7 @@ public class TernaryExpressionNode extends Node {
 
   /**
    * This is a variable created by dataflow to which each case expression of the ternary expression
-   * is assigned. Its value should be used for the value of the switch expression.
+   * is assigned. Its value should be used for the value of the ternary expression.
    */
   private final LocalVariableNode ternaryExpressionVar;
 
@@ -43,7 +43,7 @@ public class TernaryExpressionNode extends Node {
    * @param thenOperand node representing the "then" case of the expression
    * @param elseOperand node representing the "else" case of the expression
    * @param ternaryExpressionVar a variable created by dataflow to which each case expression of the
-   *     ternary expression is assigned. Its value should be used for the value of the switch
+   *     ternary expression is assigned. Its value should be used for the value of the ternary
    *     expression.
    */
   public TernaryExpressionNode(
@@ -61,7 +61,7 @@ public class TernaryExpressionNode extends Node {
   }
 
   /**
-   * Gets the node representing the conditional operand for this node.
+   * Returns the node representing the conditional operand for this node.
    *
    * @return the condition operand node
    */
@@ -70,7 +70,7 @@ public class TernaryExpressionNode extends Node {
   }
 
   /**
-   * Gets the node representing the "then" operand for this node.
+   * Returns the node representing the "then" operand for this node.
    *
    * @return the "then" operand node
    */
@@ -79,7 +79,7 @@ public class TernaryExpressionNode extends Node {
   }
 
   /**
-   * Gets the node representing the "else" operand for this node.
+   * Returns the node representing the "else" operand for this node.
    *
    * @return the "else" operand node
    */
@@ -89,7 +89,7 @@ public class TernaryExpressionNode extends Node {
 
   /**
    * This is a variable created by dataflow to which each case expression of the ternary expression
-   * is assigned. Its value should be used for the value of the switch expression.
+   * is assigned. Its value should be used for the value of the ternary expression.
    *
    * @return the variable for this ternary expression
    */
