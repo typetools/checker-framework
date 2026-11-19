@@ -7,7 +7,26 @@
 
 ### User-visible changes
 
+A pattern variable, such as `s` in `o instanceof String s`, now defaults to the
+top qualifier, like a local variable, and is refined to the qualifiers of the
+value that the pattern matches.  This does not apply to a pattern variable
+nested in a record pattern.
+
 ### Changes for type system implementers
+
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables that are not
+nested in a record pattern.  `ElementUtils.isLocalVariable()` returns true for
+pattern variables.
+
+New overridable methods `BaseTypeVisitor.checkInstanceofPattern()` and
+`BaseTypeVisitor.checkCaseLabelPattern()` check the binding variable of a type
+pattern in an `instanceof` or a case label.  A subclass can override the new
+method `BaseTypeVisitor.typePatternMatchedType()` to exclude values that a type
+pattern never matches, such as null.
+
+New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
+pattern variable.  New method `AnnotatedTypeFactory.isNestedBindingVariable()`
+returns true for a pattern variable nested in a record pattern.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.

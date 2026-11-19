@@ -2,10 +2,12 @@ package org.checkerframework.framework.type;
 
 import com.google.common.collect.Ordering;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -120,6 +122,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
@@ -2193,6 +2196,7 @@ public abstract class GenericAnnotatedTypeFactory<
           RESOURCE_VARIABLE,
           EXCEPTION_PARAMETER,
           LOCAL_VARIABLE,
+          BINDING_VARIABLE,
           PARAMETER -> {} // continue below
       default -> {
         return;
@@ -2231,8 +2235,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Defaults local variables with types that have a qualifier parameter to the type of their
-   * initializer, if an initializer is present. Does nothing for local variables with no
-   * initializer.
+   * initializer, if an initializer is present. The initializer of the binding variable of a type
+   * pattern that is not nested in a record pattern is the expression that the pattern is matched
+   * against. Does nothing for other local variables with no initializer.
    *
    * @param elt an Element whose type is {@code type}
    * @param type where the defaults are applied
@@ -2250,6 +2255,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     ExpressionTree initializer = declVt.getInitializer();
+    if (initializer == null) {
+      initializer = getTypePatternMatchedExpression(declVt);
+    }
     if (initializer == null) {
       return;
     }
@@ -2284,6 +2292,31 @@ public abstract class GenericAnnotatedTypeFactory<
     if (shouldCache) {
       initializerCache.put(initializer, initializerType);
     }
+  }
+
+  /**
+   * If {@code varTree} is the binding variable of a type pattern in an instanceof or a case label,
+   * returns the left operand of the instanceof or the selector expression of the switch. Otherwise,
+   * returns null.
+   *
+   * @param varTree a variable declaration
+   * @return the expression that the type pattern that declares {@code varTree} is matched against,
+   *     or null
+   */
+  private @Nullable ExpressionTree getTypePatternMatchedExpression(VariableTree varTree) {
+    TreePath path = getPath(varTree);
+    if (path == null || !(path.getParentPath().getLeaf() instanceof BindingPatternTree)) {
+      return null;
+    }
+    TreePath patternParent = path.getParentPath().getParentPath();
+    if (patternParent.getLeaf() instanceof InstanceOfTree instanceOfTree) {
+      return instanceOfTree.getExpression();
+    }
+    if (PatternCaseLabelUtils.isPatternCaseLabelTree(patternParent.getLeaf())) {
+      // The parent of the case label is a case, whose parent is a switch.
+      return TreeUtils.switchSelector(patternParent.getParentPath().getParentPath().getLeaf());
+    }
+    return null;
   }
 
   /**
@@ -2528,7 +2561,11 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (element != null && ElementUtils.isLocalVariable(element)) {
+    // A binding variable nested in a record pattern is not defaulted to top, so it keeps its
+    // type-based default.
+    if (element != null
+        && ElementUtils.isLocalVariable(element)
+        && !isNestedBindingVariable(element)) {
       // It's a local variable.
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary
