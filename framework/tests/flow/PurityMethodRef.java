@@ -81,4 +81,25 @@ public class PurityMethodRef {
   void unconstrained() {
     PlainFunc f = PurityMethodRef::myMethod;
   }
+
+  @FunctionalInterface
+  interface PureRunnable {
+    @Pure
+    // :: warning: [purity.deterministic.void.method]
+    void run();
+  }
+
+  @SideEffectFree
+  static void mySideEffectFreeVoidMethod() {}
+
+  @Deterministic
+  // :: warning: [purity.deterministic.void.method]
+  static void myDeterministicVoidMethod() {}
+
+  /** A side-effect-free method that returns void is deterministic. */
+  void voidMethods() {
+    PureRunnable r1 = PurityMethodRef::mySideEffectFreeVoidMethod;
+    // :: error: [purity.methodref]
+    PureRunnable r2 = PurityMethodRef::myDeterministicVoidMethod;
+  }
 }
