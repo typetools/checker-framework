@@ -605,7 +605,7 @@ public abstract class AbstractType {
    * nested class type has no enclosing type, in the sense of JLS 4.5.)
    *
    * <p>The type arguments of an inner class type do not include those of its enclosing type, so a
-   * client that reasons about all the type arguments that a type mentions -- as JLS 18.2.3 and
+   * client that reasons about all the type arguments that a type contains -- as JLS 18.2.3 and
    * 18.2.4 do -- must recurse through this method as well as through {@link #getTypeArguments}.
    *
    * @return this type's enclosing type, or null if this type is not an inner class type
