@@ -357,7 +357,7 @@ public class Typing extends TypeConstraint {
       return;
     }
     // A constraint between two proper types has two possible purposes: to bound an inference
-    // variable, which two proper types do not mention, and to compare their qualifiers, which only
+    // variable, which two proper types do not contain, and to compare their qualifiers, which only
     // an equality constraint that requires matching qualifiers does.  Without either purpose the
     // constraint would compare two types that inference does not govern; the type-checker compares
     // them independently of inference.
@@ -608,7 +608,7 @@ public class Typing extends TypeConstraint {
                   qualifiersMustMatch));
         }
       }
-      // An inner class type's own type arguments are not all of the type arguments it mentions;
+      // An inner class type's own type arguments are not all of the type arguments it contains;
       // its enclosing type contributes more, which getTypeArguments() omits.
       addEnclosingTypeConstraint(constraintSet, T, S, Kind.TYPE_EQUALITY);
       return constraintSet;
