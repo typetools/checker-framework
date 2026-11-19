@@ -119,10 +119,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
       disposalLoopInfoToCalledMethodsMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@code MethodTree} to the {@link DisposalLoopInfo}s discovered in that method's
-   * body.
+   * Map from the {@linkplain UnderlyingAST#getCode() code} of a CFG, such as a method body, a
+   * lambda body, or an initializer, to the {@link DisposalLoopInfo}s discovered in it.
    */
-  private final IdentityHashMap<MethodTree, Set<DisposalLoopInfo>> disposalLoopInfosByMethod =
+  private final IdentityHashMap<Tree, Set<DisposalLoopInfo>> disposalLoopInfosByCode =
       new IdentityHashMap<>();
 
   /**
@@ -300,33 +300,17 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns all the disposal loops in the given method CFG.
-   *
-   * @param cfg the CFG to scan
-   * @return the {@link DisposalLoopInfo}s discovered in {@code cfg}
-   */
-  private Set<DisposalLoopInfo> scanForDisposalLoopInfos(ControlFlowGraph cfg) {
-    if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
-      return Collections.emptySet();
-    }
-    return new DisposalLoopScanner(this, cfg)
-        .scanTree(((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod());
-  }
-
-  /**
-   * Discovers and stores the {@link DisposalLoopInfo}s for a method {@code cfg}. This discovery
-   * must happen before {@link
+   * Discovers and stores the {@link DisposalLoopInfo}s for a {@code cfg}, which may be for a
+   * method, a lambda, or an initializer. This discovery must happen before {@link
    * org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsTransfer#initialStore(UnderlyingAST,
    * List)} runs, which adds an {@code IteratedCollectionElement} for the element of each loop.
    *
-   * @param cfg the method CFG whose disposal loops to be discovered
+   * @param cfg the CFG whose disposal loops to be discovered
    */
   public void discoverDisposalLoopInfos(ControlFlowGraph cfg) {
-    MethodTree methodTree = getMethodTree(cfg.getUnderlyingAST());
-    if (methodTree == null) {
-      return;
-    }
-    disposalLoopInfosByMethod.put(methodTree, new LinkedHashSet<>(scanForDisposalLoopInfos(cfg)));
+    Tree code = cfg.getUnderlyingAST().getCode();
+    disposalLoopInfosByCode.put(
+        code, new LinkedHashSet<>(new DisposalLoopScanner(this, cfg).scanTree(code)));
   }
 
   /**
@@ -336,11 +320,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return an unmodifiable view of the disposal loops for {@code underlyingAST}
    */
   public Set<DisposalLoopInfo> getDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getMethodTree(underlyingAST);
-    if (methodTree == null) {
-      return Collections.emptySet();
-    }
-    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByMethod.get(methodTree);
+    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByCode.get(underlyingAST.getCode());
     if (disposalLoopInfos == null) {
       return Collections.emptySet();
     }
@@ -353,42 +333,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param underlyingAST the underlying AST whose disposal loops should be removed
    */
   private void removeDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getMethodTree(underlyingAST);
-    if (methodTree != null) {
-      disposalLoopInfosByMethod.remove(methodTree);
-    }
+    disposalLoopInfosByCode.remove(underlyingAST.getCode());
   }
 
   /**
-   * Returns the method tree of the given underlying AST, if it is a method CFG.
+   * Computes the called methods of the potential disposal loops in the code of {@code cfg}, which
+   * {@link RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each
+   * loop, {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the
+   * loop body definitely calls on the iterated element, and this method records them.
    *
-   * @param underlyingAST the underlying AST
-   * @return the method tree, or {@code null} if {@code underlyingAST} is not a method
-   */
-  private @Nullable MethodTree getMethodTree(UnderlyingAST underlyingAST) {
-    if (underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
-      return null;
-    }
-    return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
-  }
-
-  /**
-   * Computes the called methods of this method's potential disposal loops, which {@link
-   * RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each loop,
-   * {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the loop body
-   * is guaranteed to call on the iterated element, and this method records them.
-   *
-   * <p>This runs before this checker's dataflow analysis of the method. During that analysis,
-   * {@link CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the
-   * iterated element's must-call methods. Later, the Resource Leak Checker's {@link
+   * <p>This runs before this checker's dataflow analysis of the code. During that analysis, {@link
+   * CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the iterated
+   * element's must-call methods. Later, the Resource Leak Checker's {@link
    * MustCallConsistencyAnalyzer} uses the recorded loops when it checks collection obligations.
    */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    if (ast.getKind() != UnderlyingAST.Kind.METHOD) {
-      return;
-    }
-
     Set<DisposalLoopInfo> disposalLoopInfos = getDisposalLoopInfos(ast);
     removeDisposalLoopInfos(ast);
     if (disposalLoopInfos.isEmpty()) {
@@ -420,7 +380,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
     super.setRoot(root);
-    // postCFGConstruction removes each method's entry for disposalLoopInfosByMethod; clear the
+    // postCFGConstruction removes each CFG's entry for disposalLoopInfosByCode; clear the
     // remaining fields at each compilation unit.
     conditionToDisposalLoopInfoMap.clear();
     conditionalBlockToDisposalLoopInfoMap.clear();

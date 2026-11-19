@@ -3,32 +3,33 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 
 /**
- * Scans one method tree and discovers potential disposal loops (represented with {@link
- * DisposalLoopInfo} objects) in it.
+ * Scans the {@linkplain UnderlyingAST#getCode() code} of one CFG and discovers potential disposal
+ * loops (represented with {@link DisposalLoopInfo} objects) in it.
  */
 public class DisposalLoopScanner extends TreeScanner<Void, Void> {
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
-  /** The CFG of the method currently being scanned. */
+  /** The CFG of the code currently being scanned. */
   private final ControlFlowGraph cfg;
 
-  /** Disposal loops discovered while scanning the current method tree. */
+  /** Disposal loops discovered while scanning the current code. */
   private final Set<DisposalLoopInfo> disposalLoopInfos = new LinkedHashSet<>();
 
   /** Matcher for enhanced-`for` disposal loops. */
   private final EnhancedForDisposalLoopMatcher enhancedForDisposalLoopMatcher;
 
   /**
-   * Creates a scanner for disposal loops in one method CFG.
+   * Creates a scanner for disposal loops in one CFG.
    *
    * @param coAtf the CO type factory
    * @param cfg the CFG to scan
@@ -40,18 +41,19 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   }
 
   /**
-   * Scans a method tree and returns the disposal loops discovered in it.
+   * Scans the code of a CFG, such as a method body, a lambda body, or an initializer, and returns
+   * the disposal loops discovered in it.
    *
-   * @param tree the method tree to scan
+   * @param tree the code to scan
    * @return the disposal loops discovered in {@code tree}
    */
-  public Set<DisposalLoopInfo> scanTree(MethodTree tree) {
+  public Set<DisposalLoopInfo> scanTree(Tree tree) {
     scan(tree, null);
     return disposalLoopInfos;
   }
 
   /**
-   * Skips nested lambdas when scanning the enclosing method.
+   * Skips nested lambdas, which have their own CFGs.
    *
    * @param tree the lambda expression
    * @param p the scan parameter
@@ -63,7 +65,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   }
 
   /**
-   * Skips nested classes when scanning the enclosing method.
+   * Skips nested classes, whose code has its own CFGs.
    *
    * @param tree the class tree
    * @param p the scan parameter

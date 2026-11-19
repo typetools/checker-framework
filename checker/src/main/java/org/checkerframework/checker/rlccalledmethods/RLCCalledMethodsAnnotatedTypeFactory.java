@@ -192,20 +192,18 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Before this checker's dataflow analysis of a method, discovers the method's {@linkplain
-   * DisposalLoopInfo potential disposal loops} and stores them in the Collection Ownership
-   * Checker's type factory. During the analysis, this checker tracks the methods called on each
-   * loop's iterated element (see {@link RLCCalledMethodsTransfer#initialStore}). Afterwards, {@code
-   * CollectionOwnershipTransfer} and {@code MustCallConsistencyAnalyzer} use those called methods
-   * to certify the loops and check collection obligations (see {@link
+   * Before this checker's dataflow analysis of a method, a lambda, or an initializer, discovers its
+   * {@linkplain DisposalLoopInfo potential disposal loops} and stores them in the Collection
+   * Ownership Checker's type factory. During the analysis, this checker tracks the methods called
+   * on each loop's iterated element (see {@link RLCCalledMethodsTransfer#initialStore}).
+   * Afterwards, {@code CollectionOwnershipTransfer} and {@code MustCallConsistencyAnalyzer} use
+   * those called methods to certify the loops and check collection obligations (see {@link
    * CollectionOwnershipAnnotatedTypeFactory#postCFGConstruction}).
    */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
-          .discoverDisposalLoopInfos(cfg);
-    }
+    ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
+        .discoverDisposalLoopInfos(cfg);
   }
 
   @Override
