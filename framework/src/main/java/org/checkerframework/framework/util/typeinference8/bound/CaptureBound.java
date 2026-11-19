@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * A bound of the form: {@code G<a1, ..., an> = capture(G<A1, ..., An>)}. The variables a1, ..., an
  * represent the result of capture conversion applied to {@code G<A1, ..., An>} (where A1, ..., An
- * can be types or wildcards and can mention inference variables).
+ * can be types or wildcards and can contain inference variables).
  */
 public final class CaptureBound {
   /** {@code G<A1, ..., An>}, sometimes called the right-hand side. */
@@ -74,7 +74,7 @@ public final class CaptureBound {
     List<AbstractType> capturedTypeArgs = capturedType.getTypeArguments();
     assert capturedTypeArgs != null : "@AssumeAssertion(nullness): capturedType is a declared type";
     // Mark which capture variables capture a wildcard before calling initialBounds on any of them.
-    // initialBounds on one variable can add a bound that mentions another variable, and
+    // initialBounds on one variable can add a bound that contains another variable, and
     // incorporating that bound checks whether the other variable captures a wildcard.
     Iterator<Variable> alphas = this.map.values().iterator();
     for (AbstractType Ai : capturedTypeArgs) {
@@ -208,7 +208,7 @@ public final class CaptureBound {
    * @param variables inference variables
    * @return true if this bound contains any {@code variables}
    */
-  public boolean mentionsAny(Collection<Variable> variables) {
+  public boolean containsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
       if (map.containsValue(a)) {
         return true;
