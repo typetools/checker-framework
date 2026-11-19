@@ -258,7 +258,7 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Resolves all inference variables mentioned in any bound.
+   * Resolves all inference variables contained in any bound.
    *
    * @return a list of resolved variables in this bound set
    */
@@ -306,7 +306,7 @@ public class BoundSet implements ReductionResult {
     //
     // The difference matters because these rules reverse the usual direction of a dependency.  For
     // a non-wildcard type argument Ai, the bound alphai = Ai holds, so applying them makes every
-    // variable mentioned in Ai's bounds depend on alphai, and those dependencies can create a cycle
+    // variable contained in Ai's bounds depend on alphai, and those dependencies can create a cycle
     // where javac has none.  See tests/all-systems/Issue7694.java: applying them to the variable
     // that captures `E` in `Collector<E, ?, List<E>>` puts the variable for `Optional.empty()` in
     // the same resolution set as the variable it is a lower bound of, and resolution then discards
@@ -320,7 +320,7 @@ public class BoundSet implements ReductionResult {
         }
         // An inference variable alpha appearing on the left-hand side of a bound of the
         // form G<..., alpha, ...> = capture(G<...>) depends on the resolution of every
-        // other inference variable mentioned in this bound (on both sides of the = sign).
+        // other inference variable contained in this bound (on both sides of the = sign).
         dependencies.putOrAddAll(var, rhsVars);
         dependencies.putOrAddAll(var, lhsVars);
       }
@@ -329,7 +329,7 @@ public class BoundSet implements ReductionResult {
     allVariables.addAll(additionalVars);
     for (Variable alpha : allVariables) {
       LinkedHashSet<Variable> alphaDependencies =
-          new LinkedHashSet<>(alpha.getBounds().getVariablesMentionedInBounds());
+          new LinkedHashSet<>(alpha.getBounds().getVariablesContainedInBounds());
 
       if (alpha.isCapturedWildcard()) {
         // If alpha appears on the left-hand side of another bound of the form
@@ -427,12 +427,12 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Removes any capture bound that mentions any variable in {@code as}.
+   * Removes any capture bound that contains any variable in {@code as}.
    *
    * @param as a set of variables
    */
   public void removeCaptures(Set<Variable> as) {
-    captures.removeIf((CaptureBound c) -> c.mentionsAny(as));
+    captures.removeIf((CaptureBound c) -> c.containsAny(as));
   }
 
   @Override
