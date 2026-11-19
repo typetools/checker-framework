@@ -474,8 +474,8 @@ public class VariableBounds {
    * <p>A bound that is a use of another variable relates the qualifiers of the two variables only
    * if the use's primary annotations are that variable's (see {@link
    * UseOfVariable#hasVariableQualifiers}). For example, a use that ignores annotations relates only
-   * the Java types of the two variables, so this variable's qualifier bounds imply nothing about the
-   * other variable.
+   * the Java types of the two variables, so this variable's qualifier bounds imply nothing about
+   * the other variable.
    *
    * @param kind kind of bound
    * @param s qualifiers

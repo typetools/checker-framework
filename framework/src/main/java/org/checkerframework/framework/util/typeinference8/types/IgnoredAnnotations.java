@@ -347,7 +347,7 @@ final class IgnoredAnnotations {
    */
   static boolean samePrimaryAnnotationsAtEveryPosition(
       AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, QualifierHierarchy qh) {
-    return allCorrespondingPositions(
+    return allCorrespondingPositionsMatch(
         atm1,
         atm2,
         (a1, a2) -> {

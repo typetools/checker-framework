@@ -886,8 +886,8 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns true if {@code a} and {@code b} have the same Java type, each is a subtype of the
-   * other, and they have the same primary annotations at every position, including the positions
-   * in enclosing types, which the type hierarchy does not compare. Unlike {@link
+   * other, and they have the same primary annotations at every position, including the positions in
+   * enclosing types, which the type hierarchy does not compare. Unlike {@link
    * AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not require the underlying
    * Java types to be the same object, so it can compare types made by separate applications of
    * instantiations. It compares only annotated types, not the other fields that {@link #equals}
