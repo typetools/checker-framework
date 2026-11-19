@@ -29,4 +29,21 @@ public class ThrowNullCaught {
       o.toString();
     }
   }
+
+  // Throwing a variable whose value is null throws a NullPointerException, even if the variable's
+  // declared type is another exception type.
+  void variableCaughtAfterFinally(java.io.IOException ex) throws java.io.IOException {
+    @Nullable Object o = "hello";
+    try {
+      try {
+        o = null;
+        throw ex;
+      } finally {
+        System.out.println();
+      }
+    } catch (NullPointerException e) {
+      // :: error: (dereference.of.nullable)
+      o.toString();
+    }
+  }
 }

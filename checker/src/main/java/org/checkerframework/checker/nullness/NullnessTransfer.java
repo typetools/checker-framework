@@ -443,15 +443,20 @@ public class NullnessTransfer
     // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
     // case FlowNullness.java.
+    // As for the receiver, the refinement is skipped if evaluating a later argument might reassign
+    // the argument expression, as in `r.m(r, r = null)`.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
-          && (nonNullAssumptionAfterInvocation
-              || isMethodSideEffectFree
-              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
-        makeNonNull(result, n.getArgument(i));
+      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
+        JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
+        if ((nonNullAssumptionAfterInvocation
+                || isMethodSideEffectFree
+                || !argExpr.isAssignableByOtherCode())
+            && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
+          makeNonNull(result, n.getArgument(i));
+        }
       }
     }
 
@@ -479,7 +484,8 @@ public class NullnessTransfer
 
   /**
    * Returns true if evaluating the given method arguments might reassign the given receiver
-   * expression or a subexpression of it. This is conservative. It returns true if an argument
+   * expression or a subexpression of it. The "receiver" may also be an earlier argument of the
+   * invocation. This is conservative. It returns true if an argument
    * assigns any part of the receiver expression. If the receiver expression is assignable by other
    * code or contains a method call (whose value might depend on state that does not appear in the
    * expression), it also returns true if an argument assigns a non-local variable or (unless {@link

@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3468,12 +3469,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    // Throwing a null value throws a NullPointerException (JLS 14.18).
+    Set<TypeMirror> causes;
     if (exception.getKind() == TypeKind.NULL) {
-      // `throw null` throws a NullPointerException (JLS 14.18).
-      exception = nullPointerExceptionType;
+      causes = Collections.singleton(nullPointerExceptionType);
+    } else if (mayBeNull(expression)) {
+      causes = new LinkedHashSet<>(2);
+      causes.add(exception);
+      causes.add(nullPointerExceptionType);
+    } else {
+      causes = Collections.singleton(exception);
     }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
-    NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
+    NodeWithExceptionsHolder exNode = extendWithNodeWithExceptions(throwsNode, causes);
     exNode.setTerminatesExecution(true);
     return throwsNode;
   }

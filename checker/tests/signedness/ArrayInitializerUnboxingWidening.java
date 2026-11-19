@@ -12,4 +12,12 @@ public class ArrayInitializerUnboxingWidening {
   void unboxSameKind(Character c) {
     @Unsigned char[] chars = new char[] {c, c};
   }
+
+  <T extends Character> void unboxAndWidenGeneric(T c) {
+    @SignedPositive int[] fromBoxed = new int[] {c, c};
+  }
+
+  <T extends Character> void unboxSameKindGeneric(T c) {
+    @Unsigned char[] chars = new char[] {c, c};
+  }
 }
