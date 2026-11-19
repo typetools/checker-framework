@@ -18,12 +18,13 @@ import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -418,30 +419,72 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns the entries in an archive whose names end with the given string. As in a search of an
-   * archive for annotation files, an entry is omitted if any component of its name is hidden
-   * (starts with ".").
+   * Returns the entries in an archive whose names end with the given string, keyed by their
+   * normalized names (see {@link #normalizeEntryName}). As in a search of an archive for annotation
+   * files, an entry is omitted if any component of its name is hidden (starts with "."). An entry
+   * whose name refers to a location outside the archive's root, such as {@code ../p/Foo.ajava}, is
+   * also omitted.
+   *
+   * <p>Several entries may have the same normalized name, such as {@code p/Foo.ajava} and {@code
+   * ./p/Foo.ajava}. All of them are in the list for that name, so that the client can report the
+   * ambiguity rather than silently choosing one of them. Each entry's resource retains the
+   * entry's original name, for reading and for diagnostics.
    *
    * @param archive a JAR or ZIP archive
    * @param nameEnding the end of the name of each entry to return
-   * @return a map from the name of each entry in {@code archive} whose name ends with {@code
-   *     nameEnding} to that entry. Entry names use "/" as the separator. The map is empty if {@code
-   *     archive} cannot be read. An entry that cannot be read is in the map; see {@link
-   *     #archiveEntry}.
+   * @return a map from each normalized name to the entries in {@code archive} that have that
+   *     normalized name and whose names end with {@code nameEnding}, in the order they appear in
+   *     the archive. Normalized names use "/" as the separator. The map is empty if {@code archive}
+   *     cannot be read. An entry that cannot be read is in the map; see {@link #archiveEntry}.
    */
-  public static Map<String, AnnotationFileResource> archiveEntries(
+  public static Map<String, List<AnnotationFileResource>> archiveEntries(
       File archive, String nameEnding) {
-    Map<String, AnnotationFileResource> result = new HashMap<>();
+    Map<String, List<AnnotationFileResource>> result = new LinkedHashMap<>();
     try (JarFile file = new JarFile(archive)) {
       file.stream()
           .filter(
               entry -> !hasHiddenComponent(entry.getName()) && entry.getName().endsWith(nameEnding))
-          .forEach(entry -> result.put(entry.getName(), archiveEntry(archive, file, entry)));
+          .forEach(
+              entry -> {
+                String normalizedName = normalizeEntryName(entry.getName());
+                if (normalizedName != null) {
+                  result
+                      .computeIfAbsent(normalizedName, k -> new ArrayList<>(1))
+                      .add(archiveEntry(archive, file, entry));
+                }
+              });
     } catch (IOException e) {
       System.err.println("AnnotationFileUtil: could not process archive " + archive + ": " + e);
       return Collections.emptyMap();
     }
     return result;
+  }
+
+  /**
+   * Returns the given archive entry name, normalized: empty and {@code .} components are removed,
+   * and each {@code ..} component is removed along with the component before it. For example, each
+   * of {@code ./p/Foo.ajava}, {@code p//Foo.ajava}, and {@code p/q/../Foo.ajava} normalizes to
+   * {@code p/Foo.ajava}. A name without such components is returned unchanged.
+   *
+   * @param entryName the name of an archive entry, which uses "/" as the separator
+   * @return the normalized name, or null if {@code entryName} refers to a location outside the
+   *     archive's root, such as {@code ../Foo.ajava}
+   */
+  static @Nullable String normalizeEntryName(String entryName) {
+    ArrayDeque<String> components = new ArrayDeque<>();
+    for (String component : entryName.split("/", -1)) {
+      if (component.isEmpty() || component.equals(".")) {
+        continue;
+      } else if (component.equals("..")) {
+        if (components.isEmpty()) {
+          return null;
+        }
+        components.removeLast();
+      } else {
+        components.addLast(component);
+      }
+    }
+    return String.join("/", components);
   }
 
   /**

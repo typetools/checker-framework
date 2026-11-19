@@ -358,10 +358,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Maps each archive named by the {@code -Aajava} command-line option to the ajava files in it for
-   * this checker, keyed by entry name. Each archive is read once, rather than once per compilation
-   * unit.
+   * this checker, keyed by normalized entry name (see {@link AnnotationFileUtil#archiveEntries}).
+   * Each archive is read once, rather than once per compilation unit.
    */
-  private final Map<File, Map<String, AnnotationFileResource>> ajavaArchiveEntries =
+  private final Map<File, Map<String, List<AnnotationFileResource>>> ajavaArchiveEntries =
       new HashMap<>();
 
   /**
@@ -1079,13 +1079,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // Case (3): ajavaLocation is an archive, whose root is like a directory in case (1).
           // Use the absolute path, so that an archive named twice (say, by a relative and an
           // absolute path) yields one candidate rather than an ambiguity, as for a directory.
-          AnnotationFileResource entry =
+          // Entries are keyed by normalized name, so an entry such as "./p/Foo-Checker.ajava"
+          // matches. If several entries have the same normalized name, all are candidates, so
+          // the ambiguity is reported below rather than one being silently chosen.
+          List<AnnotationFileResource> entries =
               ajavaArchiveEntries
                   .computeIfAbsent(
                       ajavaLocationFile.getAbsoluteFile(),
                       archive -> AnnotationFileUtil.archiveEntries(archive, checkerAjavaEnding))
-                  .get(ajavaEnding);
-          if (entry != null) {
+                  .getOrDefault(ajavaEnding, Collections.emptyList());
+          for (AnnotationFileResource entry : entries) {
             candidateAjavaFiles.put(entry.getDescription(), entry);
           }
         } else {

@@ -283,17 +283,70 @@ public class AnnotationFileUtilTest {
             "p/Foo-otherchecker.ajava",
             "__MACOSX/p/._Foo-checker.ajava");
 
-    Map<String, AnnotationFileResource> entries =
+    Map<String, List<AnnotationFileResource>> entries =
         AnnotationFileUtil.archiveEntries(zip, "-checker.ajava");
     Assert.assertEquals(
         new HashSet<>(Arrays.asList("p/Foo-checker.ajava", "Bar-checker.ajava")), entries.keySet());
-    AnnotationFileResource entry = entries.get("p/Foo-checker.ajava");
-    Assert.assertNotNull(entry);
+    List<AnnotationFileResource> fooEntries = entries.get("p/Foo-checker.ajava");
+    Assert.assertNotNull(fooEntries);
+    Assert.assertEquals(1, fooEntries.size());
+    AnnotationFileResource entry = fooEntries.get(0);
     Assert.assertEquals(zip.getPath() + "!p/Foo-checker.ajava", entry.getDescription());
     try (InputStream in = entry.getInputStream()) {
       Assert.assertEquals(
           "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
     }
+  }
+
+  /**
+   * Tests that archive entries are keyed by their normalized names, that each resource retains its
+   * entry's original name, that entries with the same normalized name are all returned, and that an
+   * entry outside the archive's root is omitted.
+   */
+  @Test
+  public void archiveEntriesAreKeyedByNormalizedName() throws IOException {
+    File zip =
+        writeZip(
+            new File(tmp.getRoot(), "ajava.zip"),
+            "./p/Foo-checker.ajava",
+            "q/./r/../Bar-checker.ajava",
+            "q/Bar-checker.ajava",
+            "../Baz-checker.ajava");
+
+    Map<String, List<AnnotationFileResource>> entries =
+        AnnotationFileUtil.archiveEntries(zip, "-checker.ajava");
+    Assert.assertEquals(
+        new HashSet<>(Arrays.asList("p/Foo-checker.ajava", "q/Bar-checker.ajava")),
+        entries.keySet());
+
+    List<AnnotationFileResource> fooEntries = entries.get("p/Foo-checker.ajava");
+    Assert.assertEquals(1, fooEntries.size());
+    Assert.assertEquals(
+        zip.getPath() + "!./p/Foo-checker.ajava", fooEntries.get(0).getDescription());
+    try (InputStream in = fooEntries.get(0).getInputStream()) {
+      Assert.assertEquals(
+          "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    }
+
+    List<String> barDescriptions = new ArrayList<>();
+    for (AnnotationFileResource resource : entries.get("q/Bar-checker.ajava")) {
+      barDescriptions.add(resource.getDescription());
+    }
+    Assert.assertEquals(
+        Arrays.asList(
+            zip.getPath() + "!q/./r/../Bar-checker.ajava", zip.getPath() + "!q/Bar-checker.ajava"),
+        barDescriptions);
+  }
+
+  /** Tests the normalization of archive entry names. */
+  @Test
+  public void normalizeEntryName() {
+    Assert.assertEquals("p/Foo.ajava", AnnotationFileUtil.normalizeEntryName("p/Foo.ajava"));
+    Assert.assertEquals("p/Foo.ajava", AnnotationFileUtil.normalizeEntryName("./p/Foo.ajava"));
+    Assert.assertEquals("p/Foo.ajava", AnnotationFileUtil.normalizeEntryName("/p//Foo.ajava"));
+    Assert.assertEquals("p/Foo.ajava", AnnotationFileUtil.normalizeEntryName("p/q/../Foo.ajava"));
+    Assert.assertNull(AnnotationFileUtil.normalizeEntryName("../Foo.ajava"));
+    Assert.assertNull(AnnotationFileUtil.normalizeEntryName("p/../../Foo.ajava"));
   }
 
   /** Tests that an archive that cannot be read has no entries. */
