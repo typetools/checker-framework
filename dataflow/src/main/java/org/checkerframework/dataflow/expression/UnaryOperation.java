@@ -117,17 +117,38 @@ public class UnaryOperation extends JavaExpression {
   @Override
   public String toString() {
     String operandString = operand.toString();
+    // Every unary operator binds more tightly than every binary operator.
+    if (operand instanceof BinaryOperation) {
+      operandString = "(" + operandString + ")";
+    }
     return switch (operationKind) {
       case BITWISE_COMPLEMENT -> "~" + operandString;
       case LOGICAL_COMPLEMENT -> "!" + operandString;
       case POSTFIX_DECREMENT -> operandString + "--";
       case POSTFIX_INCREMENT -> operandString + "++";
-      case PREFIX_DECREMENT -> "--" + operandString;
-      case PREFIX_INCREMENT -> "++" + operandString;
-      case UNARY_MINUS -> "-" + operandString;
-      case UNARY_PLUS -> "+" + operandString;
+      case PREFIX_DECREMENT -> prefix("--", operandString);
+      case PREFIX_INCREMENT -> prefix("++", operandString);
+      case UNARY_MINUS -> prefix("-", operandString);
+      case UNARY_PLUS -> prefix("+", operandString);
       default -> throw new BugInCF("Unrecognized unary operation kind " + operationKind);
     };
+  }
+
+  /**
+   * Returns the given prefix operator, which is one of "+", "++", "-", and "--", followed by the
+   * given operand. Parenthesizes the operand if juxtaposing the two would form a different token:
+   * for example, returns "-(-x)" rather than "--x", which is a prefix decrement.
+   *
+   * @param operator a prefix operator, which ends with "+" or "-"
+   * @param operandString the operand, as a string
+   * @return the operator followed by the operand
+   */
+  private static String prefix(String operator, String operandString) {
+    if (!operandString.isEmpty()
+        && operandString.charAt(0) == operator.charAt(operator.length() - 1)) {
+      return operator + "(" + operandString + ")";
+    }
+    return operator + operandString;
   }
 
   @Override
