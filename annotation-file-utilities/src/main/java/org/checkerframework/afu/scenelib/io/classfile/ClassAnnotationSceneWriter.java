@@ -374,17 +374,17 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
         AnnotationVisitor nav = av.visitAnnotation(fieldName, classDescToName(a.def().name));
         visitFields(nav, a);
         nav.visitEnd();
-      } else if (value instanceof List) {
+      } else if (value instanceof List<?> list) {
         // In order to visit an array, the AnnotationVisitor returned by
         // visitArray needs to visit each element, and by specification
         // the name should be null for each element.
         AnnotationVisitor aav = av.visitArray(fieldName);
         aft = ((ArrayAFT) aft).elementType;
-        for (Object o : (List<?>) value) {
+        for (Object o : list) {
           if (aft instanceof EnumAFT) {
             aav.visitEnum(null, ((EnumAFT) aft).typeName, o.toString());
-          } else if (o instanceof Class) {
-            aav.visit(null, org.objectweb.asm.Type.getType((Class) o));
+          } else if (o instanceof Class<?> c) {
+            aav.visit(null, org.objectweb.asm.Type.getType(c));
           } else {
             aav.visit(null, o);
           }

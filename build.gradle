@@ -76,6 +76,13 @@ ext {
   // see https://projectlombok.org/changelog .
   skipDelombok = gradleRunsOnJava28orHigher
 
+  // True if the `errorProneFix` task was requested on the command line.  Then each compilation that
+  // runs Error Prone rewrites its source files in place, applying Error Prone's suggested fixes.
+  // Gradle matches task names case-insensitively, so also recognize, say, "errorpronefix".
+  errorProneFix = gradle.startParameter.taskNames.any {
+    it.replaceFirst(/^:/, "").equalsIgnoreCase("errorProneFix")
+  }
+
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities"
 
@@ -484,12 +491,32 @@ allprojects { currentProj ->
           // https://github.com/google/error-prone/issues/436
           "-Werror",
         ]
+        if (rootProject.ext.errorProneFix) {
+          options.errorprone.errorproneArgs.add("-XepPatchLocation:IN_PLACE")
+          // With -Werror, a warning stops javac before Error Prone applies its fixes.
+          options.compilerArgs -= "-Werror"
+          options.errorprone.errorproneArgs.set(options.errorprone.errorproneArgs.get() - "-Werror")
+          // Always run Error Prone, even if the compiled classes are up to date or cached.
+          outputs.upToDateWhen { false }
+          outputs.cacheIf { false }
+        }
       } else {
         options.errorprone.enabled = false
       }
     }
   } // end afterEvaluate
 } // end allProjects
+
+tasks.register("errorProneFix") {
+  description = "Applies Error Prone's suggested fixes to the source files"
+  group = "Verification"
+  dependsOn(subprojects.collect { "${it.path}:compileJava" })
+  // Error Prone's fixes are not formatted.
+  finalizedBy(subprojects.collect { "${it.path}:spotlessJavaApply" })
+  if (errorProneFix && !compilerRunsOnJava21orHigher) {
+    throw new GradleException("errorProneFix requires compiling with JDK 21 or higher, because Error Prone does")
+  }
+}
 
 tasks.register("version") {
   description = "Print Checker Framework version"
