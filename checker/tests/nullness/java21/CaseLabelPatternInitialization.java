@@ -27,7 +27,7 @@ public class CaseLabelPatternInitialization {
     switch (o) {
       case String s -> {
         @UnknownInitialization String t = s;
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Initialized String u = s;
       }
       default -> {}

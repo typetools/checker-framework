@@ -19,7 +19,7 @@ nested in a record pattern.  `ElementUtils.isLocalVariable()` returns true for
 pattern variables.
 
 New overridable methods `BaseTypeVisitor.checkInstanceofPattern()` and
-`BaseTypeVisitor.checkCaseLabelPattern()` check the pattern variable of a type
+`BaseTypeVisitor.checkCaseLabelPattern()` check the binding variable of a type
 pattern in an `instanceof` or a case label.  A subclass can override the new
 method `BaseTypeVisitor.typePatternMatchedType()` to exclude values that a type
 pattern never matches, such as null.
