@@ -1010,6 +1010,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // is unbounded, so it must be cleared whether or not caching is enabled.
     lambdaParamTypes.clear();
 
+    // The previous compilation unit's ajava annotations do not apply to the new one.
+    boolean hadCurrentFileAjavaTypes = currentFileAjavaTypes != null;
+    currentFileAjavaTypes = null;
+
     if (root != null && checker.hasOption("ajava")) {
       // Search for an ajava file with annotations for the current source file and the current
       // checker. It will be in a directory specified by the "ajava" option in a subdirectory
@@ -1068,7 +1072,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // one match no file is parsed for this class and a warning is issued instead.
           // The user can disambiguate by supplying a root directory, instead of specific
           // files.
-          if (ajavaLocation.endsWith(File.separator + ajavaEnding)) {
+          // ajavaEnding uses "/", but ajavaLocation uses the file system's separator.
+          if (ajavaLocation.endsWith(
+              File.separator + ajavaEnding.replace('/', File.separatorChar))) {
             // This is a candidate ajava file. If it is the only candidate, then it
             // might be unambiguous. If not, issue a warning.
             candidateAjavaFiles.add(ajavaLocation);
@@ -1087,8 +1093,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       } else if (candidateAjavaFiles.size() > 1) {
         checker.reportWarning(root, "ambiguous.ajava", String.join(", ", candidateAjavaFiles));
       }
-    } else {
-      currentFileAjavaTypes = null;
+    }
+
+    // Cached types and declaration annotations may reflect the previous compilation unit's ajava
+    // annotations, or may lack the new compilation unit's ajava annotations.
+    if (hadCurrentFileAjavaTypes || currentFileAjavaTypes != null) {
+      if (shouldCache) {
+        elementCache.clear();
+      }
+      cacheDeclAnnos.clear();
+      // Populated in lockstep with `cacheDeclAnnos`.
+      inheritedSideEffectsOnlyExpressions.clear();
     }
   }
 
