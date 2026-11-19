@@ -23,6 +23,10 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *  // `sockets` is {@literal @}OwningCollection, with an obligation to close every element
  * </code></pre>
  *
+ * <p>The inserted value is the method's last parameter, unless {@link #element} names another one.
+ * Its type is the collection's element type, or, for a method such as {@code addAll} that inserts
+ * all the elements of another collection, a collection type.
+ *
  * <p>This annotation should be written only on methods declared in a subtype of {@code
  * java.lang.Iterable}.
  *
@@ -32,4 +36,17 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface CreatesCollectionObligation {}
+public @interface CreatesCollectionObligation {
+  /**
+   * The parameter whose value is inserted, written as {@code "#1"} for the first parameter, {@code
+   * "#2"} for the second, and so on.
+   *
+   * <p>The default is the last parameter, which is the inserted value for most methods, such as
+   * {@code add(E e)} and {@code add(int index, E element)}. A method whose inserted value is not
+   * its last parameter must name it. For example, {@code BlockingQueue.offer(E e, long timeout,
+   * TimeUnit unit)} is annotated with {@code @CreatesCollectionObligation(element = "#1")}.
+   *
+   * @return the parameter whose value is inserted, or the empty string for the last parameter
+   */
+  String element() default "";
+}

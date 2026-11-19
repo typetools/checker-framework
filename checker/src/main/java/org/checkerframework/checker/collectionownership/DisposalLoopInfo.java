@@ -34,7 +34,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * @param loopConditionalBlock The {@code ConditionalBlock} that branches on this loop's condition.
  *     It contains no nodes; its only predecessor ends with the condition's value. Its
  *     then-successor enters the loop body, and its else-successor exits the loop.
- * @param loopBodyEntryBlock The entry {@code Block} for this loop's body.
+ * @param loopBodyEntryBlock The {@code Block} that contains the start of this loop's body.
  * @param loopUpdateBlock The block that the end of the loop body flows into: the update block of an
  *     indexed for loop, or the block that evaluates the loop condition again.
  */

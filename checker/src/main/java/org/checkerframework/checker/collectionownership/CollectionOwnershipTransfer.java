@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -21,11 +20,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
-import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -45,7 +42,6 @@ import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -227,7 +223,7 @@ public class CollectionOwnershipTransfer
   /**
    * May refine the type of the collection to @OwningCollectionWithoutObligation in the else store
    * of the incoming transfer result. Does so if the given AST tree is the condition for a disposal
-   * loop whose MCCA called-methods cover the MustCall type of the collection's elements.
+   * loop whose body definitely calls every must-call method on every element of the collection.
    *
    * @param res the incoming transfer result
    * @param tree the AST tree that may represent a disposal-loop condition
@@ -240,7 +236,6 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipStore elseStore = res.getElseStore();
       ExpressionTree collectionExpression = disposalLoopInfo.expressionTree();
       JavaExpression collectionJE = JavaExpression.fromTree(collectionExpression);
-      Set<String> disposalLoopCalledMethods = atypeFactory.getCalledMethods(disposalLoopInfo);
 
       // Read the collection's type at the loop condition, not before the collection expression:
       // for an iterator loop, the collection expression precedes the loop, and the loop body may
@@ -251,9 +246,8 @@ public class CollectionOwnershipTransfer
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
         List<String> requiredElementMethods =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(collectionExpression);
-        if (disposalLoopCalledMethods != null
-            && requiredElementMethods != null
-            && disposalLoopCalledMethods.containsAll(requiredElementMethods)) {
+        if (requiredElementMethods != null
+            && atypeFactory.callsOnEveryElement(disposalLoopInfo, requiredElementMethods)) {
           elseStore.clearValue(collectionJE);
           elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
           return new ConditionalTransferResult<>(
@@ -354,7 +348,7 @@ public class CollectionOwnershipTransfer
     if (tree != null
         && ((isThisConstructorCall
                 && (receiverNode instanceof ThisNode || receiverNode instanceof SuperNode))
-            || createsMustCallForThis(node))) {
+            || atypeFactory.createsMustCallForThis(node))) {
       // Get the fields from the enclosing class rather than from the receiver's type. For
       // `super.m()`, the receiver's type is the superclass, but `m` can call an overriding method
       // that inserts into a field declared in this class.
@@ -373,26 +367,6 @@ public class CollectionOwnershipTransfer
       }
     }
     return res;
-  }
-
-  /**
-   * Returns true if some {@code @CreatesMustCallFor} target of the invoked method, resolved at the
-   * call site, is {@code this} (or {@code super}).
-   *
-   * @param node a method invocation
-   * @return true if the invocation creates a must-call obligation for {@code this}
-   */
-  private boolean createsMustCallForThis(MethodInvocationNode node) {
-    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
-        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory);
-    for (JavaExpression target :
-        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-            node, rlAtf, rlAtf)) {
-      if (target instanceof ThisReference || target instanceof SuperReference) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

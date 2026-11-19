@@ -3,6 +3,7 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.List;
@@ -13,6 +14,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
@@ -21,6 +24,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -268,6 +272,90 @@ public class CollectionOwnershipVisitor
   @Override
   protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
     return new AnnotationMirrorSet(atypeFactory.BOTTOM);
+  }
+
+  @Override
+  public void processMethodTree(String className, MethodTree tree) {
+    ExecutableElement method = TreeUtils.elementFromDeclaration(tree);
+    if (atypeFactory.getDeclAnnotation(method, CreatesCollectionObligation.class) != null) {
+      checkInsertedParameter(tree, method);
+    }
+    super.processMethodTree(className, tree);
+  }
+
+  /**
+   * Checks that the parameter that a {@code @CreatesCollectionObligation} method inserts has the
+   * collection's element type, or is a collection, for a method that inserts all the elements of
+   * another collection. See {@link CreatesCollectionObligation#element}.
+   *
+   * @param tree the declaration of a {@code @CreatesCollectionObligation} method
+   * @param method the method's element
+   */
+  private void checkInsertedParameter(MethodTree tree, ExecutableElement method) {
+    TypeElement collectionElt = ElementUtils.enclosingTypeElement(method);
+    TypeMirror elementType =
+        collectionElt == null
+            ? null
+            : ResourceLeakUtils.getCollectionElementType(
+                collectionElt.asType(), atypeFactory.getProcessingEnv());
+    if (elementType == null) {
+      return;
+    }
+    int index = atypeFactory.getInsertedParameterIndex(method);
+    if (index < 0) {
+      String reference = atypeFactory.getInsertedParameterReference(method);
+      checker.reportError(
+          tree,
+          "creates.collection.obligation.element.missing",
+          method.getSimpleName(),
+          reference.isEmpty() ? "its last parameter" : "parameter " + reference);
+      return;
+    }
+    VariableElement param = method.getParameters().get(index);
+    if (!types.isSubtype(param.asType(), elementType)
+        && !ResourceLeakUtils.isCollection(param.asType(), atypeFactory.getProcessingEnv())) {
+      checker.reportError(
+          tree,
+          "creates.collection.obligation.element",
+          method.getSimpleName(),
+          param.getSimpleName(),
+          elementType);
+    }
+  }
+
+  /**
+   * Also checks that the {@code @CollectionFieldDestructor} postcondition of a destructor, that is,
+   * a must-call method of its class, holds when the destructor throws an exception. Calling the
+   * destructor fulfills the caller's obligation even if the destructor throws, so nothing else
+   * disposes of the fields.
+   */
+  @Override
+  protected void checkPostcondition(
+      MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
+    super.checkPostcondition(methodTree, annotation, expression);
+    ExecutableElement method = TreeUtils.elementFromDeclaration(methodTree);
+    if (!ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory)
+        .isMustCallMethod(method)) {
+      return;
+    }
+    CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
+    if (exitStore == null) {
+      return;
+    }
+    CFAbstractValue<?> value = exitStore.getValue(expression);
+    AnnotationMirror inferredAnno =
+        value == null
+            ? null
+            : qualHierarchy.findAnnotationInSameHierarchy(value.getAnnotations(), annotation);
+    if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+      String expressionString = expression.toString();
+      checker.reportError(
+          methodTree,
+          "contracts.exceptional.postcondition",
+          methodTree.getName(),
+          contractExpressionAndType(expressionString, inferredAnno),
+          contractExpressionAndType(expressionString, annotation));
+    }
   }
 
   @Override

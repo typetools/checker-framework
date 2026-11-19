@@ -34,6 +34,7 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
@@ -54,6 +55,9 @@ import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -108,17 +112,17 @@ public class CollectionOwnershipAnnotatedTypeFactory
       conditionalBlockToDisposalLoopInfoMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@link DisposalLoopInfo} to the set of methods that the loop body is guaranteed to
-   * call on the iterated element.
+   * Map from a {@link DisposalLoopInfo} to the methods that the loop body definitely calls on the
+   * iterated element, as a Called Methods type.
    */
-  private final IdentityHashMap<DisposalLoopInfo, Set<String>> disposalLoopInfoToCalledMethodsMap =
-      new IdentityHashMap<>();
+  private final IdentityHashMap<DisposalLoopInfo, AnnotationMirror>
+      disposalLoopInfoToCalledMethodsMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@code MethodTree} to the {@link DisposalLoopInfo}s discovered in that method's
-   * body.
+   * Map from the {@linkplain UnderlyingAST#getCode() code} of a CFG, such as a method body, a
+   * lambda body, or an initializer, to the {@link DisposalLoopInfo}s discovered in it.
    */
-  private final IdentityHashMap<MethodTree, Set<DisposalLoopInfo>> disposalLoopInfosByMethod =
+  private final IdentityHashMap<Tree, Set<DisposalLoopInfo>> disposalLoopInfosByCode =
       new IdentityHashMap<>();
 
   /**
@@ -145,6 +149,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The {@code value} element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
+
+  /** The {@code element} element of the {@code @}{@link CreatesCollectionObligation} annotation. */
+  private final ExecutableElement createsCollectionObligationElementElement =
+      TreeUtils.getMethod(CreatesCollectionObligation.class, "element", 0, processingEnv);
 
   /** The {@code Iterator.hasNext()} method. */
   private final ExecutableElement iteratorHasNext =
@@ -241,14 +249,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns the called-methods on the iterated element for a {@link DisposalLoopInfo}.
+   * Returns true if the body of {@code disposalLoopInfo} definitely calls all of {@code methods} on
+   * every iterated element.
    *
-   * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @return the methods that the loop body is guaranteed to call on the iterated element, or {@code
-   *     null} if {@link #postCFGConstruction} has not recorded the loop
+   * @param disposalLoopInfo a disposal loop
+   * @param methods the names of the methods to check, such as the must-call methods of the
+   *     collection's elements
+   * @return true if the loop body definitely calls all of {@code methods} on every iterated
+   *     element; false if it does not, or if {@link #postCFGConstruction} has not recorded the loop
    */
-  public @Nullable Set<String> getCalledMethods(DisposalLoopInfo disposalLoopInfo) {
-    return disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
+  public boolean callsOnEveryElement(DisposalLoopInfo disposalLoopInfo, List<String> methods) {
+    AnnotationMirror calledMethods = disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
+    if (calledMethods == null) {
+      return false;
+    }
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+    return rlAtf
+        .getQualifierHierarchy()
+        .isSubtypeQualifiersOnly(
+            calledMethods, rlAtf.createCalledMethods(methods.toArray(new String[0])));
   }
 
   /**
@@ -268,46 +288,33 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * iterated element, indexed by the loop's condition tree and its conditional block.
    *
    * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @param calledMethods the methods that the loop body is guaranteed to call on the iterated
-   *     element
+   * @param calledMethods the methods that the loop body definitely calls on the iterated element,
+   *     as a Called Methods type
    */
-  private void recordDisposalLoop(DisposalLoopInfo disposalLoopInfo, Set<String> calledMethods) {
+  private void recordDisposalLoop(
+      DisposalLoopInfo disposalLoopInfo, AnnotationMirror calledMethods) {
     conditionToDisposalLoopInfoMap.put(disposalLoopInfo.loopConditionTree(), disposalLoopInfo);
     conditionalBlockToDisposalLoopInfoMap.put(
         disposalLoopInfo.loopConditionalBlock(), disposalLoopInfo);
-    disposalLoopInfoToCalledMethodsMap.put(
-        disposalLoopInfo, Collections.unmodifiableSet(new LinkedHashSet<>(calledMethods)));
+    disposalLoopInfoToCalledMethodsMap.put(disposalLoopInfo, calledMethods);
   }
 
   /**
-   * Returns all the disposal loops in the given method CFG.
-   *
-   * @param cfg the CFG to scan
-   * @return the {@link DisposalLoopInfo}s discovered in {@code cfg}
-   */
-  private Set<DisposalLoopInfo> scanForDisposalLoopInfos(ControlFlowGraph cfg) {
-    if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
-      return Collections.emptySet();
-    }
-    return new DisposalLoopScanner(
-            this, ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this), cfg)
-        .scanTree(((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod());
-  }
-
-  /**
-   * Discovers and stores the {@link DisposalLoopInfo}s for a method {@code cfg}. This discovery
-   * must happen before {@link
+   * Discovers and stores the {@link DisposalLoopInfo}s for a {@code cfg}, which may be for a
+   * method, a lambda, or an initializer. This discovery must happen before {@link
    * org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsTransfer#initialStore(UnderlyingAST,
    * List)} runs, which adds an {@code IteratedCollectionElement} for the element of each loop.
    *
-   * @param cfg the method CFG whose disposal loops to be discovered
+   * @param cfg the CFG whose disposal loops to be discovered
    */
   public void discoverDisposalLoopInfos(ControlFlowGraph cfg) {
-    MethodTree methodTree = getMethodTree(cfg.getUnderlyingAST());
-    if (methodTree == null) {
-      return;
-    }
-    disposalLoopInfosByMethod.put(methodTree, new LinkedHashSet<>(scanForDisposalLoopInfos(cfg)));
+    Tree code = cfg.getUnderlyingAST().getCode();
+    disposalLoopInfosByCode.put(
+        code,
+        new LinkedHashSet<>(
+            new DisposalLoopScanner(
+                    this, ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this), cfg)
+                .scanTree(code)));
   }
 
   /**
@@ -317,11 +324,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return an unmodifiable view of the disposal loops for {@code underlyingAST}
    */
   public Set<DisposalLoopInfo> getDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getMethodTree(underlyingAST);
-    if (methodTree == null) {
-      return Collections.emptySet();
-    }
-    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByMethod.get(methodTree);
+    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByCode.get(underlyingAST.getCode());
     if (disposalLoopInfos == null) {
       return Collections.emptySet();
     }
@@ -334,42 +337,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param underlyingAST the underlying AST whose disposal loops should be removed
    */
   private void removeDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getMethodTree(underlyingAST);
-    if (methodTree != null) {
-      disposalLoopInfosByMethod.remove(methodTree);
-    }
+    disposalLoopInfosByCode.remove(underlyingAST.getCode());
   }
 
   /**
-   * Returns the method tree of the given underlying AST, if it is a method CFG.
+   * Computes the called methods of the potential disposal loops in the code of {@code cfg}, which
+   * {@link RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each
+   * loop, {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the
+   * loop body definitely calls on the iterated element, and this method records them.
    *
-   * @param underlyingAST the underlying AST
-   * @return the method tree, or {@code null} if {@code underlyingAST} is not a method
-   */
-  private @Nullable MethodTree getMethodTree(UnderlyingAST underlyingAST) {
-    if (underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
-      return null;
-    }
-    return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
-  }
-
-  /**
-   * Computes the called methods of this method's potential disposal loops, which {@link
-   * RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each loop,
-   * {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the loop body
-   * is guaranteed to call on the iterated element, and this method records them.
-   *
-   * <p>This runs before this checker's dataflow analysis of the method. During that analysis,
-   * {@link CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the
-   * iterated element's must-call methods. Later, the Resource Leak Checker's {@link
+   * <p>This runs before this checker's dataflow analysis of the code. During that analysis, {@link
+   * CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the iterated
+   * element's must-call methods. Later, the Resource Leak Checker's {@link
    * MustCallConsistencyAnalyzer} uses the recorded loops when it checks collection obligations.
    */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    if (ast.getKind() != UnderlyingAST.Kind.METHOD) {
-      return;
-    }
-
     Set<DisposalLoopInfo> disposalLoopInfos = getDisposalLoopInfos(ast);
     removeDisposalLoopInfos(ast);
     if (disposalLoopInfos.isEmpty()) {
@@ -379,7 +362,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
     for (DisposalLoopInfo disposalLoopInfo : disposalLoopInfos) {
-      Set<String> calledMethods =
+      AnnotationMirror calledMethods =
           mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoopInfo);
       if (calledMethods != null) {
         recordDisposalLoop(disposalLoopInfo, calledMethods);
@@ -401,7 +384,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
     super.setRoot(root);
-    // postCFGConstruction removes each method's entry for disposalLoopInfosByMethod; clear the
+    // postCFGConstruction removes each CFG's entry for disposalLoopInfosByCode; clear the
     // remaining fields at each compilation unit.
     conditionToDisposalLoopInfoMap.clear();
     conditionalBlockToDisposalLoopInfoMap.clear();
@@ -593,6 +576,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
+   * Returns true if some {@code @CreatesMustCallFor} target of the invoked method, resolved at the
+   * call site, is {@code this} (or {@code super}).
+   *
+   * @param node a method invocation
+   * @return true if the invocation creates a must-call obligation for {@code this}
+   */
+  public boolean createsMustCallForThis(MethodInvocationNode node) {
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+    for (JavaExpression target :
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
+            node, rlAtf, rlAtf)) {
+      if (target instanceof ThisReference || target instanceof SuperReference) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Returns true if the given tree is an invocation of {@code Iterator.hasNext()} or of a method
    * that overrides it.
    *
@@ -617,34 +620,63 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or {@code null} if the call has no such argument.
-   *
-   * <p>The current heuristic is that the inserted element is the last argument at the call site.
-   * TODO: Make @CreatesCollectionObligation accept an index for the inserted elements position.
+   * call, or {@code null} if the call has no such argument. See {@link
+   * CreatesCollectionObligation#element}.
    *
    * @param tree a method invocation tree
    * @return the inserted argument tree, or null if there is none
    */
   public @Nullable ExpressionTree getInsertedArgumentTree(MethodInvocationTree tree) {
-    if (tree.getArguments().isEmpty()) {
-      return null;
-    }
-    return tree.getArguments().get(tree.getArguments().size() - 1);
+    List<? extends ExpressionTree> args = tree.getArguments();
+    int index = getInsertedParameterIndex(TreeUtils.elementFromUse(tree));
+    return index >= 0 && index < args.size() ? args.get(index) : null;
   }
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or {@code null} if the call has no such argument.
+   * call, or {@code null} if the call has no such argument. See {@link
+   * CreatesCollectionObligation#element}.
    *
    * @param node a method invocation node
    * @return the inserted argument node, or null if there is none
    */
   public @Nullable Node getInsertedArgumentNode(MethodInvocationNode node) {
     List<Node> args = node.getArguments();
-    if (args.isEmpty()) {
-      return null;
+    int index = getInsertedParameterIndex(node.getTarget().getMethod());
+    return index >= 0 && index < args.size() ? args.get(index) : null;
+  }
+
+  /**
+   * Returns the {@code element} of the given method's {@code @CreatesCollectionObligation}
+   * annotation, which names the inserted parameter, or the empty string if it names none.
+   *
+   * @param method a method, which may inherit {@code @CreatesCollectionObligation}
+   * @return the {@code element} of the method's {@code @CreatesCollectionObligation} annotation
+   */
+  public String getInsertedParameterReference(ExecutableElement method) {
+    AnnotationMirror anno = getDeclAnnotation(method, CreatesCollectionObligation.class);
+    return anno == null
+        ? ""
+        : AnnotationUtils.getElementValue(
+            anno, createsCollectionObligationElementElement, String.class, "");
+  }
+
+  /**
+   * Returns the index of the parameter that the given {@code @CreatesCollectionObligation} method
+   * inserts: the parameter named by the annotation's {@code element}, or else the last parameter.
+   *
+   * @param method a method, which may inherit {@code @CreatesCollectionObligation}
+   * @return the index of the inserted parameter, or -1 if the method has no parameters or {@code
+   *     element} does not name one
+   */
+  public int getInsertedParameterIndex(ExecutableElement method) {
+    int numParams = method.getParameters().size();
+    String element = getInsertedParameterReference(method);
+    if (element.isEmpty()) {
+      return numParams - 1;
     }
-    return args.get(args.size() - 1);
+    int paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    return paramIndex >= 0 && paramIndex < numParams ? paramIndex : -1;
   }
 
   /**

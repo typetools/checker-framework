@@ -162,8 +162,9 @@ The following annotations are written on methods.
 \item[\refqualclasswithparams{checker/collectionownership/qual}{CollectionFieldDestructor}{String[] value}]
   expresses that the annotated method fulfills the obligations of the given resource collection fields.
   For more details, see Section~\ref{resource-leak-collections-fields}.
-\item[\refqualclass{checker/collectionownership/qual}{CreatesCollectionObligation}]
+\item[\refqualclasswithparams{checker/collectionownership/qual}{CreatesCollectionObligation}{String element}]
   expresses that the annotated method might insert an element into its receiver collection, as \<Collection.add> does.
+  The inserted element is the method's last parameter, or the parameter that the optional \<element> names.
   For more details, see Section~\ref{resource-leak-collections-defaults}.
 \end{description}
 
@@ -780,12 +781,13 @@ Such a loop removes the obligations for the methods that it calls on every eleme
 To determine which methods such a loop calls, the checker does the following:
 
 \begin{itemize}
-  \item It checks that the loop does not terminate early.
+  \item It checks that the loop runs to completion. If the loop exits early, such as via \<break>, \<return>, or an exception, the collection still has its obligation.
   \item It uses the Called Methods analysis to determine the methods that are definitely called on the loop variable. Therefore, the checker supports anything that changes the \<@CalledMethods> type of the loop variable, such as passing it as an argument to a method annotated with \<@EnsuresCalledMethods(value = "\#1", methods = "m")>.
   \item It permits the loop to skip null elements:  it suffices to fulfill the obligation for every non-null element of the collection. The checker recognizes a null check syntactically rather than by performing a full nullness analysis, so it might fail to verify a loop that checks for null in an unusual way.
 \end{itemize}
 
 An enhanced \<for> loop must not assign to the variable that holds the collection.
+Its body must not insert into or replace elements of the collection.
 
 Two forms of \<while> loops are supported:
 
@@ -843,6 +845,11 @@ receiver collection, such as \<Collection.add>, is annotated with
 \<@CreatesCollectionObligation>.  At a call to such a method, the Resource Leak
 Checker changes the type of the receiver collection to \<@OwningCollection> and
 creates a tracked obligation for the collection in the dataflow analysis.
+By default, the inserted element is the method's last parameter, as in
+\<add(E)> and \<add(int, E)>.  A method whose inserted element is not its last
+parameter names it with \<element>.  For example,
+\<BlockingQueue.offer(E, long, TimeUnit)> is annotated with
+\<@CreatesCollectionObligation(element = "\#1")>.
 
 The default type of a resource collection parameter is
 \<@NotOwningCollection>.
@@ -954,7 +961,7 @@ class Aggregator implements Closeable {
 To verify a resource collection field \<field>, the checker requires the following:
 \begin{enumerate}
   \item The enclosing class has a \<@MustCall> type. In the example, the class has type \<@MustCall("close")> because it implements \<Closeable>.
-  \item One of the methods in the \<@MustCall> type of the enclosing class (usually there's just one) is annotated with \<@CollectionFieldDestructor("field")>. This postcondition annotation asserts that \<field> has type \<@OwningCollectionWithoutObligation> when the method exits, and the checker verifies that assertion.
+  \item One of the methods in the \<@MustCall> type of the enclosing class (usually there's just one) is annotated with \<@CollectionFieldDestructor("field")>. This postcondition annotation asserts that \<field> has type \<@OwningCollectionWithoutObligation> when the method exits, even by throwing an exception, and the checker verifies that assertion.
   \item Every method that calls a method that creates an obligation for the resource collection field, such as \<socketList.add(Socket)> in the example, is annotated with \<@CreatesMustCallFor("this")>.
 \end{enumerate}
 
