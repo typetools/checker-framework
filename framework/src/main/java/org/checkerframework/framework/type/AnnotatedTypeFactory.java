@@ -3158,7 +3158,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
     TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
     AnnotatedDeclaredType dt = fromElement(typeElt).asUse();
-    dt.addAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
+    // Replace, rather than add to, any annotations that `fromElement` gave the boxed type.
+    dt.replaceAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
     return dt;
   }
 
@@ -3183,7 +3184,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns a primitive type: either the argument, or the result of unboxing it (which might affect
    * its annotations).
    *
-   * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
+   * <p>Subclasses should override {@link #getUnboxedAnnotations} rather than this method.
    *
    * @param type a type: a primitive or boxed primitive
    * @return the unboxed variant of the type

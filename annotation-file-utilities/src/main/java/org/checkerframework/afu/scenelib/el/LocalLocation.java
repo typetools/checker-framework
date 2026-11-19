@@ -76,7 +76,6 @@ public final class LocalLocation {
   @SuppressWarnings({
     "NarrowingCompoundAssignment", // TODO
     "CatchAndPrintStackTrace", // TODO
-    "interning:argument" // Field.set() unboxes each value into a primitive field
   })
   public LocalLocation(int scopeStart, int scopeLength, int index) {
     Label startLabel = new Label();
@@ -95,13 +94,13 @@ public final class LocalLocation {
 
       short flags = (Short) flagsField.get(startLabel);
       flags |= FLAG_RESOLVED;
-      flagsField.set(startLabel, flags);
-      bytecodeOffsetField.set(startLabel, scopeStart);
+      flagsField.setShort(startLabel, flags);
+      bytecodeOffsetField.setInt(startLabel, scopeStart);
 
       flags = (Short) flagsField.get(endLabel);
       flags |= FLAG_RESOLVED;
-      flagsField.set(endLabel, flags);
-      bytecodeOffsetField.set(endLabel, scopeStart + scopeLength);
+      flagsField.setShort(endLabel, flags);
+      bytecodeOffsetField.setInt(endLabel, scopeStart + scopeLength);
     } catch (Exception e) {
       throw new Error(e);
     }
