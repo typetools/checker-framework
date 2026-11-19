@@ -4,7 +4,7 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// The binding variable of a record pattern has the type that the record component's accessor
+// A binding variable nested in a record pattern has the type that the record component's accessor
 // returns when invoked on the matched value, including when the accessor has polymorphic
 // qualifiers.
 
@@ -32,14 +32,14 @@ public class PolymorphicAccessor {
   }
 
   void tainted(@Tainted StringHolder h) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Untainted String fromAccessor = h.s();
     if (h instanceof StringHolder(var x)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromVar = x;
     }
     if (h instanceof StringHolder(String y)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromType = y;
     }
   }
@@ -73,10 +73,10 @@ public class PolymorphicAccessor {
   void genericTainted(@Tainted Holder<@Untainted String> h) {
     // The receiver is @Tainted, so the accessor's @PolyTainted return type is @Tainted, even
     // though the type argument is @Untainted.
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Untainted String fromAccessor = h.t();
     if (h instanceof Holder(var x)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String fromVar = x;
     }
   }

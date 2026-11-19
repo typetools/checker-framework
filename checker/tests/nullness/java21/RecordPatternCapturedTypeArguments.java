@@ -3,14 +3,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Tests for record patterns whose matched type mentions captured type variables, such as a record
-// pattern nested in another one, whose record component has the type Box<CAP#1>.
+// Tests for record patterns whose matched type mentions captured type variables, such as a nested
+// record pattern whose matched type is Box<CAP#1>.
 public class RecordPatternCapturedTypeArguments {
 
   record Box<T extends @Nullable Object>(T t) {}
@@ -34,7 +34,7 @@ public class RecordPatternCapturedTypeArguments {
   // The record component's type is Box<@Nullable CAP#1>.
   void nullableCapture(NullableOuter<?> o) {
     if (o instanceof NullableOuter(Box(var t))) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       t.toString();
     }
   }
@@ -42,7 +42,7 @@ public class RecordPatternCapturedTypeArguments {
   // The type of b is CAP#2 extends Box<CAP#1>.
   void captureInBound(Pair<? extends @Nullable String, ?> p) {
     if (p instanceof Pair(var a, Box(var t))) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       t.length();
     }
   }

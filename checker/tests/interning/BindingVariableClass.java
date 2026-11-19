@@ -12,7 +12,7 @@ public class BindingVariableClass {
     take((Class<?>) value);
   }
 
-  void instanceOfPattern(Object value) {
+  void instanceofPattern(Object value) {
     if (value instanceof Class<?> cls) {
       take(cls);
     }
@@ -39,14 +39,14 @@ public class BindingVariableClass {
 
   void recordPatternNotInterned(Object o) {
     if (o instanceof Box(String s)) {
-      // :: error: (argument)
+      // :: error: [argument]
       takeString(s);
     }
   }
 
   void notInterned(Object value) {
     if (value instanceof String s) {
-      // :: error: (argument)
+      // :: error: [argument]
       takeString(s);
     }
   }

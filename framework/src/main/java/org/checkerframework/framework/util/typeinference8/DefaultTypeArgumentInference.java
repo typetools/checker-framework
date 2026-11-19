@@ -134,9 +134,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           //
           //  1. By the time the constraint formula for expressionTree was reduced, its target
           //     type had become a proper type, so JLS 18.2.1's rule for
-          //     <MethodReference -> T> (which requires that T mention an inference variable)
+          //     <MethodReference -> T> (which requires that T contain an inference variable)
           //     did not apply.  This happens when the target type's function type has a
-          //     parameter type that mentions one of the outer tree's inference variables: JLS
+          //     parameter type that contains one of the outer tree's inference variables: JLS
           //     18.5.2.2 makes such a variable an input variable of the constraint, so it is
           //     resolved and substituted into the constraint before the constraint is reduced.
           //

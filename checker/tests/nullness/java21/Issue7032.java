@@ -21,7 +21,7 @@ public class Issue7032 {
     switch (i) {
       case WrappedInt(Integer x) -> {}
       case WrappedBoolean(Boolean y) -> {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         y.hashCode();
       }
     }
