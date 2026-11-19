@@ -358,9 +358,9 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Returns all variables mentioned by any constraint in this set.
+   * Returns all variables contained in any constraint in this set.
    *
-   * @return all variables mentioned by any constraint in this set
+   * @return all variables contained in any constraint in this set
    */
   public Set<Variable> getAllInferenceVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
