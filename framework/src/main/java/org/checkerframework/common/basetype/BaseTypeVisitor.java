@@ -3769,16 +3769,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *       verify its type arguments.
    *   <li>for an upcast (the Java type of {@code exprType} is a subtype of the Java type of {@code
    *       castType}), whether {@code exprType} is a subtype of {@code castType}, and, if {@code
-   *       exprType} is raw, whether {@link #areUndeterminedTypeArgumentsUnrestricted} holds.
+   *       exprType} is raw, whether {@link #uncheckedTypeArgumentsContainAllPermittedTypes} holds.
    *   <li>for a downcast (the erasure of {@code castType} is a subtype of the erasure of {@code
    *       exprType}), whether {@code exprType} is a subtype of the supertype of {@code castType}
    *       that has the same erasure as {@code exprType}, and whether {@link
-   *       #areUndeterminedTypeArgumentsUnrestricted} holds. For example, a cast from {@code
+   *       #uncheckedTypeArgumentsContainAllPermittedTypes} holds. For example, a cast from {@code
    *       Collection<@Nullable String>} to {@code List<@NonNull String>} is unsafe, because {@code
    *       Collection<@Nullable String>} is not a subtype of {@code Collection<@NonNull String>}.
    *   <li>otherwise, when the Java types are unrelated (as in a cast between two unrelated
-   *       interfaces), whether {@link #areUndeterminedTypeArgumentsUnrestricted} holds. The primary
-   *       qualifiers are not compared in this case.
+   *       interfaces), whether {@link #uncheckedTypeArgumentsContainAllPermittedTypes} holds. The
+   *       primary qualifiers are not compared in this case.
    * </ul>
    *
    * @param castType annotated type of the cast, without capture conversion
@@ -3804,7 +3804,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     if (types.isSubtype(exprTM, castTM)) {
       return typeHierarchy.isSubtype(exprType, castType)
-          && areUndeterminedTypeArgumentsUnrestricted(castType, exprTM);
+          && uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
     }
     if (TypesUtils.isErasedSubtype(castTM, exprTM, types)) {
       // TypeHierarchy#isSubtype requires the Java type of its first argument to be a subtype of
@@ -3813,26 +3813,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror castTypeAsExprType =
           AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprType);
       return typeHierarchy.isSubtype(exprType, castTypeAsExprType)
-          && areUndeterminedTypeArgumentsUnrestricted(castType, exprTM);
+          && uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
     }
-    return areUndeterminedTypeArgumentsUnrestricted(castType, exprTM);
+    return uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
   }
 
   /**
-   * Returns true if every type argument of {@code castType} that {@code exprTM} does not determine
-   * contains every type that its type parameter permits.
+   * Returns true if every unchecked type argument of {@code castType} contains every type that its
+   * type parameter permits.
    *
-   * <p>A raw {@code exprTM} determines no type arguments. Otherwise, {@code exprTM} determines a
-   * type argument of {@code castType} if:
+   * <p>A type argument of {@code castType} is <em>unchecked</em> if the run-time check of the cast,
+   * which verifies only the class of the value, does not verify it, even given that the value has
+   * Java type {@code exprTM}. A cast that is checked in the sense of JLS 5.1.6.2 can still have
+   * unchecked type arguments: in a cast from {@code Object} to {@code List<?>}, the type argument
+   * of {@code List} is unchecked.
+   *
+   * <p>Every type argument is unchecked if {@code exprTM} is raw. Otherwise, a type argument of
+   * {@code castType} is checked if:
    *
    * <ul>
    *   <li>the erasure of {@code exprTM} is a subtype of the erasure of {@code castType}, or
    *   <li>its type parameter appears in the supertype of the generic class of {@code castType} that
    *       has the same erasure as {@code exprTM}. For example, in a cast from {@code
-   *       Collection<String>} to {@code List<?>}, the type argument of {@code List} is determined,
+   *       Collection<String>} to {@code List<?>}, the type argument of {@code List} is checked,
    *       because the supertype of {@code List<E>} that has the same erasure as {@code
    *       Collection<String>} is {@code Collection<E>}. In a cast from {@code Object} or {@code
-   *       Runnable} to {@code List<?>}, it is not determined.
+   *       Runnable} to {@code List<?>}, it is unchecked.
    * </ul>
    *
    * <p>For example, a cast from {@code Object} or from a raw {@code List} to {@code List<?
@@ -3840,15 +3846,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param castType annotated type of the cast, without capture conversion
    * @param exprTM the Java type of the casted expression
-   * @return true if every type argument of {@code castType} that {@code exprTM} does not determine
-   *     contains every type that its type parameter permits
+   * @return true if every unchecked type argument of {@code castType} contains every type that its
+   *     type parameter permits
    */
-  private boolean areUndeterminedTypeArgumentsUnrestricted(
+  private boolean uncheckedTypeArgumentsContainAllPermittedTypes(
       AnnotatedTypeMirror castType, TypeMirror exprTM) {
     switch (castType.getKind()) {
       case INTERSECTION -> {
         for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) castType).getBounds()) {
-          if (!areUndeterminedTypeArgumentsUnrestricted(bound, exprTM)) {
+          if (!uncheckedTypeArgumentsContainAllPermittedTypes(bound, exprTM)) {
             return false;
           }
         }
@@ -3859,7 +3865,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // isTypeCastSafe rejects a cast from a non-array to an array.
           return true;
         }
-        return areUndeterminedTypeArgumentsUnrestricted(
+        return uncheckedTypeArgumentsContainAllPermittedTypes(
             ((AnnotatedArrayType) castType).getComponentType(),
             ((ArrayType) exprTM).getComponentType());
       }
@@ -3878,7 +3884,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean isExprRaw = ((Type) exprTM).isRaw();
     if (!isExprRaw
         && TypesUtils.isErasedSubtype(exprTM, castDeclaredType.getUnderlyingType(), types)) {
-      // The supertype of exprTM whose class is that of castType determines every type argument.
+      // The supertype of exprTM whose class is that of castType fixes every type argument, so
+      // every type argument is checked.
       return true;
     }
     TypeElement castElement = (TypeElement) castDeclaredType.getUnderlyingType().asElement();
@@ -3893,17 +3900,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 TypesUtils.asSuper(
                     genericCastType, types.erasure(exprTM), atypeFactory.getProcessingEnv());
     // The generic class of castType with the declared bounds of its type parameters; computed only
-    // if some type argument is undetermined.
+    // if some type argument is unchecked.
     AnnotatedDeclaredType annotatedGenericCastType = null;
     List<? extends TypeMirror> typeParameters = genericCastType.getTypeArguments();
     for (int i = 0; i < typeParameters.size(); i++) {
       if (genericCastTypeAsExprType != null
           && genericCastTypeAsExprType.contains((Type) typeParameters.get(i))) {
-        // isCastSafeIncludingElementTypes compared this type argument with exprType.
+        // The type parameter appears in genericCastTypeAsExprType, so this type argument is
+        // checked; isCastSafeIncludingElementTypes compared it with exprType.
         continue;
       }
       // The run-time check of a cast verifies only the class of the value, so in place of an
-      // undetermined type argument, the value may have any type argument within the bounds of
+      // unchecked type argument, the value may have any type argument within the bounds of
       // its type parameter.  The type argument of castType must contain all of them.
       AnnotatedTypeMirror typeArg = castDeclaredType.getTypeArguments().get(i);
       if (typeArg.getKind() != TypeKind.WILDCARD) {
