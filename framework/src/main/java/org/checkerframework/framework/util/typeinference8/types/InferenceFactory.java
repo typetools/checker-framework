@@ -1474,7 +1474,8 @@ public class InferenceFactory {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      // A copy, because the substitution below does not copy and can mutate what it substitutes.
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -190,7 +191,10 @@ public final class Resolution {
           continue;
         }
       }
+      // `addBound` can change the instantiation even if it returns false.
+      ProperType previousInstantiation = var.getInstantiation();
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
+      added |= !Objects.equals(previousInstantiation, var.getInstantiation());
     }
     if (added) {
       boundSet.reachFixedPoint();

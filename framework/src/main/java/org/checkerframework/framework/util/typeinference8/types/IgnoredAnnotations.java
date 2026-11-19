@@ -235,8 +235,8 @@ final class IgnoredAnnotations {
     // needs it rather than its upper bound.  TODO: Replace the ignored positions within the upper
     // bound of a type variable too.
     return new ReplacedTypes(
-        bound1 == upToDate1 ? atm1 : upToDate1.getAnnotatedType(),
-        bound2 == upToDate2 ? atm2 : upToDate2.getAnnotatedType());
+        isTypeVariable(upToDate1) ? upToDate1.getAnnotatedType() : atm1,
+        isTypeVariable(upToDate2) ? upToDate2.getAnnotatedType() : atm2);
   }
 
   /**
@@ -313,12 +313,12 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables, then
-   * {@code target} gets exactly the primary annotations of {@code source}, and in each hierarchy in
-   * which {@code source} has no primary annotation, the bounds of {@code target} get the primary
-   * annotations of the bounds of {@code source}. (In a hierarchy in which a type variable has a
-   * primary annotation, its bounds have that annotation.) For example, resolution can change the
-   * lower bound of a type variable that has no primary annotation (see {@code
+   * Gives {@code target} the primary annotations of {@code source}. If both are type variables,
+   * then {@code target} gets exactly the primary annotations of {@code source}, and in each
+   * hierarchy in which {@code source} has no primary annotation, the bounds of {@code target} get
+   * the primary annotations of the bounds of {@code source}. (In a hierarchy in which a type
+   * variable has a primary annotation, its bounds have that annotation.) For example, resolution
+   * can change the lower bound of a type variable that has no primary annotation (see {@code
    * Resolution#lubOfLowerBounds}), and {@link ProperType#applyInstantiations} keeps that change.
    *
    * @param source a type whose primary annotations to copy
@@ -350,11 +350,23 @@ final class IgnoredAnnotations {
    */
   private static AbstractType upperBoundIfTypeVariable(AbstractType type) {
     AbstractType result = type;
-    while (result.getTypeKind() == TypeKind.TYPEVAR
-        && result.getAnnotatedType() instanceof AnnotatedTypeVariable) {
+    while (isTypeVariable(result)) {
       result = result.getTypeVarUpperBound();
     }
     return result;
+  }
+
+  /**
+   * Returns true if {@code type} is a type variable whose annotated type is an {@link
+   * AnnotatedTypeVariable}.
+   *
+   * @param type a type
+   * @return true if {@code type} is a type variable whose annotated type is an {@link
+   *     AnnotatedTypeVariable}
+   */
+  private static boolean isTypeVariable(AbstractType type) {
+    return type.getTypeKind() == TypeKind.TYPEVAR
+        && type.getAnnotatedType() instanceof AnnotatedTypeVariable;
   }
 
   /**
@@ -670,13 +682,14 @@ final class IgnoredAnnotations {
    * {@code atm2}, starting with {@code atm1} and {@code atm2} themselves. A position is tested
    * before the positions nested in it, and no position is tested after {@code test} returns false.
    * Positions correspond only where the two types have the same structure, and the type arguments
-   * and enclosing types of two declared types correspond only if both are of the same class. There
-   * is one exception:
-   * where one type has a wildcard and the other does not, the wildcard and its bound (see {@link
-   * #boundOf}) both correspond to the other type, so the positions nested in the bound correspond
-   * to those nested in the other type. For example, in {@code List<? extends Box<@A String>>} and
-   * {@code List<Box<@B String>>}, both {@code ? extends Box<@A String>} and {@code Box<@A String>}
-   * correspond to {@code Box<@B String>}, and {@code @A String} corresponds to {@code @B String}.
+   * and enclosing types of two declared types correspond only if both are of the same class, even
+   * if there are equally many type arguments (as in {@code Reversed<A, B> extends Pair<B, A>}).
+   * There is one exception: where one type has a wildcard and the other does not, the wildcard and
+   * its bound (see {@link #boundOf}) both correspond to the other type, so the positions nested in
+   * the bound correspond to those nested in the other type. For example, in {@code List<? extends
+   * Box<@A String>>} and {@code List<Box<@B String>>}, both {@code ? extends Box<@A String>} and
+   * {@code Box<@A String>} correspond to {@code Box<@B String>}, and {@code @A String} corresponds
+   * to {@code @B String}.
    *
    * @param atm1 a type
    * @param atm2 a type
