@@ -22,8 +22,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -43,22 +41,16 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.MapsP;
 
@@ -82,8 +74,22 @@ public class WholeProgramInferenceScenesStorage
   /** The type factory associated with this WholeProgramInferenceScenesStorage. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /** Determines which inferred qualifiers are redundant. */
+  private final WholeProgramInferenceDefaults wpiDefaults;
+
   /** Annotations that should not be output to a .jaif or stub file. */
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
+
+  /**
+   * Maps each type element of a scene that represents the type of a declaration to the type that
+   * the declaration's type has when no annotation is written on it, or to null if that type is not
+   * known. A type element that is not a key, such as one for a pre- or postcondition, has no such
+   * type.
+   *
+   * <p>Like {@link AnnotationsInContexts}, this map compares type elements by identity.
+   */
+  private final IdentityHashMap<ATypeElement, @Nullable AnnotatedTypeMirror> defaultedTypes =
+      new IdentityHashMap<>();
 
   /**
    * Type elements none of whose annotations can be treated as redundant, because whole-program
@@ -155,6 +161,7 @@ public class WholeProgramInferenceScenesStorage
   public WholeProgramInferenceScenesStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
+    this.wpiDefaults = new WholeProgramInferenceDefaults(atypeFactory);
     try {
       this.inferOutputDirectory = Path.of(inferOutputDirectory);
     } catch (InvalidPathException e) {
@@ -261,6 +268,7 @@ public class WholeProgramInferenceScenesStorage
     AField param =
         methodAnnos.vivifyAndAddTypeMirrorToParameter(
             index_1based - 1, paramATM.getUnderlyingType(), ve.getSimpleName());
+    defaultedTypes.put(param.type, wpiDefaults.defaultedType(ve));
     return param.type;
   }
 
@@ -270,6 +278,7 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeMirror paramATM,
       AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
+    defaultedTypes.put(methodAnnos.receiver.type, wpiDefaults.defaultedReceiverType(methodElt));
     return methodAnnos.receiver.type;
   }
 
@@ -302,6 +311,7 @@ public class WholeProgramInferenceScenesStorage
   public ATypeElement getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
+    defaultedTypes.put(methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
     return methodAnnos.returnType;
   }
 
@@ -318,6 +328,7 @@ public class WholeProgramInferenceScenesStorage
     AClass classAnnos = getClassAnnos(className, file, enclosingClass);
     AField field = classAnnos.fields.getVivify(fieldName);
     field.setTypeMirror(lhsATM.getUnderlyingType());
+    defaultedTypes.put(field.type, wpiDefaults.defaultedType(element));
     return field.type;
   }
 
@@ -399,7 +410,7 @@ public class WholeProgramInferenceScenesStorage
 
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
     boolean isNewAnnotation = methodAnnos.tlAnnotationsHere.add(sceneAnno);
-    if (isAliasForTypeQualifier(anno)) {
+    if (wpiDefaults.isAliasForTypeQualifier(anno)) {
       // A declaration annotation on a method that is an alias for a type qualifier applies to
       // the method's return type.
       neverIgnoreAnnotationsOn(methodAnnos.returnType);
@@ -418,7 +429,7 @@ public class WholeProgramInferenceScenesStorage
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = fieldAnnos.tlAnnotationsHere.add(sceneAnno);
-    if (isAliasForTypeQualifier(anno)) {
+    if (wpiDefaults.isAliasForTypeQualifier(anno)) {
       neverIgnoreAnnotationsOn(fieldAnnos.type);
     }
     return isNewAnnotation;
@@ -442,7 +453,7 @@ public class WholeProgramInferenceScenesStorage
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = paramAnnos.tlAnnotationsHere.add(sceneAnno);
-    if (isAliasForTypeQualifier(anno)) {
+    if (wpiDefaults.isAliasForTypeQualifier(anno)) {
       neverIgnoreAnnotationsOn(paramAnnos);
     }
     return isNewAnnotation;
@@ -464,20 +475,6 @@ public class WholeProgramInferenceScenesStorage
 
     boolean isNewAnnotation = classAnnos.tlAnnotationsHere.add(sceneAnno);
     return isNewAnnotation;
-  }
-
-  /**
-   * Returns true if {@code anno}, which whole-program inference is writing as a declaration
-   * annotation, is an alias for a type qualifier. Writing such an annotation changes the type of
-   * the element it is written on.
-   *
-   * @param anno a declaration annotation that whole-program inference has inferred
-   * @return true if {@code anno} is an alias for a type qualifier
-   */
-  private boolean isAliasForTypeQualifier(AnnotationMirror anno) {
-    AnnotationMirror canonical = atypeFactory.canonicalAnnotation(anno);
-    return !AnnotationUtils.areSameByName(canonical, anno)
-        && atypeFactory.isSupportedQualifier(canonical);
   }
 
   /**
@@ -553,26 +550,20 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns true if {@code am} should not be inserted in source code, for example {@link
    * org.checkerframework.common.value.qual.BottomVal}. This happens when {@code am} cannot be
-   * inserted in source code or is the default for the location passed as argument.
+   * inserted in source code or is redundant, because the location has that qualifier even when no
+   * annotation is written there.
    *
    * <p>Invisible qualifiers, which are annotations that contain the {@link
    * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
    *
-   * <p>TODO: Merge functionality somewhere else with {@link
-   * org.checkerframework.framework.util.defaults.QualifierDefaults}. Look into the
-   * createQualifierDefaults method in {@link GenericAnnotatedTypeFactory} (which uses the
-   * QualifierDefaults class linked above) before changing anything here. See
-   * https://github.com/typetools/checker-framework/issues/683 .
-   *
    * @param am an annotation to test for whether it should be inserted into source code
-   * @param location where the annotation would be inserted; used to determine if {@code am} is the
-   *     default for that location
-   * @param atm its underlying Java type is used to determine if {@code am} is the default for that
-   *     type or for that kind of type
+   * @param atm the inferred type that {@code am} is a primary annotation of
+   * @param defaulted the type that the location has when no annotation is written there, or null if
+   *     that type is not known
    * @return true if am should not be inserted into source code, or if am is invisible
    */
   private boolean shouldIgnore(
-      AnnotationMirror am, TypeUseLocation location, AnnotatedTypeMirror atm) {
+      AnnotationMirror am, AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
     Element elt = am.getAnnotationType().asElement();
     // Checks if am is an implementation detail (a type qualifier used
     // internally by the type system and not meant to be seen by the user).
@@ -583,195 +574,7 @@ public class WholeProgramInferenceScenesStorage
     if (elt.getAnnotation(InvisibleQualifier.class) != null) {
       return true;
     }
-
-    // Checks if am is the qualifier that this location would have if am were not written out.
-    // If that cannot be determined, then am is written out, which is never unsound.
-    if (isDeclaredDefaultFor(
-        elt.getAnnotation(DefaultQualifier.class),
-        elt.getAnnotation(DefaultFor.class),
-        location,
-        atm.getUnderlyingType(),
-        false)) {
-      return true;
-    }
-    if (elt.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-      // The hierarchy-wide default applies only where no qualifier is the default for the
-      // specific location, type kind, or Java type.  For example, in the Signedness Checker
-      // @Signed is the default for the hierarchy, but @Unsigned is the default for char, so
-      // omitting an inferred @Signed from a char would give it the type @Unsigned instead.
-      return !existsMoreSpecificDefault(
-          AnnotationUtils.annotationName(am), location, atm.getUnderlyingType());
-    }
-
-    return false;
-  }
-
-  /**
-   * Returns true if the qualifier that is meta-annotated by {@code defaultQual} and {@code
-   * defaultFor} is declared to be the default for {@code location}, for the kind of {@code type},
-   * or for {@code type} itself.
-   *
-   * <p>The meta-annotations are passed in, rather than the qualifier itself, because a caller has
-   * the qualifier as an {@link Element} and another caller has it as a {@link Class}.
-   *
-   * <p>The {@code names} element of {@code @DefaultFor} selects declarations by name, but no name
-   * is available here. If {@code defaultFor} has a {@code names} element and no other element of
-   * {@code defaultQual} or {@code defaultFor} matches, this method returns {@code
-   * resultIfUndetermined}.
-   *
-   * @param defaultQual the qualifier declaration's {@code @DefaultQualifier} meta-annotation, or
-   *     null if it has none
-   * @param defaultFor the qualifier declaration's {@code @DefaultFor} meta-annotation, or null if
-   *     it has none
-   * @param location the location where the qualifier would be written
-   * @param type the type that the qualifier would be written on
-   * @param resultIfUndetermined what to return if {@code defaultFor} selects declarations by name,
-   *     which this method cannot evaluate
-   * @return true if the qualifier is the declared default for {@code location}, for the kind of
-   *     {@code type}, or for {@code type} itself
-   */
-  /*package-private*/ static boolean isDeclaredDefaultFor(
-      @Nullable DefaultQualifier defaultQual,
-      @Nullable DefaultFor defaultFor,
-      TypeUseLocation location,
-      TypeMirror type,
-      boolean resultIfUndetermined) {
-    if (defaultQual != null) {
-      for (TypeUseLocation loc : defaultQual.locations()) {
-        if (loc == TypeUseLocation.ALL || loc == location) {
-          return true;
-        }
-      }
-    }
-    if (defaultFor != null) {
-      // Checks if the qualifier is the default for the given location.
-      for (TypeUseLocation loc : defaultFor.value()) {
-        if (loc == TypeUseLocation.ALL || loc == location) {
-          return true;
-        }
-      }
-      // Checks if the qualifier is the default for the kind of type.
-      // TODO: Handle cases of annotations added via an
-      // org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator.
-      org.checkerframework.framework.qual.TypeKind[] typeKinds = defaultFor.typeKinds();
-      if (hasMatchingTypeKind(type.getKind(), typeKinds)) {
-        return true;
-      }
-      // Checks if the qualifier is the default for the Java type itself.
-      String typeName = defaultForTypeName(type);
-      if (typeName != null && hasMatchingType(typeName, defaultFor)) {
-        return true;
-      }
-      // The `names` element selects variables and methods by name.  This method does not know
-      // the name of the declaration whose type is being written, so it cannot tell whether the
-      // qualifier is the default here.
-      if (defaultFor.names().length != 0) {
-        return resultIfUndetermined;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns the name under which {@link
-   * org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator} looks up {@code
-   * javaType} in the {@code types} element of a {@code @DefaultFor} meta-annotation, or null if
-   * that annotator never applies such a default to {@code javaType}.
-   *
-   * @param javaType a type
-   * @return the name to match against the {@code types} element of {@code @DefaultFor}, or null
-   */
-  private static @Nullable String defaultForTypeName(TypeMirror javaType) {
-    if (javaType.getKind() == TypeKind.DECLARED) {
-      return TypesUtils.getQualifiedName((DeclaredType) javaType);
-    } else if (javaType.getKind().isPrimitive()) {
-      return javaType.toString();
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Returns true if the {@code types} element of {@code defaultFor} contains the type named {@code
-   * typeName}.
-   *
-   * @param typeName the name of a type, as computed by {@link #defaultForTypeName}
-   * @param defaultFor a {@code @DefaultFor} meta-annotation
-   * @return true if {@code defaultFor}'s {@code types} element contains {@code typeName}
-   */
-  private static boolean hasMatchingType(String typeName, DefaultFor defaultFor) {
-    try {
-      for (Class<?> clazz : defaultFor.types()) {
-        if (typeName.equals(clazz.getCanonicalName())) {
-          return true;
-        }
-      }
-    } catch (MirroredTypesException e) {
-      // `defaultFor` was obtained from an Element, so its Class-valued element cannot be read
-      // directly; the exception carries the types instead.
-      for (TypeMirror typeMirror : e.getTypeMirrors()) {
-        if (typeName.equals(defaultForTypeName(typeMirror))) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if a supported type qualifier other than {@code qualName} is declared to be the
-   * default for {@code location}, for the kind of {@code type}, or for {@code type} itself. Such a
-   * qualifier overrides the hierarchy-wide default that {@code @DefaultQualifierInHierarchy}
-   * establishes, so a qualifier that is the hierarchy-wide default is not redundant at {@code
-   * location}.
-   *
-   * <p>This method is conservative in two ways, both of which can make it return true when {@code
-   * qualName} is in fact the default for {@code location}. First, it does not check whether the
-   * other qualifier is in the same qualifier hierarchy as {@code qualName}. Second, it treats a
-   * qualifier whose {@code @DefaultFor} selects declarations by name as applicable, because it
-   * cannot evaluate that selector. In both cases the only consequence is that whole-program
-   * inference writes out an annotation that is redundant, not one that is wrong.
-   *
-   * @param qualName the fully-qualified name of a type qualifier that is the default for its
-   *     hierarchy
-   * @param location the location where the qualifier would be written
-   * @param type the type that the qualifier would be written on
-   * @return true if a more specific default overrides the hierarchy-wide default
-   */
-  private boolean existsMoreSpecificDefault(
-      String qualName, TypeUseLocation location, TypeMirror type) {
-    for (Class<? extends java.lang.annotation.Annotation> clazz :
-        atypeFactory.getSupportedTypeQualifiers()) {
-      if (qualName.equals(clazz.getCanonicalName())) {
-        continue;
-      }
-      if (isDeclaredDefaultFor(
-          clazz.getAnnotation(DefaultQualifier.class),
-          clazz.getAnnotation(DefaultFor.class),
-          location,
-          type,
-          true)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if {@code atmKind} appears in {@code typeKinds}.
-   *
-   * @param atmKind the kind of the type being tested
-   * @param typeKinds the type kinds to test against
-   * @return true iff {@code atmKind} appears in {@code typeKinds}
-   */
-  private static boolean hasMatchingTypeKind(
-      TypeKind atmKind, org.checkerframework.framework.qual.TypeKind[] typeKinds) {
-    for (org.checkerframework.framework.qual.TypeKind tk : typeKinds) {
-      if (tk.name().equals(atmKind.name())) {
-        return true;
-      }
-    }
-    return false;
+    return wpiDefaults.isRedundant(am, atm, defaulted);
   }
 
   /**
@@ -868,7 +671,8 @@ public class WholeProgramInferenceScenesStorage
       ATypeElement typeToUpdate,
       TypeUseLocation defLoc,
       boolean ignoreIfAnnotated) {
-    updateTypeElementFromATM(typeToUpdate, defLoc, newATM, curATM, ignoreIfAnnotated);
+    updateTypeElementFromATM(
+        typeToUpdate, newATM, curATM, ignoreIfAnnotated, defaultedTypes.get(typeToUpdate));
   }
 
   //
@@ -955,19 +759,20 @@ public class WholeProgramInferenceScenesStorage
    * is not a problem to remove all annotations before inserting the new annotations.
    *
    * @param typeToUpdate the ATypeElement that will be updated
-   * @param defLoc the location where the annotation will be added
    * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement
    * @param curATM used to check if the element which will be updated has explicit annotations in
    *     source code
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
+   * @param defaulted the type that the location of {@code typeToUpdate} has when no annotation is
+   *     written there, or null if that type is not known
    */
   private void updateTypeElementFromATM(
       ATypeElement typeToUpdate,
-      TypeUseLocation defLoc,
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
-      boolean ignoreIfAnnotated) {
+      boolean ignoreIfAnnotated,
+      @Nullable AnnotatedTypeMirror defaulted) {
     // Clears only the annotations that are supported by the relevant AnnotatedTypeFactory.
     // The others stay intact.
     Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
@@ -976,11 +781,18 @@ public class WholeProgramInferenceScenesStorage
     // Therefore, it is not a problem to remove all annotations before inserting the new
     // annotations.
     typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
+    // Whether an annotation is redundant depends on its value, so the annotations that were
+    // redundant in an earlier update are not necessarily redundant now.
+    annosToIgnore.remove(typeToUpdate);
 
     // Only update the ATypeElement if there are no explicit annotations.
+    // The calls to addAnnotationsToATypeElement check only primary annotations, not those on the
+    // bounds of a type variable or wildcard: a primary annotation on a use of a type variable
+    // overrides its bounds, so it is not redundant even if a bound has the same annotation.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
-        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
+        addAnnotationsToATypeElement(
+            newATM, typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -992,7 +804,8 @@ public class WholeProgramInferenceScenesStorage
           // Other hierarchies are still handled, so this is `continue` rather than `break`.
           continue;
         }
-        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
+        addAnnotationsToATypeElement(
+            newATM, typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
       }
     }
 
@@ -1017,10 +830,12 @@ public class WholeProgramInferenceScenesStorage
       updateTypeElementFromATM(
           typeToUpdate.innerTypes.getVivify(
               TypePathEntry.getTypePathEntryListFromBinary(Collections.nCopies(2, 0))),
-          defLoc,
           newAAT.getComponentType(),
           oldAAT.getComponentType(),
-          ignoreIfAnnotated);
+          ignoreIfAnnotated,
+          defaulted instanceof AnnotatedArrayType defaultedArray
+              ? defaultedArray.getComponentType()
+              : null);
     }
   }
 
@@ -1034,20 +849,21 @@ public class WholeProgramInferenceScenesStorage
    * @param newATM the AnnotatedTypeMirror that {@code am} is a primary annotation of; used only to
    *     determine whether {@code am} should be ignored
    * @param typeToUpdate the ATypeElement that will be updated
-   * @param defLoc the location where the annotation will be added
    * @param am the annotation to add to {@code typeToUpdate}
-   * @param isEffectiveAnnotation true if {@code am} is already an effective annotation of the type
-   *     in the source code, in which case writing it into the source code would be redundant
+   * @param isEffectiveAnnotation true if {@code am} is already a primary annotation of the type in
+   *     the source code, in which case writing it into the source code would be redundant
+   * @param defaulted the type that the location of {@code typeToUpdate} has when no annotation is
+   *     written there, or null if that type is not known
    */
   private void addAnnotationsToATypeElement(
       AnnotatedTypeMirror newATM,
       ATypeElement typeToUpdate,
-      TypeUseLocation defLoc,
       AnnotationMirror am,
-      boolean isEffectiveAnnotation) {
+      boolean isEffectiveAnnotation,
+      @Nullable AnnotatedTypeMirror defaulted) {
     Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
     typeToUpdate.tlAnnotationsHere.add(anno);
-    if ((isEffectiveAnnotation || shouldIgnore(am, defLoc, newATM))
+    if ((isEffectiveAnnotation || shouldIgnore(am, newATM, defaulted))
         && !neverIgnore.contains(typeToUpdate)) {
       Set<String> annosIgnored =
           annosToIgnore.computeIfAbsent(typeToUpdate, k -> new HashSet<>(MapsP.mapCapacity(1)));
