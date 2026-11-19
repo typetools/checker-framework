@@ -908,8 +908,9 @@ public class ProperType extends AbstractType {
    *   <li>the same {@link #ignoreAnnotations}.
    * </ul>
    *
-   * <p>Only the primary annotations of the copy's annotated type may be mutated; see {@link
-   * #partFromOrigin}.
+   * <p>Only the primary annotations of the copy's annotated type, or of its bounds if it is a type
+   * variable, may be mutated; see {@link #partFromOrigin} and {@link
+   * IgnoredAnnotations#copyPrimaryAnnotations}.
    *
    * @return a copy of this type
    */
@@ -928,10 +929,11 @@ public class ProperType extends AbstractType {
    * </ul>
    *
    * <p>{@code atm} must be this type's annotated type, or a copy of it, with only its primary
-   * annotations changed; see {@link #partFromOrigin}.
+   * annotations changed, or those of its bounds if it is a type variable; see {@link
+   * #partFromOrigin} and {@link IgnoredAnnotations#copyPrimaryAnnotations}.
    *
-   * @param atm this type's annotated type, or a copy of it, with only its primary annotations
-   *     changed
+   * @param atm this type's annotated type, or a copy of it, with only its primary annotations (or
+   *     those of its bounds, if it is a type variable) changed
    * @param ignoreAnnotations true if the primary annotations of {@code atm} should be ignored
    * @return a copy of this type whose annotated type is {@code atm}
    */

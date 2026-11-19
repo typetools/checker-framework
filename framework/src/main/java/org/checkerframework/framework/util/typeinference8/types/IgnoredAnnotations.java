@@ -313,20 +313,25 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
-   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
-   * and its bounds get the primary annotations of {@code source}'s bounds.
+   * Gives {@code target} the primary annotations of {@code source}. If both are type variables, then
+   * {@code target} gets exactly the primary annotations of {@code source}, and in each hierarchy in
+   * which {@code source} has no primary annotation, the bounds of {@code target} get the primary
+   * annotations of the bounds of {@code source}. (In a hierarchy in which a type variable has a
+   * primary annotation, its bounds have that annotation.) For example, resolution can change the
+   * lower bound of a type variable that has no primary annotation (see {@code
+   * Resolution#lubOfLowerBounds}), and {@link ProperType#applyInstantiations} keeps that change.
    *
    * @param source a type whose primary annotations to copy
    * @param target the type whose primary annotations to replace; side-effected by this method
    */
   static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
-    if (source.getPrimaryAnnotations().isEmpty()
-        && source instanceof AnnotatedTypeVariable sourceTV
+    if (source instanceof AnnotatedTypeVariable sourceTV
         && target instanceof AnnotatedTypeVariable targetTV) {
       targetTV.clearPrimaryAnnotations();
       targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
       targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
+      // Adding a primary annotation also gives it to the bounds.
+      targetTV.addAnnotations(sourceTV.getPrimaryAnnotations());
     } else {
       target.replaceAnnotations(source.getAnnotations());
     }
@@ -664,7 +669,9 @@ final class IgnoredAnnotations {
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}, starting with {@code atm1} and {@code atm2} themselves. A position is tested
    * before the positions nested in it, and no position is tested after {@code test} returns false.
-   * Positions correspond only where the two types have the same structure, with one exception:
+   * Positions correspond only where the two types have the same structure, and the type arguments
+   * and enclosing types of two declared types correspond only if both are of the same class. There
+   * is one exception:
    * where one type has a wildcard and the other does not, the wildcard and its bound (see {@link
    * #boundOf}) both correspond to the other type, so the positions nested in the bound correspond
    * to those nested in the other type. For example, in {@code List<? extends Box<@A String>>} and
@@ -725,6 +732,14 @@ final class IgnoredAnnotations {
       case DECLARED -> {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
+        if (!dt1.getUnderlyingType().asElement().equals(dt2.getUnderlyingType().asElement())) {
+          // The type arguments of different classes do not correspond by index, even if the
+          // classes have the same number of type parameters: given `Swap<X, Y> extends Pair<Y, X>`,
+          // the `X` of `Swap<X, Y>` corresponds to the second type argument of a `Pair`.  Aligning
+          // them would require `asSuper`, which returns a new type whose positions are not those
+          // of `atm1` or `atm2`, so no nested positions correspond.
+          return true;
+        }
         if (!allCorrespondingPositionsMatchPairwise(
             dt1.getTypeArguments(), dt2.getTypeArguments(), test, visitedWildcards)) {
           return false;
@@ -766,10 +781,10 @@ final class IgnoredAnnotations {
   /**
    * Returns true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
    * elements of the two lists. If the lists have different lengths, no positions correspond, so
-   * returns true without testing any. That is not an error: the lists can be the type arguments of
-   * declared types of different classes, which can be nested within types of the same class, as in
-   * {@code Box<? extends List<String>>} and {@code Box<? extends Map<String, String>>}, or the
-   * bounds of intersection types that have different numbers of bounds.
+   * returns true without testing any. That is not an error: the lists can be the bounds of
+   * intersection types that have different numbers of bounds. (The type arguments of declared types
+   * of different classes are never passed to this method; see {@link
+   * #allCorrespondingPositionsMatch(AnnotatedTypeMirror, AnnotatedTypeMirror, BiPredicate, Map)}.)
    *
    * @param types1 a list of types
    * @param types2 a list of types
