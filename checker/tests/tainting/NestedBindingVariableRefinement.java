@@ -18,6 +18,15 @@ public class NestedBindingVariableRefinement {
     }
   }
 
+  record UntaintedBox(@Untainted String s) {}
+
+  // The binding variable is refined by the qualifiers of the record component.
+  void nestedUntaintedComponent(@Tainted Object o) {
+    if (o instanceof UntaintedBox(String s)) {
+      sink(s);
+    }
+  }
+
   void accessor(@Untainted Object o) {
     if (o instanceof Box b) {
       // :: error: (argument)

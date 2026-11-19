@@ -21,13 +21,18 @@ public class CaseLabelPatternInitialization {
     }
   }
 
-  // An unannotated binding variable has the qualifiers of the selector.
-  void unknownInitialization(@UnknownInitialization Object o) {
+  static class Base {}
+
+  static class Sub extends Base {}
+
+  // An unannotated binding variable has the qualifiers of the selector.  The selector's
+  // initialization frame is not the default, so the test fails if the frame is lost.
+  void unknownInitialization(@UnknownInitialization(Base.class) Base o) {
     switch (o) {
-      case String s -> {
-        @UnknownInitialization String t = s;
+      case Sub s -> {
+        @UnknownInitialization(Base.class) Sub t = s;
         // :: error: (assignment)
-        @Initialized String u = s;
+        @Initialized Sub u = s;
       }
       default -> {}
     }

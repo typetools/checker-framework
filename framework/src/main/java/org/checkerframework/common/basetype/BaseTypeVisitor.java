@@ -3822,7 +3822,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * castType} (an upcast), returns whether {@code exprType} is a subtype of {@code castType}. If
    * the erased Java type of {@code castType} is a subtype of the erased Java type of {@code
    * exprType} (a downcast), returns whether {@code exprType} is a subtype of {@code castType}
-   * viewed as an instance of the Java class of {@code exprType}. Otherwise, the Java types are
+   * viewed as an instance of the Java class of {@code exprType}. That view discards any type
+   * argument of {@code castType} that does not appear in the supertype, so this method does not
+   * check the qualifiers of such a type argument. For example, in a cast from {@code Object} to
+   * {@code List<? extends @NonNull Object>}, this method does not check the {@code @NonNull}
+   * qualifier on the type argument of {@code List}. Otherwise, the Java types are
    * unrelated (as in a cast between two unrelated interfaces), and this method returns true.
    *
    * @param castType annotated type of the cast; not a type variable

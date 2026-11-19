@@ -1,6 +1,7 @@
 // @below-java17-jdk-skip-test
 
 import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -42,7 +43,7 @@ public class InstanceOfPatternInitialization {
 
   InstanceOfPatternInitialization() {
     if (this instanceof Sub s) {
-      @UnknownInitialization Sub t = s;
+      @UnderInitialization Sub t = s;
       // :: error: (method.invocation)
       s.hashCode();
     }

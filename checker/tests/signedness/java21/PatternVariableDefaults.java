@@ -17,29 +17,35 @@ public class PatternVariableDefaults {
   // Integer has a type-based default, @Signed, which does not apply to the top level of a local
   // variable's type.
 
-  void localBoxed(@Unsigned Integer u) {
+  // The assignment of a @Signed value checks the declared type of the variable, separately from
+  // the flow-refined type of the matched value.
+
+  void localBoxed(@Unsigned Integer u, @Signed Integer s) {
     Object o = u;
     Integer i = (Integer) o;
     // :: error: (operation.unsignedlhs)
     int q = i / 2;
+    i = s;
   }
 
-  void caseLabelBoxed(@Unsigned Integer u) {
+  void caseLabelBoxed(@Unsigned Integer u, @Signed Integer s) {
     Object o = u;
     switch (o) {
       case Integer i -> {
         // :: error: (operation.unsignedlhs)
         int q = i / 2;
+        i = s;
       }
       default -> {}
     }
   }
 
-  void instanceofBoxed(@Unsigned Integer u) {
+  void instanceofBoxed(@Unsigned Integer u, @Signed Integer s) {
     Object o = u;
     if (o instanceof Integer i) {
       // :: error: (operation.unsignedlhs)
       int q = i / 2;
+      i = s;
     }
   }
 
