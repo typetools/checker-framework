@@ -1077,14 +1077,73 @@ public class InferenceFactory {
       // `lubSoFar` lets the next input's annotations replace those at its ignored positions, as in
       // `glb`.
       List<ProperType> inputs = Arrays.asList(lubSoFar, properType);
-      ProperType withOrigin = withOriginOf(lubSoFar, inputs, lubTM, lubATM, ignoreAnnotations);
-      if (withOrigin == null) {
-        withOrigin = withOriginOf(properType, inputs, lubTM, lubATM, ignoreAnnotations);
-      }
+      ProperType withOrigin =
+          withOriginOfEither(lubSoFar, properType, inputs, lubTM, lubATM, ignoreAnnotations);
       lubSoFar =
           withOrigin != null ? withOrigin : new ProperType(lubATM, context, ignoreAnnotations);
     }
     return lubSoFar;
+  }
+
+  /**
+   * Returns a copy of {@code a} or of {@code b} whose annotated type is {@code atm} and that keeps
+   * the origin of the input it copies; see {@link #withOriginOf}. Returns null if neither can be
+   * copied.
+   *
+   * <p>If both can be copied, prefers an input whose annotated type already equals {@code atm}
+   * apart from the primary annotations, including at its ignored positions. When both inputs have
+   * an ignored position at the same place, the result's annotations there are the least upper bound
+   * (or greatest lower bound) of those of the inputs. Applying instantiations to the origin of the
+   * preferred input reproduces them, whereas applying instantiations to the origin of the other
+   * input would replace them by that input's annotations. This makes the result independent of the
+   * order of {@code a} and {@code b} whenever one of them has the annotations of the result.
+   *
+   * <p>TODO: The result still depends on the instantiations of only one input. When those that
+   * ignore annotations are replaced (see Resolution#resolveIgnoredAnnotations), a position that is
+   * an ignored position of both inputs gets the new instantiation from the preferred input only.
+   * Fixing this requires an origin that combines the ignored positions of several inputs.
+   *
+   * @param a an input to a least upper bound or greatest lower bound computation
+   * @param b the other input to that computation
+   * @param inputs all the inputs to that computation, namely {@code a} and {@code b}
+   * @param javaType the Java type of the result of that computation
+   * @param atm the annotated type of the result of that computation
+   * @param ignoreAnnotations true if the primary annotations of the result should be ignored
+   * @return a copy of {@code a} or of {@code b} whose annotated type is {@code atm}, or null
+   */
+  private @Nullable ProperType withOriginOfEither(
+      AbstractType a,
+      AbstractType b,
+      Collection<? extends AbstractType> inputs,
+      TypeMirror javaType,
+      AnnotatedTypeMirror atm,
+      boolean ignoreAnnotations) {
+    ProperType fromA = withOriginOf(a, inputs, javaType, atm, ignoreAnnotations);
+    ProperType fromB = withOriginOf(b, inputs, javaType, atm, ignoreAnnotations);
+    if (fromA != null && fromB != null) {
+      // withOriginOf returns non-null only for a proper type.
+      if (!differsOnlyInPrimaryAnnotations((ProperType) a, atm)
+          && differsOnlyInPrimaryAnnotations((ProperType) b, atm)) {
+        return fromB;
+      }
+      return fromA;
+    }
+    return fromA != null ? fromA : fromB;
+  }
+
+  /**
+   * Returns true if {@code atm} has the same annotations as {@code properType} everywhere except in
+   * the primary annotations. Unlike {@link #differsOnlyInPrimaryOrIgnoredAnnotations}, this
+   * compares the annotations at the ignored positions of {@code properType} too.
+   *
+   * @param properType a proper type
+   * @param atm an annotated type with the same Java type as {@code properType}
+   * @return true if {@code atm} differs from {@code properType} only in the primary annotations
+   */
+  private boolean differsOnlyInPrimaryAnnotations(ProperType properType, AnnotatedTypeMirror atm) {
+    AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
+    IgnoredAnnotations.copyPrimaryAnnotations(atm, samePrimaryAnnotations);
+    return context.areMutualSubtypes(samePrimaryAnnotations, atm);
   }
 
   /**
@@ -1129,15 +1188,12 @@ public class InferenceFactory {
     // than discarding it, when the ignored positions of each input include some that are not
     // ignored positions of another input.
     //
-    // TODO: When a position is an ignored position of another input too, keeping the origin of
-    // `type` alone is unsound: applying instantiations to that origin gives the position the
-    // instantiation from `type` only, discarding that from the other input.  For example, the lub
-    // of `arrOf(nonNullU, nn)` and `arrOf(nonNullU, nble)` gets component type `@NonNull U` rather
-    // than `@Nullable U`; see checker/tests/nullness/LubOfIgnoredPosition.java.  Discarding the
-    // origin in that case is wrong too: the ignored positions would become real annotations, and
-    // would not be updated when Resolution#resolveIgnoredAnnotations replaces the instantiations
-    // that ignore annotations.  Fixing this requires an origin that combines the ignored positions
-    // of several inputs.
+    // When a position is an ignored position of another input too, keeping the origin of `type`
+    // alone makes the position depend on the instantiation from `type` only.  #withOriginOfEither
+    // chooses the input whose origin gives the right annotations now; see the TODO there.
+    // Discarding the origin in that case would be wrong: the ignored positions would become real
+    // annotations, and would not be updated when Resolution#resolveIgnoredAnnotations replaces the
+    // instantiations that ignore annotations.
     for (AbstractType other : inputs) {
       boolean isType = other == type;
       if (isType) {
@@ -1244,10 +1300,7 @@ public class InferenceFactory {
     // As in `lub`, the result keeps the record of ignored positions of an input that it differs
     // from only in its primary annotations and at those ignored positions.
     List<AbstractType> inputs = Arrays.asList(a, b);
-    ProperType withOrigin = withOriginOf(a, inputs, glb, glbATM, ignoreAnnotations);
-    if (withOrigin == null) {
-      withOrigin = withOriginOf(b, inputs, glb, glbATM, ignoreAnnotations);
-    }
+    ProperType withOrigin = withOriginOfEither(a, b, inputs, glb, glbATM, ignoreAnnotations);
     if (withOrigin != null) {
       return withOrigin;
     }
@@ -1410,11 +1463,11 @@ public class InferenceFactory {
    * of bounds.
    *
    * @param lowerBound a proper type or null
-   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy that it
-   *     does not mention gets the default qualifier for an implicit lower bound
+   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy in which
+   *     it has no annotation gets the default qualifier for an implicit lower bound
    * @param upperBound an abstract type or null
-   * @param upperBoundAnnos annotations to use if {@code upperBound} is null; a hierarchy that it
-   *     does not mention gets the default qualifier for an implicit upper bound
+   * @param upperBoundAnnos annotations to use if {@code upperBound} is null; a hierarchy in which
+   *     it has no annotation gets the default qualifier for an implicit upper bound
    * @return a fresh type variable with the provided upper and lower bounds
    */
   public AbstractType createFreshTypeVariable(
@@ -1448,8 +1501,8 @@ public class InferenceFactory {
     }
     // Each bound of the fresh type variable must have an annotation in every hierarchy; otherwise a
     // later comparison against the bound crashes.  A bound that the caller did not supply is
-    // `Object` or the null type, for which the caller's annotations might mention no hierarchy at
-    // all, so fill in the defaults for the hierarchies that are still missing.
+    // `Object` or the null type, for which the caller's annotations might lack some hierarchies or
+    // be empty, so fill in the defaults for the hierarchies that are still missing.
     typeFactory.addDefaultAnnotations(typeVariable);
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
@@ -1462,7 +1515,8 @@ public class InferenceFactory {
 
   /**
    * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
-   * replaced by the corresponding element of {@code typeArgs}. An instantiation might mention
+   * replaced by the corresponding element of {@code typeArgs}, and every use of a variable in
+   * {@code instantiated} has been replaced by its instantiation. An instantiation might contain
    * another variable that is being resolved at the same time, so the instantiations are not final
    * until this substitution has been performed.
    *
@@ -1471,16 +1525,25 @@ public class InferenceFactory {
    *
    * @param typeArgs the instantiations of {@code variables}
    * @param variables the variables that {@code typeArgs} instantiates
-   * @return {@code typeArgs}, with uses of {@code variables} replaced by their instantiations
+   * @param instantiated variables, not in {@code variables}, each of which has an instantiation
+   * @return {@code typeArgs}, with uses of {@code variables} and {@code instantiated} replaced by
+   *     their instantiations
    */
-  public List<AbstractType> getSubsTypeArgs(List<AbstractType> typeArgs, List<Variable> variables) {
+  public List<AbstractType> getSubsTypeArgs(
+      List<AbstractType> typeArgs, List<Variable> variables, Collection<Variable> instantiated) {
     Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
+    for (Variable variable : instantiated) {
+      ProperType instantiation = variable.getInstantiation();
+      assert instantiation != null
+          : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+    }
 
-    // TODO: If the instantiation of a variable mentions that same variable, then substitution does
-    // not terminate the mention: the result still refers to the variable, because such a recursive
+    // TODO: If the instantiation of a variable contains that same variable, then substitution does
+    // not eliminate the variable: the result still contains the variable, because such a recursive
     // type cannot be written as a Java type.
     List<AbstractType> subsTypeArgs = new ArrayList<>();
     for (AbstractType typeArg : typeArgs) {

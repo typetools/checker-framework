@@ -264,11 +264,11 @@ public final class InferenceType extends AbstractType {
   public Collection<Variable> getInferenceVariables() {
     LinkedHashSet<Variable> variables = new LinkedHashSet<>();
     for (TypeVariable typeVar :
-        ContainsInferenceVariable.getMentionedTypeVariables(
+        ContainsInferenceVariable.getContainedTypeVariables(
             map.getTypeVariables(), type.getUnderlyingType())) {
       Variable variable = map.get(typeVar);
       assert variable != null
-          : "@AssumeAssertion(nullness): getMentionedTypeVariables returns keys of `map`";
+          : "@AssumeAssertion(nullness): getContainedTypeVariables returns keys of `map`";
       variables.add(variable);
     }
     return variables;
