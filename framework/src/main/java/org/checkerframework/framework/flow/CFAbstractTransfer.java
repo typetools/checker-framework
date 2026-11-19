@@ -7,6 +7,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -1154,8 +1155,18 @@ public abstract class CFAbstractTransfer<
     // to the expression's type.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
 
-    if (bindingVar == null && !(node.getTree().getType() instanceof AnnotatedTypeTree)) {
-      return result;
+    if (bindingVar == null) {
+      // Without a binding variable, only a qualifier written on the reference type can refine the
+      // expression.  For a qualified parameterized type such as "java.util.@A List<?>", the
+      // annotation is within the ParameterizedTypeTree.
+      Tree refTypeTree = node.getTree().getType();
+      Tree unparameterizedRefTypeTree =
+          refTypeTree instanceof ParameterizedTypeTree parameterizedTypeTree
+              ? parameterizedTypeTree.getType()
+              : refTypeTree;
+      if (!(unparameterizedRefTypeTree instanceof AnnotatedTypeTree)) {
+        return result;
+      }
     }
 
     AnnotatedTypeMirror expType =

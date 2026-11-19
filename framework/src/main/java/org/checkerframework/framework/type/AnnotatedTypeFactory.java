@@ -1654,14 +1654,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror expAnno : expType.getAnnotations()) {
       AnnotationMirror declaredAnno = declaredType.getPrimaryAnnotationInHierarchy(expAnno);
-      result.add(
-          declaredAnno == null
-              ? expAnno
-              : qualHierarchy.greatestLowerBoundShallow(
-                  expAnno,
-                  expType.getUnderlyingType(),
-                  declaredAnno,
-                  declaredType.getUnderlyingType()));
+      if (declaredAnno == null) {
+        result.add(expAnno);
+        continue;
+      }
+      AnnotationMirror glb =
+          qualHierarchy.greatestLowerBoundShallow(
+              expAnno, expType.getUnderlyingType(), declaredAnno, declaredType.getUnderlyingType());
+      if (glb == null) {
+        // Unreachable:  expAnno and declaredAnno are in the same hierarchy.
+        throw new BugInCF("No GLB for %s and %s", expAnno, declaredAnno);
+      }
+      result.add(glb);
     }
     return result;
   }
