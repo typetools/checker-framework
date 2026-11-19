@@ -39,7 +39,7 @@ public final class AnnotatedContainsInferenceVariable {
     return new Visitor(typeVariables).visit(type);
   }
 
-  /** A helper class to find type variables mentioned by a type. */
+  /** A helper class to find type variables contained in a type. */
   private static class Visitor implements AnnotatedTypeVisitor<Boolean, Void> {
 
     /** Type variables for which to search. */
@@ -116,7 +116,7 @@ public final class AnnotatedContainsInferenceVariable {
           found = true;
         }
       }
-      // An inner class type may mention a type variable only in its enclosing type, as in
+      // An inner class type may contain a type variable only in its enclosing type, as in
       // Outer<T>.Inner.
       if (visit(t.getEnclosingType())) {
         found = true;
