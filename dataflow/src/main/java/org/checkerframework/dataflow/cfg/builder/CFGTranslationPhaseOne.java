@@ -3456,6 +3456,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    if (exception.getKind() == TypeKind.NULL) {
+      // `throw null` throws a NullPointerException (JLS 14.18).
+      exception = nullPointerExceptionType;
+    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
     NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
     exNode.setTerminatesExecution(true);
@@ -3620,15 +3624,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Look up the method to invoke.  The access does not throw a NullPointerException, because the
-    // receiver is tested for nullness only after the arguments are evaluated.  The
-    // MethodInvocationNode, which follows the arguments, may throw any RuntimeException, including
-    // a NullPointerException for a null receiver.
+    // Evaluate the receiver.
     Node receiver = getReceiver(methodSelect);
-
-    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
-
-    extendWithNode(target);
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -3642,6 +3639,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
+
+    // Look up the method to invoke.  The access tests the receiver for nullness, which happens
+    // after the arguments are evaluated.  Its NullPointerException is separate from the exceptions
+    // of the MethodInvocationNode, which the invoked method throws after it is entered.  So, a
+    // handler for a NullPointerException from a null receiver does not assume the postconditions
+    // that the invoked method ensures on exceptional exit, such as @EnsuresCalledMethodsOnException.
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
+    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
 
     // TODO: lock the receiver for synchronized methods
 

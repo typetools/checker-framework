@@ -31,4 +31,27 @@ abstract class TryWithResourcesPrimaryException {
       mightThrow();
     }
   }
+
+  static class OtherException extends Exception {}
+
+  interface OtherCloseable extends AutoCloseable {
+    @Override
+    void close() throws OtherException;
+  }
+
+  public abstract @Owning OtherCloseable allocOther();
+
+  // The try block always throws an IOException.  If close() throws an OtherException, then that
+  // exception is suppressed, and the IOException propagates to the handler, which closes c.  An
+  // OtherException never propagates from the try-with-resources statement.
+  void primaryExceptionReachesHandler() throws IOException, OtherException {
+    Closeable c = allocWithoutException();
+    try {
+      try (OtherCloseable r = allocOther()) {
+        throw new IOException();
+      }
+    } catch (IOException e) {
+      c.close();
+    }
+  }
 }
