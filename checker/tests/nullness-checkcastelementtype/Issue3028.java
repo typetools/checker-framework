@@ -204,4 +204,50 @@ public class Issue3028 {
     // :: warning: [cast.unsafe]
     List<? extends @NonNull Object> list2 = (List<? extends @NonNull Object>) r;
   }
+
+  <T extends Runnable & List<@NonNull String>> void upcastFromIntersectionSecondBound(T t) {
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  // javac treats a cast from an intersection whose first bound is generic as unchecked.
+  @SuppressWarnings("unchecked")
+  <T extends List<@NonNull String> & Runnable> void upcastFromIntersectionFirstBound(T t) {
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  <T extends Runnable & Collection<@NonNull String>> void downcastFromIntersectionSecondBound(T t) {
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  <T extends Runnable & Collection<@Nullable String>>
+      void unsafeDowncastFromIntersectionSecondBound(T t) {
+    // :: warning: [cast.unsafe]
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  // javac treats a cast from an intersection whose first bound is generic as unchecked.
+  @SuppressWarnings("unchecked")
+  <T extends Collection<@NonNull String> & Runnable> void downcastFromIntersectionFirstBound(T t) {
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  // javac treats a cast from an intersection whose first bound is generic as unchecked.
+  @SuppressWarnings("unchecked")
+  <T extends Collection<@Nullable String> & Runnable> void unsafeDowncastFromIntersectionFirstBound(
+      T t) {
+    // :: warning: [cast.unsafe]
+    List<@NonNull String> list = (List<@NonNull String>) t;
+  }
+
+  void intersectionCastGenericSecondBound(List<@Nullable String> l, List<@NonNull String> nn) {
+    Object o = (Runnable & List<@NonNull String>) nn;
+    // :: warning: [cast.unsafe]
+    Object o2 = (Runnable & List<@NonNull String>) l;
+  }
+
+  void intersectionCastGenericFirstBound(List<@Nullable String> l, List<@NonNull String> nn) {
+    Object o = (List<@NonNull String> & Runnable) nn;
+    // :: warning: [cast.unsafe]
+    Object o2 = (List<@NonNull String> & Runnable) l;
+  }
 }

@@ -3765,6 +3765,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * This method returns:
    *
    * <ul>
+   *   <li>if {@code castType} is an intersection, whether the cast to every bound of {@code
+   *       castType} is safe, because the value must have the type of every bound.
+   *   <li>otherwise, if {@code exprType} is an intersection, whether the cast from some bound of
+   *       {@code exprType} is safe, because the value has the type of every bound.
    *   <li>false, if the Java cast is unchecked (JLS 5.1.6.2), because the run-time check does not
    *       verify its type arguments.
    *   <li>for an upcast (the Java type of {@code exprType} is a subtype of the Java type of {@code
@@ -3793,6 +3797,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     while (exprType.getKind() == TypeKind.TYPEVAR) {
       exprType = ((AnnotatedTypeVariable) exprType).getUpperBound();
+    }
+    // Erasing an intersection keeps only its first bound, so the checks below would ignore the
+    // other bounds.  Examining one bound at a time also avoids javac reporting an unchecked cast
+    // whenever the first bound of an intersection expression type is generic, even for an upcast.
+    if (castType.getKind() == TypeKind.INTERSECTION) {
+      for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) castType).getBounds()) {
+        if (!isCastSafeIncludingElementTypes(bound, exprType)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (exprType.getKind() == TypeKind.INTERSECTION) {
+      for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) exprType).getBounds()) {
+        if (isCastSafeIncludingElementTypes(castType, bound)) {
+          return true;
+        }
+      }
+      return false;
     }
     if (exprType.getKind().isPrimitive() && !castType.getKind().isPrimitive()) {
       exprType = atypeFactory.getBoxedType((AnnotatedPrimitiveType) exprType);
@@ -3852,14 +3875,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private boolean uncheckedTypeArgumentsContainAllPermittedTypes(
       AnnotatedTypeMirror castType, TypeMirror exprTM) {
     switch (castType.getKind()) {
-      case INTERSECTION -> {
-        for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) castType).getBounds()) {
-          if (!uncheckedTypeArgumentsContainAllPermittedTypes(bound, exprTM)) {
-            return false;
-          }
-        }
-        return true;
-      }
       case ARRAY -> {
         if (exprTM.getKind() != TypeKind.ARRAY) {
           // isTypeCastSafe rejects a cast from a non-array to an array.
