@@ -62,12 +62,10 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2643,7 +2641,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (finallyBlock != null) {
       finallyLabel = new Label();
 
-      exceptionalFinallyFrame = new TryFinallyFrame(types, nodeList.size());
+      exceptionalFinallyFrame = new TryFinallyFrame(types);
       tryStack.pushFrame(exceptionalFinallyFrame);
 
       returnTargetLC = new LabelCell();
@@ -2759,7 +2757,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label doneLabel = new Label();
     Label finallyLabel = new Label();
 
-    TryFinallyFrame exceptionalFinallyFrame = new TryFinallyFrame(types, nodeList.size());
+    TryFinallyFrame exceptionalFinallyFrame = new TryFinallyFrame(types);
     tryStack.pushFrame(exceptionalFinallyFrame);
 
     returnTargetLC = new LabelCell();
@@ -2996,23 +2994,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    // For each exception that reaches the finally block, there is a copy of the finally block that
-    // rethrows that exception after the finally block completes normally.  Exceptions that the
-    // same nodes throw share a copy, because they reach the finally block from the same nodes.  If
-    // exceptions that different nodes throw shared a copy, the analysis would merge the stores of
-    // those nodes, and the end of the copy would rethrow each exception with the merged store.  For
+    // For each type of exception that reaches the finally block, there is a copy of the finally
+    // block that rethrows that type after the finally block completes normally.  No two types
+    // share a copy.  If two types shared a copy, the analysis would merge the stores of the paths
+    // that throw them, and the end of the copy would rethrow each type with the merged store.  For
     // example, an exception thrown while a resource is open would make the Resource Leak Checker
     // report a leak on the path of another exception that is thrown after the resource is closed.
-    for (Map<TypeMirror, Label> group : exceptionGroups(exceptionalFinallyFrame)) {
-      for (Label label : group.values()) {
-        addLabelForNextNode(label);
-      }
-      String exceptionsString = group.keySet().toString();
+    // Sharing a copy is unsound even for types that the same nodes throw, because a transfer
+    // function may give a node a different exceptional store for each type that it throws, as for
+    // a method annotated with @EnsuresCalledMethodsOnException.
+    for (Map.Entry<TypeMirror, Label> entry :
+        exceptionalFinallyFrame.getExceptionLabels().entrySet()) {
+      TypeMirror exceptionType = entry.getKey();
+      addLabelForNextNode(entry.getValue());
       extendWithNode(
           new MarkerNode(
               markerTree,
               "start of finally block for "
-                  + exceptionsString
+                  + exceptionType
                   + " #"
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
@@ -3020,15 +3019,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       exceptionalFinallyBlockCFGGenerator.accept(group.keySet());
 
       NodeWithExceptionsHolder throwing =
-          extendWithNodeWithExceptions(
+          extendWithNodeWithException(
               new MarkerNode(
                   markerTree,
                   "end of finally block for "
-                      + exceptionsString
+                      + exceptionType
                       + " #"
                       + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
-              group.keySet());
+              exceptionType);
 
       throwing.setTerminatesExecution(true);
     }
@@ -3151,42 +3150,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       continueLabels = oldContinueLabels;
     }
-  }
-
-  /**
-   * Returns the types of the exceptions that reach the given frame, grouped by the nodes that throw
-   * them: two types are in the same group if and only if the same nodes throw them to the frame.
-   *
-   * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
-   * @return the groups, in the order that their first types reach {@code frame}; each group maps
-   *     each of its types to the type's label in {@code frame}. Empty if no exception reaches
-   *     {@code frame}.
-   */
-  private Collection<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
-    Map<TypeMirror, Label> exceptionLabels = frame.getExceptionLabels();
-    if (exceptionLabels.isEmpty()) {
-      return Collections.emptyList();
-    }
-    Set<Label> frameLabels = new HashSet<>(exceptionLabels.values());
-    // The nodes that throw an exception to each label of the frame.
-    Map<Label, Set<ExtendedNode>> throwers = new HashMap<>();
-    for (ExtendedNode node : nodeList.subList(frame.firstNodeIndex, nodeList.size())) {
-      if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
-        for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
-          for (Label label : labels) {
-            if (frameLabels.contains(label)) {
-              throwers.computeIfAbsent(label, l -> new HashSet<>()).add(node);
-            }
-          }
-        }
-      }
-    }
-    Map<Set<ExtendedNode>, Map<TypeMirror, Label>> groups = new LinkedHashMap<>();
-    for (Map.Entry<TypeMirror, Label> entry : exceptionLabels.entrySet()) {
-      Set<ExtendedNode> nodes = throwers.getOrDefault(entry.getValue(), Collections.emptySet());
-      groups.computeIfAbsent(nodes, n -> new ArrayMap<>()).put(entry.getKey(), entry.getValue());
-    }
-    return groups.values();
   }
 
   @Override
