@@ -16,12 +16,6 @@ import org.plumelib.util.ArrayMap;
   protected final Types types;
 
   /**
-   * The index, in the node list of the CFG builder, of the first node that this frame applies to.
-   * No earlier node throws an exception to this frame.
-   */
-  protected final int firstNodeIndex;
-
-  /**
    * A label for each type of exception that reaches this frame, in the order that the types first
    * reach it. No two keys are the same type.
    */
@@ -31,12 +25,9 @@ import org.plumelib.util.ArrayMap;
    * Constructs a TryFinallyFrame.
    *
    * @param types the type utilities
-   * @param firstNodeIndex the index, in the node list of the CFG builder, of the first node that
-   *     this frame applies to
    */
-  public TryFinallyFrame(Types types, int firstNodeIndex) {
+  public TryFinallyFrame(Types types) {
     this.types = types;
-    this.firstNodeIndex = firstNodeIndex;
   }
 
   @Override
