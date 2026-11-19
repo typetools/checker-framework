@@ -178,7 +178,7 @@ public final class Resolution {
       if (!lowerBounds.isEmpty()) {
         t =
             asSupertype(
-                lubOfLowerBounds(var, lowerBounds, false, context),
+                lubOfLowerBounds(var, lowerBounds, true, context),
                 instantiation.getJavaType(),
                 context);
       }
