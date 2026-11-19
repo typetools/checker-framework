@@ -11,8 +11,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -354,8 +356,12 @@ public class InvocationTypeInference {
    *
    * <p>Call this only after {@link #infer(ExpressionTree, AnnotatedExecutableType)}, so that the
    * recorded types are final, and only if the result of this inference problem is used.
+   *
+   * @return a map from each lambda parameter whose type was recorded to that type; the caller may
+   *     keep it, for example to record the same types again later
    */
-  public void recordLambdaParameterTypes() {
+  public Map<VariableElement, AnnotatedTypeMirror> recordLambdaParameterTypes() {
+    Map<VariableElement, AnnotatedTypeMirror> recorded = new LinkedHashMap<>();
     for (VariableElement param : context.lambdaParamTargets.keySet()) {
       AnnotatedTypeMirror type = getLambdaParameterType(param);
       if (type == null) {
@@ -369,7 +375,9 @@ public class InvocationTypeInference {
         continue;
       }
       context.typeFactory.recordLambdaParameterType(param, type);
+      recorded.put(param, type);
     }
+    return recorded;
   }
 
   /**

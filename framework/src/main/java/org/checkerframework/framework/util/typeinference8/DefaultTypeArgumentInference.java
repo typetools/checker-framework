@@ -81,11 +81,21 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * polymorphic qualifiers are not resolved. So, a cached result is reused only for an outer method
    * type that is equal to the one it was computed from.
    *
+   * <p>Solving the problem records the types of implicitly typed lambda parameters on the type
+   * factory (see {@link InvocationTypeInference#recordLambdaParameterTypes}). Solving another
+   * problem whose outermost tree is the same, but whose {@link CacheKey} differs, can record
+   * different types for them. So, a cache hit records this entry's lambda parameter types again.
+   *
    * @param outerMethodType a copy of the type of the outer method that the inference problem was
    *     solved for
    * @param result the result of solving the inference problem
+   * @param lambdaParameterTypes the types of implicitly typed lambda parameters that solving the
+   *     inference problem recorded on the type factory
    */
-  private record CacheEntry(AnnotatedExecutableType outerMethodType, InferenceResult result) {}
+  private record CacheEntry(
+      AnnotatedExecutableType outerMethodType,
+      InferenceResult result,
+      Map<VariableElement, AnnotatedTypeMirror> lambdaParameterTypes) {}
 
   /**
    * Creates a DefaultTypeArgumentInference whose cache has the default size, {@link
@@ -183,6 +193,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           && cached.outerMethodType().equals(outerMethodType)
           && (cached.result().getResults().containsKey(expressionTree)
               || !(expressionTree instanceof MemberReferenceTree))) {
+        // Make this problem's lambda parameter types current again; see CacheEntry.
+        // recordLambdaParameterType copies each type, so the cached types are not shared.
+        cached.lambdaParameterTypes().forEach(typeFactory::recordLambdaParameterType);
         return cached
             .result()
             .copyForExpression(expressionTree)
@@ -235,10 +248,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           result = retryResult;
         }
       }
-      chosenInference.recordLambdaParameterTypes();
+      Map<VariableElement, AnnotatedTypeMirror> lambdaParameterTypes =
+          chosenInference.recordLambdaParameterTypes();
       if (useCache) {
         assert outerMethodTypeCopy != null : "@AssumeAssertion(nullness): useCache is true";
-        inferenceCache.put(cacheKey, new CacheEntry(outerMethodTypeCopy, result));
+        inferenceCache.put(
+            cacheKey, new CacheEntry(outerMethodTypeCopy, result, lambdaParameterTypes));
       }
       if (!result.getResults().containsKey(expressionTree)
           && expressionTree instanceof MemberReferenceTree mrt) {

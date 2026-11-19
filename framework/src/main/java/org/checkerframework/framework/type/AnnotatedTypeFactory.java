@@ -1194,7 +1194,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the object that infers type arguments
    */
   protected TypeArgumentInference createTypeArgumentInference() {
-    return new DefaultTypeArgumentInference(getCacheSize());
+    // When caching is disabled, the cache size option is unused, so do not read or validate it.
+    // DefaultTypeArgumentInference does not use its cache in that case; see its #canUseCache.
+    return shouldCache
+        ? new DefaultTypeArgumentInference(getCacheSize())
+        : new DefaultTypeArgumentInference();
   }
 
   public TypeArgumentInference getTypeArgumentInference() {

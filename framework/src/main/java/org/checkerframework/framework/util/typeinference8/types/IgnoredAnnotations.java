@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -9,9 +11,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -63,8 +70,10 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
  * greatest lower bound, the methods of this class replace their ignored annotations with
  * annotations that cannot affect the result: for example, bottom for a subtype and top for a
- * supertype, or the annotations at the corresponding position of the other type. The rest of each
- * type is then compared or combined as usual.
+ * supertype, or the annotations at the corresponding position of the other type. (An exception: a
+ * position that both types ignore is not replaced before a least upper bound or greatest lower
+ * bound, so that the result there combines the annotations of both types.) The rest of each type is
+ * then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
@@ -119,7 +128,8 @@ final class IgnoredAnnotations {
           subATM,
           supATM,
           ignoredPositions(subAsSuper, subATM, qh),
-          ignoredPositions(upToDateSup, supATM, qh));
+          ignoredPositions(upToDateSup, supATM, qh),
+          true);
     }
     if (upToDateSub.ignoreAnnotations) {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
@@ -166,7 +176,11 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror atm2 = upToDate2.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredPositions) {
       replaceIgnoredPositions(
-          atm1, atm2, ignoredPositions(upToDate1, atm1, qh), ignoredPositions(upToDate2, atm2, qh));
+          atm1,
+          atm2,
+          ignoredPositions(upToDate1, atm1, qh),
+          ignoredPositions(upToDate2, atm2, qh),
+          true);
     }
     if (upToDate1.ignoreAnnotations) {
       copyPrimaryAnnotations(atm2, atm1);
@@ -188,9 +202,11 @@ final class IgnoredAnnotations {
    *       different classes, then their positions do not correspond, so return the types' own
    *       annotated types.
    *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
-   *       the annotations of the corresponding position of the other (see {@link
-   *       #replaceIgnoredPositions}), except that a type variable is returned itself, with no
-   *       annotations replaced.
+   *       the annotations of the corresponding position of the other, unless that position is
+   *       ignored too (see {@link #replaceIgnoredPositions}), except that a type variable is
+   *       returned itself, with no annotations replaced. A position that both types ignore keeps
+   *       its annotations in each type, so that the least upper bound or greatest lower bound
+   *       combines them.
    * </ol>
    *
    * <p>This method does not replace primary annotations that are ignored because of {@link
@@ -230,7 +246,11 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror atm1 = asSuper1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = asSuper2.getAnnotatedType().deepCopy();
     replaceIgnoredPositions(
-        atm1, atm2, ignoredPositions(asSuper1, atm1, qh), ignoredPositions(asSuper2, atm2, qh));
+        atm1,
+        atm2,
+        ignoredPositions(asSuper1, atm1, qh),
+        ignoredPositions(asSuper2, atm2, qh),
+        false);
     // A type variable is returned itself, because the least upper bound or greatest lower bound
     // needs it rather than its upper bound.  TODO: Replace the ignored positions within the upper
     // bound of a type variable too.
@@ -480,6 +500,11 @@ final class IgnoredAnnotations {
         if (instantiation == null) {
           return;
         }
+        // TODO: If the use has a non-polymorphic primary annotation in some qualifier hierarchies
+        // but not all, then the whole position is ignored, including the annotations that the use
+        // wrote explicitly.  Recording the ignored hierarchies at each position would let those
+        // annotations be compared.  AbstractType#ignoreAnnotations is likewise all-or-nothing; see
+        // ProperType#withPrimaryAnnotationsReplaced.
         if (instantiation.ignoreAnnotations
             && nonPolymorphicPrimaryAnnotationCount(origin, qh) < qh.getTopAnnotations().size()) {
           result.add(applied);
@@ -625,10 +650,13 @@ final class IgnoredAnnotations {
    * corresponding position of the other type.
    *
    * <ul>
-   *   <li>If a position of {@code atm1} is ignored, it gets the annotations of the corresponding
-   *       position of {@code atm2}, even if that position is ignored too.
-   *   <li>Otherwise, if the corresponding position of {@code atm2} is ignored, it gets the
-   *       annotations of the position of {@code atm1}.
+   *   <li>If a position of {@code atm1} is ignored and the corresponding position of {@code atm2}
+   *       is not, the position of {@code atm1} gets the annotations of the position of {@code
+   *       atm2}, and vice versa.
+   *   <li>If both positions are ignored and {@code replaceWhenBothIgnored} is true, the position of
+   *       {@code atm1} gets the annotations of the position of {@code atm2}, so that the two
+   *       positions have the same annotations. If {@code replaceWhenBothIgnored} is false, neither
+   *       position is changed.
    * </ul>
    *
    * <p>If the position that annotations are copied from is a wildcard, the annotations of its bound
@@ -641,19 +669,29 @@ final class IgnoredAnnotations {
    * @param atm2 a type; side-effected by this method
    * @param ignored1 the ignored positions of {@code atm1}
    * @param ignored2 the ignored positions of {@code atm2}
+   * @param replaceWhenBothIgnored true if a position that is ignored in both types gets the
+   *     annotations of {@code atm2}'s position. That is right for a subtype or equality check, which
+   *     the annotations at such a position must not make fail. It is wrong for a least upper bound
+   *     or greatest lower bound, whose result at such a position must combine the annotations of
+   *     both types, so that it does not depend on the order of the types (see {@link
+   *     InferenceFactory#lub(Set)}).
    */
   private static void replaceIgnoredPositions(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       Set<AnnotatedTypeMirror> ignored1,
-      Set<AnnotatedTypeMirror> ignored2) {
+      Set<AnnotatedTypeMirror> ignored2,
+      boolean replaceWhenBothIgnored) {
     allCorrespondingPositionsMatch(
         atm1,
         atm2,
         (position1, position2) -> {
-          if (ignored1.contains(position1)) {
+          boolean isIgnored1 = ignored1.contains(position1);
+          boolean isIgnored2 = ignored2.contains(position2);
+          // If both are ignored and !replaceWhenBothIgnored, neither is changed.
+          if (isIgnored1 && (!isIgnored2 || replaceWhenBothIgnored)) {
             copyPrimaryAnnotations(boundOf(position2), position1);
-          } else if (ignored2.contains(position2)) {
+          } else if (isIgnored2 && !isIgnored1) {
             copyPrimaryAnnotations(boundOf(position1), position2);
           }
           return true;
@@ -670,6 +708,10 @@ final class IgnoredAnnotations {
    * to those nested in the other type. For example, in {@code List<? extends Box<@A String>>} and
    * {@code List<Box<@B String>>}, both {@code ? extends Box<@A String>} and {@code Box<@A String>}
    * correspond to {@code Box<@B String>}, and {@code @A String} corresponds to {@code @B String}.
+   *
+   * <p>Where both types have declared types of different classes, their type arguments correspond
+   * by the supertype relation between the classes; see {@link
+   * #allCorrespondingTypeArgumentsMatch}.
    *
    * @param atm1 a type
    * @param atm2 a type
@@ -725,6 +767,12 @@ final class IgnoredAnnotations {
       case DECLARED -> {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
+        TypeElement element1 = (TypeElement) dt1.getUnderlyingType().asElement();
+        TypeElement element2 = (TypeElement) dt2.getUnderlyingType().asElement();
+        if (!element1.equals(element2)) {
+          return allCorrespondingTypeArgumentsMatch(
+              dt1, element1, dt2, element2, test, visitedWildcards);
+        }
         if (!allCorrespondingPositionsMatchPairwise(
             dt1.getTypeArguments(), dt2.getTypeArguments(), test, visitedWildcards)) {
           return false;
@@ -765,11 +813,154 @@ final class IgnoredAnnotations {
 
   /**
    * Returns true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
+   * type arguments of {@code dt1} and {@code dt2}, which are declared types of different classes.
+   * Such types can be nested within types of the same class, as in {@code Box<? extends
+   * Swap<String, Integer>>} and {@code Box<? extends Pair<Integer, String>>}.
+   *
+   * <p>Type arguments correspond by the supertype relation between the two classes, not by index.
+   * For example, if {@code Swap<A, B>} extends {@code Pair<B, A>}, then the first type argument of
+   * {@code Swap} corresponds to the second type argument of {@code Pair}, and vice versa. A type
+   * argument of the supertype that is not just a type parameter of the subtype, such as {@code
+   * String} in {@code StringPair<B> extends Pair<String, B>}, corresponds to no type argument of
+   * the subtype. If neither class is a subclass of the other, or either type is raw, then no type
+   * arguments correspond. Enclosing types never correspond.
+   *
+   * @param dt1 a declared type
+   * @param element1 the class of {@code dt1}
+   * @param dt2 a declared type whose class is not that of {@code dt1}
+   * @param element2 the class of {@code dt2}
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
+   *     been tested (see {@link #addPair})
+   * @return true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
+   *     type arguments
+   */
+  private static boolean allCorrespondingTypeArgumentsMatch(
+      AnnotatedDeclaredType dt1,
+      TypeElement element1,
+      AnnotatedDeclaredType dt2,
+      TypeElement element2,
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards) {
+    List<? extends AnnotatedTypeMirror> args1 = dt1.getTypeArguments();
+    List<? extends AnnotatedTypeMirror> args2 = dt2.getTypeArguments();
+    if (args1.size() != element1.getTypeParameters().size()
+        || args2.size() != element2.getTypeParameters().size()) {
+      // A raw type.
+      return true;
+    }
+    int[] indicesInDt1 = typeParameterCorrespondence(element1, element2);
+    if (indicesInDt1 != null) {
+      // `element1` is a subclass of `element2`.
+      for (int i2 = 0; i2 < indicesInDt1.length; i2++) {
+        int i1 = indicesInDt1[i2];
+        if (i1 != -1
+            && !allCorrespondingPositionsMatch(
+                args1.get(i1), args2.get(i2), test, visitedWildcards)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    int[] indicesInDt2 = typeParameterCorrespondence(element2, element1);
+    if (indicesInDt2 != null) {
+      // `element2` is a subclass of `element1`.
+      for (int i1 = 0; i1 < indicesInDt2.length; i1++) {
+        int i2 = indicesInDt2[i1];
+        if (i2 != -1
+            && !allCorrespondingPositionsMatch(
+                args1.get(i1), args2.get(i2), test, visitedWildcards)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * If {@code superElement} is a proper superclass or superinterface of {@code subElement}, returns
+   * an array that has an element for each type parameter of {@code superElement}: the index of the
+   * type parameter of {@code subElement} that it is instantiated to in the supertype of {@code
+   * subElement}, or -1 if it is instantiated to some other type. Otherwise, returns null. For
+   * example, if {@code Swap<A, B>} extends {@code Pair<B, A>}, then {@code
+   * typeParameterCorrespondence(Swap, Pair)} is {@code [1, 0]}.
+   *
+   * @param subElement a class or interface
+   * @param superElement a class or interface other than {@code subElement}
+   * @return the index of the type parameter of {@code subElement} that each type parameter of
+   *     {@code superElement} corresponds to, or null if {@code superElement} is not a supertype of
+   *     {@code subElement}
+   */
+  private static int @Nullable [] typeParameterCorrespondence(
+      TypeElement subElement, TypeElement superElement) {
+    int[] identity = new int[subElement.getTypeParameters().size()];
+    for (int i = 0; i < identity.length; i++) {
+      identity[i] = i;
+    }
+    return typeParameterCorrespondence(subElement, identity, superElement, new HashSet<>());
+  }
+
+  /**
+   * Helper for {@link #typeParameterCorrespondence(TypeElement, TypeElement)}, which searches the
+   * supertypes of {@code current} for {@code superElement}.
+   *
+   * @param current a supertype of the original subclass, or the subclass itself
+   * @param indices for each type parameter of {@code current}, the index of the type parameter of
+   *     the original subclass that it corresponds to, or -1
+   * @param superElement the class or interface to search for
+   * @param visited the classes and interfaces that have been searched. Java forbids inheriting a
+   *     class or interface with two different parameterizations, so each needs to be searched only
+   *     once.
+   * @return the correspondence for {@code superElement}, or null if it is not a supertype of {@code
+   *     current}
+   */
+  private static int @Nullable [] typeParameterCorrespondence(
+      TypeElement current, int[] indices, TypeElement superElement, Set<TypeElement> visited) {
+    if (current.equals(superElement)) {
+      return indices;
+    }
+    if (!visited.add(current)) {
+      return null;
+    }
+    List<TypeMirror> supertypes = new ArrayList<>(current.getInterfaces());
+    supertypes.add(current.getSuperclass());
+    List<? extends TypeParameterElement> currentParams = current.getTypeParameters();
+    for (TypeMirror supertype : supertypes) {
+      if (supertype.getKind() != TypeKind.DECLARED) {
+        // The superclass of Object or of an interface is NoType.
+        continue;
+      }
+      DeclaredType declaredSupertype = (DeclaredType) supertype;
+      TypeElement supertypeElement = (TypeElement) declaredSupertype.asElement();
+      List<? extends TypeMirror> supertypeArgs = declaredSupertype.getTypeArguments();
+      int[] supertypeIndices = new int[supertypeElement.getTypeParameters().size()];
+      Arrays.fill(supertypeIndices, -1);
+      // If the supertype is raw, then no type parameter of it corresponds.
+      if (supertypeArgs.size() == supertypeIndices.length) {
+        for (int i = 0; i < supertypeIndices.length; i++) {
+          if (supertypeArgs.get(i) instanceof TypeVariable typeVar) {
+            int index = currentParams.indexOf(typeVar.asElement());
+            if (index != -1) {
+              supertypeIndices[i] = indices[index];
+            }
+          }
+        }
+      }
+      int[] result =
+          typeParameterCorrespondence(supertypeElement, supertypeIndices, superElement, visited);
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
    * elements of the two lists. If the lists have different lengths, no positions correspond, so
    * returns true without testing any. That is not an error: the lists can be the type arguments of
-   * declared types of different classes, which can be nested within types of the same class, as in
-   * {@code Box<? extends List<String>>} and {@code Box<? extends Map<String, String>>}, or the
-   * bounds of intersection types that have different numbers of bounds.
+   * a raw type and of a parameterized type of the same class, or the bounds of intersection types
+   * that have different numbers of bounds.
    *
    * @param types1 a list of types
    * @param types2 a list of types
