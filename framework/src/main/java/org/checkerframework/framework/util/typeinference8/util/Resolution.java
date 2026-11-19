@@ -371,7 +371,7 @@ public final class Resolution {
   }
 
   /**
-   * Returns true if {@code v} has an {@code EQUAL} bound that mentions a capture variable in {@code
+   * Returns true if {@code v} has an {@code EQUAL} bound that contains a capture variable in {@code
    * as} that does not yet have an instantiation.
    *
    * @param v a variable
@@ -381,10 +381,10 @@ public final class Resolution {
    */
   private static boolean hasUnresolvedEqualBoundToCaptureWithin(Variable v, Set<Variable> as) {
     for (AbstractType t : v.getBounds().getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
-      for (Variable mentioned : t.getInferenceVariables()) {
-        if (mentioned.isCaptureVariable()
-            && as.contains(mentioned)
-            && !mentioned.getBounds().hasInstantiation()) {
+      for (Variable contained : t.getInferenceVariables()) {
+        if (contained.isCaptureVariable()
+            && as.contains(contained)
+            && !contained.getBounds().hasInstantiation()) {
           return true;
         }
       }

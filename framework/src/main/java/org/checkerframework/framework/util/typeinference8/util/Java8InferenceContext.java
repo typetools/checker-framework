@@ -136,7 +136,7 @@ public class Java8InferenceContext {
    * that declares it, and the parameter's index in the lambda's parameter list.
    *
    * <p>The lambda's target type is stored rather than the parameter's own type because, when this
-   * is recorded, the target type might still mention inference variables.
+   * is recorded, the target type might still contain inference variables.
    *
    * @param lambdaTargetType the target type of the lambda that declares the parameter
    * @param index the index of the parameter in the lambda's parameter list
