@@ -1618,9 +1618,13 @@ public class MustCallConsistencyAnalyzer {
           }
 
           if (coAtf.isOwningCollectionParameter(parameter)) {
+            // An @OwningCollection parameter takes ownership of the elements, not of the
+            // collection itself, whose obligations are transferred only to an @Owning parameter.
             Set<Obligation> obligationsForVar = getObligationsForVar(obligations, local);
             for (Obligation obligation : obligationsForVar) {
-              obligations.remove(obligation);
+              if (obligation instanceof CollectionObligation) {
+                obligations.remove(obligation);
+              }
             }
           }
         }
@@ -1645,13 +1649,45 @@ public class MustCallConsistencyAnalyzer {
       @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
       if (returnExpr instanceof LocalVariableNode lvn) {
+        // A @NotOwningCollection return does not transfer the obligations of the elements of the
+        // returned collection, but it transfers the obligations of the collection itself.
+        Set<Obligation> retained = new LinkedHashSet<>();
+        if (!noLightweightOwnership && isNotOwningCollectionReturn(cfg)) {
+          for (Obligation obligation : obligations) {
+            if (obligation instanceof CollectionObligation
+                && obligation.canBeSatisfiedThrough(lvn)) {
+              retained.add(obligation);
+            }
+          }
+          obligations.removeAll(retained);
+        }
         removeObligationsContainingVar(
             obligations,
             lvn,
             MustCallAliasHandling.NO_SPECIAL_HANDLING,
             MethodExitKind.ONLY_NORMAL_RETURN);
+        obligations.addAll(retained);
       }
     }
+  }
+
+  /**
+   * Returns true if the given CFG is for a method whose return type is
+   * {@code @NotOwningCollection}.
+   *
+   * @param cfg a CFG
+   * @return true if {@code cfg} is for a method whose return type is {@code @NotOwningCollection}
+   */
+  private boolean isNotOwningCollectionReturn(ControlFlowGraph cfg) {
+    if (!(cfg.getUnderlyingAST() instanceof UnderlyingAST.CFGMethod cfgMethod)) {
+      return false;
+    }
+    ExecutableElement executableElement = TreeUtils.elementFromDeclaration(cfgMethod.getMethod());
+    assert executableElement != null
+        : "@AssumeAssertion(nullness): a method has an element as the CFG is already built";
+    return coAtf.getCoType(
+            coAtf.getAnnotatedType(executableElement).getReturnType().getAnnotations())
+        == CollectionOwnershipType.NotOwningCollection;
   }
 
   /**
@@ -1692,14 +1728,9 @@ public class MustCallConsistencyAnalyzer {
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       assert executableElement != null
           : "@AssumeAssertion(nullness): a method has an element as the CFG is already built";
-      boolean returnTypeHasNocAnno =
-          coAtf.getCoType(
-                  coAtf.getAnnotatedType(executableElement).getReturnType().getAnnotations())
-              == CollectionOwnershipType.NotOwningCollection;
-      if (returnTypeHasNocAnno) {
-        // return is @NotOwningCollection. No ownership transfer to call-site.
-        return false;
-      } else {
+      // A @NotOwningCollection return does not transfer the obligations of the collection's
+      // elements; updateObligationsForOwningReturn retains them.
+      if (!isNotOwningCollectionReturn(cfg)) {
         // return is @OwningCollection. Report error if @OwningCollection field.
         Node returnResult = node.getResult();
         if (returnResult != null
@@ -3820,20 +3851,31 @@ public class MustCallConsistencyAnalyzer {
     }
     Obligation collectionElementObligation =
         getObligationForVar(obligations, disposalLoopInfo.iteratedElementTree());
+    // True if the iterated element itself, such as the loop variable, still refers to the element.
+    boolean iteratedElementIsAlias = collectionElementObligation != null;
     if (collectionElementObligation == null) {
-      // The loop body overwrote every alias of the collection element, so no method is known to
-      // be called on it. The sound thing to do is return an empty set.
-      return new HashSet<>();
+      // The loop body overwrote the loop variable.  The loop analysis tracks only the obligation
+      // seeded for the iterated element (see analyzeDisposalLoop), so a remaining obligation is
+      // that one, held by other aliases such as `saved` in `Resource saved = r; r = other;`.
+      if (obligations.size() != 1) {
+        // The loop body overwrote every alias of the collection element, so no method is known to
+        // be called on it. The sound thing to do is return an empty set.
+        return new HashSet<>();
+      }
+      collectionElementObligation = obligations.iterator().next();
     }
 
     // The references to the collection element: the iterated collection element and its resource
     // aliases.
     List<JavaExpression> references = new ArrayList<>();
-    IteratedCollectionElement ice =
-        store.getIteratedCollectionElement(
-            disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
-    if (ice != null) {
-      references.add(ice);
+    if (iteratedElementIsAlias) {
+      // After the loop variable is overwritten, calls on it are not calls on the element.
+      IteratedCollectionElement ice =
+          store.getIteratedCollectionElement(
+              disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
+      if (ice != null) {
+        references.add(ice);
+      }
     }
     for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
       references.add(alias.reference);

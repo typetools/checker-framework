@@ -11,7 +11,8 @@
 
 A checker can report a diagnostic whose message key only a subchecker's
 `messages.properties` file defines; the diagnostic uses the subchecker's message
-text.
+text.  A checker searches its subcheckers only for the full message key, and
+only after its own lookups of the full key and of the key's suffixes fail.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.

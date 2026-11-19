@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
@@ -22,6 +23,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -227,16 +229,37 @@ public final class ResourceLeakUtils {
    * @return true if type is subtype of a java.lang.Iterable, java.util.Iterator, or java.util.Map
    */
   public static boolean isCollection(TypeMirror type) {
-    if (type == null) {
-      return false;
-    }
-    Class<?> elementRawType = TypesUtils.getClassFromType(type);
+    Class<?> elementRawType = loadClassWithoutInitializing(type);
     if (elementRawType == null) {
       return false;
     }
     return Iterable.class.isAssignableFrom(elementRawType)
         || Iterator.class.isAssignableFrom(elementRawType)
         || Map.class.isAssignableFrom(elementRawType);
+  }
+
+  /**
+   * Returns the class of the given declared type, without running its static initializer, or null
+   * if {@code type} is not a declared type or its class cannot be loaded. Running a class's static
+   * initializer could fail or have side effects, such as for a class that requires runtime
+   * configuration.
+   *
+   * @param type a type
+   * @return the class of {@code type}, or null
+   */
+  private static @Nullable Class<?> loadClassWithoutInitializing(@Nullable TypeMirror type) {
+    if (!(type instanceof DeclaredType declaredType)) {
+      return null;
+    }
+    // Like TypesUtils.getClassFromType, this uses a canonical name, which differs from a binary
+    // name for nested classes.
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
+    @ClassGetName String typeString = TypesUtils.getQualifiedName(declaredType);
+    try {
+      return Class.forName(typeString, false, ResourceLeakUtils.class.getClassLoader());
+    } catch (ClassNotFoundException | LinkageError e) {
+      return null;
+    }
   }
 
   /**
@@ -248,10 +271,7 @@ public final class ResourceLeakUtils {
    * @return true if type is a java.util.Iterator
    */
   public static boolean isIterator(TypeMirror type) {
-    if (type == null) {
-      return false;
-    }
-    Class<?> elementRawType = TypesUtils.getClassFromType(type);
+    Class<?> elementRawType = loadClassWithoutInitializing(type);
     if (elementRawType == null) {
       return false;
     }

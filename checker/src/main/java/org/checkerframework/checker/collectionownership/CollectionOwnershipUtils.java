@@ -83,6 +83,42 @@ public final class CollectionOwnershipUtils {
   }
 
   /**
+   * Returns the declaration of the variable or field whose name {@link #getNameFromExpressionTree}
+   * returns for the given expression, or {@code null} if there is none.
+   *
+   * @param expr an expression
+   * @return the element of the referenced variable or field, or {@code null} if none
+   */
+  static @Nullable Element getElementFromExpressionTree(ExpressionTree expr) {
+    switch (expr.getKind()) {
+      case IDENTIFIER -> {
+        return TreeUtils.elementFromUse(expr);
+      }
+      case MEMBER_SELECT -> {
+        MemberSelectTree mst = (MemberSelectTree) expr;
+        Element elt = TreeUtils.elementFromUse(mst);
+        if (elt.getKind() == ElementKind.FIELD) {
+          return elt;
+        } else if (elt.getKind() == ElementKind.METHOD) {
+          return getElementFromExpressionTree(mst.getExpression());
+        } else {
+          return null;
+        }
+      }
+      case METHOD_INVOCATION -> {
+        ExpressionTree methodSelect = ((MethodInvocationTree) expr).getMethodSelect();
+        if (!(methodSelect instanceof MemberSelectTree)) {
+          return null;
+        }
+        return getElementFromExpressionTree(methodSelect);
+      }
+      default -> {
+        return null;
+      }
+    }
+  }
+
+  /**
    * Returns the {@code Name} of the identifier referenced by the given expression, or {@code null}
    * if the expression does not reference an identifier.
    *
