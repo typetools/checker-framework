@@ -5376,8 +5376,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       EnumSet<PurityKind> superPurity =
           PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
-      EnumSet<PurityKind> subPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
+      // Apply the command-line assumptions to the referenced method, so that a method reference is
+      // treated like a lambda whose body calls the referenced method.  Like such a call, a
+      // side-effect-free referenced method that returns void is deterministic.
+      EnumSet<PurityKind> subPurity = implementationPurityKinds(overrider.getElement());
       if (!subPurity.containsAll(superPurity)) {
         checker.reportError(
             overriderTree,
