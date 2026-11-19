@@ -120,4 +120,21 @@ public class Issue3028 {
     long y = (long) x;
     int z = (int) i;
   }
+
+  interface A<T> extends Iterable<T> {}
+
+  interface B<T> extends Iterable<T> {}
+
+  void unsafeSidecast(A<@Nullable String> a) {
+    // :: warning: [cast.unsafe]
+    B<@NonNull String> b = (B<@NonNull String>) a;
+  }
+
+  void safeSidecast(A<@NonNull String> a) {
+    B<@NonNull String> b = (B<@NonNull String>) a;
+  }
+
+  void safeSidecastNullable(A<@Nullable String> a) {
+    B<@Nullable String> b = (B<@Nullable String>) a;
+  }
 }

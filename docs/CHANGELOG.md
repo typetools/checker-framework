@@ -25,13 +25,25 @@ assignment if the pattern is unconditional for that type, and like an
 `instanceof` type pattern otherwise.  As a result, the Checker Framework may
 issue new `assignment` errors and `nested.pattern.unsafe` warnings.
 
+A type pattern that is a case label, such as `String s` in `case String s`, is
+checked against the type of the switch's selector expression, like an
+`instanceof` type pattern.  The Checker Framework may issue new
+`case.pattern.unsafe` warnings.
+
+With `-AcheckCastElementType`, a cast between unrelated types, such as two
+unrelated interfaces, is checked against their common generic supertypes.  For
+example, if `A<T>` and `B<T>` both extend `Iterable<T>`, then a cast from
+`A<@Nullable String>` to `B<@NonNull String>` is an unsafe cast.
+
 ### Changes for type system implementers
 
 `TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
 `ElementUtils.isLocalVariable()` returns true for pattern variables.
 
 New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
-binding variable of an `instanceof` type pattern.  A subclass can override the
+binding variable of an `instanceof` type pattern, and new overridable method
+`BaseTypeVisitor.checkCaseLabelTypePattern()` checks the binding variable of a
+type pattern that is a case label.  A subclass can override the
 new method `BaseTypeVisitor.instanceofPatternMatchedType()` to exclude values
 that a type pattern never matches, such as null.
 

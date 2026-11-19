@@ -53,11 +53,13 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -160,6 +162,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -457,17 +460,52 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkRecordPatternTypeInference(tree);
       checkNestedTypePatterns(tree);
     }
+    // JDK 17's `TreeVisitor` has no `visitPatternCaseLabel` method.
+    if (getCurrentPath() != null && PatternCaseLabelUtils.isPatternCaseLabelTree(tree)) {
+      checkCaseLabelTypePattern(new TreePath(getCurrentPath(), tree));
+    }
     return super.scan(tree, p);
   }
 
   /**
-   * Checks each type pattern that is a nested pattern of the record pattern {@code recordPattern}
-   * and whose type is written explicitly (not {@code var}): the type of its binding variable must
-   * be compatible with the type of the record component that the type pattern is matched against.
+   * If the case label at {@code caseLabelPath} is a type pattern, reports a {@code
+   * case.pattern.unsafe} warning if the type of its binding variable is not a safe downcast from
+   * the type that {@link #instanceofPatternMatchedType} returns for the type of the switch's
+   * selector expression. This is the same check that {@link #checkInstanceofPattern} performs for
+   * a type pattern in an {@code instanceof}.
    *
-   * <p>If the type pattern is unconditional for the type of the record component (JLS 14.30.3), the
-   * pattern always matches, so the check is an assignment check. Otherwise, the check is the same
-   * as for a type pattern in an {@code instanceof}.
+   * <p>For example, in the Tainting Checker, if {@code o} is {@code @Tainted}, then this method
+   * warns about {@code case @Untainted String s} in {@code switch (o)}.
+   *
+   * @param caseLabelPath the path to a pattern case label
+   */
+  protected void checkCaseLabelTypePattern(TreePath caseLabelPath) {
+    Tree pattern = PatternCaseLabelUtils.getPattern(caseLabelPath.getLeaf());
+    if (!(pattern instanceof BindingPatternTree bindingPattern)) {
+      // A record pattern is checked by `checkRecordPatternTypeInference` and
+      // `checkNestedTypePatterns`.
+      return;
+    }
+    VariableTree variableTree = bindingPattern.getVariable();
+    ExpressionTree selector = TreePathUtil.switchSelectorOfCaseLabel(caseLabelPath);
+    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+    AnnotatedTypeMirror selectorType = atypeFactory.getAnnotatedType(selector);
+    if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(selectorType))) {
+      checker.reportWarning(bindingPattern, "case.pattern.unsafe", selectorType, variableTree);
+    }
+  }
+
+  /**
+   * Checks each type pattern (including a {@code var} pattern) that is a nested pattern of the
+   * record pattern {@code recordPattern}: the type of its binding variable must be compatible with
+   * the type of the record component that the type pattern is matched against.
+   *
+   * <p>If the pattern is a {@code var} pattern, or a type pattern that is unconditional for the
+   * type of the record component (JLS 14.30.3), the pattern always matches, so the check is an
+   * assignment check. For a {@code var} pattern, this check matters only for the primary
+   * qualifiers, which are defaulted (for example, by a {@code LOCAL_VARIABLE} default) rather than
+   * taken from the record component. Otherwise, the check is the same as for a type pattern in an
+   * {@code instanceof}.
    *
    * @param recordPattern a {@code DeconstructionPatternTree}
    */
@@ -481,12 +519,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       VariableTree variableTree = bindingPattern.getVariable();
-      if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
-        continue;
-      }
       AnnotatedTypeMirror componentType = componentTypes.get(i);
       AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-      if (atypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
+      // A `var` pattern matches every value of the record component.  Its binding variable takes
+      // the type of the component, except that its primary qualifiers are defaulted, so check them
+      // as for an assignment.
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
+          || atypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
         commonAssignmentCheck(variableType, componentType, bindingPattern, "assignment");
       } else {
         checkConditionalNestedTypePattern(bindingPattern, variableType, componentType);
@@ -3826,7 +3865,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * check the qualifiers of such a type argument. For example, in a cast from {@code Object} to
    * {@code List<? extends @NonNull Object>}, this method does not check the {@code @NonNull}
    * qualifier on the type argument of {@code List}. Otherwise, the Java types are unrelated (as in
-   * a cast between two unrelated interfaces), and this method returns true.
+   * a cast between two unrelated interfaces), and this method returns {@link
+   * #isSidecastSafeIncludingTypeArguments}.
    *
    * @param castType annotated type of the cast; not a type variable
    * @param exprType annotated type of the casted expression; not a type variable
@@ -3854,6 +3894,59 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror castTypeAsExprType =
           AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprType);
       return typeHierarchy.isSubtype(exprType, castTypeAsExprType);
+    }
+    return isSidecastSafeIncludingTypeArguments(castType, exprType);
+  }
+
+  /**
+   * Returns true if a cast between types whose Java types are unrelated by subtyping (a sidecast,
+   * as in a cast between two unrelated interfaces) is safe with respect to the qualifiers on type
+   * arguments. A value of both types is an instance of each generic supertype G that the two types
+   * have in common, and Java requires each class to have just one parameterization of G. So the
+   * cast is safe if, for each such G, {@code exprType} viewed as an instance of G is a subtype of
+   * {@code castType} viewed as an instance of G, ignoring primary qualifiers.
+   *
+   * <p>For example, if interfaces {@code A<T>} and {@code B<T>} both extend {@code Iterable<T>},
+   * then a cast from {@code A<@Nullable String>} to {@code B<@NonNull String>} is unsafe, because
+   * {@code Iterable<@Nullable String>} is not a subtype of {@code Iterable<@NonNull String>}.
+   *
+   * @param castType annotated type of the cast; not a type variable
+   * @param exprType annotated type of the casted expression; not a type variable
+   * @return true if the sidecast from {@code exprType} to {@code castType} is safe with respect to
+   *     the qualifiers on type arguments
+   */
+  private boolean isSidecastSafeIncludingTypeArguments(
+      AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    if (castType.getKind() != TypeKind.DECLARED || exprType.getKind() != TypeKind.DECLARED) {
+      return true;
+    }
+    TypeMirror exprTM = exprType.getUnderlyingType();
+    Set<Element> visited = new HashSet<>();
+    ArrayDeque<AnnotatedDeclaredType> worklist = new ArrayDeque<>();
+    worklist.add((AnnotatedDeclaredType) castType);
+    while (!worklist.isEmpty()) {
+      AnnotatedDeclaredType castSuper = worklist.remove();
+      if (!visited.add(castSuper.getUnderlyingType().asElement())) {
+        continue;
+      }
+      worklist.addAll(castSuper.directSupertypes());
+      if (castSuper.getTypeArguments().isEmpty()
+          || !TypesUtils.isErasedSubtype(exprTM, castSuper.getUnderlyingType(), types)) {
+        continue;
+      }
+      AnnotatedDeclaredType exprSuper =
+          AnnotatedTypes.castedAsSuper(atypeFactory, exprType, castSuper);
+      if (!types.isSubtype(exprSuper.getUnderlyingType(), castSuper.getUnderlyingType())) {
+        // The Java type arguments differ, so Java does not accept the cast without an unchecked
+        // warning, which isCastSafeIncludingTypeArguments has already handled.
+        continue;
+      }
+      // Compare only the type arguments; the caller checks the primary qualifiers.
+      AnnotatedDeclaredType castSuperCopy = castSuper.shallowCopy();
+      castSuperCopy.replaceAnnotations(exprSuper.getPrimaryAnnotations());
+      if (!typeHierarchy.isSubtype(exprSuper, castSuperCopy)) {
+        return false;
+      }
     }
     return true;
   }
@@ -3970,7 +4063,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Returns the type of the values of {@code expType} that a type pattern can match, given the type
    * of the value that the pattern is matched against: the left operand of an instanceof expression,
-   * or the record component that a type pattern nested in a record pattern is matched against.
+   * the selector expression of a switch whose case label is the pattern, or the record component
+   * that a type pattern nested in a record pattern is matched against.
    *
    * <p>This implementation returns {@code expType} itself. A subclass overrides this method if the
    * run-time test of a type pattern rejects some values whatever their Java type; for example, a
