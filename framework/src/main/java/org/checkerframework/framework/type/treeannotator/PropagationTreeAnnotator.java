@@ -99,16 +99,34 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         TypeMirror annosTM = initType.getUnderlyingType();
         boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
         if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
-          // The initializer is boxed or unboxed (JLS 5.2).  A primitive initializer is boxed to the
-          // component type if that is a boxed primitive, as in `new Byte[] {1}`.
-          annos =
-              initIsPrimitive
-                  ? atypeFactory.getBoxedAnnotations(
-                      annos,
-                      TypesUtils.isBoxedPrimitive(componentTM)
-                          ? atypeFactory.types.unboxedType(componentTM).getKind()
-                          : annosTM.getKind())
-                  : atypeFactory.getUnboxedAnnotations(annos, componentTM.getKind());
+          // The initializer is boxed or unboxed (JLS 5.2).
+          if (initIsPrimitive) {
+            // A primitive initializer is boxed to the component type if that is a boxed
+            // primitive, as in `new Byte[] {1}`.
+            annos =
+                atypeFactory.getBoxedAnnotations(
+                    annos,
+                    TypesUtils.isBoxedPrimitive(componentTM)
+                        ? atypeFactory.types.unboxedType(componentTM).getKind()
+                        : annosTM.getKind());
+          } else {
+            // A boxed initializer is unboxed to its own primitive kind, which might then be
+            // widened to the component kind, as in `new long[] {aCharacter}`.
+            TypeKind componentKind = componentTM.getKind();
+            TypeKind unboxedKind = TypeKindUtils.primitiveOrBoxedToTypeKind(annosTM);
+            if (unboxedKind == null) {
+              // For example, a type variable whose bound is a boxed primitive.
+              unboxedKind = componentKind;
+            }
+            annos = atypeFactory.getUnboxedAnnotations(annos, unboxedKind);
+            if (unboxedKind != componentKind
+                && TypeKindUtils.isNumeric(unboxedKind)
+                && TypeKindUtils.isNumeric(componentKind)
+                && TypeKindUtils.getPrimitiveConversionKind(unboxedKind, componentKind)
+                    == TypeKindUtils.PrimitiveConversionKind.WIDENING) {
+              annos = atypeFactory.getWidenedAnnotations(annos, unboxedKind, componentKind);
+            }
+          }
           annosTM = componentTM;
         }
 
