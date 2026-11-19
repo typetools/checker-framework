@@ -361,6 +361,9 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
    * Has av visit the fields in the given annotation. This method is necessary even with
    * visitFields(AnnotationVisitor, Annotation) because an Annotation cannot be created from the
    * Annotation specified to be available from the Annotation object for subannotations.
+   *
+   * @param av the visitor that visits the fields
+   * @param a an annotation whose fields to visit
    */
   @SuppressWarnings({
     "nullness:argument", // ASM permits a null name for an array element; elements are non-null
