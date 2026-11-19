@@ -32,7 +32,6 @@ import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -419,10 +418,9 @@ public class NullnessTransfer
     TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
     MethodInvocationTree tree = n.getTree();
-    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    ExecutableElement method = n.getTarget().getMethod();
 
-    boolean isMethodSideEffectFree =
-        atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
+    boolean isMethodSideEffectFree = atypeFactory.isSideEffectFree(method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
     if (!n.getTarget().isStatic()
