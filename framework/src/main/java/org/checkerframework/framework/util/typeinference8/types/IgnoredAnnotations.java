@@ -676,11 +676,13 @@ final class IgnoredAnnotations {
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}, starting with {@code atm1} and {@code atm2} themselves. A position is tested
    * before the positions nested in it, and no position is tested after {@code test} returns false.
-   * Positions correspond only where the two types have the same structure, with one exception:
-   * where one type has a wildcard and the other does not, the wildcard and its bound (see {@link
-   * #boundOf}) both correspond to the other type, so the positions nested in the bound correspond
-   * to those nested in the other type. For example, in {@code List<? extends Box<@A String>>} and
-   * {@code List<Box<@B String>>}, both {@code ? extends Box<@A String>} and {@code Box<@A String>}
+   * Positions correspond only where the two types have the same structure, so the type arguments of
+   * declared types of different classes do not correspond, even if there are equally many of them
+   * (as in {@code Reversed<A, B> extends Pair<B, A>}). There is one exception: where one type has a
+   * wildcard and the other does not, the wildcard and its bound (see {@link #boundOf}) both
+   * correspond to the other type, so the positions nested in the bound correspond to those nested
+   * in the other type. For example, in {@code List<? extends Box<@A String>>} and {@code
+   * List<Box<@B String>>}, both {@code ? extends Box<@A String>} and {@code Box<@A String>}
    * correspond to {@code Box<@B String>}, and {@code @A String} corresponds to {@code @B String}.
    *
    * @param atm1 a type
@@ -737,6 +739,9 @@ final class IgnoredAnnotations {
       case DECLARED -> {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
+        if (!dt1.getUnderlyingType().asElement().equals(dt2.getUnderlyingType().asElement())) {
+          return true;
+        }
         if (!allCorrespondingPositionsMatchPairwise(
             dt1.getTypeArguments(), dt2.getTypeArguments(), test, visitedWildcards)) {
           return false;
@@ -778,10 +783,8 @@ final class IgnoredAnnotations {
   /**
    * Returns true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
    * elements of the two lists. If the lists have different lengths, no positions correspond, so
-   * returns true without testing any. That is not an error: the lists can be the type arguments of
-   * declared types of different classes, which can be nested within types of the same class, as in
-   * {@code Box<? extends List<String>>} and {@code Box<? extends Map<String, String>>}, or the
-   * bounds of intersection types that have different numbers of bounds.
+   * returns true without testing any. That is not an error: the lists can be the bounds of
+   * intersection types that have different numbers of bounds.
    *
    * @param types1 a list of types
    * @param types2 a list of types
