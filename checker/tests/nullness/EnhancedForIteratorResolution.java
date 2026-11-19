@@ -130,6 +130,65 @@ public class EnhancedForIteratorResolution {
     }
   }
 
+  // Neither `RawIterator` nor `Iterator<String>` is a subtype of the other, but `RawIterator` is
+  // return-type-substitutable for `Iterator<String>` by an unchecked conversion, and not vice
+  // versa.  So javac chooses `PureRawIterable.iterator()`, regardless of the order of the
+  // interfaces.
+  @SuppressWarnings("rawtypes")
+  interface RawIterator extends Iterator {}
+
+  interface PureRawIterable {
+    @SideEffectFree
+    RawIterator iterator();
+  }
+
+  interface PureRawIterableFirst extends PureRawIterable, PlainIterable {}
+
+  interface PureRawIterableLast extends PlainIterable, PureRawIterable {}
+
+  void pureRawIterableFirst(PureRawIterableFirst r) {
+    RawIterator itor = r.iterator();
+    if (f != null) {
+      for (String s : r) {
+        f.toString();
+      }
+      f.toString();
+    }
+  }
+
+  void pureRawIterableLast(PureRawIterableLast r) {
+    RawIterator itor = r.iterator();
+    if (f != null) {
+      for (String s : r) {
+        f.toString();
+      }
+      f.toString();
+    }
+  }
+
+  // A type may inherit a generic `iterator()` method.  Its return type is the same as that of
+  // `Iterable<String>.iterator()`, so javac may choose either method.  `AGenericIterable` sorts
+  // before `PlainIterable`, so the generic method may come first.
+  interface AGenericIterable {
+    <T> Iterator<String> iterator();
+  }
+
+  interface GenericIterableFirst extends AGenericIterable, PlainIterable {}
+
+  interface GenericIterableLast extends PlainIterable, AGenericIterable {}
+
+  void genericIterableFirst(GenericIterableFirst r) {
+    for (String s : r) {
+      s.toString();
+    }
+  }
+
+  void genericIterableLast(GenericIterableLast r) {
+    for (String s : r) {
+      s.toString();
+    }
+  }
+
   void plainIterable(PlainIterable r) {
     if (f != null) {
       for (String s : r) {

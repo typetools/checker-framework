@@ -1115,6 +1115,9 @@ public final class ElementUtils {
    *       method (JLS 15.12.2.5).
    *   <li>Of two abstract methods, the one with the more specific return type (as a member of
    *       {@code site}) takes precedence (JLS 15.12.2.5).
+   *   <li>Of two abstract methods whose return types are unrelated by subtyping, the one whose return
+   *       type is return-type-substitutable for the other's, by an unchecked conversion, takes
+   *       precedence (JLS 8.4.5, 15.12.2.5).
    * </ol>
    *
    * If no rule applies, as for two abstract methods with the same return type, then neither method
@@ -1170,8 +1173,21 @@ public final class ElementUtils {
     Type capturedSite = javacTypes.capture(site);
     Type returnType1 = javacTypes.memberType(capturedSite, m1).getReturnType();
     Type returnType2 = javacTypes.memberType(capturedSite, m2).getReturnType();
-    return javacTypes.isSubtype(returnType1, returnType2)
-        && !javacTypes.isSameType(returnType1, returnType2);
+    if (javacTypes.isSameType(returnType1, returnType2)) {
+      return false;
+    }
+    if (javacTypes.isSubtype(returnType1, returnType2)) {
+      return true;
+    }
+    if (javacTypes.isSubtype(returnType2, returnType1)) {
+      return false;
+    }
+    // Neither return type is a subtype of the other.  javac chooses a method whose return type is
+    // return-type-substitutable for the other's, which permits an unchecked conversion (JLS 8.4.5).
+    // For example, `RawIterator`, a subinterface of the raw type `Iterator`, is substitutable for
+    // `Iterator<String>`, but not vice versa.
+    return javacTypes.isSubtypeUnchecked(returnType1, returnType2)
+        && !javacTypes.isSubtypeUnchecked(returnType2, returnType1);
   }
 
   /**

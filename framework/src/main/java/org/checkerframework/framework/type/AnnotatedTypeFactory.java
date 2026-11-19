@@ -3173,7 +3173,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
     TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
     AnnotatedDeclaredType dt = fromElement(typeElt).asUse();
-    dt.addAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
+    dt.replaceAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
     return dt;
   }
 
