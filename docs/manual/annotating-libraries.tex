@@ -457,12 +457,14 @@ version of \code{java.lang.String}.  You don't need to repeat these steps
 to handle \code{java.lang.String} for the Interning Checker,
 but you might do something similar for a different class and/or checker.
 
-There are two types of annotation files, which are files containing annotations that
+There are three types of annotation files, which are files containing annotations that
 can be read by the Checker Framework.
 This section describes stub files, which are used by programmers and
 type system designers.
 Section~\ref{ajava-files} describes ajava files, which are used by
 tools, such as type inference.
+Section~\ref{intellij-annotations} describes IntelliJ IDEA's external
+annotation files.
 
 
 \subsectionAndLabel{Using a stub file}{stub-using}
@@ -988,10 +990,12 @@ in the version of the library you are using.
 
 \sectionAndLabel{Ajava files}{ajava-files}
 
-There are two types of annotation files, which are files containing annotations that
+There are three types of annotation files, which are files containing annotations that
 can be read by the Checker Framework.
 Section~\ref{stub} describes stub files, which are used by programmers and
 type system designers.
+Section~\ref{intellij-annotations} describes IntelliJ IDEA's external
+annotation files.
 This section describes ajava files.
 Ajava files are primarily read and written by tools, such as whole-program type
 inference (see Section~\ref{whole-program-inference}).  (However,
@@ -1112,8 +1116,7 @@ Here is an example invocation:
 
 The Checker Framework can read external annotations stored in IntelliJ
 IDEA's \code{annotations.xml} format.  This allows users to create
-\href{https://www.jetbrains.com/help/rider/Code_Analysis__External_Annotations.html}{external
-annotations}
+external annotations
 using
 \href{https://www.jetbrains.com/help/idea/annotating-source-code.html#external-annotations}{IntelliJ
 IDEA's user interface}.
@@ -1123,9 +1126,13 @@ path-separated list of IntelliJ IDEA annotation files, directories, and
 \<.jar> and \<.zip> archives.
 An annotation file that is named directly may have any name (but a name
 ending with \<.jar> or \<.zip>, in any case, denotes an archive).
-Within a directory or archive, only files named \code{annotations.xml} are
-read; they are arranged in directory structures matching their package names.
-An archive within a directory is not read; name each archive in the list.
+Within a directory or archive, every file named \code{annotations.xml} is
+read, wherever it appears, and no other file is read.
+(By convention, IntelliJ IDEA places each \code{annotations.xml} file in a
+directory whose path matches the package name of the elements it annotates,
+but the Checker Framework does not require that layout.)
+An archive within a directory is not read; the Checker Framework issues a
+note about it.  Name each archive in the list.
 The path separator is colon on Unix and semicolon on Windows.
 
 For example:

@@ -325,7 +325,17 @@ public class AnnotationFileElementTypes {
       SourceChecker checker = factory.getChecker();
       for (String path : intellijAnnotationPaths) {
         List<AnnotationFileResource> allFiles =
-            AnnotationFileUtil.allAnnotationFiles(path, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+            AnnotationFileUtil.allAnnotationFiles(
+                path,
+                AnnotationFileType.INTELLIJ_ANNOTATIONS,
+                archive ->
+                    checker.message(
+                        Diagnostic.Kind.NOTE,
+                        "Not reading archive "
+                            + archive
+                            + ", which is within directory "
+                            + path
+                            + "; to read it, name the archive itself"));
         if (allFiles == null) {
           checker.message(
               Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
@@ -347,7 +357,10 @@ public class AnnotationFileElementTypes {
             } catch (IOException e) {
               checker.message(
                   Diagnostic.Kind.ERROR,
-                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
+                  "Could not read IntelliJ IDEA annotations: "
+                      + resource.getDescription()
+                      + ": "
+                      + e);
             }
           }
         }
