@@ -184,6 +184,8 @@ public class Issue3028 {
 
   interface Extra<E> {}
 
+  // javac 17 treats a cast to `? extends Object` from a non-Object type as unchecked.
+  @SuppressWarnings("unchecked")
   void intersectionBoundUnrelatedToExpression(Collection<?> c) {
     Object x = (List<?> & Extra<?>) c;
     // :: warning: [cast.unsafe]
@@ -195,6 +197,8 @@ public class Issue3028 {
     Comparable<?> c = (Comparable<?>) o;
   }
 
+  // javac 17 treats a cast to `? extends Object` from a non-Object type as unchecked.
+  @SuppressWarnings("unchecked")
   void unrelatedWildcardCast(Runnable r) {
     List<?> list = (List<?>) r;
     // :: warning: [cast.unsafe]
