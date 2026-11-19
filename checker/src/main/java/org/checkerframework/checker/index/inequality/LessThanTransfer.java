@@ -49,7 +49,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right < left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
+    // If evaluating `right` might change the value of `left`, as in `i > (i = 0)`, then the
+    // comparison says nothing about the current value of `left`.
+    if (leftJe != null && !leftJe.isAssignableByOtherCode() && !mayBeChangedByLaterOperand(left)) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -63,8 +65,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       String leftString = leftJe.toString();
       if (!lessThanExpressions.contains(leftString)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
-        JavaExpression rightJe = JavaExpression.fromNode(right);
-        store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+        AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
+        for (Node internal : nodesWithValueOf(right)) {
+          store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
+        }
       }
     }
   }
@@ -84,7 +88,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right is less than left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
+    // If evaluating `right` might change the value of `left`, as in `i >= (i = 0)`, then the
+    // comparison says nothing about the current value of `left`.
+    if (leftJe != null && !leftJe.isAssignableByOtherCode() && !mayBeChangedByLaterOperand(left)) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -98,8 +104,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       String leftIncremented = incrementedExpression(leftJe);
       if (!lessThanExpressions.contains(leftIncremented)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
-        JavaExpression rightJe = JavaExpression.fromNode(right);
-        store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+        AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
+        for (Node internal : nodesWithValueOf(right)) {
+          store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
+        }
       }
     }
   }
