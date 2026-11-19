@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -2692,7 +2693,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           finallyLabel,
           exceptionalFinallyFrame,
           () -> scan(finallyBlock, p),
-          () -> scan(finallyBlock, p),
+          primaryExceptionTypes -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
           oldBreakLabels,
@@ -2791,7 +2792,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         finallyLabel,
         exceptionalFinallyFrame,
         () -> addCloseCallForResource(resourceDeclarationTree, p),
-        () -> addSuppressingCloseCallForResource(resourceDeclarationTree, p),
+        primaryExceptionTypes ->
+            addSuppressingCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2810,6 +2812,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param p the value to pass to calls to {@code scan}
    */
   private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+    addCloseCallForResource(resourceDeclarationTree, Collections.emptySet(), p);
+  }
+
+  /**
+   * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
+   * in a try-with-resources.
+   *
+   * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
+   *     resource
+   * @param extraExceptionTypes types that label exceptional edges of the {@code close} call, in
+   *     addition to the types of the exceptions that the call might throw
+   * @param p the value to pass to calls to {@code scan}
+   */
+  private void addCloseCallForResource(
+      Tree resourceDeclarationTree, Set<TypeMirror> extraExceptionTypes, Void p) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
     Node receiverNode;
@@ -2873,7 +2890,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MethodInvocationNode(
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(closeCallNode);
+    extendWithInvocationNode(
+        closeCallNode, closeCallNode.getTarget().getMethod(), extraExceptionTypes);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2887,6 +2905,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
    * successor of the added nodes is the node that follows them.
    *
+   * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
+   * addition to the types of the exceptions that {@code close} might throw. So an analysis that
+   * ignores some exception types follows those edges, with the exceptional store of the call,
+   * whenever it follows the rethrow of the primary exception -- even if it ignores every exception
+   * that {@code close} might throw. Otherwise, if {@code close} terminates execution and might
+   * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
+   * unreachable.
+   *
    * <p>If {@code close} terminates execution, the call has no normal successor, but its exceptional
    * successors still reach the rethrow of the primary exception. That models termination by
    * throwing an exception. (If {@code close} terminates execution by exiting the JVM, the primary
@@ -2894,16 +2920,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
+   * @param primaryExceptionTypes the types of the primary exception
    * @param p the value to pass to calls to {@code scan}
    */
-  private void addSuppressingCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+  private void addSuppressingCloseCallForResource(
+      Tree resourceDeclarationTree, Set<TypeMirror> primaryExceptionTypes, Void p) {
     Label suppressedLabel = new Label();
     tryStack.pushFrame(
         new TryCatchFrame(
             types,
             Collections.singletonList(
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
-    addCloseCallForResource(resourceDeclarationTree, p);
+    addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
     tryStack.popFrame();
     addLabelForNextNode(suppressedLabel);
   }
@@ -2923,7 +2951,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, for each
    *     path except the ones on which an exception reaches the finally block
    * @param exceptionalFinallyBlockCFGGenerator generates CFG nodes and edges for the finally block,
-   *     for the paths on which an exception reaches the finally block
+   *     for the paths on which an exception reaches the finally block; its argument is the types of
+   *     the exceptions that reach the copy of the finally block and that the copy rethrows
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
@@ -2941,7 +2970,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Label finallyLabel,
       TryFinallyFrame exceptionalFinallyFrame,
       Runnable finallyBlockCFGGenerator,
-      Runnable exceptionalFinallyBlockCFGGenerator,
+      Consumer<Set<TypeMirror>> exceptionalFinallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -2988,7 +3017,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      exceptionalFinallyBlockCFGGenerator.run();
+      exceptionalFinallyBlockCFGGenerator.accept(group.keySet());
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithExceptions(
@@ -3584,13 +3613,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param executable the method or constructor that {@code node} invokes
    */
   private void extendWithInvocationNode(Node node, ExecutableElement executable) {
+    extendWithInvocationNode(node, executable, Collections.emptySet());
+  }
+
+  /**
+   * Extends the CFG with the given node, which invokes the given method or constructor, accounting
+   * for potential exceptions thrown by the invocation. If {@code executable} is annotated {@link
+   * TerminatesExecution}, the invocation terminates execution.
+   *
+   * @param node a method invocation or object creation
+   * @param executable the method or constructor that {@code node} invokes
+   * @param extraExceptionTypes types that label exceptional edges of {@code node}, in addition to
+   *     the types of the exceptions that the invocation might throw
+   */
+  private void extendWithInvocationNode(
+      Node node, ExecutableElement executable, Set<TypeMirror> extraExceptionTypes) {
     List<? extends TypeMirror> thrownTypes = executable.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
+        ArraySet.newArraySetOrLinkedHashSet(
+            thrownTypes.size() + uncheckedExceptionTypes.size() + extraExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
+    // Add the extra types that label exceptional edges.
+    thrownSet.addAll(extraExceptionTypes);
 
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
     if (annotationProvider.getDeclAnnotation(executable, TerminatesExecution.class) != null) {

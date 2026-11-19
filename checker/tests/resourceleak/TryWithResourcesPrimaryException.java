@@ -5,6 +5,7 @@
 
 import java.io.*;
 import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.dataflow.qual.TerminatesExecution;
 
 abstract class TryWithResourcesPrimaryException {
 
@@ -29,6 +30,27 @@ abstract class TryWithResourcesPrimaryException {
     try (Closeable r = allocWithoutException()) {
       c.close();
       mightThrow();
+    }
+  }
+
+  // A resource whose close() terminates execution by throwing an Error, which the Resource Leak
+  // Checker ignores.  The try-with-resources statement suppresses that Error and rethrows the
+  // primary exception.
+  static class TerminatingClose implements Closeable {
+    @Override
+    @TerminatesExecution
+    public void close() {
+      throw new Error();
+    }
+  }
+
+  void leakWhenTryBlockThrowsAndCloseTerminates() throws IOException {
+    // :: error: [required.method.not.called]
+    Closeable c = alloc();
+    try (TerminatingClose r = new TerminatingClose()) {
+      // If mightThrow() throws, c is not closed.
+      mightThrow();
+      c.close();
     }
   }
 }
