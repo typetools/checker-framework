@@ -20,11 +20,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
-import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -42,7 +40,6 @@ import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -330,7 +327,7 @@ public class CollectionOwnershipTransfer
     if (tree != null
         && ((isThisConstructorCall
                 && (receiverNode instanceof ThisNode || receiverNode instanceof SuperNode))
-            || createsMustCallForThis(node))) {
+            || atypeFactory.createsMustCallForThis(node))) {
       // Get the fields from the enclosing class rather than from the receiver's type. For
       // `super.m()`, the receiver's type is the superclass, but `m` can call an overriding method
       // that inserts into a field declared in this class.
@@ -349,26 +346,6 @@ public class CollectionOwnershipTransfer
       }
     }
     return res;
-  }
-
-  /**
-   * Returns true if some {@code @CreatesMustCallFor} target of the invoked method, resolved at the
-   * call site, is {@code this} (or {@code super}).
-   *
-   * @param node a method invocation
-   * @return true if the invocation creates a must-call obligation for {@code this}
-   */
-  private boolean createsMustCallForThis(MethodInvocationNode node) {
-    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
-        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory);
-    for (JavaExpression target :
-        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-            node, rlAtf, rlAtf)) {
-      if (target instanceof ThisReference || target instanceof SuperReference) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

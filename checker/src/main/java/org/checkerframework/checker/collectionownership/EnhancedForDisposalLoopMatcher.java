@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -30,6 +32,13 @@ import org.plumelib.util.IPair;
 
 /** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
 final class EnhancedForDisposalLoopMatcher {
+
+  /**
+   * Methods that replace elements of a collection but are not annotated
+   * {@code @CreatesCollectionObligation}. A loop that calls one of these on the iterated collection
+   * is not a disposal loop.
+   */
+  private static final Set<String> REPLACING_METHODS = Set.of("set", "replaceAll");
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
@@ -86,6 +95,11 @@ final class EnhancedForDisposalLoopMatcher {
     if (collectionName != null && assignsTo(tree.getStatement(), collectionName)) {
       return Set.of();
     }
+    // If the body inserts into or replaces elements of the collection, the iterator might not visit
+    // the new elements, as for CopyOnWriteArrayList.
+    if (mutatesIteratedCollection(tree.getStatement(), tree.getExpression())) {
+      return Set.of();
+    }
     return resolveEnhancedForLoop(tree);
   }
 
@@ -105,6 +119,51 @@ final class EnhancedForDisposalLoopMatcher {
               return true;
             }
             return super.visitAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean reduce(@Nullable Boolean r1, @Nullable Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+        }.scan(body, null);
+    return Boolean.TRUE.equals(result);
+  }
+
+  /**
+   * Returns true if {@code body} might insert into or replace elements of {@code collection}: it
+   * calls a {@code @CreatesCollectionObligation} method or a replacing method on the collection,
+   * or, if the collection is an owning collection field of {@code this}, a method whose
+   * {@code @CreatesMustCallFor} target is {@code this}.
+   *
+   * @param body a loop body
+   * @param collection the collection that the loop iterates over
+   * @return true if {@code body} might insert into or replace elements of {@code collection}
+   */
+  private boolean mutatesIteratedCollection(StatementTree body, ExpressionTree collection) {
+    Name collectionName =
+        CollectionOwnershipUtils.getNameFromExpressionTree(TreeUtils.withoutParens(collection));
+    boolean isFieldOfThis =
+        coAtf.isOwningCollectionField(collection) && TreeUtils.isSelfAccess(collection);
+    @Nullable Boolean result =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+            ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+            ExecutableElement method = TreeUtils.elementFromUse(tree);
+            if (collectionName != null
+                && receiver != null
+                && CollectionOwnershipUtils.getNameFromExpressionTree(receiver) == collectionName
+                && (coAtf.isCreatesCollectionObligationMethod(method)
+                    || REPLACING_METHODS.contains(method.getSimpleName().toString()))) {
+              return true;
+            }
+            if (isFieldOfThis
+                && CollectionOwnershipUtils.anyNodeForTree(cfg, tree)
+                    instanceof MethodInvocationNode node
+                && coAtf.createsMustCallForThis(node)) {
+              return true;
+            }
+            return super.visitMethodInvocation(tree, p);
           }
 
           @Override

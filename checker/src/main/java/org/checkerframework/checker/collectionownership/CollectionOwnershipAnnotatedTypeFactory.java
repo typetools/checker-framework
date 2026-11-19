@@ -34,6 +34,7 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
@@ -55,6 +56,8 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -606,6 +609,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public boolean isCreatesCollectionObligationMethod(ExecutableElement methodElement) {
     return getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
+  }
+
+  /**
+   * Returns true if some {@code @CreatesMustCallFor} target of the invoked method, resolved at the
+   * call site, is {@code this} (or {@code super}).
+   *
+   * @param node a method invocation
+   * @return true if the invocation creates a must-call obligation for {@code this}
+   */
+  public boolean createsMustCallForThis(MethodInvocationNode node) {
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+    for (JavaExpression target :
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
+            node, rlAtf, rlAtf)) {
+      if (target instanceof ThisReference || target instanceof SuperReference) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
