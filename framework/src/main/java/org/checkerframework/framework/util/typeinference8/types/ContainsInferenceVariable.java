@@ -44,21 +44,21 @@ public final class ContainsInferenceVariable {
    * @param type a type to check
    * @return the type variables in {@code typeVariables} that appear in {@code type}
    */
-  public static Set<TypeVariable> getMentionedTypeVariables(
+  public static Set<TypeVariable> getContainedTypeVariables(
       Collection<? extends TypeVariable> typeVariables, TypeMirror type) {
     Visitor visitor = new Visitor(typeVariables);
     visitor.visit(type);
     return visitor.foundVariables;
   }
 
-  /** A helper class to find type variables mentioned by a type. */
+  /** A helper class to find type variables contained in a type. */
   static class Visitor implements TypeVisitor<Boolean, Void> {
 
     /** Type variables for which to search. */
     private final Collection<? extends TypeVariable> typeVariables;
 
     /** Type variables in {@code typeVariables} that have been found. */
-    // default visibility to allow direct access from getMentionedTypeVariables
+    // default visibility to allow direct access from getContainedTypeVariables
     final LinkedHashSet<TypeVariable> foundVariables = new LinkedHashSet<>();
 
     /** A set of types that have been visited. Used to prevent infinite recursion. */
@@ -124,7 +124,7 @@ public final class ContainsInferenceVariable {
           found = true;
         }
       }
-      // An inner class type may mention a type variable only in its enclosing type, as in
+      // An inner class type may contain a type variable only in its enclosing type, as in
       // Outer<T>.Inner.
       if (visit(t.getEnclosingType())) {
         found = true;
