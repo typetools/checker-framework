@@ -362,6 +362,10 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
    * visitFields(AnnotationVisitor, Annotation) because an Annotation cannot be created from the
    * Annotation specified to be available from the Annotation object for subannotations.
    */
+  @SuppressWarnings({
+    "nullness:argument", // ASM permits a null name for an array element; elements are non-null
+    "nullness:dereference.of.nullable" // an annotation's array elements are non-null
+  })
   private void visitFields(AnnotationVisitor av, Annotation a) {
     for (String fieldName : a.def().fieldTypes.keySet()) {
       Object value = a.getFieldValue(fieldName);
