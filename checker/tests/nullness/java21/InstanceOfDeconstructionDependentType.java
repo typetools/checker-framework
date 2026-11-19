@@ -49,6 +49,31 @@ public class InstanceOfDeconstructionDependentType {
     }
   }
 
+  void reassigned(KeyedMap km, KeyedMap other) {
+    if (km instanceof KeyedMap(var mm, var k)) {
+      km = other;
+      // `km` is reassigned, so `k` is not a key for km.m.
+      // :: error: [unboxing.of.nullable]
+      int i = km.m.get(k);
+    }
+  }
+
+  void reassignedReceiverIndependent(Object o, Object other) {
+    if (o instanceof StaticKey(var k)) {
+      o = other;
+      int i = staticMap.get(k);
+    }
+  }
+
+  void reassignedNested(Outer o, Outer other) {
+    if (o instanceof Outer(KeyedMap(var mm, String k))) {
+      o = other;
+      // `o` is reassigned, so `k` is not a key for o.km().m.
+      // :: error: [unboxing.of.nullable]
+      int i = o.km().m.get(k);
+    }
+  }
+
   void adaptedExplicitType(KeyedMap km) {
     if (km instanceof KeyedMap(var mm, String k)) {
       @KeyFor("km.m") String k2 = k;

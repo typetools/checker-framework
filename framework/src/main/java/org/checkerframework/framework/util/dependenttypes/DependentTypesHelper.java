@@ -383,7 +383,8 @@ public class DependentTypesHelper {
    * are written in the scope of the deconstruction pattern, not of the record, so they are not
    * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
    *
-   * <p>If {@code receiver} is not deterministic, then an expression that depends on the receiver
+   * <p>If {@code receiver} is not deterministic or contains a local variable that is not
+   * effectively final, then an expression that depends on the receiver
    * could refer to a different record than the one that was deconstructed. Therefore, such
    * expressions are removed from the annotations on the component's declared type. Expressions that
    * do not depend on the receiver, such as static fields, are retained.
@@ -405,12 +406,12 @@ public class DependentTypesHelper {
       return;
     }
 
-    boolean isDeterministic = isDeterministicIncludingReceivers(receiver);
+    boolean isStableReceiver = isDeterministicAndEffectivelyFinal(receiver);
     StringToJavaExpression stringToJavaExpr =
         stringExpr -> {
           JavaExpression declExpr =
               StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker());
-          if (!isDeterministic
+          if (!isStableReceiver
               && (declExpr.containsOfClass(ThisReference.class)
                   || declExpr.containsOfClass(SuperReference.class))) {
             return null;
@@ -427,17 +428,22 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Returns true if {@code expr} and all of its subexpressions are deterministic.
+   * Returns true if {@code expr} and all of its subexpressions are deterministic, and every local
+   * variable in {@code expr} is effectively final.
    *
    * <p>{@link MethodCall#isDeterministic} does not check the receiver of the call. For a record
    * pattern nested in another one, the receiver is an accessor call on the value matched by the
    * enclosing pattern, as in {@code getOuter().inner()}. That value is the same on each evaluation
    * only if every receiver in the chain is deterministic.
    *
+   * <p>A local variable that is reassigned after the record pattern refers to a different record
+   * than the one that was deconstructed, so a binding variable's qualifier must not mention it.
+   *
    * @param expr an expression
-   * @return true if {@code expr} and all of its subexpressions are deterministic
+   * @return true if {@code expr} and all of its subexpressions are deterministic, and every local
+   *     variable in {@code expr} is effectively final
    */
-  private boolean isDeterministicIncludingReceivers(JavaExpression expr) {
+  private boolean isDeterministicAndEffectivelyFinal(JavaExpression expr) {
     if (!expr.isDeterministic(factory)) {
       return false;
     }
@@ -449,6 +455,14 @@ public class DependentTypesHelper {
           result[0] = false;
         }
         return super.visitMethodCall(methodCallExpr, p);
+      }
+
+      @Override
+      protected Void visitLocalVariable(LocalVariable localVarExpr, Void p) {
+        if (!ElementUtils.isEffectivelyFinal(localVarExpr.getElement())) {
+          result[0] = false;
+        }
+        return super.visitLocalVariable(localVarExpr, p);
       }
     }.scan(expr, null);
     return result[0];

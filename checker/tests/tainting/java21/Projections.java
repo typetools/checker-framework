@@ -257,6 +257,21 @@ public class Projections {
     }
   }
 
+  record IntersectionHolderBox<T extends Number & Runnable>(ListHolder<List<? super T>> holder) {}
+
+  /**
+   * The downward projection of the type argument {@code List<? super CAP#1>} would be {@code List<?
+   * super Number & Runnable>}, but a wildcard bound cannot be an intersection type, so the downward
+   * projection is undefined, and the type argument becomes {@code ?}.
+   */
+  static void intersectionDownwardUndefined(IntersectionHolderBox<?> h) {
+    if (h instanceof IntersectionHolderBox(var holder)) {
+      ListHolder<?> ok = holder;
+      // :: error: [assignment]
+      ListHolder<? super List<? super Number>> bad = holder;
+    }
+  }
+
   record Bounded<T extends @Untainted Number & Comparable<T>>(T t) {}
 
   /**
