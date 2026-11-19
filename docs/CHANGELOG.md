@@ -7,6 +7,20 @@
 
 ### User-visible changes
 
+The Signedness Checker has a new qualifier, `@BitPattern`, for values that are
+not arithmetic quantities but are manipulated as a pattern of bits, such as the
+result of `Double.doubleToLongBits`.  Bitwise operators, shifts, and equality
+tests are permitted on such a value; arithmetic operators, ordering
+comparisons, and string concatenation are forbidden, with the new errors
+`operation.bitpattern`, `comparison.mixed.bitpattern`,
+`compound.assignment.bitpattern`, `unary.bitpattern`, and `bitpattern.concat`.
+This is a breaking change for existing callers of `Double.doubleToLongBits`,
+`Double.doubleToRawLongBits`, `Double.longBitsToDouble`,
+`Float.floatToIntBits`, `Float.floatToRawIntBits`, and `Float.intBitsToFloat`
+that pass or receive a plain `@Signed` value where `@BitPattern` is now
+required: annotate the value as `@BitPattern`, or derive it from one of these
+methods, rather than from arithmetic.
+
 ### Changes for type system implementers
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input

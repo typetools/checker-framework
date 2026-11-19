@@ -6,9 +6,11 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.interning.InterningVisitor;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
+import org.checkerframework.checker.signedness.qual.BitPattern;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -20,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -54,6 +57,53 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
+   * Returns true if an annotated type is annotated as {@link BitPattern}.
+   *
+   * @param type the annotated type to be checked
+   * @return true if the annotated type is annotated as {@link BitPattern}
+   */
+  private boolean hasBitPatternAnnotation(AnnotatedTypeMirror type) {
+    return type.hasPrimaryAnnotation(BitPattern.class);
+  }
+
+  /**
+   * Returns true if an annotated type is committed to a signedness interpretation, that is, if it
+   * is annotated as {@link Signed} or {@link Unsigned}. A type annotated as {@code @SignednessGlb}
+   * or {@code @SignedPositive}, such as the type of a manifest literal, is not committed to either
+   * interpretation.
+   *
+   * @param type the annotated type to be checked
+   * @return true if the annotated type is committed to a signedness interpretation
+   */
+  private boolean hasCommittedSignedness(AnnotatedTypeMirror type) {
+    return type.hasPrimaryAnnotation(Signed.class) || type.hasPrimaryAnnotation(Unsigned.class);
+  }
+
+  /**
+   * Returns true if {@code kind} is a shift operator.
+   *
+   * @param kind a tree kind
+   * @return true if {@code kind} is a shift operator
+   */
+  private boolean isShiftKind(Tree.Kind kind) {
+    return kind == Tree.Kind.LEFT_SHIFT
+        || kind == Tree.Kind.RIGHT_SHIFT
+        || kind == Tree.Kind.UNSIGNED_RIGHT_SHIFT;
+  }
+
+  /**
+   * Returns true if {@code kind} is a shift compound assignment operator.
+   *
+   * @param kind a tree kind
+   * @return true if {@code kind} is a shift compound assignment operator
+   */
+  private boolean isShiftAssignmentKind(Tree.Kind kind) {
+    return kind == Tree.Kind.LEFT_SHIFT_ASSIGNMENT
+        || kind == Tree.Kind.RIGHT_SHIFT_ASSIGNMENT
+        || kind == Tree.Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
+  }
+
+  /**
    * Enforces the following rules on binary operations involving Unsigned and Signed types:
    *
    * <ul>
@@ -77,6 +127,30 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     AnnotatedTypeMirror rightOpType = argTypes.right();
 
     Tree.Kind kind = tree.getKind();
+
+    boolean leftIsBitPattern = hasBitPatternAnnotation(leftOpType);
+    boolean rightIsBitPattern = hasBitPatternAnnotation(rightOpType);
+    // binaryTreeArgTypes performs numeric promotion, and getWidenedAnnotations replaces the
+    // qualifier with @Signed when an operand is promoted to a floating-point type, as in
+    // `bits < 1.0`.  That is the only promotion that hides @BitPattern, so consult the
+    // un-widened types just in that case rather than on every binary expression.
+    if (!leftIsBitPattern
+        && !rightIsBitPattern
+        && (TypeKindUtils.isFloatingPoint(leftOpType.getKind())
+            || TypeKindUtils.isFloatingPoint(rightOpType.getKind()))) {
+      leftIsBitPattern = hasBitPatternAnnotation(atypeFactory.getAnnotatedType(leftOp));
+      rightIsBitPattern = hasBitPatternAnnotation(atypeFactory.getAnnotatedType(rightOp));
+    }
+    // For a shift, only the left operand (the value being shifted) has a @BitPattern
+    // interpretation; the right operand is a bit count, not a peer value, so a @BitPattern
+    // shift count must not suppress the ordinary signedness checks on the left operand.
+    boolean isBitPatternOperation =
+        isShiftKind(kind) ? leftIsBitPattern : (leftIsBitPattern || rightIsBitPattern);
+
+    if (isBitPatternOperation) {
+      checkBitPatternBinary(tree, kind, leftOpType, rightOpType);
+      return super.visitBinary(tree, p);
+    }
 
     switch (kind) {
       case DIVIDE:
@@ -154,6 +228,48 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         break;
     }
     return super.visitBinary(tree, p);
+  }
+
+  /**
+   * Enforces that only bitwise operators, shifts, and equality tests are permitted on a {@link
+   * BitPattern} value: arithmetic operators, ordering comparisons, and string concatenation are
+   * forbidden.
+   *
+   * @param tree the binary tree, one of whose operands is a {@code @BitPattern} value
+   * @param kind the kind of the binary tree
+   * @param leftOpType the annotated type of the left operand
+   * @param rightOpType the annotated type of the right operand
+   */
+  private void checkBitPatternBinary(
+      BinaryTree tree,
+      Tree.Kind kind,
+      AnnotatedTypeMirror leftOpType,
+      AnnotatedTypeMirror rightOpType) {
+    switch (kind) {
+      case AND, OR, XOR, LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT ->
+      // Bitwise operators and shifts are permitted on @BitPattern values.
+      {}
+      case EQUAL_TO, NOT_EQUAL_TO -> {
+        // Testing which bits are set is meaningful, whether against another bit pattern
+        // (as in Double.doubleToLongBits(d1) == Double.doubleToLongBits(d2)) or against a
+        // manifest constant (as in (bits & MASK) != 0).  Only a comparison against a value
+        // that is committed to a signedness interpretation indicates confusion.
+        if (hasCommittedSignedness(leftOpType) || hasCommittedSignedness(rightOpType)) {
+          checker.reportError(tree, "comparison.mixed.bitpattern", leftOpType, rightOpType);
+        }
+      }
+      case PLUS -> {
+        if (TreeUtils.isStringConcatenation(tree)) {
+          checker.reportError(tree, "bitpattern.concat");
+        } else {
+          checker.reportError(tree, "operation.bitpattern", kind, leftOpType, rightOpType);
+        }
+      }
+      default ->
+          // Arithmetic operators and ordering comparisons are forbidden: a bit pattern is
+          // not an arithmetic quantity.
+          checker.reportError(tree, "operation.bitpattern", kind, leftOpType, rightOpType);
+    }
   }
 
   // Ensure that method annotations are not written on methods they don't apply to.
@@ -251,6 +367,26 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
     Tree.Kind kind = tree.getKind();
 
+    // As in visitBinary: promotion to a floating-point type hides @BitPattern, as in
+    // `bits += 1.0`, and for a shift-assignment only the variable (not the shift count on
+    // the right) determines whether this is a @BitPattern operation.
+    boolean varIsBitPattern = hasBitPatternAnnotation(varType);
+    boolean exprIsBitPattern = hasBitPatternAnnotation(exprType);
+    if (!varIsBitPattern
+        && !exprIsBitPattern
+        && (TypeKindUtils.isFloatingPoint(varType.getKind())
+            || TypeKindUtils.isFloatingPoint(exprType.getKind()))) {
+      varIsBitPattern = hasBitPatternAnnotation(atypeFactory.getAnnotatedType(var));
+      exprIsBitPattern = hasBitPatternAnnotation(atypeFactory.getAnnotatedType(expr));
+    }
+    boolean isBitPatternOperation =
+        isShiftAssignmentKind(kind) ? varIsBitPattern : (varIsBitPattern || exprIsBitPattern);
+
+    if (isBitPatternOperation) {
+      checkBitPatternCompoundAssignment(tree, kind, varType, exprType);
+      return super.visitCompoundAssignment(tree, p);
+    }
+
     switch (kind) {
       case DIVIDE_ASSIGNMENT:
       case REMAINDER_ASSIGNMENT:
@@ -326,6 +462,75 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         break;
     }
     return super.visitCompoundAssignment(tree, p);
+  }
+
+  /**
+   * Enforces that only bitwise and shift compound assignments are permitted on a {@link BitPattern}
+   * value: arithmetic compound assignments and string concatenation are forbidden.
+   *
+   * @param tree the compound assignment tree, one of whose operands is a {@code @BitPattern} value
+   * @param kind the kind of the compound assignment tree
+   * @param varType the annotated type of the assigned variable
+   * @param exprType the annotated type of the right-hand side expression
+   */
+  private void checkBitPatternCompoundAssignment(
+      CompoundAssignmentTree tree,
+      Tree.Kind kind,
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror exprType) {
+    switch (kind) {
+      case AND_ASSIGNMENT,
+          OR_ASSIGNMENT,
+          XOR_ASSIGNMENT,
+          LEFT_SHIFT_ASSIGNMENT,
+          RIGHT_SHIFT_ASSIGNMENT,
+          UNSIGNED_RIGHT_SHIFT_ASSIGNMENT ->
+      // Bitwise and shift compound assignments are permitted on @BitPattern values.
+      {}
+      case PLUS_ASSIGNMENT -> {
+        if (TreeUtils.isStringCompoundConcatenation(tree)) {
+          checker.reportError(tree, "bitpattern.concat");
+        } else {
+          checker.reportError(
+              tree,
+              "compound.assignment.bitpattern",
+              kindWithoutAssignment(kind),
+              varType,
+              exprType);
+        }
+      }
+      default ->
+          checker.reportError(
+              tree,
+              "compound.assignment.bitpattern",
+              kindWithoutAssignment(kind),
+              varType,
+              exprType);
+    }
+  }
+
+  /**
+   * Enforces that the arithmetic unary operators ({@literal {++, --, unary -, unary +}}) are not
+   * applied to a {@link BitPattern} value. The bitwise complement operator ({@literal ~}) is
+   * permitted.
+   */
+  @Override
+  public Void visitUnary(UnaryTree tree, Void p) {
+    switch (tree.getKind()) {
+      case PREFIX_INCREMENT,
+          POSTFIX_INCREMENT,
+          PREFIX_DECREMENT,
+          POSTFIX_DECREMENT,
+          UNARY_PLUS,
+          UNARY_MINUS -> {
+        AnnotatedTypeMirror operandType = atypeFactory.getAnnotatedType(tree.getExpression());
+        if (hasBitPatternAnnotation(operandType)) {
+          checker.reportError(tree, "unary.bitpattern", tree.getKind(), operandType);
+        }
+      }
+      default -> {}
+    }
+    return super.visitUnary(tree, p);
   }
 
   @Override
