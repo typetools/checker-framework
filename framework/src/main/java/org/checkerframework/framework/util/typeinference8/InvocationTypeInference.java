@@ -178,7 +178,7 @@ public class InvocationTypeInference {
     if (!paramType.isProper()) {
       return null;
     }
-    // AbstractType.isProper() only means "mentions no inference variable of this problem".  The
+    // AbstractType.isProper() only means "contains no inference variable of this problem".  The
     // target type is derived from the lambda's context, which may include a method type variable
     // belonging to a different, unfinished inference -- for example when the lambda is an argument
     // of a call whose receiver is a generic invocation that is itself under inference and so was
@@ -186,7 +186,7 @@ public class InvocationTypeInference {
     // to instantiate, so this problem has not determined the parameter's type.  Returning it would
     // let the type variable escape as a lambda parameter's type, which later fails in
     // AnnotatedTypes.asMemberOf.
-    if (mentionsMethodTypeVariable(paramType.getJavaType())) {
+    if (containsMethodTypeVariable(paramType.getJavaType())) {
       return null;
     }
     // Copy, because AbstractType.getAnnotatedType() returns a type that inference itself uses: it
@@ -196,51 +196,51 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Returns true if {@code type} mentions a type variable that is declared by a method or
+   * Returns true if {@code type} contains a type variable that is declared by a method or
    * constructor, rather than by a class or interface.
    *
    * <p>Bounds of a type variable are not searched: a type variable is judged only by its own
    * declaration, so that an F-bounded type variable does not cause infinite recursion.
    *
    * @param type a type
-   * @return true if {@code type} mentions a type variable declared by a method or constructor
+   * @return true if {@code type} contains a type variable declared by a method or constructor
    */
-  private static boolean mentionsMethodTypeVariable(TypeMirror type) {
+  private static boolean containsMethodTypeVariable(TypeMirror type) {
     return switch (type.getKind()) {
       case TYPEVAR ->
           ((TypeVariable) type).asElement().getEnclosingElement() instanceof ExecutableElement;
       case DECLARED -> {
         DeclaredType declared = (DeclaredType) type;
-        // The enclosing type carries type arguments of its own: in `Outer<T>.Inner`, `T` is
-        // mentioned only there.  It is a NoType, whose kind falls through to false below, when
-        // there is no enclosing type.
-        yield anyMentionsMethodTypeVariable(declared.getTypeArguments())
-            || mentionsMethodTypeVariable(declared.getEnclosingType());
+        // The enclosing type carries type arguments of its own: in `Outer<T>.Inner`, `T` appears
+        // only there.  It is a NoType, whose kind falls through to false below, when there is no
+        // enclosing type.
+        yield anyContainsMethodTypeVariable(declared.getTypeArguments())
+            || containsMethodTypeVariable(declared.getEnclosingType());
       }
-      case ARRAY -> mentionsMethodTypeVariable(((ArrayType) type).getComponentType());
+      case ARRAY -> containsMethodTypeVariable(((ArrayType) type).getComponentType());
       case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
         yield (wildcard.getExtendsBound() != null
-                && mentionsMethodTypeVariable(wildcard.getExtendsBound()))
+                && containsMethodTypeVariable(wildcard.getExtendsBound()))
             || (wildcard.getSuperBound() != null
-                && mentionsMethodTypeVariable(wildcard.getSuperBound()));
+                && containsMethodTypeVariable(wildcard.getSuperBound()));
       }
-      case INTERSECTION -> anyMentionsMethodTypeVariable(((IntersectionType) type).getBounds());
-      case UNION -> anyMentionsMethodTypeVariable(((UnionType) type).getAlternatives());
+      case INTERSECTION -> anyContainsMethodTypeVariable(((IntersectionType) type).getBounds());
+      case UNION -> anyContainsMethodTypeVariable(((UnionType) type).getAlternatives());
       default -> false;
     };
   }
 
   /**
-   * Returns true if any of {@code types} mentions a type variable that is declared by a method or
+   * Returns true if any of {@code types} contains a type variable that is declared by a method or
    * constructor.
    *
    * @param types some types
-   * @return true if any of {@code types} mentions a type variable declared by a method or
+   * @return true if any of {@code types} contains a type variable declared by a method or
    *     constructor
    */
-  private static boolean anyMentionsMethodTypeVariable(List<? extends TypeMirror> types) {
-    return types.stream().anyMatch(InvocationTypeInference::mentionsMethodTypeVariable);
+  private static boolean anyContainsMethodTypeVariable(List<? extends TypeMirror> types) {
+    return types.stream().anyMatch(InvocationTypeInference::containsMethodTypeVariable);
   }
 
   /**
@@ -734,7 +734,7 @@ public class InvocationTypeInference {
         if (LambdaBodyConstraint.mustDefer(lambda, fi)) {
           // The lambda is implicitly typed and its parameters do not have types yet, so the body
           // cannot be examined.  Defer the body's constraints; JLS 18.5.2.2 resolves this
-          // constraint's input variables -- the variables that the parameter types mention --
+          // constraint's input variables -- the variables that the parameter types contain --
           // before reducing it.  See LambdaBodyConstraint.
           c.add(new LambdaBodyConstraint(lambda, fi));
         } else {
