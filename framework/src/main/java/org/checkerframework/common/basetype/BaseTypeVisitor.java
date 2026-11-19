@@ -3849,7 +3849,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     VariableTree variableTree = bindingPatternTree.getVariable();
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
     AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-    if (!isTypeCastSafe(variableType, typePatternMatchedType(expType))) {
+    if (!isTypePatternSafe(variableType, typePatternMatchedType(expType))) {
       checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
     }
   }
@@ -3885,9 +3885,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     VariableTree variableTree = bindingPattern.getVariable();
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
     AnnotatedTypeMirror selectorType = atypeFactory.getAnnotatedType(selector);
-    if (!isTypeCastSafe(variableType, typePatternMatchedType(selectorType))) {
+    if (!isTypePatternSafe(variableType, typePatternMatchedType(selectorType))) {
       checker.reportWarning(bindingPattern, "case.pattern.unsafe", selectorType, variableTree);
     }
+  }
+
+  /**
+   * Returns true if a type pattern whose binding variable has type {@code variableType} can safely
+   * match a value of type {@code matchedType}. In a hierarchy in which {@code variableType} has a
+   * qualifier parameter, the qualifiers must be invariant, as for a cast.
+   *
+   * @param variableType the type of the binding variable of a type pattern
+   * @param matchedType the type of the values that the type pattern can match
+   * @return true if a type pattern whose binding variable has type {@code variableType} can safely
+   *     match a value of type {@code matchedType}
+   */
+  private boolean isTypePatternSafe(
+      AnnotatedTypeMirror variableType, AnnotatedTypeMirror matchedType) {
+    AnnotationMirrorSet tops = atypeFactory.getQualifierParameterHierarchies(variableType);
+    if (tops.isEmpty()) {
+      return isTypeCastSafe(variableType, matchedType);
+    }
+    for (AnnotationMirror top : tops) {
+      if (!isTypeCastSafeInvariant(variableType, matchedType, top)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

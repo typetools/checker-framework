@@ -1034,7 +1034,10 @@ different defaulting rules. When a local variable has an initializer, the type
 of that initializer is used as the default type of that variable if no other
 annotations are written. For example, in the above code, the type of \<local>
 would be \<@Untainted StringBuffer>. This eliminates the need for type
-refinement.
+refinement.  The binding variable of a type pattern that is not nested in a
+record pattern, such as \<b> in \<o instanceof StringBuffer b>, is treated as
+if its initializer were the expression that the pattern is matched against,
+such as \<o>.
 
 \subsectionAndLabel{Qualifier parameters by default}{default-has-qualifier-parameter}
 
