@@ -485,7 +485,7 @@ final class IgnoredAnnotations {
     if (origin == null) {
       return Collections.emptyMap();
     }
-    Map<AnnotatedTypeMirror, AnnotationMirrorSet> result = new IdentityHashMap<>();
+    IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet> result = new IdentityHashMap<>();
     collectIgnoredPositions(
         origin.getAnnotatedType(),
         atm,
@@ -553,7 +553,8 @@ final class IgnoredAnnotations {
         InferenceType instantiationOrigin = instantiation.getOrigin();
         // An F-bounded variable's instantiation can contain the variable itself.
         if (instantiationOrigin != null && visiting.add(variable)) {
-          Map<AnnotatedTypeMirror, AnnotationMirrorSet> nested = new IdentityHashMap<>();
+          IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet> nested =
+              new IdentityHashMap<>();
           collectIgnoredPositions(
               instantiationOrigin.getAnnotatedType(),
               applied,
