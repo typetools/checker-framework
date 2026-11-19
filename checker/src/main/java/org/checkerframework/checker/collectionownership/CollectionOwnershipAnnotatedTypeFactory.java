@@ -109,11 +109,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
       conditionalBlockToDisposalLoopInfoMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@link DisposalLoopInfo} to the set of methods that the loop body is guaranteed to
-   * call on the iterated element.
+   * Map from a {@link DisposalLoopInfo} to the methods that the loop body definitely calls on the
+   * iterated element, as a Called Methods type.
    */
-  private final IdentityHashMap<DisposalLoopInfo, Set<String>> disposalLoopInfoToCalledMethodsMap =
-      new IdentityHashMap<>();
+  private final IdentityHashMap<DisposalLoopInfo, AnnotationMirror>
+      disposalLoopInfoToCalledMethodsMap = new IdentityHashMap<>();
 
   /**
    * Map from a {@code MethodTree} to the {@link DisposalLoopInfo}s discovered in that method's
@@ -246,14 +246,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns the called-methods on the iterated element for a {@link DisposalLoopInfo}.
+   * Returns true if the body of {@code disposalLoopInfo} definitely calls all of {@code methods} on
+   * every iterated element.
    *
-   * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @return the methods that the loop body is guaranteed to call on the iterated element, or {@code
-   *     null} if {@link #postCFGConstruction} has not recorded the loop
+   * @param disposalLoopInfo a disposal loop
+   * @param methods the names of the methods to check, such as the must-call methods of the
+   *     collection's elements
+   * @return true if the loop body definitely calls all of {@code methods} on every iterated
+   *     element; false if it does not, or if {@link #postCFGConstruction} has not recorded the loop
    */
-  public @Nullable Set<String> getCalledMethods(DisposalLoopInfo disposalLoopInfo) {
-    return disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
+  public boolean callsOnEveryElement(DisposalLoopInfo disposalLoopInfo, List<String> methods) {
+    AnnotationMirror calledMethods = disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
+    if (calledMethods == null) {
+      return false;
+    }
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+    return rlAtf
+        .getQualifierHierarchy()
+        .isSubtypeQualifiersOnly(
+            calledMethods, rlAtf.createCalledMethods(methods.toArray(new String[0])));
   }
 
   /**
@@ -273,15 +285,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * iterated element, indexed by the loop's condition tree and its conditional block.
    *
    * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @param calledMethods the methods that the loop body is guaranteed to call on the iterated
-   *     element
+   * @param calledMethods the methods that the loop body definitely calls on the iterated element,
+   *     as a Called Methods type
    */
-  private void recordDisposalLoop(DisposalLoopInfo disposalLoopInfo, Set<String> calledMethods) {
+  private void recordDisposalLoop(
+      DisposalLoopInfo disposalLoopInfo, AnnotationMirror calledMethods) {
     conditionToDisposalLoopInfoMap.put(disposalLoopInfo.loopConditionTree(), disposalLoopInfo);
     conditionalBlockToDisposalLoopInfoMap.put(
         disposalLoopInfo.loopConditionalBlock(), disposalLoopInfo);
-    disposalLoopInfoToCalledMethodsMap.put(
-        disposalLoopInfo, Collections.unmodifiableSet(new LinkedHashSet<>(calledMethods)));
+    disposalLoopInfoToCalledMethodsMap.put(disposalLoopInfo, calledMethods);
   }
 
   /**
@@ -383,7 +395,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
     for (DisposalLoopInfo disposalLoopInfo : disposalLoopInfos) {
-      Set<String> calledMethods =
+      AnnotationMirror calledMethods =
           mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoopInfo);
       if (calledMethods != null) {
         recordDisposalLoop(disposalLoopInfo, calledMethods);

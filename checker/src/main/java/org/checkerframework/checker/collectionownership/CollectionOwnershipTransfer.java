@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -225,7 +224,7 @@ public class CollectionOwnershipTransfer
   /**
    * May refine the type of the collection to @OwningCollectionWithoutObligation in the else store
    * of the incoming transfer result. Does so if the given AST tree is the condition for a disposal
-   * loop whose MCCA called-methods cover the MustCall type of the collection's elements.
+   * loop whose body definitely calls every must-call method on every element of the collection.
    *
    * @param res the incoming transfer result
    * @param tree the AST tree that may represent a disposal-loop condition
@@ -238,15 +237,13 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipStore elseStore = res.getElseStore();
       ExpressionTree collectionExpression = disposalLoopInfo.expressionTree();
       JavaExpression collectionJE = JavaExpression.fromTree(collectionExpression);
-      Set<String> disposalLoopCalledMethods = atypeFactory.getCalledMethods(disposalLoopInfo);
 
       CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionExpression);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
         List<String> requiredElementMethods =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(collectionExpression);
-        if (disposalLoopCalledMethods != null
-            && requiredElementMethods != null
-            && disposalLoopCalledMethods.containsAll(requiredElementMethods)) {
+        if (requiredElementMethods != null
+            && atypeFactory.callsOnEveryElement(disposalLoopInfo, requiredElementMethods)) {
           elseStore.clearValue(collectionJE);
           elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
           return new ConditionalTransferResult<>(
