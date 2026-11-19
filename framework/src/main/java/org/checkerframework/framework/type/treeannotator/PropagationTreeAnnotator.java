@@ -113,11 +113,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // A boxed initializer is unboxed to its own primitive kind, which might then be
             // widened to the component kind, as in `new long[] {aCharacter}`.
             TypeKind componentKind = componentTM.getKind();
-            TypeKind unboxedKind = TypeKindUtils.primitiveOrBoxedToTypeKind(annosTM);
-            if (unboxedKind == null) {
-              // For example, a type variable whose bound is a boxed primitive.
-              unboxedKind = componentKind;
-            }
+            TypeKind unboxedKind = unboxedKind(annosTM, componentTM);
             annos = atypeFactory.getUnboxedAnnotations(annos, unboxedKind);
             if (unboxedKind != componentKind
                 && TypeKindUtils.isNumeric(unboxedKind)
@@ -230,6 +226,24 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     addAnnoOrBound(componentType, post);
 
     return null;
+  }
+
+  /**
+   * Returns the kind of the primitive type that {@code type} unboxes to. If {@code type} cannot be
+   * unboxed (which should not happen for a legal array initializer), returns the kind of {@code
+   * primitiveComponentType}.
+   *
+   * @param type a non-primitive type, such as {@code Integer} or a type variable whose bound is a
+   *     boxed primitive
+   * @param primitiveComponentType the primitive component type of the array being created
+   * @return the kind of the primitive type that {@code type} unboxes to
+   */
+  private TypeKind unboxedKind(TypeMirror type, TypeMirror primitiveComponentType) {
+    try {
+      return atypeFactory.types.unboxedType(type).getKind();
+    } catch (IllegalArgumentException e) {
+      return primitiveComponentType.getKind();
+    }
   }
 
   @Override
