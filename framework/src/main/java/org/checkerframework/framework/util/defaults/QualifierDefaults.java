@@ -194,6 +194,20 @@ public class QualifierDefaults {
               TypeUseLocation.OTHERWISE,
               TypeUseLocation.ALL));
 
+  /**
+   * Locations whose default annotates a node only while the bounds of a type variable or wildcard
+   * are being traversed, and therefore never annotates the top-level node.
+   */
+  private static final Set<TypeUseLocation> BOUND_LOCATIONS =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              TypeUseLocation.LOWER_BOUND,
+              TypeUseLocation.EXPLICIT_LOWER_BOUND,
+              TypeUseLocation.IMPLICIT_LOWER_BOUND,
+              TypeUseLocation.UPPER_BOUND,
+              TypeUseLocation.EXPLICIT_UPPER_BOUND,
+              TypeUseLocation.IMPLICIT_UPPER_BOUND));
+
   /** List of TypeUseLocations that are valid for unchecked code defaults. */
   private static final List<TypeUseLocation> validUncheckedCodeDefaultLocations =
       List.of(
@@ -1042,7 +1056,9 @@ public class QualifierDefaults {
    * @return a precedence list for {@code defaults}
    */
   private PrecedenceList makePrecedenceList(List<Default> defaults) {
-    return new PrecedenceList(defaults, minimizeDefaults(defaults));
+    // Pass minimizeDefaults a copy, so that an override that modifies its argument cannot shorten
+    // the complete list.
+    return new PrecedenceList(defaults, minimizeDefaults(new ArrayList<>(defaults)));
   }
 
   /**
@@ -1088,6 +1104,14 @@ public class QualifierDefaults {
    * {@link DefaultSet} is sorted by {@link TypeUseLocation} and the cross-node locations all
    * precede the descendant locations. It can happen where two {@link DefaultSet}s are concatenated,
    * because the second one starts over at a low {@link TypeUseLocation}.
+   *
+   * <p>They also differ when the type is a local type variable whose primary annotation is
+   * defaulted, if the type variable is recursive (such as {@code T extends Comparable<T>}), and a
+   * {@link Default} for a bound location precedes a {@link Default} that can annotate the top-level
+   * node. The bounds contain the very same type variable node, so a traversal for the bound {@link
+   * Default} annotates the top-level node first; one traversal for all {@link Default}s instead
+   * reaches the top-level node, and applies the later {@link Default}, before it reaches the
+   * bounds.
    */
   protected static class PrecedenceList {
 
@@ -1109,6 +1133,13 @@ public class QualifierDefaults {
     public final boolean singlePassSafe;
 
     /**
+     * True if one traversal of the type suffices for all of {@link #defaults} even when the type is
+     * a local type variable whose primary annotation is defaulted. This implies {@link
+     * #singlePassSafe}.
+     */
+    public final boolean singlePassSafeForTypeVar;
+
+    /**
      * Creates a PrecedenceList.
      *
      * @param allDefaults every default that applies to the scope, in the order in which to apply
@@ -1125,17 +1156,27 @@ public class QualifierDefaults {
               ? this.defaults
               : allDefaults.toArray(new Default[0]);
       boolean safe = true;
+      boolean safeForTypeVar = true;
       boolean sawDescendantLocation = false;
+      boolean sawBoundLocation = false;
       for (Default def : this.defaults) {
         if (sawDescendantLocation && CROSS_NODE_LOCATIONS.contains(def.location)) {
           safe = false;
+          safeForTypeVar = false;
           break;
+        }
+        if (sawBoundLocation && !BOUND_LOCATIONS.contains(def.location)) {
+          safeForTypeVar = false;
         }
         if (DESCENDANT_LOCATIONS.contains(def.location)) {
           sawDescendantLocation = true;
         }
+        if (BOUND_LOCATIONS.contains(def.location)) {
+          sawBoundLocation = true;
+        }
       }
       this.singlePassSafe = safe;
+      this.singlePassSafeForTypeVar = safeForTypeVar;
     }
   }
 
@@ -1380,7 +1421,9 @@ public class QualifierDefaults {
         for (Default def : precedenceList.allDefaults) {
           applyDefault(def);
         }
-      } else if (precedenceList.singlePassSafe) {
+      } else if (defaultableTypeVar == null
+          ? precedenceList.singlePassSafe
+          : precedenceList.singlePassSafeForTypeVar) {
         if (precedenceList.defaults.length != 0) {
           this.defaults = precedenceList.defaults;
           impl.visit(type, null);
