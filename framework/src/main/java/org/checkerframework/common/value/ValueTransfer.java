@@ -1404,8 +1404,8 @@ public class ValueTransfer extends CFTransfer {
    * @param node the node whose value to update in the store
    */
   private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
-    // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
-    for (Node internal : splitAssignments(node)) {
+    // Refine each node that has the value of `node` when the comparison completes.
+    for (Node internal : nodesWithValueOf(node)) {
       JavaExpression je = JavaExpression.fromNode(internal);
       CFValue currentValueFromStore;
       if (CFAbstractStore.canInsertJavaExpression(je)) {
