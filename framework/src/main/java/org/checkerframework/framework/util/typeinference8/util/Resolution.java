@@ -371,7 +371,7 @@ public final class Resolution {
   }
 
   /**
-   * Returns true if {@code v} has an {@code EQUAL} bound that mentions a capture variable in {@code
+   * Returns true if {@code v} has an {@code EQUAL} bound that contains a capture variable in {@code
    * as} that does not yet have an instantiation.
    *
    * @param v a variable
@@ -381,10 +381,10 @@ public final class Resolution {
    */
   private static boolean hasUnresolvedEqualBoundToCaptureWithin(Variable v, Set<Variable> as) {
     for (AbstractType t : v.getBounds().getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
-      for (Variable mentioned : t.getInferenceVariables()) {
-        if (mentioned.isCaptureVariable()
-            && as.contains(mentioned)
-            && !mentioned.getBounds().hasInstantiation()) {
+      for (Variable contained : t.getInferenceVariables()) {
+        if (contained.isCaptureVariable()
+            && as.contains(contained)
+            && !contained.getBounds().hasInstantiation()) {
           return true;
         }
       }
@@ -616,6 +616,9 @@ public final class Resolution {
     boundSet.removeCaptures(as);
     List<Variable> asList = new ArrayList<>();
     List<AbstractType> typeArg = new ArrayList<>();
+    // The instantiated variables outside `as` that the upper bounds of the fresh type variables
+    // contain.
+    Set<Variable> instantiatedOutsideAs = new LinkedHashSet<>();
 
     for (Variable ai : as) {
       ai.getBounds().applyInstantiationsToBounds();
@@ -659,13 +662,24 @@ public final class Resolution {
       }
 
       Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
-      // Omit bounds that mention variables outside `as`, such as `alpha` in `ai <: alpha`.
-      // TODO: This also omits a bound that mentions an instantiated variable outside `as` whose
-      // instantiation InferenceType#applyInstantiations did not apply, because the instantiation
-      // ignores annotations and the result would not be proper.  The fresh type variable then gets
-      // a weaker upper bound.  Retaining such a bound requires applying that instantiation to the
-      // bound of the fresh type variable, which InferenceFactory#getSubsTypeArgs does not do.
-      upperBounds.removeIf(u -> !as.containsAll(u.getInferenceVariables()));
+      // Omit bounds that contain uninstantiated variables outside `as`, such as `alpha` in
+      // `ai <: alpha`.  A bound can contain an instantiated variable outside `as` whose
+      // instantiation InferenceType#applyInstantiations did not apply, because that instantiation
+      // ignores annotations and the result would not be proper.  Such a bound is kept, and
+      // getSubsTypeArgs below applies the instantiation.  The annotations at the ignored positions
+      // of that instantiation are then treated as real in the bound of the fresh type variable,
+      // and they do not change if the instantiation changes later.
+      upperBounds.removeIf(
+          u ->
+              !u.getInferenceVariables().stream()
+                  .allMatch(v -> as.contains(v) || v.getInstantiation() != null));
+      for (AbstractType u : upperBounds) {
+        for (Variable v : u.getInferenceVariables()) {
+          if (!as.contains(v)) {
+            instantiatedOutsideAs.add(v);
+          }
+        }
+      }
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
         // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
@@ -697,7 +711,8 @@ public final class Resolution {
       typeArg.add(freshTypeVar);
     }
 
-    List<AbstractType> subsTypeArg = context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList);
+    List<AbstractType> subsTypeArg =
+        context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList, instantiatedOutsideAs);
 
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {

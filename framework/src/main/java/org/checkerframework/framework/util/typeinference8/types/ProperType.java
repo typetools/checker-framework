@@ -837,6 +837,10 @@ public class ProperType extends AbstractType {
    */
   @Override
   public AbstractType applyInstantiations() {
+    // TODO: The version covers only the variables that `origin` contains, not the variables in
+    // the origins of their instantiations.  If such a variable's instantiation changes, this type
+    // stays out of date until incorporation refreshes the instantiation that contains it, and an
+    // ignored position found in the meantime may hold an annotation from the old instantiation.
     if (origin == null || instantiationVersion(originVariables) == upToDateVersion) {
       return this;
     }
