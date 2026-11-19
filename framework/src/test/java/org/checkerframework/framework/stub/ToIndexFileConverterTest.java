@@ -1631,6 +1631,70 @@ public class ToIndexFileConverterTest {
     }
   }
 
+  /** A static import makes available a static member type that the imported type inherits. */
+  @Test
+  public void testStaticImportOfInheritedMemberType() throws Exception {
+    String[] importDecls = {
+      "import static java.util.HashMap.SimpleEntry;", "import static java.util.HashMap.*;"
+    };
+    for (String importDecl : importDecls) {
+      String jaif =
+          convert(
+              "package p;",
+              importDecl,
+              "class C {",
+              "  void m(SimpleEntry<String, String> e) {}",
+              "}");
+      assertMethod(jaif, "C", "m(Ljava/util/AbstractMap$SimpleEntry;)V");
+    }
+  }
+
+  /**
+   * A static-import-on-demand does not make available an instance member type, but a
+   * type-import-on-demand does.
+   */
+  @Test
+  public void testStaticImportOnDemandOmitsInstanceMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import static p.Outer.*;",
+            "class Outer {",
+            "  public class String {}",
+            "}",
+            "class C {",
+            "  void m(String s) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    jaif =
+        convert(
+            "package p;",
+            "import p.Outer.*;",
+            "class Outer {",
+            "  public class String {}",
+            "}",
+            "class C {",
+            "  void m(String s) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Outer$String;)V");
+  }
+
+  /** A single-static-import of a field does not shadow a type of the same name. */
+  @Test
+  public void testStaticImportOfFieldDoesNotShadowType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import static p.Constants.String;",
+            "class Constants {",
+            "  public static int String;",
+            "}",
+            "class C {",
+            "  void m(String s) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+  }
+
   /** A static import makes a nested annotation interface available by its simple name. */
   @Test
   public void testStaticImportOfNestedAnnotation() throws Exception {
