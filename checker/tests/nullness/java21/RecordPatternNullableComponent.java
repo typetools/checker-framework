@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
@@ -25,7 +25,7 @@ public class RecordPatternNullableComponent {
 
   void varPattern(Box<@Nullable String> box) {
     if (box instanceof Box(var s)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       s.length();
     }
   }
@@ -42,16 +42,17 @@ public class RecordPatternNullableComponent {
     }
   }
 
-  // The pattern's explicit type arguments give `x` javac's type List<? extends CharSequence>, which
-  // is wider than the inferred List<@Nullable String>.  `x` should have javac's shape with the
-  // inferred qualifiers, List<? extends @Nullable CharSequence>, but it has the type
-  // List<@Nullable String>.  See the TODO in TypeFromMemberVisitor.varPatternType.
-  void varPatternKeepsJavacWildcard(Supplier<List<@Nullable String>> s) {
+  // The pattern's explicit type arguments make javac give `x` the Java type
+  // List<? extends CharSequence>, a Java supertype of the inferred List<@Nullable String>.  `x`
+  // should have javac's Java type with the inferred qualifiers,
+  // List<? extends @Nullable CharSequence>, but `x` has the type List<@Nullable String>.  See the
+  // TODO in `TypeFromMemberVisitor.varPatternType`.
+  void varPatternLosesJavacWildcard(Supplier<List<@Nullable String>> s) {
     if (s instanceof Box<? extends List<? extends CharSequence>>(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.get(0).length();
       // TODO: false positive.
-      // :: error: (assignment)
+      // :: error: [assignment]
       x = new ArrayList<StringBuilder>();
     }
   }
@@ -60,15 +61,15 @@ public class RecordPatternNullableComponent {
   // upward projection of the record component's type instead: List<? extends @Nullable String>.
   void varPatternJavacCapture(Box<List<? extends @Nullable String>> box) {
     if (box instanceof Box(var x)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       x.get(0).length();
       List<? extends @Nullable String> y = x;
     }
   }
 
   // Like other local variables, an unannotated binding variable defaults to @Nullable, so it can be
-  // assigned null.  Dataflow refines it by the qualifier of the record component.
-  void assignNullToNonNullComponent(Box<String> box) {
+  // assigned null.  Dataflow refines the binding variable to the qualifier of the record component.
+  void assignNullToBindingOfNonNullComponent(Box<String> box) {
     if (box instanceof Box(var s)) {
       s.length();
       s = null;
@@ -82,14 +83,14 @@ public class RecordPatternNullableComponent {
   // `String s` is unconditional for the component type, so it matches null.
   void unconditionalTypePattern(Box<@Nullable String> box) {
     if (box instanceof Box(String s)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       s.length();
     }
   }
 
   void unconditionalTypePatternSupertype(Box<@Nullable String> box) {
     if (box instanceof Box(CharSequence s)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       s.length();
     }
   }
@@ -101,9 +102,9 @@ public class RecordPatternNullableComponent {
     }
   }
 
-  // The written type argument makes the component type a capture of `? extends CharSequence`, so
-  // `String s` is not unconditional and does not match null, even though the inferred component
-  // type is `@Nullable String`.
+  // The written type argument makes javac's component type a capture of `? extends CharSequence`,
+  // so `String s` is not unconditional for that type and does not match null, even though the
+  // inferred qualified component type is `@Nullable String`.
   void conditionalWithExplicitTypeArgument(Supplier<@Nullable String> supplier) {
     if (supplier instanceof Box<? extends CharSequence>(String s)) {
       s.length();
@@ -112,21 +113,21 @@ public class RecordPatternNullableComponent {
 
   void switchVarPattern(Box<@Nullable String> box) {
     switch (box) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       case Box(var s) -> s.length();
     }
   }
 
   void switchTypePattern(Box<@Nullable String> box) {
     switch (box) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       case Box(String s) -> s.length();
     }
   }
 
   void nested(Box<Pair<@Nullable String, String>> box) {
     if (box instanceof Box(Pair(var a, String b))) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       a.length();
       b.length();
     }
@@ -134,25 +135,25 @@ public class RecordPatternNullableComponent {
 
   void supertype(Supplier<@Nullable String> supplier) {
     if (supplier instanceof Box(var s)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       s.length();
     }
   }
 
   void wildcard(Supplier<? extends @Nullable String> supplier) {
     if (supplier instanceof Box(String s)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       s.length();
     }
   }
 
   <T extends @Nullable Object> void typeVariable(Box<T> box) {
     if (box instanceof Box(var t)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       t.toString();
     }
     if (box instanceof Box(Object o)) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       o.toString();
     }
   }
@@ -172,7 +173,7 @@ public class RecordPatternNullableComponent {
 
   // The pattern matches null, so an explicit @NonNull is not justified.
   void explicitNonNullUnconditional(Box<@Nullable String> box) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     if (box instanceof Box(@NonNull String s)) {
       s.length();
     }
@@ -185,7 +186,7 @@ public class RecordPatternNullableComponent {
     }
   }
 
-  // `s` is refined by the type of the record component.
+  // Dataflow refines `s` to the qualifier of the record component, @NonNull.
   void explicitNullable(Box<String> box) {
     if (box instanceof Box(@Nullable String s)) {
       s.length();

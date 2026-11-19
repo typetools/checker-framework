@@ -26,14 +26,15 @@ public class InstanceOfPatternInitialization {
   void unknownInitialization(@UnknownInitialization Object o) {
     if (o instanceof String s) {
       @UnknownInitialization String t = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Initialized String u = s;
     }
   }
 
-  // instanceof does not check initialization, so the binding variable cannot be @Initialized.
+  // instanceof does not check initialization, so writing @Initialized on the binding variable is
+  // unsafe.
   void initializedExplicit(@UnknownInitialization Object o) {
-    // :: warning: (instanceof.pattern.unsafe)
+    // :: warning: [instanceof.pattern.unsafe]
     if (o instanceof @Initialized String s) {
       @Initialized String t = s;
     }
@@ -44,7 +45,7 @@ public class InstanceOfPatternInitialization {
   InstanceOfPatternInitialization() {
     if (this instanceof Sub s) {
       @UnderInitialization Sub t = s;
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       s.hashCode();
     }
   }

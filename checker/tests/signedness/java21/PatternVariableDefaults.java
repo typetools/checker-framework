@@ -23,7 +23,7 @@ public class PatternVariableDefaults {
   void localBoxed(@Unsigned Integer u, @Signed Integer s) {
     Object o = u;
     Integer i = (Integer) o;
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     int q = i / 2;
     i = s;
   }
@@ -32,7 +32,7 @@ public class PatternVariableDefaults {
     Object o = u;
     switch (o) {
       case Integer i -> {
-        // :: error: (operation.unsignedlhs)
+        // :: error: [operation.unsignedlhs]
         int q = i / 2;
         i = s;
       }
@@ -43,7 +43,7 @@ public class PatternVariableDefaults {
   void instanceofBoxed(@Unsigned Integer u, @Signed Integer s) {
     Object o = u;
     if (o instanceof Integer i) {
-      // :: error: (operation.unsignedlhs)
+      // :: error: [operation.unsignedlhs]
       int q = i / 2;
       i = s;
     }
@@ -54,7 +54,7 @@ public class PatternVariableDefaults {
   <T extends Number> void localTypeVariable(@Unsigned T x) {
     T t = x;
     @Unsigned T u = t;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Signed T s = t;
   }
 
@@ -62,7 +62,7 @@ public class PatternVariableDefaults {
     switch (x) {
       case T t -> {
         @Unsigned T u = t;
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Signed T s = t;
       }
     }
@@ -71,7 +71,7 @@ public class PatternVariableDefaults {
   <T extends Number> void instanceofTypeVariable(@Unsigned T x) {
     if (x instanceof T t) {
       @Unsigned T u = t;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Signed T s = t;
     }
   }

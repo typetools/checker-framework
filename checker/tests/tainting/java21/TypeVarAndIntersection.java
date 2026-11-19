@@ -29,24 +29,26 @@ public class TypeVarAndIntersection {
   }
 
   /**
-   * T is Object: no constraint on alpha except its declared bound, so the pattern type is {@code
-   * Box<?>} and `s` is only known to be a top-qualified Object.
+   * The matched type is Object, so the only bound on alpha, the inference variable for Box's type
+   * parameter (JLS 18.5.5), comes from the declared bound of that type parameter. The pattern type
+   * is {@code Box<?>}, and `s` is only known to be a top-qualified Object.
    */
   static void matchedAgainstObject(@Tainted Object o) {
     if (o instanceof Box(var s)) {
       @Tainted Object oo = s;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = s;
     }
   }
 
   /**
-   * Even when the scrutinee is @Untainted, its type argument is unknown, so the component type is
-   * still top-qualified. (The @Untainted on `o` describes the Box, not its contents.)
+   * Even when the matched expression is @Untainted, Box's type argument is unknown, so the
+   * component type is still top-qualified. (The @Untainted on `o` describes the Box, not its
+   * contents.)
    */
   static void matchedAgainstUntaintedObject(@Untainted Object o) {
     if (o instanceof Box(var s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = s;
     }
   }
@@ -61,18 +63,22 @@ public class TypeVarAndIntersection {
   }
 
   /**
-   * T is an interface type that is not parameterized, although its supertype {@code
-   * Supplier<@Untainted String>} is. T' is T, which is not a parameterization of a generic class,
-   * so step 4 adds no constraint, and alpha has only its declared bound.
+   * The matched type is an interface type that is not parameterized, although its supertype {@code
+   * Supplier<@Untainted String>} is. T' is the matched type, which is not a parameterization of a
+   * generic class, so step 4 adds no constraint, and the only bound on alpha comes from the
+   * declared bound of Holder's type parameter.
    */
   static void matchedAgainstNonGenericInterface(UntaintedStringSupplier u) {
     if (u instanceof Holder(var t)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted Object bad = t;
     }
   }
 
-  /** T is a type variable; its upper bound is a parameterization of the record's supertype. */
+  /**
+   * The matched type is a type variable whose upper bound is a parameterization of Supplier, a
+   * supertype of Producer.
+   */
   static <Q extends Supplier<@Untainted String>> void typeVariable(Q q) {
     if (q instanceof Producer(var v)) {
       @Untainted String vv = v;
@@ -81,15 +87,16 @@ public class TypeVarAndIntersection {
 
   static <Q extends Supplier<@Tainted String>> void typeVariableTainted(Q q) {
     if (q instanceof Producer(var v)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String vv = v;
     }
   }
 
   /**
-   * T is a type variable whose bound is an intersection type; only one element is relevant.
+   * The matched type is a type variable whose bound is an intersection type; only one element is
+   * relevant.
    *
-   * <p>(The bounds are written Cloneable-first because javac rejects some other orderings with "Q
+   * <p>(The bounds are written Cloneable-first because javac rejects the other ordering with "Q
    * cannot be safely cast to Producer<String>"; that is javac's intersection cast-safety check, not
    * a property of 18.5.5 inference.)
    */
@@ -130,15 +137,15 @@ public class TypeVarAndIntersection {
   /**
    * This is legal Java (the two interfaces have different erasures), but the two elements of the
    * intersection put contradictory bounds on alpha: alpha = @Untainted String from one and alpha
-   * = @Tainted String from the other. Unannotated inference sees alpha = String either way and
-   * succeeds. Annotated inference fails, and the pattern gets its Java type with default
-   * qualifiers, so `a` is @Tainted.
+   * = @Tainted String from the other. javac's inference sees alpha = String either way and
+   * succeeds. The Checker Framework's qualified inference fails, and the pattern gets its Java type
+   * with default qualifiers, so `a` is @Tainted.
    */
   static <Q extends Supplier<@Untainted String> & Consumer<@Tainted String>>
       void inconsistentIntersection(Q q) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     if (q instanceof Both(var a)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String aa = a;
     }
   }

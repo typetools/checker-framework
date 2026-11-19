@@ -5,8 +5,9 @@
 // @infer-stubs-skip-test
 
 // Tests for the qualifiers of type patterns nested in a record pattern. A nested type pattern that
-// is unconditional for its record component always matches, so binding it is an assignment. One
-// that is not unconditional is checked like a type pattern in an instanceof.
+// is unconditional for its record component always matches, so the checker treats initializing its
+// pattern variable as an assignment from the record component. The checker checks a nested type
+// pattern that is not unconditional like a type pattern in an instanceof.
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
@@ -15,11 +16,9 @@ public class NestedTypePatterns {
 
   record Box<T>(T t) {}
 
-  record ObjectBox(Object o) {}
-
   static void unconditional(Box<@Tainted String> b) {
     if (b instanceof Box(String s)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String ss = s;
     }
   }
@@ -29,13 +28,8 @@ public class NestedTypePatterns {
   }
 
   static void unconditionalExplicitBad(Box<@Tainted String> b) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     if (b instanceof Box(@Untainted String s)) {}
-  }
-
-  static void conditionalExplicitBad(ObjectBox b) {
-    // :: warning: (instanceof.pattern.unsafe)
-    if (b instanceof ObjectBox(@Untainted String s)) {}
   }
 
   static void conditionalExplicitGood(Box<@Untainted Object> b) {

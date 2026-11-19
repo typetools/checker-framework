@@ -33,7 +33,7 @@ public class NestedBindingVariableDefault {
     switch (o) {
       case Box(Token t, NotInterned n) -> {
         take(t);
-        // :: error: (argument)
+        // :: error: [argument]
         takeNotInterned(n);
       }
       default -> {}

@@ -24,7 +24,7 @@ public class InstanceOfDeconstructionAnnotated {
   // A pattern that is not unconditional for its component tests the component's Java type, as
   // instanceof does, and is checked like a type pattern in instanceof.
   void conditional(Object o) {
-    // :: warning: [instanceof.pattern.unsafe]
+    // :: warning: [nested.pattern.unsafe]
     if (o instanceof Wrapper(@Untainted String s)) {
       isUntainted(s);
     }

@@ -31,15 +31,15 @@ public class CaseLabelPatternInitialization {
     switch (o) {
       case Sub s -> {
         @UnknownInitialization(Base.class) Sub t = s;
-        // :: error: (assignment)
+        // :: error: [assignment]
         @Initialized Sub u = s;
       }
       default -> {}
     }
   }
 
-  // A type pattern nested in a record pattern that is not unconditional for its record component
-  // does not match null, so the binding variable is non-null.
+  // A nested type pattern that is not unconditional for the type of its record component does not
+  // match null, so the binding variable is non-null.
   void nested(Box b) {
     if (b instanceof Box(String s)) {
       s.length();

@@ -435,9 +435,9 @@ public class NullnessVisitor
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, validate the reference type and scan the expression and the pattern or type.
     Tree patternTree = tree.getPattern();
-    // super.visitInstanceOf is not called, so check the binding variable here.
+    // Check the binding variable, as `super.visitInstanceOf` would.
     if (patternTree instanceof BindingPatternTree) {
-      checkInstanceOfPattern(tree);
+      checkInstanceofPattern(tree);
     }
     if (patternTree == null) {
       validateTypeOf(refTypeTree);
@@ -448,9 +448,11 @@ public class NullnessVisitor
   }
 
   @Override
-  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
-    // instanceof is false for null (JLS 15.20.2), so the nullness qualifier of the left operand
-    // does not restrict the binding variable.
+  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
+    // A type pattern in an instanceof (JLS 15.20.2), or a nested type pattern that is not
+    // unconditional for the type of its record component (JLS 14.30.2), does not match null, so
+    // the nullness qualifier of the value that the pattern is matched against does not restrict
+    // the binding variable.
     return withNonNull(expType);
   }
 

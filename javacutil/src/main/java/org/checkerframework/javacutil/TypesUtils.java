@@ -1967,8 +1967,9 @@ public final class TypesUtils {
    * same name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror,
    * TypeMirror)}, they do not have to be the same object.
    *
-   * <p>Captured type variables, including fresh type variables, all have the same name and
-   * enclosing element, so two of them are the same only if they have the same element.
+   * <p>Captured type variables (including the fresh type variables that the Checker Framework's
+   * type inference creates) all have the same name and enclosing element, so two of them are the
+   * same only if they have the same element.
    *
    * <p>This method is needed when a type has gone through type variable substitution, but only some
    * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
@@ -1984,7 +1985,8 @@ public final class TypesUtils {
     if (typeVariable1 == typeVariable2) {
       return true;
     }
-    if (isCapturedElement(typeVariable1) || isCapturedElement(typeVariable2)) {
+    if (hasCapturedTypeVariableElement(typeVariable1)
+        || hasCapturedTypeVariableElement(typeVariable2)) {
       return typeVariable1.asElement().equals(typeVariable2.asElement());
     }
     Name otherName = typeVariable2.asElement().getSimpleName();
@@ -2007,13 +2009,13 @@ public final class TypesUtils {
    * @return a hash code consistent with {@code areSame}
    */
   public static int hashCodeForAreSame(TypeVariable typeVariable) {
+    Element element = typeVariable.asElement();
+    if (hasCapturedTypeVariableElement(typeVariable)) {
+      return System.identityHashCode(element);
+    }
     // areSame compares asElement()'s getSimpleName() and getEnclosingElement().  The name is
     // converted to a String because areSame compares names with Name.contentEquals, and Name does
     // not specify that its hashCode is consistent with contentEquals.
-    Element element = typeVariable.asElement();
-    if (isCapturedElement(typeVariable)) {
-      return System.identityHashCode(element);
-    }
     return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 
@@ -2023,8 +2025,8 @@ public final class TypesUtils {
    * @param typeVariable a type variable
    * @return true if the element of {@code typeVariable} is the element of a captured type variable
    */
-  private static boolean isCapturedElement(TypeVariable typeVariable) {
-    // typeVariable need not be a javac type, but its element's type is.
+  private static boolean hasCapturedTypeVariableElement(TypeVariable typeVariable) {
+    // `typeVariable` need not be a javac type, but its element's type is.
     return isCapturedTypeVariable(typeVariable.asElement().asType());
   }
 }

@@ -4,8 +4,8 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -28,37 +28,46 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Computes the upward and downward projections of annotated types, as defined in <a
- * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>.
- * The restricted type variables are the captured type variables, including the fresh type variables
- * that type inference creates, except for any that are explicitly left unrestricted.
+ * Computes the upward projection of an annotated type, and the downward projections that it uses,
+ * as defined in <a
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>. A
+ * projection is with respect to a set of restricted type variables: either every captured type
+ * variable, including the fresh type variables that the Checker Framework's type inference creates,
+ * or the type variables that the caller passes to {@link #upward(AnnotatedTypeFactory,
+ * AnnotatedTypeMirror, Collection)}.
  *
- * <p>JLS 4.10.5 defines projection only for Java types. This class chooses the annotations of the
- * result as follows:
+ * <p>JLS 4.10.5 defines projection only for Java types. This class handles annotations as follows:
  *
  * <ul>
- *   <li>The projection of a restricted type variable that has primary annotations has those
- *       annotations, not the annotations of the projection of its bound.
- *   <li>A wildcard whose Java type is {@code ?} or {@code ? super L} has the upper bound {@code
- *       Object}, with the primary annotations of the projection of the type argument or wildcard
- *       bound that the wildcard replaces. Those annotations can be more precise than the
- *       annotations of the declared bound of the type parameter.
- *   <li>A wildcard with no lower bound has the null type, with the bottom annotations, as its lower
- *       bound.
- *   <li>The conditions of JLS 4.10.5 that compare types, such as whether a declared bound is a
- *       subtype of U, compare Java types and ignore annotations.
+ *   <li>The upward projection of a restricted type variable that has primary annotations has those
+ *       annotations, not the annotations of the upward projection of the type variable's upper
+ *       bound. Likewise, the downward projection of such a type variable has its primary
+ *       annotations, not the annotations of the downward projection of its lower bound.
+ *   <li>A wildcard that this class creates and whose Java type is {@code ?} or a {@code ? super}
+ *       wildcard has the upper bound {@code Object}, with the effective annotations (see {@link
+ *       AnnotatedTypeMirror#getAnnotations}) of the projection of the type argument that the
+ *       wildcard replaces, or of that type argument's extends bound if the type argument is a
+ *       wildcard. Those annotations can be more precise than the annotations of the corresponding
+ *       type parameter's declared bound.
+ *   <li>A wildcard that this class creates and whose Java type has no {@code super} bound has, as
+ *       its lower bound, the null type with the bottom annotations.
+ *   <li>The conditions of JLS 4.10.5 that compare types, such as whether the declared bound of a
+ *       type parameter is a subtype of the upward projection of the type argument for that type
+ *       parameter, compare Java types and ignore annotations.
  * </ul>
  *
  * <p>This class also differs from JLS 4.10.5 in two ways:
  *
  * <ul>
  *   <li>The upward projection of a restricted type variable is the upward projection of its upper
- *       bound, which can mention the type variable itself, as in {@code T extends Comparable<T>}.
- *       JLS 4.10.5 does not say how this recursion ends. In this class, the upward projection of a
- *       type variable that is reached again while its own upward projection is being computed is
- *       the erasure of its leftmost bound.
- *   <li>Where JLS 4.10.5 gives {@code ? extends U} and U is an intersection type, this class gives
- *       {@code ?}, because the bound of a wildcard cannot be an intersection type.
+ *       bound, which can mention the type variable itself, as in the capture of {@code C<?>} where
+ *       {@code class C<T extends Comparable<T>>}. JLS 4.10.5 notes that this recursion can produce
+ *       an infinite type. If computing the upward projection of a restricted type variable T needs
+ *       the upward projection of T again, this class uses the erasure of T's leftmost bound as the
+ *       inner projection.
+ *   <li>Where JLS 4.10.5 gives a wildcard {@code ? extends U} whose bound U is an intersection
+ *       type, this class gives {@code ?}, because the bound of a wildcard cannot be an intersection
+ *       type.
  * </ul>
  */
 public final class AnnotatedTypeProjection {
@@ -72,29 +81,31 @@ public final class AnnotatedTypeProjection {
   /** The javac type utilities. */
   private final com.sun.tools.javac.code.Types javacTypes;
 
-  /** The captured type variables that are not restricted. */
-  private final Collection<TypeVariable> unrestricted;
+  /** The restricted type variables, or null if every captured type variable is restricted. */
+  private final @Nullable Collection<TypeVariable> restricted;
 
   /**
-   * The restricted type variables whose upward projection is being computed. Projecting one of
-   * these again would not terminate, because its bound mentions itself.
+   * The restricted type variables whose upward projection is being computed. Computing the upward
+   * projection of one of these type variables again would not terminate, because its upper bound
+   * mentions the type variable.
    */
-  private final List<TypeVariable> inProgress = new ArrayList<>();
+  private final List<TypeVariable> typeVariablesBeingProjected = new ArrayList<>();
 
   /**
    * Creates an {@code AnnotatedTypeProjection}.
    *
    * @param atypeFactory the type factory
-   * @param unrestricted the captured type variables that are not restricted
+   * @param restricted the restricted type variables, or null if every captured type variable is
+   *     restricted
    */
   private AnnotatedTypeProjection(
-      AnnotatedTypeFactory atypeFactory, Collection<TypeVariable> unrestricted) {
+      AnnotatedTypeFactory atypeFactory, @Nullable Collection<TypeVariable> restricted) {
     this.atypeFactory = atypeFactory;
     this.types = atypeFactory.types;
     this.javacTypes =
         com.sun.tools.javac.code.Types.instance(
             ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext());
-    this.unrestricted = unrestricted;
+    this.restricted = restricted;
   }
 
   /**
@@ -107,28 +118,28 @@ public final class AnnotatedTypeProjection {
    */
   public static AnnotatedTypeMirror upward(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type) {
-    return upward(atypeFactory, type, Collections.emptyList());
+    return new AnnotatedTypeProjection(atypeFactory, null).upward(type);
   }
 
   /**
-   * Returns the upward projection of {@code type} with respect to all captured type variables
-   * except {@code unrestricted}: a supertype of {@code type} that does not mention any captured
-   * type variable other than those in {@code unrestricted}.
+   * Returns the upward projection of {@code type} with respect to the type variables in {@code
+   * restricted}: a supertype of {@code type} that does not mention any of them.
    *
    * @param atypeFactory the type factory
    * @param type the type to project; not a wildcard
-   * @param unrestricted the captured type variables that are not restricted
+   * @param restricted the restricted type variables
    * @return the upward projection of {@code type}
    */
   public static AnnotatedTypeMirror upward(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedTypeMirror type,
-      Collection<TypeVariable> unrestricted) {
-    return new AnnotatedTypeProjection(atypeFactory, unrestricted).upward(type);
+      Collection<TypeVariable> restricted) {
+    return new AnnotatedTypeProjection(atypeFactory, restricted).upward(type);
   }
 
   /**
-   * Returns the upward projection of {@code type}.
+   * Returns the upward projection of {@code type} with respect to the restricted type variables
+   * (see {@link #restricted}).
    *
    * @param type the type to project; not a wildcard
    * @return the upward projection of {@code type}
@@ -142,7 +153,7 @@ public final class AnnotatedTypeProjection {
         AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) type;
         TypeVariable javaType = typeVariable.getUnderlyingType();
         AnnotatedTypeMirror result;
-        if (isInProgress(javaType)) {
+        if (isUpwardProjectionInProgress(javaType)) {
           // The erasure of a type variable is the erasure of its leftmost bound (JLS 4.6).
           AnnotatedTypeMirror leftmostBound = typeVariable.getUpperBound();
           if (leftmostBound.getKind() == TypeKind.INTERSECTION) {
@@ -150,9 +161,9 @@ public final class AnnotatedTypeProjection {
           }
           result = leftmostBound.getErased();
         } else {
-          inProgress.add(javaType);
+          typeVariablesBeingProjected.add(javaType);
           result = upward(typeVariable.getUpperBound());
-          inProgress.remove(inProgress.size() - 1);
+          typeVariablesBeingProjected.remove(typeVariablesBeingProjected.size() - 1);
         }
         if (!typeVariable.getPrimaryAnnotations().isEmpty()) {
           result.replaceAnnotations(typeVariable.getPrimaryAnnotations());
@@ -166,7 +177,7 @@ public final class AnnotatedTypeProjection {
           typeArgs.add(upwardTypeArgument(declaredType, i));
         }
         AnnotatedDeclaredType enclosingType = declaredType.getEnclosingType();
-        return withTypeArguments(
+        return withEnclosingTypeAndTypeArguments(
             declaredType,
             enclosingType == null ? null : (AnnotatedDeclaredType) upward(enclosingType),
             typeArgs);
@@ -182,50 +193,50 @@ public final class AnnotatedTypeProjection {
         }
         return withBounds((AnnotatedIntersectionType) type, bounds);
       }
-      // A wildcard is a type argument, not a type; upwardTypeArgument projects wildcards.
+      // A wildcard is a type argument, not a type; `upwardTypeArgument` projects wildcards.
       case WILDCARD -> throw new BugInCF("Upward projection of a wildcard: %s", type);
-      default -> {
-        return type.deepCopy();
-      }
+      default -> throw new BugInCF("Upward projection of a %s: %s", type.getKind(), type);
     }
   }
 
   /**
-   * Returns the type argument of the upward projection of {@code type} at index {@code i}.
+   * Returns the type argument at index {@code typeArgIndex} of the upward projection of {@code
+   * type}.
    *
    * @param type a parameterized type
-   * @param i the index of a type argument of {@code type}
-   * @return the type argument of the upward projection of {@code type} at index {@code i}
+   * @param typeArgIndex the index of a type argument of {@code type}
+   * @return the type argument at index {@code typeArgIndex} of the upward projection of {@code
+   *     type}
    */
-  private AnnotatedTypeMirror upwardTypeArgument(AnnotatedDeclaredType type, int i) {
-    AnnotatedTypeMirror typeArg = type.getTypeArguments().get(i);
+  private AnnotatedTypeMirror upwardTypeArgument(AnnotatedDeclaredType type, int typeArgIndex) {
+    AnnotatedTypeMirror typeArg = type.getTypeArguments().get(typeArgIndex);
     if (!mentionsRestricted(typeArg.getUnderlyingType())) {
       return typeArg.deepCopy();
     }
     if (typeArg.getKind() == TypeKind.WILDCARD) {
       AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typeArg;
-      AnnotatedTypeMirror upper = upward(wildcard.getExtendsBound());
+      AnnotatedTypeMirror upperBound = upward(wildcard.getExtendsBound());
       if (wildcard.getUnderlyingType().getSuperBound() == null) {
-        return createWildcard(upper, null, true);
+        return createWildcard(upperBound, null, true);
       }
-      return createWildcard(upper, downward(wildcard.getSuperBound()), false);
+      return createWildcard(upperBound, downward(wildcard.getSuperBound()), false);
     }
 
-    AnnotatedTypeMirror upper = upward(typeArg);
-    TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
-    TypeParameterElement typeParameter = element.getTypeParameters().get(i);
+    AnnotatedTypeMirror projectedTypeArg = upward(typeArg);
+    TypeElement classOrInterface = (TypeElement) type.getUnderlyingType().asElement();
+    TypeParameterElement typeParameter = classOrInterface.getTypeParameters().get(typeArgIndex);
     TypeMirror declaredBound = ((TypeVariable) typeParameter.asType()).getUpperBound();
-    if (!TypesUtils.isObject(upper.getUnderlyingType())
-        && (mentionsTypeParameter(declaredBound, element)
-            || !types.isSubtype(declaredBound, upper.getUnderlyingType()))) {
-      return createWildcard(upper, null, true);
+    if (!TypesUtils.isObject(projectedTypeArg.getUnderlyingType())
+        && (mentionsTypeParameter(declaredBound, classOrInterface)
+            || !types.isSubtype(declaredBound, projectedTypeArg.getUnderlyingType()))) {
+      return createWildcard(projectedTypeArg, null, true);
     }
-    return createWildcard(upper, downward(typeArg), false);
+    return createWildcard(projectedTypeArg, downward(typeArg), false);
   }
 
   /**
-   * Returns the downward projection of {@code type} with respect to all captured type variables, or
-   * null if it is undefined.
+   * Returns the downward projection of {@code type} with respect to the restricted type variables,
+   * or null if it is undefined.
    *
    * @param type a type
    * @return the downward projection of {@code type}, or null if it is undefined
@@ -266,11 +277,11 @@ public final class AnnotatedTypeProjection {
           } else {
             AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typeArg;
             if (wildcard.getUnderlyingType().getSuperBound() == null) {
-              AnnotatedTypeMirror upper = downward(wildcard.getExtendsBound());
-              if (upper == null) {
+              AnnotatedTypeMirror upperBound = downward(wildcard.getExtendsBound());
+              if (upperBound == null) {
                 return null;
               }
-              typeArgs.add(createWildcard(upper, null, true));
+              typeArgs.add(createWildcard(upperBound, null, true));
             } else {
               typeArgs.add(
                   createWildcard(
@@ -278,12 +289,14 @@ public final class AnnotatedTypeProjection {
             }
           }
         }
-        return withTypeArguments(declaredType, projectedEnclosingType, typeArgs);
+        return withEnclosingTypeAndTypeArguments(declaredType, projectedEnclosingType, typeArgs);
       }
       case ARRAY -> {
         AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
-        AnnotatedTypeMirror componentType = downward(arrayType.getComponentType());
-        return componentType == null ? null : withComponentType(arrayType, componentType);
+        AnnotatedTypeMirror projectedComponentType = downward(arrayType.getComponentType());
+        return projectedComponentType == null
+            ? null
+            : withComponentType(arrayType, projectedComponentType);
       }
       case INTERSECTION -> {
         List<AnnotatedTypeMirror> bounds = new ArrayList<>();
@@ -296,51 +309,63 @@ public final class AnnotatedTypeProjection {
         }
         return withBounds((AnnotatedIntersectionType) type, bounds);
       }
-      default -> {
-        return null;
-      }
+      default -> throw new BugInCF("Downward projection of a %s: %s", type.getKind(), type);
     }
   }
 
   /**
-   * Creates a wildcard. Its Java type is {@code ? super lower} if {@code lower} is non-null, {@code
-   * ? extends upper} if {@code extendsUpper} is true and {@code upper} is not an intersection type,
-   * and {@code ?} otherwise. Its annotated upper bound is {@code upper} if its Java type is {@code
-   * ? extends upper}, and otherwise {@code Object} with the qualifiers of {@code upper}.
+   * Creates a wildcard. Its Java type is:
    *
-   * @param upper the upper bound of the wildcard
-   * @param lower the lower bound of the wildcard, or null if it has none
-   * @param extendsUpper true if the Java type of the wildcard should be {@code ? extends upper};
-   *     ignored if {@code lower} is non-null
-   * @return a wildcard with the given bounds
+   * <ul>
+   *   <li>{@code ? super lowerBound}, if {@code lowerBound} is non-null;
+   *   <li>{@code ? extends upperBound}, if {@code lowerBound} is null, {@code preferExtendsBound}
+   *       is true, and {@code upperBound} is not an intersection type;
+   *   <li>{@code ?}, otherwise.
+   * </ul>
+   *
+   * <p>Its annotated upper bound is {@code upperBound} if its Java type is {@code ? extends
+   * upperBound}, and otherwise {@code Object} with the effective annotations of {@code upperBound}.
+   * Its annotated lower bound is {@code lowerBound} if {@code lowerBound} is non-null, and
+   * otherwise the null type with the bottom annotations.
+   *
+   * @param upperBound the upper bound of the wildcard if its Java type is {@code ? extends
+   *     upperBound}; otherwise, the source of the annotations on its {@code Object} upper bound
+   * @param lowerBound the lower bound of the wildcard, or null if its Java type has no lower bound
+   * @param preferExtendsBound if true, the Java type of the wildcard is {@code ? extends
+   *     upperBound} unless {@code lowerBound} is non-null or {@code upperBound} is an intersection
+   *     type; if false, the Java type of the wildcard is {@code ? super lowerBound} or {@code ?}
+   * @return the wildcard described above
    */
   private AnnotatedWildcardType createWildcard(
-      AnnotatedTypeMirror upper, @Nullable AnnotatedTypeMirror lower, boolean extendsUpper) {
+      AnnotatedTypeMirror upperBound,
+      @Nullable AnnotatedTypeMirror lowerBound,
+      boolean preferExtendsBound) {
     // A wildcard's bound cannot be an intersection type, so `?` stands in for `? extends A & B`.
-    boolean isExtendsUpper =
-        lower == null && extendsUpper && upper.getKind() != TypeKind.INTERSECTION;
+    boolean hasExtendsBound =
+        lowerBound == null && preferExtendsBound && upperBound.getKind() != TypeKind.INTERSECTION;
     TypeMirror javaType =
         TypesUtils.createWildcard(
-            lower == null ? null : lower.getUnderlyingType(),
-            isExtendsUpper ? upper.getUnderlyingType() : null,
+            lowerBound == null ? null : lowerBound.getUnderlyingType(),
+            hasExtendsBound ? upperBound.getUnderlyingType() : null,
             types);
     AnnotatedWildcardType wildcard =
         (AnnotatedWildcardType) AnnotatedTypeMirror.createType(javaType, atypeFactory, false);
-    if (lower == null) {
-      lower = AnnotatedTypeMirror.createType(types.getNullType(), atypeFactory, false);
-      lower.addAnnotations(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
+    if (lowerBound == null) {
+      lowerBound = AnnotatedTypeMirror.createType(types.getNullType(), atypeFactory, false);
+      lowerBound.addAnnotations(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
     }
-    if (isExtendsUpper) {
-      wildcard.setExtendsBound(upper);
+    if (hasExtendsBound) {
+      wildcard.setExtendsBound(upperBound);
     } else {
-      // See the class Javadoc for why the Object bound has the qualifiers of `upper`.
-      AnnotatedTypeMirror object =
+      // See the class Javadoc for why the Object bound has the effective annotations of
+      // `upperBound`.
+      AnnotatedTypeMirror objectUpperBound =
           AnnotatedTypeMirror.createType(
               TypesUtils.getObjectTypeMirror(atypeFactory.getProcessingEnv()), atypeFactory, false);
-      object.addAnnotations(upper.getAnnotations());
-      wildcard.setExtendsBound(object);
+      objectUpperBound.addAnnotations(upperBound.getAnnotations());
+      wildcard.setExtendsBound(objectUpperBound);
     }
-    wildcard.setSuperBound(lower);
+    wildcard.setSuperBound(lowerBound);
     return wildcard;
   }
 
@@ -354,7 +379,7 @@ public final class AnnotatedTypeProjection {
    * @return a copy of {@code type} whose enclosing type is {@code enclosingType} and whose type
    *     arguments are {@code typeArgs}
    */
-  private AnnotatedDeclaredType withTypeArguments(
+  private AnnotatedDeclaredType withEnclosingTypeAndTypeArguments(
       AnnotatedDeclaredType type,
       @Nullable AnnotatedDeclaredType enclosingType,
       List<AnnotatedTypeMirror> typeArgs) {
@@ -363,17 +388,12 @@ public final class AnnotatedTypeProjection {
     for (int i = 0; i < typeArgs.size(); i++) {
       javaTypeArgs[i] = typeArgs.get(i).getUnderlyingType();
     }
-    TypeElement element = (TypeElement) javaType.asElement();
-    DeclaredType newJavaType;
-    if (javaType.getEnclosingType().getKind() == TypeKind.DECLARED) {
-      DeclaredType javaEnclosingType =
-          enclosingType == null
-              ? (DeclaredType) javaType.getEnclosingType()
-              : enclosingType.getUnderlyingType();
-      newJavaType = types.getDeclaredType(javaEnclosingType, element, javaTypeArgs);
-    } else {
-      newJavaType = types.getDeclaredType(element, javaTypeArgs);
-    }
+    TypeElement classOrInterface = (TypeElement) javaType.asElement();
+    DeclaredType newJavaType =
+        enclosingType == null
+            ? types.getDeclaredType(classOrInterface, javaTypeArgs)
+            : types.getDeclaredType(
+                enclosingType.getUnderlyingType(), classOrInterface, javaTypeArgs);
     AnnotatedDeclaredType result =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(newJavaType, atypeFactory, false);
     result.addAnnotations(type.getPrimaryAnnotations());
@@ -385,12 +405,13 @@ public final class AnnotatedTypeProjection {
   }
 
   /**
-   * Returns a copy of {@code type} whose bounds are {@code bounds}. A bound that is itself an
-   * intersection type contributes its own bounds.
+   * Returns a copy of {@code type} whose bounds are {@code bounds}, with each intersection type in
+   * {@code bounds} replaced by its bounds.
    *
    * @param type an intersection type
    * @param bounds the new bounds
-   * @return a copy of {@code type} whose bounds are {@code bounds}
+   * @return a copy of {@code type} whose bounds are {@code bounds}, with each intersection type in
+   *     {@code bounds} replaced by its bounds
    */
   private AnnotatedIntersectionType withBounds(
       AnnotatedIntersectionType type, List<AnnotatedTypeMirror> bounds) {
@@ -438,9 +459,34 @@ public final class AnnotatedTypeProjection {
    * @param typeVariable a type variable
    * @return true if the upward projection of {@code typeVariable} is being computed
    */
-  private boolean isInProgress(TypeVariable typeVariable) {
-    for (TypeVariable t : inProgress) {
-      if (TypesUtils.areSame(t, typeVariable)) {
+  private boolean isUpwardProjectionInProgress(TypeVariable typeVariable) {
+    return containsSame(typeVariablesBeingProjected, typeVariable);
+  }
+
+  /**
+   * Returns true if {@code typeVariable} is restricted.
+   *
+   * @param typeVariable a type variable
+   * @return true if {@code typeVariable} is restricted
+   */
+  private boolean isRestricted(TypeVariable typeVariable) {
+    return restricted == null
+        ? TypesUtils.isCapturedTypeVariable(typeVariable)
+        : containsSame(restricted, typeVariable);
+  }
+
+  /**
+   * Returns true if {@code typeVariables} contains a type variable that is the same as {@code
+   * typeVariable}, according to {@link TypesUtils#areSame}.
+   *
+   * @param typeVariables a collection of type variables
+   * @param typeVariable a type variable
+   * @return true if {@code typeVariables} contains {@code typeVariable}
+   */
+  private static boolean containsSame(
+      Collection<TypeVariable> typeVariables, TypeVariable typeVariable) {
+    for (TypeVariable candidate : typeVariables) {
+      if (TypesUtils.areSame(candidate, typeVariable)) {
         return true;
       }
     }
@@ -454,84 +500,56 @@ public final class AnnotatedTypeProjection {
    * @return true if {@code type} mentions a restricted type variable
    */
   private boolean mentionsRestricted(TypeMirror type) {
-    switch (type.getKind()) {
-      case TYPEVAR -> {
-        if (!TypesUtils.isCapturedTypeVariable(type)) {
-          return false;
-        }
-        for (TypeVariable t : unrestricted) {
-          if (TypesUtils.areSame(t, (TypeVariable) type)) {
-            return false;
-          }
-        }
-        return true;
-      }
-      case DECLARED -> {
-        DeclaredType declaredType = (DeclaredType) type;
-        for (TypeMirror typeArg : declaredType.getTypeArguments()) {
-          if (mentionsRestricted(typeArg)) {
-            return true;
-          }
-        }
-        return mentionsRestricted(declaredType.getEnclosingType());
-      }
-      case ARRAY -> {
-        return mentionsRestricted(((ArrayType) type).getComponentType());
-      }
-      case WILDCARD -> {
-        WildcardType wildcard = (WildcardType) type;
-        return (wildcard.getExtendsBound() != null
-                && mentionsRestricted(wildcard.getExtendsBound()))
-            || (wildcard.getSuperBound() != null && mentionsRestricted(wildcard.getSuperBound()));
-      }
-      case INTERSECTION -> {
-        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-          if (mentionsRestricted(bound)) {
-            return true;
-          }
-        }
-        return false;
-      }
-      default -> {
-        return false;
-      }
-    }
+    return mentionsTypeVariable(type, this::isRestricted);
   }
 
   /**
-   * Returns true if {@code type} mentions a type parameter of {@code element}.
+   * Returns true if {@code type} mentions a type parameter of {@code classOrInterface}.
    *
    * @param type a type
-   * @param element a type declaration
-   * @return true if {@code type} mentions a type parameter of {@code element}
+   * @param classOrInterface a class or interface
+   * @return true if {@code type} mentions a type parameter of {@code classOrInterface}
    */
-  private static boolean mentionsTypeParameter(TypeMirror type, TypeElement element) {
+  private static boolean mentionsTypeParameter(TypeMirror type, TypeElement classOrInterface) {
+    return mentionsTypeVariable(
+        type,
+        typeVariable -> typeVariable.asElement().getEnclosingElement().equals(classOrInterface));
+  }
+
+  /**
+   * Returns true if {@code type} mentions a type variable for which {@code test} returns true.
+   *
+   * @param type a type
+   * @param test a predicate on type variables
+   * @return true if {@code type} mentions a type variable for which {@code test} returns true
+   */
+  private static boolean mentionsTypeVariable(TypeMirror type, Predicate<TypeVariable> test) {
     switch (type.getKind()) {
       case TYPEVAR -> {
-        return ((TypeVariable) type).asElement().getEnclosingElement().equals(element);
+        return test.test((TypeVariable) type);
       }
       case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
         for (TypeMirror typeArg : declaredType.getTypeArguments()) {
-          if (mentionsTypeParameter(typeArg, element)) {
+          if (mentionsTypeVariable(typeArg, test)) {
             return true;
           }
         }
-        return mentionsTypeParameter(declaredType.getEnclosingType(), element);
+        return mentionsTypeVariable(declaredType.getEnclosingType(), test);
       }
       case ARRAY -> {
-        return mentionsTypeParameter(((ArrayType) type).getComponentType(), element);
+        return mentionsTypeVariable(((ArrayType) type).getComponentType(), test);
       }
       case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
-        return (wildcard.getExtendsBound() != null
-                && mentionsTypeParameter(wildcard.getExtendsBound(), element))
-            || (wildcard.getSuperBound() != null
-                && mentionsTypeParameter(wildcard.getSuperBound(), element));
+        TypeMirror extendsBound = wildcard.getExtendsBound();
+        TypeMirror superBound = wildcard.getSuperBound();
+        return (extendsBound != null && mentionsTypeVariable(extendsBound, test))
+            || (superBound != null && mentionsTypeVariable(superBound, test));
       }
       case INTERSECTION -> {
         for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-          if (mentionsTypeParameter(bound, element)) {
+          if (mentionsTypeVariable(bound, test)) {
             return true;
           }
         }

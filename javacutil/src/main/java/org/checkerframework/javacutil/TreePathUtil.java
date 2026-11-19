@@ -7,6 +7,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -577,5 +578,18 @@ public final class TreePathUtil {
       return TreeUtils.elementFromDeclaration(enclosingClassTree);
     }
     return null;
+  }
+
+  /**
+   * Returns the selector expression of the switch that contains the case label at {@code
+   * caseLabelPath}.
+   *
+   * @param caseLabelPath the path to a case label
+   * @return the selector expression of the switch that contains the case label at {@code
+   *     caseLabelPath}
+   */
+  public static ExpressionTree switchSelectorOfCaseLabel(TreePath caseLabelPath) {
+    // The parent of a case label is a case, whose parent is a switch.
+    return TreeUtils.switchSelector(caseLabelPath.getParentPath().getParentPath().getLeaf());
   }
 }

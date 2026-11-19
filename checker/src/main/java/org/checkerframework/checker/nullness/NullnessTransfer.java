@@ -34,7 +34,6 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -377,7 +376,7 @@ public class NullnessTransfer
   protected void refineCaseLabelBindingVariable(
       NullnessStore store, VariableTree varTree, ExpressionTree selector) {
     super.refineCaseLabelBindingVariable(store, varTree, selector);
-    // A type pattern that is a case label does not match null (JLS 14.11.1).
+    // A type pattern that is a case label does not match null (JLS 14.11.1.2).
     store.insertValue(JavaExpression.fromVariableTree(varTree), NONNULL);
   }
 
@@ -389,8 +388,8 @@ public class NullnessTransfer
     assert recordPattern != null : "@AssumeAssertion(nullness): a pattern node has a tree";
     List<Node> nestedPatterns = n.getNestedPatterns();
     for (int i = 0; i < nestedPatterns.size(); i++) {
-      // A type pattern that is not unconditional for its record component does not match null
-      // (JLS 14.30.2).
+      // A type pattern that is not unconditional for the type of its record component does not
+      // match null (JLS 14.30.2).
       if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar
           && !nullnessTypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
         makeNonNull(result, bindingVar);
@@ -458,10 +457,9 @@ public class NullnessTransfer
     TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
     MethodInvocationTree tree = n.getTree();
-    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    ExecutableElement method = n.getTarget().getMethod();
 
-    boolean isMethodSideEffectFree =
-        atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
+    boolean isMethodSideEffectFree = atypeFactory.isSideEffectFree(method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
     if (!n.getTarget().isStatic()
