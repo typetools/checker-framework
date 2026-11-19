@@ -2514,12 +2514,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
         boolean labelsMightHaveSideEffects = false;
+        // True if a label contains a record pattern.  Matching it invokes record accessors, which
+        // might throw an exception even if they are side-effect-free.
+        boolean labelsInvokeAccessors = false;
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
           if (mightHaveSideEffects(exprTree)) {
             // Matching a record pattern invokes record accessors, which might have side effects,
             // even if the match fails.  mightHaveSideEffects also examines nested record patterns.
             labelsMightHaveSideEffects = true;
+          }
+          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+            labelsInvokeAccessors = true;
           }
         }
         if (labelsMightHaveSideEffects) {
@@ -2538,12 +2544,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 codeRanSinceSelector,
                 labelsMightHaveSideEffects,
                 env.getTypeUtils());
-        if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || labelsMightHaveSideEffects) {
+        if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || labelsInvokeAccessors) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
           // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
           // Also, if a record accessor that a record pattern invokes throws an exception, the
           // switch throws MatchException (JLS 14.30.2).  That can happen whether or not the
-          // pattern always matches and whether or not this is the last case.
+          // pattern always matches, whether or not this is the last case, and whether or not the
+          // accessor is side-effect-free.  (Only a record pattern can make a label have side
+          // effects, so labelsMightHaveSideEffects implies labelsInvokeAccessors.)
           extendWithNodeWithException(caseNode, matchExceptionType);
         } else {
           extendWithNode(caseNode);
@@ -4597,6 +4605,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
       mightHaveSideEffects = true;
       return super.visitCompoundAssignment(tree, p);
+    }
+
+    @Override
+    public Void visitBinary(BinaryTree tree, Void p) {
+      // String conversion of an operand of a string concatenation calls its toString() method,
+      // which might have side effects.
+      if (tree.getKind() == Tree.Kind.PLUS
+          && TypesUtils.isString(TreeUtils.typeOf(tree))
+          && (mightCallToString(TreeUtils.typeOf(tree.getLeftOperand()))
+              || mightCallToString(TreeUtils.typeOf(tree.getRightOperand())))) {
+        mightHaveSideEffects = true;
+      }
+      return super.visitBinary(tree, p);
+    }
+
+    /**
+     * Returns true if string conversion of a value of type {@code type} might call a toString()
+     * method that has side effects.
+     *
+     * @param type the type of an operand of a string concatenation
+     * @return true if string conversion of a value of type {@code type} might have side effects
+     */
+    private boolean mightCallToString(TypeMirror type) {
+      return !type.getKind().isPrimitive()
+          && type.getKind() != TypeKind.NULL
+          && !TypesUtils.isString(type)
+          && !TypesUtils.isBoxedPrimitive(type);
     }
 
     @Override
