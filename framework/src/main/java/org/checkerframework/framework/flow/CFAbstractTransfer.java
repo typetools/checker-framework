@@ -1694,7 +1694,7 @@ public abstract class CFAbstractTransfer<
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
     Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement);
     processPostconditionsAndConditionalPostconditions(
-        invocationNode, invocationTree, store, null, postconditions);
+        invocationNode, executableElement, invocationTree, store, null, postconditions);
   }
 
   /**
@@ -1717,7 +1717,12 @@ public abstract class CFAbstractTransfer<
     Set<ConditionalPostcondition> conditionalPostconditions =
         contractsUtils.getConditionalPostconditions(methodElement);
     processPostconditionsAndConditionalPostconditions(
-        invocationNode, invocationTree, thenStore, elseStore, conditionalPostconditions);
+        invocationNode,
+        methodElement,
+        invocationTree,
+        thenStore,
+        elseStore,
+        conditionalPostconditions);
   }
 
   /**
@@ -1725,6 +1730,8 @@ public abstract class CFAbstractTransfer<
    * stores after an invocation.
    *
    * @param invocationNode a method call node or an object creation node
+   * @param executableElement the method or constructor being called; used in diagnostics if {@code
+   *     invocationTree} is null
    * @param invocationTree the tree for the method call or for the object creation; may be null for
    *     a method call in a custom CFG
    * @param thenStore the "then" store; is side-effected by this method
@@ -1733,6 +1740,7 @@ public abstract class CFAbstractTransfer<
    */
   private void processPostconditionsAndConditionalPostconditions(
       Node invocationNode,
+      ExecutableElement executableElement,
       @Nullable ExpressionTree invocationTree,
       S thenStore,
       S elseStore,
@@ -1780,17 +1788,12 @@ public abstract class CFAbstractTransfer<
       } catch (JavaExpressionParseException e) {
         // report errors here
         if (e.isFlowParseError()) {
-          // `invocationTree` may be null for a method call in a custom CFG; in that case, obtain
-          // the method from the node.  `reportError` accepts a null source.
-          ExecutableElement invokedElement;
-          if (invocationTree != null) {
-            invokedElement = (ExecutableElement) TreeUtils.elementFromUse(invocationTree);
-          } else if (invocationNode instanceof MethodInvocationNode invocation) {
-            invokedElement = invocation.getTarget().getMethod();
-          } else {
-            invokedElement =
-                TreeUtils.elementFromUse(((ObjectCreationNode) invocationNode).getTree());
-          }
+          // `invocationTree` may be null for a method call in a custom CFG; in that case, use
+          // `executableElement`.  `reportError` accepts a null source.
+          ExecutableElement invokedElement =
+              (invocationTree == null)
+                  ? executableElement
+                  : (ExecutableElement) TreeUtils.elementFromUse(invocationTree);
           Object[] args = new Object[e.args.length + 1];
           args[0] = ElementUtils.getSimpleSignature(invokedElement);
           System.arraycopy(e.args, 0, args, 1, e.args.length);

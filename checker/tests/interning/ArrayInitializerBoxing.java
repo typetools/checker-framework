@@ -22,4 +22,8 @@ public class ArrayInitializerBoxing {
     @Interned int[] is = new int[] {i, i};
     @Interned long[] ls = {l, l};
   }
+
+  void unboxAndWiden(Integer i) {
+    @Interned long[] ls = new long[] {i, i};
+  }
 }
