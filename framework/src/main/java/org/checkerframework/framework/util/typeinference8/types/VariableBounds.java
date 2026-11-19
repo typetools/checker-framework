@@ -534,7 +534,7 @@ public class VariableBounds {
     }
 
     List<Constraint> constraints = new ArrayList<>();
-    // An inner class type's own type arguments are not all of the type arguments it mentions; its
+    // An inner class type's own type arguments are not all of the type arguments it contains; its
     // enclosing types contribute more, which getTypeArguments() omits.
     AbstractType sAsSuper = pair.aAsSuper();
     AbstractType tAsSuper = pair.bAsSuper();
@@ -861,18 +861,18 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all variables mentioned in a bound against this variable.
+   * Returns all variables contained in a bound against this variable.
    *
-   * @return all variables mentioned in a bound against this variable
+   * @return all variables contained in a bound against this variable
    */
-  public Collection<? extends Variable> getVariablesMentionedInBounds() {
-    List<Variable> mentioned = new ArrayList<>();
+  public Collection<? extends Variable> getVariablesContainedInBounds() {
+    List<Variable> contained = new ArrayList<>();
     for (Set<AbstractType> boundList : bounds.values()) {
       for (AbstractType bound : boundList) {
-        mentioned.addAll(bound.getInferenceVariables());
+        contained.addAll(bound.getInferenceVariables());
       }
     }
-    return mentioned;
+    return contained;
   }
 
   /**
@@ -894,9 +894,9 @@ public class VariableBounds {
   }
 
   /**
-   * Returns true if any bound mentions a primitive wrapper type.
+   * Returns true if any bound is a primitive wrapper type.
    *
-   * @return true if any bound mentions a primitive wrapper type
+   * @return true if any bound is a primitive wrapper type
    */
   public boolean hasPrimitiveWrapperBound() {
     for (Set<AbstractType> boundList : bounds.values()) {
@@ -1051,7 +1051,7 @@ public class VariableBounds {
           // target type that a previous inference produced; in that case, ignore this bound
           // (adding no constraints for it) so that this inference reuses the exact value that the
           // previous inference computed.  That value is a captured type variable, or, if the
-          // capture variable's bound mentions itself, a fresh type variable that javac creates in
+          // capture variable's bound contains itself, a fresh type variable that javac creates in
           // Infer#instantiateAsUninferredVars.
           continue;
         }
