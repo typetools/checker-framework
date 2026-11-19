@@ -1327,11 +1327,11 @@ public class InferenceFactory {
    * of bounds.
    *
    * @param lowerBound a proper type or null
-   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy that it
-   *     does not mention gets the default qualifier for an implicit lower bound
+   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy in which
+   *     it has no annotation gets the default qualifier for an implicit lower bound
    * @param upperBound an abstract type or null
-   * @param upperBoundAnnos annotations to use if {@code upperBound} is null; a hierarchy that it
-   *     does not mention gets the default qualifier for an implicit upper bound
+   * @param upperBoundAnnos annotations to use if {@code upperBound} is null; a hierarchy in which
+   *     it has no annotation gets the default qualifier for an implicit upper bound
    * @return a fresh type variable with the provided upper and lower bounds
    */
   public AbstractType createFreshTypeVariable(
@@ -1365,8 +1365,8 @@ public class InferenceFactory {
     }
     // Each bound of the fresh type variable must have an annotation in every hierarchy; otherwise a
     // later comparison against the bound crashes.  A bound that the caller did not supply is
-    // `Object` or the null type, for which the caller's annotations might mention no hierarchy at
-    // all, so fill in the defaults for the hierarchies that are still missing.
+    // `Object` or the null type, for which the caller's annotations might lack some hierarchies or
+    // be empty, so fill in the defaults for the hierarchies that are still missing.
     typeFactory.addDefaultAnnotations(typeVariable);
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
@@ -1379,7 +1379,7 @@ public class InferenceFactory {
 
   /**
    * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
-   * replaced by the corresponding element of {@code typeArgs}. An instantiation might mention
+   * replaced by the corresponding element of {@code typeArgs}. An instantiation might contain
    * another variable that is being resolved at the same time, so the instantiations are not final
    * until this substitution has been performed.
    *
@@ -1396,8 +1396,8 @@ public class InferenceFactory {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
 
-    // TODO: If the instantiation of a variable mentions that same variable, then substitution does
-    // not terminate the mention: the result still refers to the variable, because such a recursive
+    // TODO: If the instantiation of a variable contains that same variable, then substitution does
+    // not eliminate the variable: the result still contains the variable, because such a recursive
     // type cannot be written as a Java type.
     List<AbstractType> subsTypeArgs = new ArrayList<>();
     for (AbstractType typeArg : typeArgs) {
