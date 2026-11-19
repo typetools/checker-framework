@@ -3022,6 +3022,10 @@ public abstract class GenericAnnotatedTypeFactory<
       if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
         continue;
       }
+      // A contract whose qualifier is the top qualifier has no effect.
+      if (isTop(inferredAm)) {
+        continue;
+      }
       AnnotationMirror anno =
           createRequiresOrEnsuresQualifier(
               expression, inferredAm, declaredType, preOrPost, preconds);

@@ -148,6 +148,7 @@ import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1132,7 +1133,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<String> formalParamNames =
           CollectionsP.mapList(
               (VariableTree param) -> param.getName().toString(), tree.getParameters());
-      checkContractsAtMethodDeclaration(tree, methodElement, formalParamNames, abstractMethod);
+      Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
+      checkContractsAtMethodDeclaration(tree, contracts, formalParamNames, abstractMethod);
+      if (warnRedundantAnnotations) {
+        checkContractQualifiersAreNotTop(modifiers.getAnnotations(), contracts);
+      }
 
       // Infer postconditions
       if (shouldPerformContractInference()) {
@@ -2237,17 +2242,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * exit, and that the contracts are well-formed.
    *
    * @param methodTree the method declaration
-   * @param methodElement the method element
+   * @param contracts the contracts of {@code methodTree}
    * @param formalParamNames the formal parameter names
    * @param abstractMethod true if the method is abstract
    */
   private void checkContractsAtMethodDeclaration(
       MethodTree methodTree,
-      ExecutableElement methodElement,
+      Set<Contract> contracts,
       List<String> formalParamNames,
       boolean abstractMethod) {
-    Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
-
     if (contracts.isEmpty()) {
       return;
     }
@@ -3473,6 +3476,77 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     return null;
+  }
+
+  /**
+   * Issues a "contracts.toptype" warning for each contract annotation in {@code annoTrees} whose
+   * qualifier is the top qualifier, because such a contract has no effect. A contract annotation
+   * can be a framework contract annotation, such as {@code @RequiresQualifier}; a
+   * type-system-specific contract annotation, such as {@code @RequiresNonNull}; or an element of a
+   * wrapper for repeated contract annotations, such as {@code @RequiresQualifier.List}.
+   *
+   * @param annoTrees the annotations written on a method or constructor declaration
+   * @param contracts the contracts of the method or constructor
+   */
+  protected void checkContractQualifiersAreNotTop(
+      List<? extends AnnotationTree> annoTrees, Set<Contract> contracts) {
+    // Maps the annotation, as written, of each contract whose qualifier is top to that qualifier.
+    AnnotationMirrorMap<AnnotationMirror> topContractAnnos = new AnnotationMirrorMap<>();
+    for (Contract contract : contracts) {
+      if (atypeFactory.isTop(contract.annotation)) {
+        topContractAnnos.put(contract.contractAnnotation, contract.annotation);
+      }
+    }
+    if (!topContractAnnos.isEmpty()) {
+      reportTopContractAnnotations(annoTrees, topContractAnnos);
+    }
+  }
+
+  /**
+   * Issues a "contracts.toptype" warning for each annotation in {@code annoTrees}, or in a wrapper
+   * for repeated annotations in {@code annoTrees}, that is a key of {@code topContractAnnos}.
+   *
+   * @param annoTrees annotations written on a method or constructor declaration
+   * @param topContractAnnos maps each contract annotation whose qualifier is the top qualifier to
+   *     that qualifier
+   */
+  private void reportTopContractAnnotations(
+      List<? extends AnnotationTree> annoTrees,
+      AnnotationMirrorMap<AnnotationMirror> topContractAnnos) {
+    for (AnnotationTree annoTree : annoTrees) {
+      AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
+      AnnotationMirror topQualifier = topContractAnnos.get(anno);
+      if (topQualifier != null) {
+        Name qualifierName = topQualifier.getAnnotationType().asElement().getSimpleName();
+        checker.reportWarning(annoTree, "contracts.toptype", qualifierName, annoTree);
+      } else if (atypeFactory.isListForRepeatedAnnotation(anno)) {
+        reportTopContractAnnotations(getAnnotationTreeArguments(annoTree), topContractAnnos);
+      }
+    }
+  }
+
+  /**
+   * Returns the annotations that are written as arguments to the given annotation, such as the
+   * elements of a wrapper for repeated annotations.
+   *
+   * @param annoTree an annotation tree
+   * @return the annotation trees that are arguments to {@code annoTree}
+   */
+  private List<AnnotationTree> getAnnotationTreeArguments(AnnotationTree annoTree) {
+    List<AnnotationTree> result = new ArrayList<>();
+    for (ExpressionTree arg : annoTree.getArguments()) {
+      ExpressionTree value = arg instanceof AssignmentTree at ? at.getExpression() : arg;
+      if (value instanceof AnnotationTree nested) {
+        result.add(nested);
+      } else if (value instanceof NewArrayTree nat) {
+        for (ExpressionTree init : nat.getInitializers()) {
+          if (init instanceof AnnotationTree nested) {
+            result.add(nested);
+          }
+        }
+      }
+    }
+    return result;
   }
 
   @Override

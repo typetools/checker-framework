@@ -214,10 +214,11 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}. Might return null.
+   * contractAnno}.
    *
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @return the type annotation specified in {@code contractAnno.qualifier}
+   * @return the type annotation specified in {@code contractAnno.qualifier}, or null if the
+   *     qualifier could not be loaded or is not a supported qualifier of the type system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
@@ -226,11 +227,13 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}, with elements/arguments taken from {@code argumentAnno}. Might return null.
+   * contractAnno}, with elements/arguments taken from {@code argumentAnno}.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @param argumentAnno supplies the elements/fields in the return value
-   * @return the type annotation specified in {@code contractAnno.qualifier}
+   * @param contractAnno a contract meta-annotation, such as {@code @PreconditionAnnotation}
+   * @param argumentAnno a contract annotation that is meta-annotated by {@code contractAnno}; it
+   *     supplies the elements/fields in the return value
+   * @return the type annotation specified in {@code contractAnno.qualifier}, or null if the
+   *     qualifier could not be loaded or is not a supported qualifier of the type system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
