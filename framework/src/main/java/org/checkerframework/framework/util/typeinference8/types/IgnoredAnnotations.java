@@ -264,8 +264,8 @@ final class IgnoredAnnotations {
     // needs it rather than its upper bound.  TODO: Replace the ignored positions within the upper
     // bound of a type variable too.
     return new ReplacedTypes(
-        bound1 == upToDate1 ? atm1 : upToDate1.getAnnotatedType(),
-        bound2 == upToDate2 ? atm2 : upToDate2.getAnnotatedType());
+        isTypeVariable(upToDate1) ? upToDate1.getAnnotatedType() : atm1,
+        isTypeVariable(upToDate2) ? upToDate2.getAnnotatedType() : atm2);
   }
 
   /**
@@ -379,11 +379,23 @@ final class IgnoredAnnotations {
    */
   private static AbstractType upperBoundIfTypeVariable(AbstractType type) {
     AbstractType result = type;
-    while (result.getTypeKind() == TypeKind.TYPEVAR
-        && result.getAnnotatedType() instanceof AnnotatedTypeVariable) {
+    while (isTypeVariable(result)) {
       result = result.getTypeVarUpperBound();
     }
     return result;
+  }
+
+  /**
+   * Returns true if {@code type} is a type variable whose annotated type is an {@link
+   * AnnotatedTypeVariable}.
+   *
+   * @param type a type
+   * @return true if {@code type} is a type variable whose annotated type is an {@link
+   *     AnnotatedTypeVariable}
+   */
+  private static boolean isTypeVariable(AbstractType type) {
+    return type.getTypeKind() == TypeKind.TYPEVAR
+        && type.getAnnotatedType() instanceof AnnotatedTypeVariable;
   }
 
   /**
@@ -843,9 +855,9 @@ final class IgnoredAnnotations {
    *       Box<@A String>>} and {@code List<Box<@B String>>}, both {@code ? extends Box<@A String>}
    *       and {@code Box<@A String>} correspond to {@code Box<@B String>}, and {@code @A String}
    *       corresponds to {@code @B String}.
-   *   <li>Where the two types are declared types of different classes, one a subclass of the
-   *       other, a type argument of the subclass corresponds to a type argument of the superclass
-   *       if the superclass's type argument is that type parameter of the subclass (see {@link
+   *   <li>Where the two types are declared types of different classes, one a subclass of the other,
+   *       a type argument of the subclass corresponds to a type argument of the superclass if the
+   *       superclass's type argument is that type parameter of the subclass (see {@link
    *       #typeArgumentCorrespondence}). For example, given {@code class Flip<A, B> implements
    *       Pair<B, A>}, in {@code Flip<@A String, @B String>} and {@code Pair<@C String, @D
    *       String>}, {@code @A String} corresponds to {@code @D String}.
