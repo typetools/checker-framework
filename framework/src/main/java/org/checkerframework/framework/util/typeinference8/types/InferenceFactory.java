@@ -1152,7 +1152,8 @@ public class InferenceFactory {
   private boolean differsOnlyInPrimaryOrIgnoredAnnotations(
       ProperType properType, AnnotatedTypeMirror atm) {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyPrimaryAnnotations(atm, samePrimaryAnnotations);
+    IgnoredAnnotations.copyPrimaryAnnotations(
+        atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
     ReplacedTypes compared =
         IgnoredAnnotations.replaceIgnoredForEquality(
             properType.withAnnotatedType(samePrimaryAnnotations, false),

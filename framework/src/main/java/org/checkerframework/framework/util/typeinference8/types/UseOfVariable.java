@@ -138,10 +138,13 @@ public class UseOfVariable extends AbstractType {
    */
   @Override
   public AbstractType applyInstantiations() {
-    ProperType instantiation = variable.getInstantiation();
-    if (instantiation == null) {
+    ProperType storedInstantiation = variable.getInstantiation();
+    if (storedInstantiation == null) {
       return this;
     }
+    // The stored instantiation is out of date if the instantiation of a variable in its origin has
+    // changed since it was made; see ProperType#applyInstantiations.
+    ProperType instantiation = storedInstantiation.applyInstantiations();
     if (!ignoreAnnotations && type.getPrimaryAnnotations().isEmpty()) {
       // A shortcut for the common case, in which the code below also returns `instantiation`.
       return instantiation;

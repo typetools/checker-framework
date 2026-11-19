@@ -119,7 +119,8 @@ final class IgnoredAnnotations {
           subATM,
           supATM,
           ignoredPositions(subAsSuper, subATM, qh),
-          ignoredPositions(upToDateSup, supATM, qh));
+          ignoredPositions(upToDateSup, supATM, qh),
+          qh);
     }
     if (upToDateSub.ignoreAnnotations) {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
@@ -166,12 +167,16 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror atm2 = upToDate2.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredPositions) {
       replaceIgnoredPositions(
-          atm1, atm2, ignoredPositions(upToDate1, atm1, qh), ignoredPositions(upToDate2, atm2, qh));
+          atm1,
+          atm2,
+          ignoredPositions(upToDate1, atm1, qh),
+          ignoredPositions(upToDate2, atm2, qh),
+          qh);
     }
     if (upToDate1.ignoreAnnotations) {
-      copyPrimaryAnnotations(atm2, atm1);
+      copyPrimaryAnnotations(atm2, atm1, qh);
     } else if (upToDate2.ignoreAnnotations) {
-      copyPrimaryAnnotations(atm1, atm2);
+      copyPrimaryAnnotations(atm1, atm2, qh);
     }
     return new ReplacedTypes(atm1, atm2);
   }
@@ -230,7 +235,11 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror atm1 = asSuper1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = asSuper2.getAnnotatedType().deepCopy();
     replaceIgnoredPositions(
-        atm1, atm2, ignoredPositions(asSuper1, atm1, qh), ignoredPositions(asSuper2, atm2, qh));
+        atm1,
+        atm2,
+        ignoredPositions(asSuper1, atm1, qh),
+        ignoredPositions(asSuper2, atm2, qh),
+        qh);
     // A type variable is returned itself, because the least upper bound or greatest lower bound
     // needs it rather than its upper bound.  TODO: Replace the ignored positions within the upper
     // bound of a type variable too.
@@ -313,20 +322,25 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
-   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
-   * and its bounds get the primary annotations of {@code source}'s bounds.
+   * Gives {@code target} the primary annotations of {@code source}.
+   *
+   * <p>If both are type variables, then each qualifier hierarchy is handled separately, because a
+   * type variable can have a primary annotation in one hierarchy and get its qualifiers in another
+   * from its bounds. In a hierarchy in which {@code source} has a primary annotation, {@code
+   * target} gets it. In a hierarchy in which {@code source} has none, {@code target}'s primary
+   * annotation is removed and its bounds get the annotations of {@code source}'s bounds in that
+   * hierarchy.
    *
    * @param source a type whose primary annotations to copy
    * @param target the type whose primary annotations to replace; side-effected by this method
+   * @param qh the qualifier hierarchy
    */
-  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
-    if (source.getPrimaryAnnotations().isEmpty()
-        && source instanceof AnnotatedTypeVariable sourceTV
-        && target instanceof AnnotatedTypeVariable targetTV) {
-      targetTV.clearPrimaryAnnotations();
-      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
-      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
+  static void copyPrimaryAnnotations(
+      AnnotatedTypeMirror source, AnnotatedTypeMirror target, QualifierHierarchy qh) {
+    if (source instanceof AnnotatedTypeVariable && target instanceof AnnotatedTypeVariable) {
+      for (AnnotationMirror top : qh.getTopAnnotations()) {
+        copyPrimaryAnnotationInHierarchy(source, target, top);
+      }
     } else {
       target.replaceAnnotations(source.getAnnotations());
     }
@@ -364,6 +378,30 @@ final class IgnoredAnnotations {
   //
 
   /**
+   * Gives {@code target} the primary annotation of {@code source} in the hierarchy of {@code top}.
+   * If {@code source} has none, then {@code target}'s is removed, and, if both are type variables,
+   * their bounds are handled in the same way.
+   *
+   * @param source a type whose primary annotation to copy
+   * @param target the type whose primary annotation to replace; side-effected by this method
+   * @param top the top annotation of the hierarchy
+   */
+  private static void copyPrimaryAnnotationInHierarchy(
+      AnnotatedTypeMirror source, AnnotatedTypeMirror target, AnnotationMirror top) {
+    AnnotationMirror anno = source.getPrimaryAnnotationInHierarchy(top);
+    if (anno != null) {
+      target.replaceAnnotation(anno);
+      return;
+    }
+    target.removePrimaryAnnotationInHierarchy(top);
+    if (source instanceof AnnotatedTypeVariable sourceTV
+        && target instanceof AnnotatedTypeVariable targetTV) {
+      copyPrimaryAnnotationInHierarchy(sourceTV.getUpperBound(), targetTV.getUpperBound(), top);
+      copyPrimaryAnnotationInHierarchy(sourceTV.getLowerBound(), targetTV.getLowerBound(), top);
+    }
+  }
+
+  /**
    * Returns the upper bound of {@code type} if it is a type variable, following the bounds of type
    * variables whose upper bound is a type variable; otherwise, returns {@code type} itself.
    *
@@ -399,9 +437,11 @@ final class IgnoredAnnotations {
   /**
    * Returns the supertype of {@code type} whose class is that of {@code superType} (see {@link
    * AbstractType#asSuper}); for example, the supertype of {@code ArrayList<String>} whose class is
-   * {@code List} is {@code List<String>}. Returns {@code type} itself if either is not a declared
-   * type, if both are of the same class, or if {@code type} has no such supertype that is a proper
-   * type.
+   * {@code List} is {@code List<String>}. If both are array types, the same is done for their
+   * component types; for example, the supertype of {@code ArrayList<String>[]} whose class is
+   * {@code List[]} is {@code List<String>[]}. Returns {@code type} itself if they are not both
+   * declared types or both array types, if their erasures are the same, or if {@code type} has no
+   * such supertype that is a proper type.
    *
    * @param type a type
    * @param superType a type; need not be a supertype of {@code type}
@@ -409,8 +449,9 @@ final class IgnoredAnnotations {
    * @return the supertype of {@code type} whose class is that of {@code superType}, or {@code type}
    */
   private static AbstractType asSuper(AbstractType type, TypeMirror superType, Types types) {
-    if (type.getTypeKind() != TypeKind.DECLARED
-        || superType.getKind() != TypeKind.DECLARED
+    TypeKind kind = type.getTypeKind();
+    if ((kind != TypeKind.DECLARED && kind != TypeKind.ARRAY)
+        || superType.getKind() != kind
         || types.isSameType(types.erasure(type.getJavaType()), types.erasure(superType))) {
       return type;
     }
@@ -668,20 +709,22 @@ final class IgnoredAnnotations {
    * @param atm2 a type; side-effected by this method
    * @param ignored1 the ignored positions of {@code atm1}
    * @param ignored2 the ignored positions of {@code atm2}
+   * @param qh the qualifier hierarchy
    */
   private static void replaceIgnoredPositions(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       Set<AnnotatedTypeMirror> ignored1,
-      Set<AnnotatedTypeMirror> ignored2) {
+      Set<AnnotatedTypeMirror> ignored2,
+      QualifierHierarchy qh) {
     allCorrespondingPositionsMatch(
         atm1,
         atm2,
         (position1, position2) -> {
           if (ignored1.contains(position1)) {
-            copyPrimaryAnnotations(boundOf(position2), position1);
+            copyPrimaryAnnotations(boundOf(position2), position1, qh);
           } else if (ignored2.contains(position2)) {
-            copyPrimaryAnnotations(boundOf(position1), position2);
+            copyPrimaryAnnotations(boundOf(position1), position2, qh);
           }
           return true;
         });
