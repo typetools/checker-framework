@@ -148,7 +148,7 @@ public class Expression extends TypeConstraint {
     // javac.
 
     // The qualifiers are not checked either, even though this constraint might not hold for
-    // them.  Because T is proper, this constraint mentions no inference variable, so whether it
+    // them.  Because T is proper, this constraint contains no inference variable, so whether it
     // holds does not depend on the type arguments that are inferred; no other choice of type
     // arguments would make it hold.  BaseTypeVisitor separately checks the qualifiers -- in
     // checkArguments for an argument, and in a common assignment check for a lambda body -- and
@@ -246,7 +246,7 @@ public class Expression extends TypeConstraint {
         // T is not a functional interface type, so it has no function type. JLS 18.2.1 says that
         // the constraint reduces to false in that case.
         //
-        // (reduce() handles proper types before calling this method, so T mentions at least one
+        // (reduce() handles proper types before calling this method, so T contains at least one
         // inference variable. If T is an inference variable that has not yet been instantiated,
         // then reducing this constraint now is premature -- JLS 18.5.2.2 makes that variable an
         // input variable of this constraint, so it should have been instantiated first.)
@@ -551,7 +551,7 @@ public class Expression extends TypeConstraint {
     List<Variable> alphas = new ArrayList<>(map.values());
     // F<alpha1, ..., alpham> is built from the declaration of F, whose type arguments are F's own
     // type parameters, which is what `map` maps to the fresh inference variables.  Building it
-    // from t instead would be a no-op: t is F<A1, ..., Am>, which does not mention F's type
+    // from t instead would be a no-op: t is F<A1, ..., Am>, which does not contain F's type
     // parameters, so `map` would substitute nothing and tPrime would be t itself.
     TypeElement fElement = (TypeElement) ((DeclaredType) t.getJavaType()).asElement();
     AbstractType tPrime =
