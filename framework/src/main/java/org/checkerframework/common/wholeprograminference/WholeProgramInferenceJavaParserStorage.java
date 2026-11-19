@@ -126,6 +126,12 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private static final DataKey<Boolean> IS_DECLARATION_ANNOTATION = new DataKey<Boolean>() {};
 
+  /**
+   * Marks a receiver parameter that whole-program inference added to a method declaration, as
+   * opposed to one that is written in the source code. Cloning a JavaParser node copies this mark.
+   */
+  private static final DataKey<Boolean> IS_ADDED_RECEIVER = new DataKey<Boolean>() {};
+
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
@@ -1432,12 +1438,13 @@ public class WholeProgramInferenceJavaParserStorage
       // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // Some annotations should not be printed.  They are removed from the AST, rather than
-      // suppressed in the pretty-printer, to prevent the pretty-printer from outputting the
-      // whitespace that would have separated an annotation from what follows it.  The compilation
-      // unit is cloned first, because removal side-effects it and the same AST is printed more
-      // than once:  it is shared by every CompilationUnitAnnos for the source file, and under
-      // `-AinferOutputOriginal` it is also printed before annotations are transferred into it.
+      // Some annotations and receiver parameters should not be printed.  They are removed from
+      // the AST, rather than suppressed in the pretty-printer, to prevent the pretty-printer from
+      // outputting the whitespace that would have separated an annotation from what follows it.
+      // The compilation unit is cloned first, because removal side-effects it and the same AST is
+      // printed more than once:  it is shared by every CompilationUnitAnnos for the source file,
+      // and under `-AinferOutputOriginal` it is also printed before annotations are transferred
+      // into it.
       CompilationUnit compilationUnit = root.compilationUnit;
       // Unless the checker declares `@RelevantJavaTypes`, `annotationIsRelevant` returns true for
       // every annotation, so there is no need to test relevance.
@@ -1445,9 +1452,9 @@ public class WholeProgramInferenceJavaParserStorage
           omitIrrelevantAnnotations
               && atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf
               && gatf.relevantJavaTypes != null;
-      if (hasUnprintedAnnotations(omitIrrelevant)) {
+      if (hasUnprinted(compilationUnit, omitIrrelevant)) {
         compilationUnit = compilationUnit.clone();
-        removeUnprintedAnnotations(compilationUnit, omitIrrelevant);
+        removeUnprinted(compilationUnit, omitIrrelevant);
       }
 
       DefaultPrettyPrinter prettyPrinter =
@@ -1491,32 +1498,39 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Returns true if {@link #removeUnprintedAnnotations} might remove an annotation. If it returns
-   * false, then the caller need not clone the compilation unit before printing it.
+   * Returns true if {@link #removeUnprinted} might remove a node from {@code compilationUnit}. If
+   * it returns false, then the caller need not clone the compilation unit before printing it.
    *
+   * @param compilationUnit a compilation unit that is about to be printed
    * @param omitIrrelevantAnnotations if true, annotations that are irrelevant where they appear are
    *     also removed
-   * @return true if {@link #removeUnprintedAnnotations} might remove an annotation
+   * @return true if {@link #removeUnprinted} might remove a node from {@code compilationUnit}
    */
-  private boolean hasUnprintedAnnotations(boolean omitIrrelevantAnnotations) {
-    return omitIrrelevantAnnotations || !getInvisibleQualifierNames().isEmpty();
+  private boolean hasUnprinted(CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+    return omitIrrelevantAnnotations
+        || !getInvisibleQualifierNames().isEmpty()
+        || compilationUnit
+            .findFirst(
+                ReceiverParameter.class, receiver -> receiver.containsData(IS_ADDED_RECEIVER))
+            .isPresent();
   }
 
   /**
-   * Removes from the given compilation unit the annotations that an ajava file should not contain,
+   * Removes from the given compilation unit the nodes that an ajava file should not contain,
    * because they would clutter it:
    *
    * <ul>
    *   <li>invisible qualifiers
    *   <li>irrelevant qualifiers, if {@code omitIrrelevantAnnotations} is true
+   *   <li>receiver parameters that whole-program inference added and that, after the above
+   *       removals, have no annotations
    * </ul>
    *
    * @param compilationUnit the compilation unit to side-effect
    * @param omitIrrelevantAnnotations if true, also remove annotations that are irrelevant where
    *     they appear
    */
-  private void removeUnprintedAnnotations(
-      CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
+  private void removeUnprinted(CompilationUnit compilationUnit, boolean omitIrrelevantAnnotations) {
     Set<String> invisibleQualifierNames = getInvisibleQualifierNames();
     Predicate<AnnotationExpr> shouldRemove =
         anno ->
@@ -1533,6 +1547,16 @@ public class WholeProgramInferenceJavaParserStorage
             param.getVarArgsAnnotations().removeIf(shouldRemove);
           }
         });
+    // A receiver parameter that has no annotations is redundant.  A receiver parameter that is
+    // written in the source code is retained, because the ajava file must match the source code.
+    for (ReceiverParameter receiver :
+        compilationUnit.findAll(
+            ReceiverParameter.class,
+            receiver ->
+                receiver.containsData(IS_ADDED_RECEIVER)
+                    && receiver.findFirst(AnnotationExpr.class).isEmpty())) {
+      receiver.remove();
+    }
   }
 
   // TODO: Move these two routines to StringUtils.
@@ -1613,7 +1637,9 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    methodDeclaration.setReceiverParameter(new ReceiverParameter(receiver, "this"));
+    ReceiverParameter receiverParameter = new ReceiverParameter(receiver, "this");
+    receiverParameter.setData(IS_ADDED_RECEIVER, true);
+    methodDeclaration.setReceiverParameter(receiverParameter);
   }
 
   /**
