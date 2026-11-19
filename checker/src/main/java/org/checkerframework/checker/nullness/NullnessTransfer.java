@@ -576,8 +576,7 @@ public class NullnessTransfer
           private boolean mayHaveSideEffect(ExecutableElement executable) {
             return receiverAssignableByOtherCode
                 && !nonNullAssumptionAfterInvocation
-                && !atypeFactory.isSideEffectFree(executable)
-                && !PurityUtils.isSideEffectFree(atypeFactory, executable);
+                && !atypeFactory.isSideEffectFree(executable);
           }
         };
     for (ExpressionTree argument : arguments) {
