@@ -25,6 +25,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -58,6 +59,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
@@ -83,6 +85,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -958,9 +961,10 @@ public abstract class CFAbstractTransfer<
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
    * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
    * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
-   * lhs and rhs do).
+   * lhs and rhs do). A null check is replaced by its operand, to which splitAssignments is applied
+   * recursively.
    *
-   * @param node possibly an assignment node
+   * @param node possibly an assignment node or a null check
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
    *     contains just the node itself if it is not an assignment
    */
@@ -971,6 +975,8 @@ public abstract class CFAbstractTransfer<
       result.add(a.getTarget());
       result.addAll(splitAssignments(a.getExpression()));
       return result;
+    } else if (node instanceof NullChkNode nullChk) {
+      return splitAssignments(nullChk.getOperand());
     } else {
       return Collections.singletonList(node);
     }
@@ -1115,6 +1121,19 @@ public abstract class CFAbstractTransfer<
     // look up the call's value in the store (if possible)
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    if (n.isUnboxing()) {
+      // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type
+      // factory computes for the call) comes from the declared return type of `intValue()`, which
+      // lacks the qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
+      V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
+      resValue = moreSpecificValue(resValue, getUnboxedValue(n.getType(), operandValue));
+    } else if (n.isBoxing()) {
+      // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
+      // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
+      // of `x`, the value being boxed.
+      V operandValue = in.getValueOfSubNode(n.getArgument(0));
+      resValue = moreSpecificValue(resValue, getBoxedValue(n.getType(), operandValue));
+    }
 
     store.updateForMethodCall(n, resValue);
 
@@ -1401,15 +1420,15 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned.
+   * incomparable, then {@code value1} is returned. If either is null, the other is returned.
    *
-   * @param value1 an abstract value
-   * @param value2 another abstract value
+   * @param value1 an abstract value, or null
+   * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
-   *     value1}
+   *     value1}; null if both parameters are null
    */
   @Pure
-  public V moreSpecificValue(V value1, V value2) {
+  public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
     if (value1 == null) {
       return value2;
     }
@@ -1531,6 +1550,64 @@ public abstract class CFAbstractTransfer<
     return analysis.createAbstractValue(widenedAnnos, type);
   }
 
+  /**
+   * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
+   * This is only called at an unboxing conversion.
+   *
+   * <p>If {@code annotatedValue}'s type is a type variable, such as {@code T extends @Odd Integer},
+   * and {@code annotatedValue} lacks an annotation in some hierarchy, then this method uses the
+   * annotation of the type variable's upper bound in that hierarchy.
+   *
+   * @param type the primitive type to unbox to
+   * @param annotatedValue a value to unbox
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy and its type is not a type variable
+   */
+  protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet annos = annotatedValue.getAnnotations();
+    if (annotatedValue.getUnderlyingType() instanceof TypeVariable typeVariable) {
+      AnnotationMirrorSet upperBoundAnnos =
+          analysis.atypeFactory.getAnnotatedType(typeVariable.asElement()).getAnnotations();
+      QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
+      annos = new AnnotationMirrorSet(annos);
+      for (AnnotationMirror upperBoundAnno : upperBoundAnnos) {
+        if (qualHierarchy.findAnnotationInSameHierarchy(annos, upperBoundAnno) == null) {
+          annos.add(upperBoundAnno);
+        }
+      }
+    }
+    AnnotationMirrorSet unboxedAnnos =
+        analysis.atypeFactory.getUnboxedAnnotations(annos, type.getKind());
+    return analysis.createAbstractValue(unboxedAnnos, type);
+  }
+
+  /**
+   * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations}. This
+   * is only called at a boxing conversion.
+   *
+   * @param type the boxed primitive type to box to, such as {@code Integer}
+   * @param annotatedValue a value to box
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy
+   */
+  @SideEffectFree
+  protected @Nullable V getBoxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet boxedAnnos =
+        analysis.atypeFactory.getBoxedAnnotations(
+            annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
+    return analysis.createAbstractValue(boxedAnnos, type);
+  }
+
   @Override
   public TransferResult<V, S> visitNarrowingConversion(
       NarrowingConversionNode n, TransferInput<V, S> p) {
@@ -1547,6 +1624,12 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  @Override
+  public TransferResult<V, S> visitNullChk(NullChkNode n, TransferInput<V, S> p) {
+    // A null check evaluates to its operand.
+    return createTransferResult(p.getValueOfSubNode(n.getOperand()), p);
   }
 
   @Override

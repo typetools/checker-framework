@@ -1,10 +1,13 @@
 2 -> 3 EACH_TO_EACH
 3 -> 4 EACH_TO_EACH
-4 -> 8 THEN_TO_BOTH
-4 -> 10 ELSE_TO_BOTH
-8 -> 13 EACH_TO_EACH
-10 -> 13 EACH_TO_EACH
-13 -> 0 EACH_TO_EACH
+4 -> 5 EACH_TO_EACH
+4 -> 1 NullPointerException
+5 -> 6 EACH_TO_EACH
+6 -> 10 THEN_TO_BOTH
+6 -> 12 ELSE_TO_BOTH
+10 -> 15 EACH_TO_EACH
+12 -> 15 EACH_TO_EACH
+15 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -24,26 +27,52 @@ to_increment = 0   [ Assignment ]
 switch#num0   [ VariableDeclaration ]
 switch#num0   [ LocalVariable ]
 i   [ LocalVariable ]
-switch#num0 = i   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { to_increment = 0 }
+
+4:
+Process order: 3
+TransferInput#9
+Before:   reaching definitions = { to_increment = 0 }
+~~~~~~~~~
+<*nullchk*>i   [ NullChk ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { to_increment = 0 }
+
+5:
+Process order: 4
+TransferInput#12
+Before:   reaching definitions = { to_increment = 0 }
+~~~~~~~~~
+switch#num0 = <*nullchk*>i   [ Assignment ]
 marker (start of switch statement #0)   [ Marker ]
 _   [ AnyPattern ]
 WrappedInt(_)   [ DeconstructorPattern ]
 case WrappedInt(_):   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { to_increment = 0, switch#num0 = i }
+After:   reaching definitions = { to_increment = 0, switch#num0 = <*nullchk*>i }
 
-4:
-Process order: 3
+1:
+Process order: 10
 TransferInput#14
-Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
+Before:   reaching definitions = { to_increment = 0 }
 ~~~~~~~~~
-ConditionalBlock: then: 8, else: 10
+<exceptional-exit>
 
-8:
-Process order: 4
-TransferInput#16
-Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
+6:
+Process order: 5
+TransferInput#21
+Before:   reaching definitions = { to_increment = 0, switch#num0 = <*nullchk*>i }
+~~~~~~~~~
+ConditionalBlock: then: 10, else: 12
+
+10:
+Process order: 6
+TransferInput#23
+Before:   reaching definitions = { to_increment = 0, switch#num0 = <*nullchk*>i }
 ~~~~~~~~~
 to_increment   [ LocalVariable ]
 to_increment   [ LocalVariable ]
@@ -53,12 +82,12 @@ to_increment = (to_increment + 1)   [ Assignment ]
 expression statement to_increment = to_increment + 1   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 1) }
+After:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 1) }
 
-10:
-Process order: 5
-TransferInput#17
-Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
+12:
+Process order: 7
+TransferInput#24
+Before:   reaching definitions = { to_increment = 0, switch#num0 = <*nullchk*>i }
 ~~~~~~~~~
 _   [ AnyPattern ]
 WrappedBoolean(_)   [ DeconstructorPattern ]
@@ -70,23 +99,23 @@ to_increment = (to_increment + 2)   [ Assignment ]
 expression statement to_increment = to_increment + 2   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2) }
+After:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2) }
 
-13:
-Process order: 6
-TransferInput#35
-Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+15:
+Process order: 8
+TransferInput#42
+Before:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
 to_increment   [ LocalVariable ]
 return to_increment   [ Return ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+After:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 
 0:
-Process order: 7
-TransferInput#40
-Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+Process order: 9
+TransferInput#47
+Before:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 <exit>
