@@ -3016,7 +3016,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      exceptionalFinallyBlockCFGGenerator.accept(group.keySet());
+      exceptionalFinallyBlockCFGGenerator.accept(Collections.singleton(exceptionType));
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithException(
