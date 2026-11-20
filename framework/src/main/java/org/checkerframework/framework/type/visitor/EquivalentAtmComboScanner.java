@@ -54,6 +54,16 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
     return AtmCombo.accept(type1, type2, param, this);
   }
 
+  /**
+   * Scans corresponding elements of {@code types1} and {@code types2}, and combines the results
+   * with {@link #reduce}. If one iterable is longer, its extra elements are not scanned.
+   *
+   * @param types1 a sequence of types
+   * @param types2 a sequence of types
+   * @param param the visitor param
+   * @return the reduction of the results of scanning each pair of corresponding elements, or null
+   *     if there are no such pairs
+   */
   protected RETURN_TYPE scan(
       Iterable<? extends AnnotatedTypeMirror> types1,
       Iterable<? extends AnnotatedTypeMirror> types2,
@@ -69,6 +79,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       AnnotatedTypeMirror type2 = tIter2.next();
 
       r = first ? scan(type1, type2, param) : scanAndReduce(type1, type2, param, r);
+      first = false;
     }
 
     return r;

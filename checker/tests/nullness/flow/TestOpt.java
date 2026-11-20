@@ -67,6 +67,7 @@ public class TestOpt {
     try {
       // :: error: [assignment]
       // :: error: [type.arguments.not.inferred]
+      // :: error: [return]
       @NonNull Object o = Opt.orElseThrow(p, () -> null);
     } catch (Throwable t) {
       // p was null

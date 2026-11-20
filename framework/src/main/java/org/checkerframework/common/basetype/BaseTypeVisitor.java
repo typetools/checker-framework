@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,6 +225,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /** The type of java.util.Vector. */
   private final AnnotatedDeclaredType vectorType;
+
+  /**
+   * The invocations for which this visitor does not report a "type.arguments.not.inferred" error,
+   * because it has reported the error at another invocation of the same inference problem. An
+   * invocation is removed when the visitor visits it.
+   */
+  private final Set<Tree> inferenceFailureAlreadyReported =
+      Collections.newSetFromMap(new IdentityHashMap<>());
 
   /** The @java.lang.annotation.Target annotation. */
   protected final AnnotationMirror TARGET =
@@ -2752,10 +2761,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ParameterizedExecutableType preInference =
         atypeFactory.methodFromUseWithoutTypeArgInference(tree);
+    // The result of type argument inference if it failed, or null if it was not needed or
+    // succeeded.
+    InferenceResult failedInference = null;
     if (!preInference.executableType().getElement().getTypeParameters().isEmpty()
         && preInference.typeArgs().isEmpty()) {
-      if (!checkTypeArgumentInference(tree, preInference.executableType())) {
+      InferenceResult inferenceResult =
+          checkTypeArgumentInference(tree, preInference.executableType());
+      if (inferenceResult == null) {
         return null;
+      }
+      if (inferenceResult.inferenceFailed()) {
+        failedInference = inferenceResult;
       }
     }
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(tree);
@@ -2767,16 +2784,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     ExecutableElement method = invokedMethod.getElement();
     CharSequence methodName = ElementUtils.getSimpleDescription(method);
-    checkTypeArguments(
-        tree,
-        paramBounds,
-        typeargs,
-        tree.getTypeArguments(),
-        methodName,
-        invokedMethod.getTypeVariables());
+    if (failedInference == null) {
+      // If inference failed, the "type.arguments.not.inferred" error covers the type arguments.
+      checkTypeArguments(
+          tree,
+          paramBounds,
+          typeargs,
+          tree.getTypeArguments(),
+          methodName,
+          invokedMethod.getTypeVariables());
+    }
     List<AnnotatedTypeMirror> params =
         AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments(), tree);
-    checkArguments(params, tree.getArguments(), methodName, method.getParameters());
+    if (failedInference == null) {
+      checkArguments(params, tree.getArguments(), methodName, method.getParameters());
+    } else {
+      checkArgumentsAfterFailedInference(
+          params,
+          AnnotatedTypes.adaptParameters(
+              atypeFactory, preInference.executableType(), tree.getArguments(), tree),
+          failedInference.getTypeArgumentsForExpression(tree).keySet(),
+          tree.getArguments(),
+          methodName,
+          method.getParameters());
+    }
     checkVarargs(invokedMethod, tree);
     checkFunctionalArguments(method, tree.getArguments());
 
@@ -2810,34 +2841,49 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports a "type.arguments.not.inferred" error if type argument inference fails and returns
-   * false if inference fails.
+   * Reports an error if type argument inference for {@code tree} fails or crashes, and returns the
+   * result of inference, or null if inference crashes.
+   *
+   * <p>If inference fails because of qualifiers, the result contains the type arguments that
+   * inference instantiated. The caller can use them to perform the checks of {@code tree} that do
+   * not depend on the type arguments, and to check the subexpressions of {@code tree}.
+   *
+   * <p>The nested invocations of an inference problem share its failure. The failure is reported
+   * once, at the first invocation of the problem that this visitor visits, which is the outermost
+   * one.
    *
    * @param tree a tree that requires type argument inference
    * @param methodType the type of the method before type argument substitution
-   * @return true if type argument inference succeeds
+   * @return the result of type argument inference, or null if inference crashes
    */
-  private boolean checkTypeArgumentInference(
+  private @Nullable InferenceResult checkTypeArgumentInference(
       ExpressionTree tree, AnnotatedExecutableType methodType) {
     InferenceResult args =
         atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, tree, methodType);
-    if (args != null && !args.inferenceFailed()) {
-      return true;
+    if (!args.inferenceFailed()) {
+      return args;
     }
     if (args.inferenceCrashed()) {
       checker.reportError(
           tree,
           "type.argument.inference.crashed",
           ElementUtils.getSimpleDescription(methodType.getElement()),
-          args == null ? "" : args.getErrorMsg());
-      return false;
+          args.getErrorMsg());
+      return null;
     }
-    checker.reportError(
-        tree,
-        "type.arguments.not.inferred",
-        ElementUtils.getSimpleDescription(methodType.getElement()),
-        args == null ? "" : args.getErrorMsg());
-    return false;
+    if (!inferenceFailureAlreadyReported.remove(tree)) {
+      checker.reportError(
+          tree,
+          "type.arguments.not.inferred",
+          ElementUtils.getSimpleDescription(methodType.getElement()),
+          args.getErrorMsg());
+      for (Tree invocation : args.getResults().keySet()) {
+        if (invocation != tree) {
+          inferenceFailureAlreadyReported.add(invocation);
+        }
+      }
+    }
+    return args;
   }
 
   /**
@@ -3104,10 +3150,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     ParameterizedExecutableType preInference =
         atypeFactory.constructorFromUseWithoutTypeArgInference(tree);
+    // The result of type argument inference if it failed, or null if it was not needed or
+    // succeeded.
+    InferenceResult failedInference = null;
     if (!preInference.executableType().getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(tree)) {
-      if (!checkTypeArgumentInference(tree, preInference.executableType())) {
+      InferenceResult inferenceResult =
+          checkTypeArgumentInference(tree, preInference.executableType());
+      if (inferenceResult == null) {
         return null;
+      }
+      if (inferenceResult.inferenceFailed()) {
+        failedInference = inferenceResult;
       }
     }
 
@@ -3124,7 +3178,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ExecutableElement superConstructor = TreeUtils.getSuperConstructor(tree);
     CharSequence constructorName = ElementUtils.getSimpleDescription(superConstructor);
 
-    checkArguments(params, passedArguments, constructorName, superConstructor.getParameters());
+    if (failedInference == null) {
+      checkArguments(params, passedArguments, constructorName, superConstructor.getParameters());
+    } else {
+      checkArgumentsAfterFailedInference(
+          params,
+          AnnotatedTypes.adaptParameters(
+              atypeFactory, preInference.executableType(), passedArguments, tree),
+          failedInference.getTypeArgumentsForExpression(tree).keySet(),
+          passedArguments,
+          constructorName,
+          superConstructor.getParameters());
+    }
     checkVarargs(constructorType, tree);
     if (checkPurityAnnotations && !infer) {
       // An anonymous class's arguments are passed to its super constructor.
@@ -3134,13 +3199,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsP.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
 
-    checkTypeArguments(
-        tree,
-        paramBounds,
-        typeargs,
-        tree.getTypeArguments(),
-        constructorName,
-        superConstructor.getTypeParameters());
+    if (failedInference == null) {
+      // If inference failed, the "type.arguments.not.inferred" error covers the type arguments.
+      checkTypeArguments(
+          tree,
+          paramBounds,
+          typeargs,
+          tree.getTypeArguments(),
+          constructorName,
+          superConstructor.getTypeParameters());
+    }
 
     boolean valid = validateTypeOf(tree);
 
@@ -4869,6 +4937,59 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
+  /**
+   * Like {@link #checkArguments}, for an invocation whose type argument inference failed because of
+   * qualifiers. An argument whose parameter type mentions an inferred type variable is not checked,
+   * because the "type.arguments.not.inferred" error covers it. Every argument is scanned.
+   *
+   * @param requiredTypes the required types, after substitution of the type arguments that
+   *     inference instantiated
+   * @param uninferredTypes the required types, before substitution of the type arguments
+   * @param inferredTypeVars the type variables whose type arguments inference instantiated
+   * @param passedArgs the expressions passed to the corresponding types
+   * @param executableName the name of the method or constructor being called
+   * @param paramNames the names of the callee's formal parameters
+   */
+  private void checkArgumentsAfterFailedInference(
+      List<? extends AnnotatedTypeMirror> requiredTypes,
+      List<? extends AnnotatedTypeMirror> uninferredTypes,
+      Collection<? extends TypeVariable> inferredTypeVars,
+      List<? extends ExpressionTree> passedArgs,
+      CharSequence executableName,
+      List<?> paramNames) {
+    int maxParamNamesIndex = paramNames.size() - 1;
+    for (int i = 0; i < passedArgs.size(); ++i) {
+      ExpressionTree passedArg = passedArgs.get(i);
+      if (!containsAnyTypeVariable(uninferredTypes.get(i), inferredTypeVars)) {
+        commonAssignmentCheck(
+            requiredTypes.get(i),
+            passedArg,
+            "argument",
+            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            executableName);
+      }
+      scan(passedArg, null);
+    }
+  }
+
+  /**
+   * Returns true if the given type contains a use of any of the given type variables.
+   *
+   * @param type a type
+   * @param typeVars type variables
+   * @return true if {@code type} contains a use of any of {@code typeVars}
+   */
+  private static boolean containsAnyTypeVariable(
+      AnnotatedTypeMirror type, Collection<? extends TypeVariable> typeVars) {
+    Type underlying = (Type) type.getUnderlyingType();
+    for (TypeVariable typeVar : typeVars) {
+      if (underlying.contains((Type) typeVar)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // com.sun.tools.javac.util.List has a toString that does not include surrounding "[...]",
   // making it hard to interpret in messages.
   /**
@@ -5065,7 +5186,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.methodFromUseWithoutTypeArgInference(
             memberReferenceTree, compileTimeDeclaration, enclosingType);
     if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
-      if (!checkTypeArgumentInference(memberReferenceTree, preInference.executableType())) {
+      InferenceResult inferenceResult =
+          checkTypeArgumentInference(memberReferenceTree, preInference.executableType());
+      if (inferenceResult == null || inferenceResult.inferenceFailed()) {
+        // The checks below compare the inferred types of the member reference with its function
+        // type, so they would repeat the error that inference reported.
         return true;
       }
     }
@@ -5280,29 +5405,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return {@code type}, expressed in terms of the overridden method's type variables
      */
     protected AnnotatedTypeMirror adaptToOverridden(AnnotatedTypeMirror type) {
+      // containsAnyTypeVariable is cheaper than substitution, which copies the type even when it
+      // substitutes nothing.
       if (typeVarMapping == null || !containsAnyTypeVariable(type, typeVarMapping.keySet())) {
         return type;
       }
       return atypeFactory.getTypeVarSubstitutor().substitute(typeVarMapping, type);
-    }
-
-    /**
-     * Returns true if the given type contains a use of any of the given type variables. This is
-     * cheaper than substitution, which copies the type even when it substitutes nothing.
-     *
-     * @param type a type
-     * @param typeVars type variables
-     * @return true if {@code type} contains a use of any of {@code typeVars}
-     */
-    private boolean containsAnyTypeVariable(
-        AnnotatedTypeMirror type, Collection<? extends TypeVariable> typeVars) {
-      Type underlying = (Type) type.getUnderlyingType();
-      for (TypeVariable typeVar : typeVars) {
-        if (underlying.contains((Type) typeVar)) {
-          return true;
-        }
-      }
-      return false;
     }
 
     /**
