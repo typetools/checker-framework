@@ -457,12 +457,14 @@ version of \code{java.lang.String}.  You don't need to repeat these steps
 to handle \code{java.lang.String} for the Interning Checker,
 but you might do something similar for a different class and/or checker.
 
-There are two types of annotation files, which are files containing annotations that
+There are three types of annotation files, which are files containing annotations that
 can be read by the Checker Framework.
 This section describes stub files, which are used by programmers and
 type system designers.
 Section~\ref{ajava-files} describes ajava files, which are used by
 tools, such as type inference.
+Section~\ref{intellij-annotations} describes IntelliJ IDEA's external
+annotation files.
 
 
 \subsectionAndLabel{Using a stub file}{stub-using}
@@ -478,10 +480,20 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a stub file (ending with \<.astub>), directory, or
-\<.jar> file; specifying a directory or \<.jar> file is
-equivalent to specifying every file in it whose name ends with
-\code{.astub}.  The stub path entries are delimited by
+Each stub path entry is a stub file, a directory, or an archive (ending
+with \<.jar> or \<.zip>).  A stub file that is named directly conventionally
+ends with \<.astub>; it may have any other name, except that its name must
+not end with \<.ajava>.
+Specifying a directory or archive is equivalent to
+specifying every file in it whose name ends with
+\code{.astub}, with two exceptions.  First, an archive within a directory
+is not read; the Checker Framework issues a note about it.  Second, a
+hidden file or directory (one whose name starts with ``\<.>'') within a
+directory or archive is not read; an example is the \<.\_Foo.astub>
+metadata file that macOS adds to archives and to non-Mac file systems.
+The Checker Framework issues a warning about, and does not read, a stub
+path entry whose name ends with \<.ajava>.
+The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
 A checker automatically reads some of its own stub files, even without a
@@ -612,7 +624,9 @@ Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking, as explained below;
 this makes the stub file
 smaller and easier for people to read and write.
-The stub file's extension must be \<.astub>, not \<.java>.
+The stub file's extension should be \<.astub>, not \<.java>.  A stub file
+in a directory or archive is read only if its name ends with \<.astub>
+(see Section~\ref{stub-using}).
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -899,7 +913,11 @@ Some command-line options make the stub parser issue more warnings:
   By default, the Checker Framework warns about such problems in a stub
   file provided on the command line, but does not warn about built-in stub files.
   These command-line options turn the warnings on or off (respectively) for
-  all stub files. \\
+  all stub files.
+  An IntelliJ IDEA annotation file (Section~\ref{intellij-annotations}) is always
+  provided on the command line, so the Checker Framework warns about it by default;
+  \<-AstubNoWarnIfNotFound> turns those warnings off.
+  \\
   The \<@NoAnnotationFileParserWarning> annotation on a package or type in a stub file
   causes no warning to be issued for that package or type, regardless of
   the command-line options.
@@ -915,6 +933,8 @@ Some command-line options make the stub parser issue more warnings:
   to report only missing methods/fields, but ignore missing classes, even if
   other classes from the same package are present.
   Useful if a package spans more than one jar.
+  This also applies to IntelliJ IDEA annotation files
+  (Section~\ref{intellij-annotations}).
 
 \item[\<-AstubWarnIfRedundantWithBytecode>]
   Warn if a stub file entry is redundant with bytecode information.  The
@@ -970,10 +990,12 @@ in the version of the library you are using.
 
 \sectionAndLabel{Ajava files}{ajava-files}
 
-There are two types of annotation files, which are files containing annotations that
+There are three types of annotation files, which are files containing annotations that
 can be read by the Checker Framework.
 Section~\ref{stub} describes stub files, which are used by programmers and
 type system designers.
+Section~\ref{intellij-annotations} describes IntelliJ IDEA's external
+annotation files.
 This section describes ajava files.
 Ajava files are primarily read and written by tools, such as whole-program type
 inference (see Section~\ref{whole-program-inference}).  (However,
@@ -991,9 +1013,11 @@ in stub files.)
 \subsectionAndLabel{Using an Ajava file}{ajava-using}
 
 The \code{-Aajava} command-line argument works like \code{-Astubs} (see
-Section~\ref{stub-using}). It takes a colon-separated list of
-files and directories containing ajava files, which end in the \code{.ajava}
-extension.
+Section~\ref{stub-using}), with ajava files (which end in the \code{.ajava}
+extension) in place of stub files.  It takes a list of
+ajava files, directories, and archives that contain ajava files.
+The entries are delimited by \<File.pathSeparator> (``\<:>'' for Linux and
+Mac, ``\<;>'' for Windows).
 
 For example:
 
@@ -1022,12 +1046,17 @@ due to mismatches.
 
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
-unambiguously specified directly with its full path. A pair of \<.ajava>
+unambiguously specified directly with its full path.  An ajava file name
+must end with \<.ajava>.  A pair of \<.ajava>
 files is specified ambiguously if one of their fully qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
 was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
 would be considered ambiguous and an \<ambiguous.ajava> warning would be issued.
+An ajava file within an archive never corresponds to a source file.  The
+Checker Framework reads it as it reads a stub file, so it ignores
+annotations in the archived ajava file that a stub file cannot express,
+such as annotations within anonymous and local classes.
 Files found under a directory are always unambiguous, because their file structure
 must match their package name; the solution to an \<ambiguous.ajava> warning is to
 convert the specific files in the \<-Aajava> argument to directories.
@@ -1080,6 +1109,39 @@ Here is an example invocation:
   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
     org.checkerframework.framework.ajava.InsertAjavaAnnotations \
     <path-to-ajava-files> <path-to-java-files>
+\end{Verbatim}
+
+
+\sectionAndLabel{External annotations in IntelliJ IDEA format}{intellij-annotations}
+
+The Checker Framework can read external annotations stored in IntelliJ
+IDEA's \code{annotations.xml} format.  This allows users to create
+external annotations
+using
+\href{https://www.jetbrains.com/help/idea/annotating-source-code.html#external-annotations}{IntelliJ
+IDEA's user interface}.
+
+The \code{-AintellijAnnotations} command-line argument takes a
+path-separated list of IntelliJ IDEA annotation files, directories, and
+\<.jar> and \<.zip> archives.
+An annotation file that is named directly may have any name (but a name
+ending with \<.jar> or \<.zip>, in any case, denotes an archive).
+Within a directory or archive, every file named \code{annotations.xml} is
+read, wherever it appears, and no other file is read, with two exceptions.
+First, an archive within a directory is not read; the Checker Framework
+issues a note about it.  Name each archive in the list.  Second, a file
+within a hidden directory (one whose name starts with ``\<.>'') within a
+directory or archive is not read, such as \<.backup/annotations.xml>.
+(By convention, IntelliJ IDEA places each \code{annotations.xml} file in a
+directory whose path matches the package name of the elements it annotates,
+but the Checker Framework does not require that layout.)
+The path separator is colon on Unix and semicolon on Windows.
+
+For example:
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker \
+    -AintellijAnnotations=path/to/annotations-dir:path/to/annotations.jar \
+    MyFile.java
 \end{Verbatim}
 
 
