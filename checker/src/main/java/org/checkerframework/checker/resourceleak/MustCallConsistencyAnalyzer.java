@@ -1609,13 +1609,22 @@ public class MustCallConsistencyAnalyzer {
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
           if (cmAtf.hasOwning(parameter)) {
-            Obligation localObligation = getObligationForVar(obligations, local);
-            // Passing to an owning parameter is not sufficient to resolve the
-            // obligation created from a MustCallAlias parameter, because the
-            // enclosing method must actually return the value.
-            if (!localObligation.derivedFromMustCallAlias()) {
-              // Transfer ownership!
-              obligations.remove(localObligation);
+            // An @Owning parameter takes ownership of the value itself, so transfer all of the
+            // local's ordinary (non-collection) obligations. A local may have more than one
+            // obligation, e.g. a CollectionObligation and an ordinary obligation, and their
+            // order in `obligations` is not significant.
+            for (Obligation localObligation : getObligationsForVar(obligations, local)) {
+              if (localObligation instanceof CollectionObligation) {
+                // Element obligations are transferred only to an @OwningCollection parameter.
+                continue;
+              }
+              // Passing to an owning parameter is not sufficient to resolve the
+              // obligation created from a MustCallAlias parameter, because the
+              // enclosing method must actually return the value.
+              if (!localObligation.derivedFromMustCallAlias()) {
+                // Transfer ownership!
+                obligations.remove(localObligation);
+              }
             }
           }
 
@@ -2205,10 +2214,26 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    // Remove the Obligations of the rhs, now that the owning collection field is responsible.
+    // Remove the CollectionObligations of the rhs, now that the owning collection field is
+    // responsible for the elements. The rhs's ordinary obligations (such as a `clear` obligation
+    // of the collection itself) are transferred only if the field is also @Owning; that is done
+    // by the caller. Otherwise, they remain with the rhs and are checked as usual.
     if (rhsTmpVarOrNode instanceof LocalVariableNode rhsVar) {
-      removeObligationsContainingVar(
-          obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+      List<Obligation> replacements = new ArrayList<>();
+      Iterator<Obligation> it = obligations.iterator();
+      while (it.hasNext()) {
+        Obligation obligation = it.next();
+        if (obligation instanceof CollectionObligation
+            && obligation.canBeSatisfiedThrough(rhsVar)) {
+          it.remove();
+          Set<MethodExitKind> whenToEnforce = new HashSet<>(obligation.whenToEnforce);
+          whenToEnforce.removeAll(toClear);
+          if (!whenToEnforce.isEmpty()) {
+            replacements.add(obligation.getReplacement(obligation.resourceAliases, whenToEnforce));
+          }
+        }
+      }
+      obligations.addAll(replacements);
     }
   }
 
