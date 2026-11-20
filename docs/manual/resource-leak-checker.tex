@@ -807,9 +807,14 @@ for (int i = 0; i < n; i++) {
 
 More generally, a method that might add an element with an obligation to its
 receiver collection, such as \<Collection.add>, is annotated with
-\<@CreatesCollectionObligation>.  At a call to such a method, the Resource Leak
-Checker changes the type of the receiver collection to \<@OwningCollection> and
-creates a tracked obligation for the collection in the dataflow analysis.
+\<@CreatesCollectionObligation>.  At a call to such a method on an owning
+receiver (\<@OwningCollection> or \<@OwningCollectionWithoutObligation>), the
+Resource Leak Checker changes the type of the receiver collection to
+\<@OwningCollection> and creates a tracked obligation for the collection in the
+dataflow analysis.  A \<@NotOwningCollection> receiver remains
+\<@NotOwningCollection> and gains no obligation, because it can insert only
+non-owning elements
+(Section~\ref{resource-leak-collections-ownership-types}).
 
 The default type of a resource collection parameter is
 \<@NotOwningCollection>.
@@ -863,7 +868,7 @@ responsibility for the collection's obligation:  the obligation and ownership
 are both transferred to the method invocation expression at the call site.
 
 \begin{verbatim}
-List<Socket> returnSocketList() {
+List<Socket> returnSocketList() throws IOException {
   List<Socket> socketList = new ArrayList<>();
   // `socketList` is @OwningCollectionWithoutObligation
   socketList.add(new Socket(myHost, myPort));
