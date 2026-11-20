@@ -1439,6 +1439,8 @@ public abstract class CFAbstractTransfer<
       return true;
     }
     JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    // A method call is excluded even if its receiver and arguments are unassignable, because the
+    // method might read mutable state (such as a static field) that the intervening code changed.
     if (selector.containsOfClass(MethodCall.class)) {
       return false;
     }
