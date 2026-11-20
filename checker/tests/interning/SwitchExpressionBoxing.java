@@ -21,9 +21,13 @@ public class SwitchExpressionBoxing {
   }
 
   Integer sum(Kind k, int x, int y) {
-    return switch (k) {
-      case A -> x + y;
-      case B -> x - y;
-    };
+    Integer result =
+        switch (k) {
+          case A -> x + y;
+          case B -> x - y;
+        };
+    // :: error: [assignment]
+    @Interned Integer interned = result;
+    return result;
   }
 }

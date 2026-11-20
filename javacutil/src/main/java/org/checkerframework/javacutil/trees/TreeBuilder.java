@@ -105,7 +105,8 @@ public class TreeBuilder {
       throw new BugInCF("no iterator method for %s of type %s", iterableExpr, exprType);
     }
 
-    Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
+    // The type of a generic method is a Type.ForAll; asMethodType() unwraps it.
+    Type.MethodType methodType = iteratorMethod.asType().asMethodType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
     // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
     // List<T>.  It need not be a declared type:  it might be a type variable, as in
@@ -215,14 +216,20 @@ public class TreeBuilder {
       throw new BugInCF("no next method for %s of type %s", iteratorExpr, exprType);
     }
 
-    Type.MethodType methodType = (Type.MethodType) nextMethod.asType();
+    // The type of a generic method is a Type.ForAll; asMethodType() unwraps it.
+    Type.MethodType methodType = nextMethod.asType().asMethodType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
     Type elementType;
 
     if (exprType.getTypeArguments().isEmpty()) {
       elementType = symtab.objectType;
     } else {
-      elementType = (Type) exprType.getTypeArguments().get(0);
+      // The iterator's type argument might be a wildcard, as in `Iterator<? extends Integer>` for
+      // an iterable expression of type `List<? extends Integer>`.  A wildcard is not the type of an
+      // expression, so the result of next() has the wildcard's upper bound, such as `Integer`.
+      // Then, assignment conversion unboxes the result of next() if the loop variable is a
+      // primitive, as in `for (int x : list)`.
+      elementType = javacTypes.wildUpperBound((Type) exprType.getTypeArguments().get(0));
     }
 
     // Replace the next method's generic return type with
