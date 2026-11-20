@@ -388,13 +388,13 @@ public final class Resolution {
   }
 
   /**
-   * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
+   * Resolve {@code var} by instantiating it to the least upper bound of its proper lower bounds.
    *
-   * @param ai a variable to resolve
-   * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
+   * @param var a variable to resolve
+   * @param lowerBounds {@code var}'s nonempty set of proper lower bounds
    */
-  private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
-    ai.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, context));
+  private void resolveWithLowerBounds(Variable var, Set<ProperType> lowerBounds) {
+    var.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(var, lowerBounds, context));
   }
 
   /**
