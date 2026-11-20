@@ -62,16 +62,16 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -2706,7 +2706,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           finallyLabel,
           exceptionalFinallyFrame,
           () -> scan(finallyBlock, p),
-          () -> scan(finallyBlock, p),
+          primaryExceptionTypes -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
           oldBreakLabels,
@@ -2805,7 +2805,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         finallyLabel,
         exceptionalFinallyFrame,
         () -> addCloseCallForResource(resourceDeclarationTree, p),
-        () -> addSuppressingCloseCallForResource(resourceDeclarationTree, p),
+        primaryExceptionTypes ->
+            addSuppressingCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2824,6 +2825,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param p the value to pass to calls to {@code scan}
    */
   private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+    addCloseCallForResource(resourceDeclarationTree, Collections.emptySet(), p);
+  }
+
+  /**
+   * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
+   * in a try-with-resources.
+   *
+   * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
+   *     resource
+   * @param extraExceptionTypes types that label exceptional edges of the {@code close} call, in
+   *     addition to the types of the exceptions that the call might throw
+   * @param p the value to pass to calls to {@code scan}
+   */
+  private void addCloseCallForResource(
+      Tree resourceDeclarationTree, Set<TypeMirror> extraExceptionTypes, Void p) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
     Node receiverNode;
@@ -2880,7 +2896,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE, extraExceptionTypes);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2912,6 +2928,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private MethodInvocationNode extendWithArtificialCall(
       MethodInvocationTree call, Node receiver, NullReceiver nullReceiver) {
+    return extendWithArtificialCall(call, receiver, nullReceiver, Collections.emptySet());
+  }
+
+  /**
+   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
+   * call to {@code iterator()} in an enhanced for loop.
+   *
+   * @param call the call
+   * @param receiver the receiver of the call
+   * @param nullReceiver what happens when the receiver is null. If the receiver is never null, such
+   *     as {@code this}, the call does not throw a {@code NullPointerException}, regardless of this
+   *     argument.
+   * @param extraExceptionTypes types that label exceptional edges of the call, in addition to the
+   *     types of the exceptions that the call might throw
+   * @return the node for the call
+   */
+  private MethodInvocationNode extendWithArtificialCall(
+      MethodInvocationTree call,
+      Node receiver,
+      NullReceiver nullReceiver,
+      Set<TypeMirror> extraExceptionTypes) {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
@@ -2919,7 +2956,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
-    extendWithMethodInvocationNode(callNode);
+    extendWithInvocationNode(callNode, callNode.getTarget().getMethod(), extraExceptionTypes);
     return callNode;
   }
 
@@ -2930,6 +2967,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
    * successor of the added nodes is the node that follows them.
    *
+   * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
+   * addition to the types of the exceptions that {@code close} might throw. So an analysis that
+   * ignores some exception types follows those edges, with the exceptional store of the call,
+   * whenever it follows the rethrow of the primary exception -- even if it ignores every exception
+   * that {@code close} might throw. Otherwise, if {@code close} terminates execution and might
+   * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
+   * unreachable.
+   *
    * <p>If {@code close} terminates execution, the call has no normal successor, but its exceptional
    * successors still reach the rethrow of the primary exception. That models termination by
    * throwing an exception. (If {@code close} terminates execution by exiting the JVM, the primary
@@ -2937,16 +2982,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
+   * @param primaryExceptionTypes the types of the primary exception
    * @param p the value to pass to calls to {@code scan}
    */
-  private void addSuppressingCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+  private void addSuppressingCloseCallForResource(
+      Tree resourceDeclarationTree, Set<TypeMirror> primaryExceptionTypes, Void p) {
     Label suppressedLabel = new Label();
     tryStack.pushFrame(
         new TryCatchFrame(
             types,
             Collections.singletonList(
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
-    addCloseCallForResource(resourceDeclarationTree, p);
+    addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
     tryStack.popFrame();
     addLabelForNextNode(suppressedLabel);
   }
@@ -2966,7 +3013,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, for each
    *     path except the ones on which an exception reaches the finally block
    * @param exceptionalFinallyBlockCFGGenerator generates CFG nodes and edges for the finally block,
-   *     for the paths on which an exception reaches the finally block
+   *     for the paths on which an exception reaches the finally block; its argument is the types of
+   *     the exceptions that reach the copy of the finally block and that the copy rethrows
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
@@ -2984,7 +3032,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Label finallyLabel,
       TryFinallyFrame exceptionalFinallyFrame,
       Runnable finallyBlockCFGGenerator,
-      Runnable exceptionalFinallyBlockCFGGenerator,
+      Consumer<Set<TypeMirror>> exceptionalFinallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -3011,12 +3059,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     // For each exception that reaches the finally block, there is a copy of the finally block that
-    // rethrows that exception after the finally block completes normally.  Exceptions that the
-    // same nodes throw share a copy, because they reach the finally block from the same nodes.  If
-    // exceptions that different nodes throw shared a copy, the analysis would merge the stores of
-    // those nodes, and the end of the copy would rethrow each exception with the merged store.  For
-    // example, an exception thrown while a resource is open would make the Resource Leak Checker
-    // report a leak on the path of another exception that is thrown after the resource is closed.
+    // rethrows that exception after the finally block completes normally.  If two exceptions
+    // shared a copy, the analysis would merge the stores of the paths that throw them, and the end
+    // of the copy would rethrow each exception with the merged store.  For example, an exception
+    // thrown while a resource is open would make the Resource Leak Checker report a leak on the
+    // path of another exception that is thrown after the resource is closed.  So exceptions that
+    // different nodes throw get different copies.  A transfer function can give a method
+    // invocation a different exceptional store for each type that it throws, as for a method
+    // annotated with @EnsuresCalledMethodsOnException, so each type that a method invocation
+    // throws gets its own copy.  Other exceptions that the same nodes throw share a copy:  a copy
+    // for each type would make the size of the CFG exponential, with a large base, in the depth of
+    // the nesting of finally blocks.
     for (Map<TypeMirror, Label> group : exceptionGroups(exceptionalFinallyFrame)) {
       for (Label label : group.values()) {
         addLabelForNextNode(label);
@@ -3031,7 +3084,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      exceptionalFinallyBlockCFGGenerator.run();
+      exceptionalFinallyBlockCFGGenerator.accept(Collections.unmodifiableSet(group.keySet()));
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithExceptions(
@@ -3042,7 +3095,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
-              group.keySet());
+              Collections.unmodifiableSet(group.keySet()));
 
       throwing.setTerminatesExecution(true);
     }
@@ -3169,14 +3222,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Returns the types of the exceptions that reach the given frame, grouped by the nodes that throw
-   * them: two types are in the same group if and only if the same nodes throw them to the frame.
+   * them. A type that a method invocation throws to the frame is alone in its group. Two other
+   * types are in the same group if and only if the same nodes throw them to the frame.
    *
    * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
    * @return the groups, in the order that their first types reach {@code frame}; each group maps
    *     each of its types to the type's label in {@code frame}. Empty if no exception reaches
    *     {@code frame}.
    */
-  private Collection<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
+  private List<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
     Map<TypeMirror, Label> exceptionLabels = frame.getExceptionLabels();
     if (exceptionLabels.isEmpty()) {
       return Collections.emptyList();
@@ -3184,23 +3238,43 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Set<Label> frameLabels = new HashSet<>(exceptionLabels.values());
     // The nodes that throw an exception to each label of the frame.
     Map<Label, Set<ExtendedNode>> throwers = new HashMap<>();
+    // The labels of the frame to which a method invocation throws an exception.
+    Set<Label> invocationLabels = new HashSet<>();
     for (ExtendedNode node : nodeList.subList(frame.firstNodeIndex, nodeList.size())) {
       if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
+        boolean isInvocation = exceptionalNode.getNode() instanceof MethodInvocationNode;
         for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
           for (Label label : labels) {
             if (frameLabels.contains(label)) {
               throwers.computeIfAbsent(label, l -> new HashSet<>()).add(node);
+              if (isInvocation) {
+                invocationLabels.add(label);
+              }
             }
           }
         }
       }
     }
-    Map<Set<ExtendedNode>, Map<TypeMirror, Label>> groups = new LinkedHashMap<>();
+    List<Map<TypeMirror, Label>> result = new ArrayList<>();
+    // The groups of the types that no method invocation throws, keyed by the nodes that throw them.
+    Map<Set<ExtendedNode>, Map<TypeMirror, Label>> groupsByThrowers = new HashMap<>();
     for (Map.Entry<TypeMirror, Label> entry : exceptionLabels.entrySet()) {
-      Set<ExtendedNode> nodes = throwers.getOrDefault(entry.getValue(), Collections.emptySet());
-      groups.computeIfAbsent(nodes, n -> new ArrayMap<>()).put(entry.getKey(), entry.getValue());
+      TypeMirror type = entry.getKey();
+      Label label = entry.getValue();
+      if (invocationLabels.contains(label)) {
+        result.add(Collections.singletonMap(type, label));
+        continue;
+      }
+      Set<ExtendedNode> nodes = throwers.getOrDefault(label, Collections.emptySet());
+      Map<TypeMirror, Label> group = groupsByThrowers.get(nodes);
+      if (group == null) {
+        group = new ArrayMap<>();
+        groupsByThrowers.put(nodes, group);
+        result.add(group);
+      }
+      group.put(type, label);
     }
-    return groups.values();
+    return result;
   }
 
   @Override
@@ -3412,8 +3486,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    // Throwing a null value throws a NullPointerException (JLS 14.18).
+    Set<TypeMirror> causes;
+    if (exception.getKind() == TypeKind.NULL) {
+      causes = Collections.singleton(nullPointerExceptionType);
+    } else if (mayBeNull(expression)) {
+      causes = new LinkedHashSet<>(2);
+      causes.add(exception);
+      causes.add(nullPointerExceptionType);
+    } else {
+      causes = Collections.singleton(exception);
+    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
-    NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
+    NodeWithExceptionsHolder exNode = extendWithNodeWithExceptions(throwsNode, causes);
     exNode.setTerminatesExecution(true);
     return throwsNode;
   }
@@ -3576,15 +3661,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Look up the method to invoke.  The access does not throw a NullPointerException, because the
-    // receiver is tested for nullness only after the arguments are evaluated.  The
-    // MethodInvocationNode, which follows the arguments, may throw any RuntimeException, including
-    // a NullPointerException for a null receiver.
+    // Evaluate the receiver.
     Node receiver = getReceiver(methodSelect);
-
-    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
-
-    extendWithNode(target);
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -3598,6 +3676,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
+
+    // Look up the method to invoke.  The access tests the receiver for nullness, which happens
+    // after the arguments are evaluated.  Its NullPointerException is separate from the exceptions
+    // of the MethodInvocationNode, which the invoked method throws after it is entered.  So, a
+    // handler for a NullPointerException from a null receiver does not assume the postconditions
+    // that the invoked method ensures on exceptional exit, such as
+    // @EnsuresCalledMethodsOnException.
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
+    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
 
     // TODO: lock the receiver for synchronized methods
 
@@ -3627,13 +3714,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param executable the method or constructor that {@code node} invokes
    */
   private void extendWithInvocationNode(Node node, ExecutableElement executable) {
+    extendWithInvocationNode(node, executable, Collections.emptySet());
+  }
+
+  /**
+   * Extends the CFG with the given node, which invokes the given method or constructor, accounting
+   * for potential exceptions thrown by the invocation. If {@code executable} is annotated {@link
+   * TerminatesExecution}, the invocation terminates execution.
+   *
+   * @param node a method invocation or object creation
+   * @param executable the method or constructor that {@code node} invokes
+   * @param extraExceptionTypes types that label exceptional edges of {@code node}, in addition to
+   *     the types of the exceptions that the invocation might throw
+   */
+  private void extendWithInvocationNode(
+      Node node, ExecutableElement executable, Set<TypeMirror> extraExceptionTypes) {
     List<? extends TypeMirror> thrownTypes = executable.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
+        ArraySet.newArraySetOrLinkedHashSet(
+            thrownTypes.size() + uncheckedExceptionTypes.size() + extraExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
+    // Add the extra types that label exceptional edges.
+    thrownSet.addAll(extraExceptionTypes);
 
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
     if (annotationProvider.getDeclAnnotation(executable, TerminatesExecution.class) != null) {

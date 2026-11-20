@@ -5,6 +5,7 @@
 
 import java.io.*;
 import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.dataflow.qual.TerminatesExecution;
 
 abstract class TryWithResourcesPrimaryException {
 
@@ -29,6 +30,50 @@ abstract class TryWithResourcesPrimaryException {
     try (Closeable r = allocWithoutException()) {
       c.close();
       mightThrow();
+    }
+  }
+
+  static class OtherException extends Exception {}
+
+  interface OtherCloseable extends AutoCloseable {
+    @Override
+    void close() throws OtherException;
+  }
+
+  public abstract @Owning OtherCloseable allocOther();
+
+  // The try block always throws an IOException.  If close() throws an OtherException, then that
+  // exception is suppressed, and the IOException propagates to the handler, which closes c.  An
+  // OtherException never propagates from the try-with-resources statement.
+  void primaryExceptionReachesHandler() throws IOException, OtherException {
+    Closeable c = allocWithoutException();
+    try {
+      try (OtherCloseable r = allocOther()) {
+        throw new IOException();
+      }
+    } catch (IOException e) {
+      c.close();
+    }
+  }
+
+  // A resource whose close() terminates execution by throwing an Error, which the Resource Leak
+  // Checker ignores.  The try-with-resources statement suppresses that Error and rethrows the
+  // primary exception.
+  static class TerminatingClose implements Closeable {
+    @Override
+    @TerminatesExecution
+    public void close() {
+      throw new Error();
+    }
+  }
+
+  void leakWhenTryBlockThrowsAndCloseTerminates() throws IOException {
+    // :: error: [required.method.not.called]
+    Closeable c = alloc();
+    try (TerminatingClose r = new TerminatingClose()) {
+      // If mightThrow() throws, c is not closed.
+      mightThrow();
+      c.close();
     }
   }
 }

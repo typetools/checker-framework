@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -587,6 +588,13 @@ public class NullnessTransfer
 
           @Override
           public Boolean visitClass(ClassTree tree, Void p) {
+            return false;
+          }
+
+          // An annotation is not evaluated at run time.  Its element-value pairs, such as
+          // `value = 1`, are AssignmentTrees whose left-hand side is not a variable.
+          @Override
+          public Boolean visitAnnotation(AnnotationTree tree, Void p) {
             return false;
           }
 
