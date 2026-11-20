@@ -9,6 +9,21 @@
 
 ### Changes for type system implementers
 
+Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
+result omits each node that might have a different value by the time the
+enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
+result can be empty.  A subclass that overrides `splitAssignments()` must
+override `nodesWithValueOf()` instead.
+
+`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
+the new method `CFAbstractAnalysis.canAlias` instead.
+
+`canAlias(a, b)` compares the erasures of the types of `a` and `b`, and every
+bound of a type variable, wildcard, or intersection type.  It previously
+required one type to be a subtype of the other, so it returned false for some
+values that can be the same object, such as values whose types are two
+different type variables or two parameterizations of a generic class.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
