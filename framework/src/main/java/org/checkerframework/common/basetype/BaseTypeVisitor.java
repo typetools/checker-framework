@@ -2115,17 +2115,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Records a use of {@link #parameter} if {@code target}, the target of an assignment, is an
-     * element of it; otherwise scans {@code target}.
+     * Records a use of {@link #parameter} if {@code assignmentTarget}, the target of an assignment,
+     * is an element of it; otherwise scans {@code assignmentTarget}.
      *
-     * @param target the target of an assignment, compound assignment, increment, or decrement
+     * @param assignmentTarget the target of an assignment, compound assignment, increment, or
+     *     decrement
      */
-    private void scanTarget(ExpressionTree target) {
-      if (TreeUtils.withoutParens(target) instanceof ArrayAccessTree arrayAccess
+    private void scanTarget(ExpressionTree assignmentTarget) {
+      if (TreeUtils.withoutParens(assignmentTarget) instanceof ArrayAccessTree arrayAccess
           && isParameter(arrayAccess.getExpression())) {
         found = true;
       } else {
-        scan(target, null);
+        scan(assignmentTarget, null);
       }
     }
 
@@ -6033,7 +6034,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               return receiverAtFunctionalInterfaceMethod(superExpr.getType());
             }
 
-            /**
+            /*
              * Returns the expression at the interface method's declaration that denotes the
              * referenced method's receiver.
              *
