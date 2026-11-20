@@ -31,7 +31,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   NullnessChecker.LINT_TRUSTARRAYLENZERO,
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
-@SupportedOptions({"assumeKeyFor", "invocationPreservesArgumentNullness"})
+@SupportedOptions({"assumeKeyFor", "invocationPreservesArgumentNullness", "noPathShape"})
 @StubFiles({"java-lang-classfile.astub", "junit-assertions.astub", "log4j.astub"})
 public class NullnessChecker extends InitializationChecker {
 
@@ -76,6 +76,9 @@ public class NullnessChecker extends InitializationChecker {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (!hasOptionNoSubcheckers("assumeKeyFor")) {
       checkers.add(KeyForSubchecker.class);
+    }
+    if (!hasOptionNoSubcheckers("noPathShape")) {
+      checkers.add(PathShapeSubchecker.class);
     }
     return checkers;
   }
