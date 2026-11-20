@@ -490,8 +490,9 @@ public class NullnessTransfer
 
   /**
    * Returns true if the given expression is an access of a {@link MonotonicNonNull} field whose
-   * receiver is not assignable by other code. Once such an expression is non-null, no code can make
-   * it null again, so a method call does not invalidate the knowledge that it is non-null.
+   * receiver is not assignable by other code and contains no method call. Once such an expression
+   * is non-null, no code can make it null again, so a method call does not invalidate the knowledge
+   * that it is non-null.
    *
    * @param expr an expression
    * @return true if {@code expr} is a {@link MonotonicNonNull} field access with a stable receiver
@@ -500,7 +501,12 @@ public class NullnessTransfer
     if (!(expr instanceof FieldAccess fieldAccess)) {
       return false;
     }
-    return !fieldAccess.getReceiver().isAssignableByOtherCode()
+    JavaExpression fieldReceiver = fieldAccess.getReceiver();
+    // A method call's value can depend on state that does not appear in the expression, such as a
+    // static field that the method reads, so a receiver that contains a method call is not stable
+    // even if MethodCall.isAssignableByOtherCode() returns false.
+    return !fieldReceiver.isAssignableByOtherCode()
+        && !fieldReceiver.containsOfClass(MethodCall.class)
         && atypeFactory
             .fromElement(fieldAccess.getField())
             .hasPrimaryAnnotation(nullnessTypeFactory.MONOTONIC_NONNULL);
