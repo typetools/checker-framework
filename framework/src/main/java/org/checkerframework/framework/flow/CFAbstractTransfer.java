@@ -1408,8 +1408,11 @@ public abstract class CFAbstractTransfer<
     if (!n.codeRanSinceSelector()) {
       return true;
     }
-    // Code in a guard cannot assign a local variable that is declared outside the guard.
-    return !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
+    // Code in a guard cannot assign a local variable that is declared outside the guard.  A method
+    // call is excluded even if its receiver and arguments are unassignable, because the method
+    // might read mutable state (such as a static field) that the intervening code changed.
+    JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    return !selector.isAssignableByOtherCode() && !selector.containsOfClass(MethodCall.class);
   }
 
   // /**

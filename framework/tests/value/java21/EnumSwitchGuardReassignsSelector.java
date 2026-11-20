@@ -52,6 +52,50 @@ public class EnumSwitchGuardReassignsSelector {
     }
   }
 
+  class Mutator {
+    @Override
+    public String toString() {
+      field = E.A;
+      return "mutator";
+    }
+  }
+
+  void stringConcatenationGuard(E input, Mutator mutator) {
+    field = input;
+    switch (field) {
+      // String concatenation calls mutator.toString(), which reassigns the selector.
+      case E ignored when ("" + mutator) == null -> {}
+      case A -> {}
+      case B -> {
+        // :: error: (assignment)
+        @EnumVal("B") E x = field;
+      }
+    }
+  }
+
+  static E staticField;
+
+  @org.checkerframework.dataflow.qual.Pure
+  static E current() {
+    return staticField;
+  }
+
+  static boolean resetStatic() {
+    staticField = E.A;
+    return false;
+  }
+
+  void staticGetterSelector() {
+    switch (current()) {
+      case E ignored when resetStatic() -> {}
+      case A -> {}
+      case B -> {
+        // :: error: (assignment)
+        @EnumVal("B") E x = current();
+      }
+    }
+  }
+
   void localSelector(E input) {
     E local = input;
     switch (local) {
