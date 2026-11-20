@@ -39,6 +39,23 @@ class NotOwningCollectionMutationTest {
   }
 
   /*
+   * A non-owning collection may replace an element with a definitely non-owning one. The caller
+   * then owns the replaced element.
+   */
+  void okNocSetNotOwningParam(
+      @NotOwningCollection List<TrackedResource> list, @NotOwning TrackedResource resource)
+      throws IOException {
+    TrackedResource old = list.set(0, resource);
+    old.close();
+  }
+
+  void errNocSetNotOwningParamNoClose(
+      @NotOwningCollection List<TrackedResource> list, @NotOwning TrackedResource resource) {
+    // :: error: required.method.not.called
+    TrackedResource old = list.set(0, resource);
+  }
+
+  /*
    * Inserting owning elements into a non-owning collection is illegal even if the caller
    * closes the value afterward.
    */

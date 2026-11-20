@@ -91,6 +91,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -994,7 +995,8 @@ public class MustCallConsistencyAnalyzer {
         // mustCallValues is null if the type is not a collection with one type argument, such as
         // a user-annotated `@OwningCollection Map<String, Socket>`. Such a value has no
         // collection obligations.
-        if (mustCallValues != null && !ResourceLeakUtils.isIterator(node.getType())) {
+        if (mustCallValues != null
+            && !ResourceLeakUtils.isIterator(node.getType(), cmAtf.getProcessingEnv())) {
           for (String mustCallMethod : mustCallValues) {
             obligations.add(
                 new CollectionObligation(
@@ -2870,15 +2872,11 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // If this is the else edge of a disposal loop's conditional block, that is, the edge that
-    // leaves the loop, find the loop and the methods its body calls on every element.
+    // leaves the loop, find the loop.
     DisposalLoopInfo exitedDisposalLoop = null;
-    Set<String> exitedLoopCalledMethods = null;
     if (currentBlock instanceof ConditionalBlock conditionalBlock
         && conditionalBlock.getElseSuccessor().equals(successor)) {
       exitedDisposalLoop = coAtf.getDisposalLoopInfoForConditionalBlock(conditionalBlock);
-      if (exitedDisposalLoop != null) {
-        exitedLoopCalledMethods = coAtf.getCalledMethods(exitedDisposalLoop);
-      }
     }
 
     // Computed outside the Obligation loop for efficiency.
@@ -2893,9 +2891,9 @@ public class MustCallConsistencyAnalyzer {
       // Along the loop's exit edge, don't propagate a collection obligation of the collection the
       // loop iterates over if the loop body calls its must-call method on every element.
       if (exitedDisposalLoop != null
-          && exitedLoopCalledMethods != null
           && obligation instanceof CollectionObligation collectionObligation
-          && exitedLoopCalledMethods.contains(collectionObligation.mustCallMethod)
+          && coAtf.callsOnEveryElement(
+              exitedDisposalLoop, Collections.singletonList(collectionObligation.mustCallMethod))
           && obligation.canBeSatisfiedThrough(exitedDisposalLoop.expressionTree())) {
         continue;
       }
@@ -3140,7 +3138,7 @@ public class MustCallConsistencyAnalyzer {
         if (coAtf.isOwningCollectionParameter(paramElement)) {
           List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
           if (mustCallValues != null) {
-            if (!ResourceLeakUtils.isIterator(paramElement.asType())) {
+            if (!ResourceLeakUtils.isIterator(paramElement.asType(), cmAtf.getProcessingEnv())) {
               for (String mustCallMethod : mustCallValues) {
                 // The method takes ownership only if it returns normally; if it throws, the caller
                 // still owns the collection.
@@ -3195,25 +3193,6 @@ public class MustCallConsistencyAnalyzer {
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
       if (obligation.canBeSatisfiedThrough(node)) {
-        return obligation;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Gets the Obligation whose resource alias set contains the given tree, if one exists in {@code
-   * obligations}.
-   *
-   * @param obligations a set of Obligations
-   * @param tree variable tree of interest
-   * @return the Obligation in {@code obligations} whose resource alias set contains {@code tree},
-   *     or {@code null} if there is no such Obligation
-   */
-  /*package-private*/ static @Nullable Obligation getObligationForVar(
-      Set<Obligation> obligations, Tree tree) {
-    for (Obligation obligation : obligations) {
-      if (obligation.canBeSatisfiedThrough(tree)) {
         return obligation;
       }
     }
@@ -3623,10 +3602,10 @@ public class MustCallConsistencyAnalyzer {
    *
    * @param cfg the cfg of the enclosing method
    * @param disposalLoopInfo the loop to analyze
-   * @return the called-methods for the loop on the iterated element, or {@code null} if there's no
-   *     definite called-methods on the iterated element of the loop
+   * @return the methods that the loop body definitely calls on the iterated element, as a Called
+   *     Methods type, or {@code null} if that type is top or bottom
    */
-  public @Nullable Set<String> analyzeDisposalLoop(
+  public @Nullable AnnotationMirror analyzeDisposalLoop(
       ControlFlowGraph cfg, DisposalLoopInfo disposalLoopInfo) {
 
     // ensure checked loop is initialized in a valid way
@@ -3644,11 +3623,6 @@ public class MustCallConsistencyAnalyzer {
     Block loopBodyEntryBlock = disposalLoopInfo.loopBodyEntryBlock();
     Block loopUpdateBlock = disposalLoopInfo.loopUpdateBlock();
     Tree collectionElement = disposalLoopInfo.iteratedElementTree();
-
-    boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
-    if (emptyLoopBody) {
-      return null;
-    }
 
     // Add an obligation for the element of the collection iterated over
     Obligation collectionElementObligation;
@@ -3679,7 +3653,11 @@ public class MustCallConsistencyAnalyzer {
     visited.add(loopBodyEntry);
     Set<Block> loopRegion = computeLoopRegion(loopBodyEntryBlock, loopUpdateBlock);
 
-    Set<String> calledMethodsInLoop = null;
+    // The methods that the loop body definitely calls on the iterated element: the least upper
+    // bound of the element's Called Methods types over the paths that reach the end of the loop
+    // body. It is bottom until such a path is found.
+    QualifierHierarchy cmHierarchy = cmAtf.getQualifierHierarchy();
+    AnnotationMirror calledMethodsInLoop = cmAtf.bottom;
 
     // main loop: propagate obligations block-by-block
     while (!worklist.isEmpty()) {
@@ -3691,7 +3669,14 @@ public class MustCallConsistencyAnalyzer {
         Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
         for (Node node : currentBlock.getNodes()) {
           if (node instanceof AssignmentNode assignmentNode) {
-            updateObligationsForAssignment(obligations, cfg, assignmentNode);
+            // Skip an enhanced-for loop's initialization of its loop variable: the element's
+            // obligation already has the loop variable as its alias.
+            @SuppressWarnings("interning:not.interned")
+            boolean initializesLoopVariable =
+                assignmentNode.getTarget() == disposalLoopInfo.iteratedElementNode();
+            if (!initializesLoopVariable) {
+              updateObligationsForAssignment(obligations, cfg, assignmentNode);
+            }
           }
         }
 
@@ -3699,22 +3684,20 @@ public class MustCallConsistencyAnalyzer {
         boolean isLastBlockOfBody = successorAndExceptionType.successor() == loopUpdateBlock;
         boolean staysInLoop = loopRegion.contains(successorAndExceptionType.successor());
         if (!isLastBlockOfBody && !staysInLoop) {
-          return null;
+          // A path that leaves the loop, such as by an exception, `break`, or `return`, does not
+          // reach the loop's exit edge, which is the only edge where the loop fulfills the
+          // collection's obligation. The consistency analysis checks the obligation on that path.
+          continue;
         }
         if (isLastBlockOfBody) {
-          Set<String> calledMethodsAfterBlock =
+          AnnotationMirror calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(
                   currentBlock, disposalLoopInfo, obligations, loopUpdateBlock);
-          // intersect the called methods after this block with the accumulated ones so far.
-          // This is required because there may be multiple "back edges" of the loop, in which
-          // case we must intersect the called methods between those.
-          if (calledMethodsAfterBlock != null) {
-            if (calledMethodsInLoop == null) {
-              calledMethodsInLoop = calledMethodsAfterBlock;
-            } else {
-              calledMethodsInLoop.retainAll(calledMethodsAfterBlock);
-            }
-          }
+          AnnotationMirror lub =
+              cmHierarchy.leastUpperBoundQualifiersOnly(
+                  calledMethodsInLoop, calledMethodsAfterBlock);
+          assert lub != null : "@AssumeAssertion(nullness): both are Called Methods qualifiers";
+          calledMethodsInLoop = lub;
         } else {
           try {
             propagateObligationsToSuccessorBlock(
@@ -3732,10 +3715,14 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    if (calledMethodsInLoop == null || calledMethodsInLoop.isEmpty()) {
+    // Top means that the loop body definitely calls no method on the element. Bottom means that no
+    // path reaches the end of the loop body, or that on every such path the element is null or the
+    // path is unreachable. In neither case does the loop dispose of the elements.
+    if (cmHierarchy.isSubtypeQualifiersOnly(calledMethodsInLoop, cmAtf.bottom)
+        || cmHierarchy.isSubtypeQualifiersOnly(cmAtf.top, calledMethodsInLoop)) {
       return null;
     }
-    return new LinkedHashSet<>(calledMethodsInLoop);
+    return calledMethodsInLoop;
   }
 
   /**
@@ -3819,19 +3806,19 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks the CalledMethods store after the given block and determines the CalledMethods type of
-   * the given tree (which corresponds to the collection element iterated over) and returns the
-   * union of methods in the CalledMethods type of the collection element and all its resource
-   * aliases.
+   * Returns the Called Methods type of the {@link IteratedCollectionElement} after the given block.
+   * The loop body can call a method on the element through the element itself or through one of its
+   * resource aliases, so the element's type is the greatest lower bound of the types of all these
+   * references: it includes every method called through any of them.
    *
    * @param lastLoopBodyBlock last block of loop body
    * @param disposalLoopInfo loop wrapper of the loop to analyze
    * @param obligations the set of tracked obligations
    * @param loopUpdateBlock block that updates the loop
-   * @return the union of methods in the CalledMethods type of the collection element and all its
-   *     resource aliases, or {@code null} if one of these CalledMethods types is bottom.
+   * @return the Called Methods type of the iterated collection element after {@code
+   *     lastLoopBodyBlock}
    */
-  private @Nullable Set<String> analyzeTypeOfCollectionElement(
+  private AnnotationMirror analyzeTypeOfCollectionElement(
       Block lastLoopBodyBlock,
       DisposalLoopInfo disposalLoopInfo,
       Set<Obligation> obligations,
@@ -3849,21 +3836,22 @@ public class MustCallConsistencyAnalyzer {
       }
       store = cmAtf.getStoreAfter(lastNode);
     }
-    Obligation collectionElementObligation =
-        getObligationForVar(obligations, disposalLoopInfo.iteratedElementTree());
-    // True if the iterated element itself, such as the loop variable, still refers to the element.
-    boolean iteratedElementIsAlias = collectionElementObligation != null;
-    if (collectionElementObligation == null) {
-      // The loop body overwrote the loop variable.  The loop analysis tracks only the obligation
-      // seeded for the iterated element (see analyzeDisposalLoop), so a remaining obligation is
-      // that one, held by other aliases such as `saved` in `Resource saved = r; r = other;`.
-      if (obligations.size() != 1) {
-        // The loop body overwrote every alias of the collection element, so no method is known to
-        // be called on it. The sound thing to do is return an empty set.
-        return new HashSet<>();
-      }
-      collectionElementObligation = obligations.iterator().next();
+    // The loop body analysis tracks only the collection element's Obligation.  If the loop body
+    // overwrote the loop variable, other aliases such as `saved` in `Resource saved = r; r =
+    // other;`
+    // might still hold it.
+    if (obligations.size() > 1) {
+      throw new BugInCF("Loop body analysis tracks more than one Obligation: " + obligations);
     }
+    if (obligations.isEmpty()) {
+      // The loop body overwrote every reference to the element, so no method is known to be called
+      // on it.
+      return cmAtf.top;
+    }
+    Obligation collectionElementObligation = obligations.iterator().next();
+    // True if the iterated element itself, such as the loop variable, still refers to the element.
+    boolean iteratedElementIsAlias =
+        collectionElementObligation.canBeSatisfiedThrough(disposalLoopInfo.iteratedElementTree());
 
     // The references to the collection element: the iterated collection element and its resource
     // aliases.
@@ -3881,46 +3869,41 @@ public class MustCallConsistencyAnalyzer {
       references.add(alias.reference);
     }
 
-    Set<String> calledMethodsAfterThisBlock = new HashSet<>();
+    QualifierHierarchy cmHierarchy = cmAtf.getQualifierHierarchy();
+    AnnotationMirror elementType = cmAtf.top;
     for (JavaExpression reference : references) {
-      AccumulationValue cmVal = store.getValue(reference);
-      if (cmVal == null) {
-        continue;
+      AccumulationValue cmValue = store.getValue(reference);
+      if (cmValue != null) {
+        AnnotationMirror glb =
+            cmHierarchy.greatestLowerBoundQualifiersOnly(
+                elementType, getCalledMethodsQualifier(cmValue));
+        assert glb != null : "@AssumeAssertion(nullness): both are Called Methods qualifiers";
+        elementType = glb;
       }
-      List<String> calledMethods = getCalledMethods(cmVal);
-      if (calledMethods == null) {
-        // Bottom: the collection element is null on this path, or the path is unreachable.
-        return null;
-      }
-      calledMethodsAfterThisBlock.addAll(calledMethods);
     }
-    return calledMethodsAfterThisBlock;
+    return elementType;
   }
 
   /**
-   * Returns the set of called methods values given an AccumulationValue or null if the accumulation
-   * value is bottom.
+   * Returns the Called Methods qualifier of a value in the Called Methods store.
    *
-   * @param cmVal the accumulation value
-   * @return the set of called methods of the given value or null if the accumulation value is
-   *     bottom
+   * @param cmValue a value in the Called Methods store
+   * @return the Called Methods qualifier of {@code cmValue}
    */
-  private @Nullable List<String> getCalledMethods(AccumulationValue cmVal) {
-    Set<String> calledMethods = cmVal.getAccumulatedValues();
-    if (calledMethods != null) {
-      return new ArrayList<>(calledMethods);
-    } else {
-      for (AnnotationMirror anno : cmVal.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(
-            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-          return cmAtf.getCalledMethods(anno);
-        } else if (AnnotationUtils.areSameByName(
-            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom")) {
-          return null;
-        }
-      }
+  private AnnotationMirror getCalledMethodsQualifier(AccumulationValue cmValue) {
+    AnnotationMirror qualifier =
+        cmAtf
+            .getQualifierHierarchy()
+            .findAnnotationInHierarchy(cmValue.getAnnotations(), cmAtf.top);
+    if (qualifier != null && AnnotationUtils.areSame(qualifier, cmAtf.bottom)) {
+      // A bottom value may also have accumulated values; they are irrelevant.
+      return cmAtf.bottom;
     }
-    return Collections.emptyList();
+    Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+    if (accumulatedValues != null) { // type variable or wildcard type
+      return cmAtf.createCalledMethods(accumulatedValues.toArray(new String[0]));
+    }
+    return qualifier != null ? qualifier : cmAtf.top;
   }
 
   /**

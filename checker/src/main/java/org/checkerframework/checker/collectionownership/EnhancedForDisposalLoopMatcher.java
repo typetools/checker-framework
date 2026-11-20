@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -11,8 +12,11 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -29,6 +33,13 @@ import org.plumelib.util.IPair;
 
 /** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
 final class EnhancedForDisposalLoopMatcher {
+
+  /**
+   * Methods that replace elements of a collection but are not annotated
+   * {@code @CreatesCollectionObligation}. A loop that calls one of these on the iterated collection
+   * is not a disposal loop.
+   */
+  private static final Set<String> REPLACING_METHODS = Set.of("set", "replaceAll");
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
@@ -49,15 +60,33 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo} if the enhanced-for-loop iterates over a resource
-   * collection and its body does not assign to the variable that holds the collection.
+   * Returns a {@link DisposalLoopInfo} for each CFG copy of the enhanced-for-loop, if the loop
+   * iterates over a resource collection and its body does not assign to the variable that holds the
+   * collection.
+   *
+   * <p>A loop can have several CFG copies, because the CFG copies a {@code finally} block for each
+   * way of leaving its {@code try} block. For example, the CFG has one copy of this loop that the
+   * {@code return} reaches, and another that normal completion of the {@code try} block reaches:
+   *
+   * <pre>{@code
+   * try {
+   *   if (b) {
+   *     return;
+   *   }
+   * } finally {
+   *   for (Resource r : list) {
+   *     r.close();
+   *   }
+   * }
+   * }</pre>
    *
    * @param tree the enhanced-for-loop to inspect
-   * @return the matched disposal loop info, or {@code null} if the loop does not match
+   * @return a disposal loop info for each CFG copy of the loop, or an empty set if the loop does
+   *     not match
    */
-  @Nullable DisposalLoopInfo match(EnhancedForLoopTree tree) {
+  Set<DisposalLoopInfo> match(EnhancedForLoopTree tree) {
     if (!coAtf.isResourceCollection(tree.getExpression())) {
-      return null;
+      return Set.of();
     }
     // If the body reassigns the collection variable, the loop still iterates over the original
     // collection, but after the loop the variable refers to a different collection.
@@ -65,7 +94,12 @@ final class EnhancedForDisposalLoopMatcher {
         CollectionOwnershipUtils.getElementFromExpressionTree(
             TreeUtils.withoutParens(tree.getExpression()));
     if (collectionElement != null && assignsTo(tree.getStatement(), collectionElement)) {
-      return null;
+      return Set.of();
+    }
+    // If the body inserts into or replaces elements of the collection, the iterator might not visit
+    // the new elements, as for CopyOnWriteArrayList.
+    if (mutatesIteratedCollection(tree.getStatement(), tree.getExpression())) {
+      return Set.of();
     }
     return resolveEnhancedForLoop(tree);
   }
@@ -98,22 +132,68 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Searches the method CFG for the first occurrence of {@code tree} and resolves it to {@link
-   * DisposalLoopInfo}.
+   * Returns true if {@code body} might insert into or replace elements of {@code collection}: it
+   * calls a {@code @CreatesCollectionObligation} method or a replacing method on the collection,
+   * or, if the collection is an owning collection field of {@code this}, a method whose
+   * {@code @CreatesMustCallFor} target is {@code this}.
+   *
+   * @param body a loop body
+   * @param collection the collection that the loop iterates over
+   * @return true if {@code body} might insert into or replace elements of {@code collection}
+   */
+  private boolean mutatesIteratedCollection(StatementTree body, ExpressionTree collection) {
+    Name collectionName =
+        CollectionOwnershipUtils.getNameFromExpressionTree(TreeUtils.withoutParens(collection));
+    boolean isFieldOfThis =
+        coAtf.isOwningCollectionField(collection) && TreeUtils.isSelfAccess(collection);
+    @Nullable Boolean result =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+            ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+            ExecutableElement method = TreeUtils.elementFromUse(tree);
+            if (collectionName != null
+                && receiver != null
+                && CollectionOwnershipUtils.getNameFromExpressionTree(receiver) == collectionName
+                && (coAtf.isCreatesCollectionObligationMethod(method)
+                    || REPLACING_METHODS.contains(method.getSimpleName().toString()))) {
+              return true;
+            }
+            if (isFieldOfThis
+                && CollectionOwnershipUtils.anyNodeForTree(cfg, tree)
+                    instanceof MethodInvocationNode node
+                && coAtf.createsMustCallForThis(node)) {
+              return true;
+            }
+            return super.visitMethodInvocation(tree, p);
+          }
+
+          @Override
+          public Boolean reduce(@Nullable Boolean r1, @Nullable Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+        }.scan(body, null);
+    return Boolean.TRUE.equals(result);
+  }
+
+  /**
+   * Searches the method CFG for every copy of {@code tree} and resolves each to a {@link
+   * DisposalLoopInfo}. See {@link #match}.
    *
    * <p>This performs a CFG traversal, looking for the desugared iterator {@code next()} node tagged
    * with the target enhanced-for-loop. (Only the {@code next()} node is tagged; the {@code
    * hasNext()} node is not.)
    *
    * @param tree the enhanced-for-loop to resolve
-   * @return the CFG-resolved loop info, or {@code null} if it cannot be resolved
+   * @return the CFG-resolved loop infos, one per CFG copy that can be resolved
    */
-  private @Nullable DisposalLoopInfo resolveEnhancedForLoop(EnhancedForLoopTree tree) {
+  private Set<DisposalLoopInfo> resolveEnhancedForLoop(EnhancedForLoopTree tree) {
     Block entryBlock = cfg.getEntryBlock();
     Set<Block> visitedBlocks = new HashSet<>();
     Deque<Block> worklist = new ArrayDeque<>();
     worklist.add(entryBlock);
     visitedBlocks.add(entryBlock);
+    Set<DisposalLoopInfo> resolvedLoops = new LinkedHashSet<>();
 
     while (!worklist.isEmpty()) {
       Block currentBlock = worklist.removeFirst();
@@ -122,15 +202,13 @@ final class EnhancedForDisposalLoopMatcher {
             && isTargetEnhancedForInvocation(methodInvocationNode, tree)) {
           DisposalLoopInfo resolvedLoop = resolveEnhancedForLoop(methodInvocationNode, tree);
           if (resolvedLoop != null) {
-            return resolvedLoop;
+            resolvedLoops.add(resolvedLoop);
           }
         }
       }
 
-      // One AST enhanced-for can have multiple CFG occurrences (for example around duplicated
-      // finally paths for normal and exceptional flow). This resolver returns the first matching
-      // occurrence it finds, so avoid traversing ignored exceptional successors here; otherwise
-      // the search can bind to an exceptional clone before the normal one.
+      // Ignored exceptional successors are not traversed: dataflow does not analyze a copy that
+      // is reachable only through them, and the consistency analysis never reaches it.
       for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
           CollectionOwnershipUtils.getSuccessorsExceptIgnoredExceptions(currentBlock, coAtf)) {
         Block successorBlock = successorAndExceptionType.first;
@@ -140,7 +218,7 @@ final class EnhancedForDisposalLoopMatcher {
       }
     }
 
-    return null;
+    return resolvedLoops;
   }
 
   /**
@@ -161,7 +239,7 @@ final class EnhancedForDisposalLoopMatcher {
     VariableTree loopVariable = tree.getVariable();
 
     // Walk forward from the iterator `next()` node to find the assignment that initializes the
-    // loop variable from `next()`. The successor after that assignment is the loop-body entry
+    // loop variable from `next()`. The loop body starts right after that assignment, in the same
     // block.
     Block blockContainingNext = methodInvocationNode.getBlock();
     if (!(blockContainingNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
@@ -189,7 +267,7 @@ final class EnhancedForDisposalLoopMatcher {
             iteratorVariableDeclaration.getName() == loopVariable.getName();
       }
     } while (!isAssignmentOfLoopVariable);
-    Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
+    Block loopBodyEntryBlock = singleSuccessorBlock;
 
     // Walk backward from the iterator `next()` node to recover the `hasNext()` loop-condition node
     // for this desugared enhanced-for.
@@ -239,7 +317,7 @@ final class EnhancedForDisposalLoopMatcher {
     // later block, because the call can throw an exception.
     Block loopUpdateBlock =
         ((MethodInvocationNode) loopConditionNode).getTarget().getReceiver().getBlock();
-    if (loopVariableNode == null || loopBodyEntryBlock == null || loopUpdateBlock == null) {
+    if (loopVariableNode == null || loopUpdateBlock == null) {
       return null;
     }
     Tree loopVariableTree = loopVariableNode.getTree();

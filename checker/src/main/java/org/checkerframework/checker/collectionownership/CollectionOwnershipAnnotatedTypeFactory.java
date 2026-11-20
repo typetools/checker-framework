@@ -3,6 +3,7 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -24,7 +25,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
@@ -34,9 +34,11 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallInference;
@@ -53,6 +55,8 @@ import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
@@ -67,6 +71,7 @@ import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -76,6 +81,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The annotated type factory for the Collection Ownership Checker. As the last checker in the
@@ -107,17 +113,17 @@ public class CollectionOwnershipAnnotatedTypeFactory
       conditionalBlockToDisposalLoopInfoMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@link DisposalLoopInfo} to the set of methods that the loop body is guaranteed to
-   * call on the iterated element.
+   * Map from a {@link DisposalLoopInfo} to the methods that the loop body definitely calls on the
+   * iterated element, as a Called Methods type.
    */
-  private final IdentityHashMap<DisposalLoopInfo, Set<String>> disposalLoopInfoToCalledMethodsMap =
-      new IdentityHashMap<>();
+  private final IdentityHashMap<DisposalLoopInfo, AnnotationMirror>
+      disposalLoopInfoToCalledMethodsMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@code MethodTree} to the {@link DisposalLoopInfo}s discovered in that method's
-   * body.
+   * Map from the {@linkplain UnderlyingAST#getCode() code} of a CFG, such as a method body, a
+   * lambda body, or an initializer, to the {@link DisposalLoopInfo}s discovered in it.
    */
-  private final IdentityHashMap<MethodTree, Set<DisposalLoopInfo>> disposalLoopInfosByMethod =
+  private final IdentityHashMap<Tree, Set<DisposalLoopInfo>> disposalLoopInfosByCode =
       new IdentityHashMap<>();
 
   /**
@@ -144,6 +150,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The {@code value} element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
+
+  /** The {@code element} element of the {@code @}{@link CreatesCollectionObligation} annotation. */
+  private final ExecutableElement createsCollectionObligationElementElement =
+      TreeUtils.getMethod(CreatesCollectionObligation.class, "element", 0, processingEnv);
 
   /** The {@code Iterator.hasNext()} method. */
   private final ExecutableElement iteratorHasNext =
@@ -244,14 +254,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns the called-methods on the iterated element for a {@link DisposalLoopInfo}.
+   * Returns true if the body of {@code disposalLoopInfo} definitely calls all of {@code methods} on
+   * every iterated element.
    *
-   * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @return the methods that the loop body is guaranteed to call on the iterated element, or {@code
-   *     null} if {@link #postCFGConstruction} has not recorded the loop
+   * @param disposalLoopInfo a disposal loop
+   * @param methods the names of the methods to check, such as the must-call methods of the
+   *     collection's elements
+   * @return true if the loop body definitely calls all of {@code methods} on every iterated
+   *     element; false if it does not, or if {@link #postCFGConstruction} has not recorded the loop
    */
-  public @Nullable Set<String> getCalledMethods(DisposalLoopInfo disposalLoopInfo) {
-    return disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
+  public boolean callsOnEveryElement(DisposalLoopInfo disposalLoopInfo, List<String> methods) {
+    AnnotationMirror calledMethods = disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
+    if (calledMethods == null) {
+      return false;
+    }
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+    return rlAtf
+        .getQualifierHierarchy()
+        .isSubtypeQualifiersOnly(
+            calledMethods, rlAtf.createCalledMethods(methods.toArray(new String[0])));
   }
 
   /**
@@ -271,45 +293,29 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * iterated element, indexed by the loop's condition tree and its conditional block.
    *
    * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @param calledMethods the methods that the loop body is guaranteed to call on the iterated
-   *     element
+   * @param calledMethods the methods that the loop body definitely calls on the iterated element,
+   *     as a Called Methods type
    */
-  private void recordDisposalLoop(DisposalLoopInfo disposalLoopInfo, Set<String> calledMethods) {
+  private void recordDisposalLoop(
+      DisposalLoopInfo disposalLoopInfo, AnnotationMirror calledMethods) {
     conditionToDisposalLoopInfoMap.put(disposalLoopInfo.loopConditionTree(), disposalLoopInfo);
     conditionalBlockToDisposalLoopInfoMap.put(
         disposalLoopInfo.loopConditionalBlock(), disposalLoopInfo);
-    disposalLoopInfoToCalledMethodsMap.put(
-        disposalLoopInfo, Collections.unmodifiableSet(new LinkedHashSet<>(calledMethods)));
+    disposalLoopInfoToCalledMethodsMap.put(disposalLoopInfo, calledMethods);
   }
 
   /**
-   * Returns all the disposal loops in the given method CFG.
-   *
-   * @param cfg the CFG to scan
-   * @return the {@link DisposalLoopInfo}s discovered in {@code cfg}
-   */
-  private Set<DisposalLoopInfo> scanForDisposalLoopInfos(ControlFlowGraph cfg) {
-    if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
-      return Collections.emptySet();
-    }
-    return new DisposalLoopScanner(this, cfg)
-        .scanTree(((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod());
-  }
-
-  /**
-   * Discovers and stores the {@link DisposalLoopInfo}s for a method {@code cfg}. This discovery
-   * must happen before {@link
+   * Discovers and stores the {@link DisposalLoopInfo}s for a {@code cfg}, which may be for a
+   * method, a lambda, or an initializer. This discovery must happen before {@link
    * org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsTransfer#initialStore(UnderlyingAST,
    * List)} runs, which adds an {@code IteratedCollectionElement} for the element of each loop.
    *
-   * @param cfg the method CFG whose disposal loops to be discovered
+   * @param cfg the CFG whose disposal loops to be discovered
    */
   public void discoverDisposalLoopInfos(ControlFlowGraph cfg) {
-    MethodTree methodTree = getMethodTree(cfg.getUnderlyingAST());
-    if (methodTree == null) {
-      return;
-    }
-    disposalLoopInfosByMethod.put(methodTree, new LinkedHashSet<>(scanForDisposalLoopInfos(cfg)));
+    Tree code = cfg.getUnderlyingAST().getCode();
+    disposalLoopInfosByCode.put(
+        code, new LinkedHashSet<>(new DisposalLoopScanner(this, cfg).scanTree(code)));
   }
 
   /**
@@ -319,11 +325,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return an unmodifiable view of the disposal loops for {@code underlyingAST}
    */
   public Set<DisposalLoopInfo> getDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getMethodTree(underlyingAST);
-    if (methodTree == null) {
-      return Collections.emptySet();
-    }
-    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByMethod.get(methodTree);
+    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByCode.get(underlyingAST.getCode());
     if (disposalLoopInfos == null) {
       return Collections.emptySet();
     }
@@ -336,42 +338,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param underlyingAST the underlying AST whose disposal loops should be removed
    */
   private void removeDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getMethodTree(underlyingAST);
-    if (methodTree != null) {
-      disposalLoopInfosByMethod.remove(methodTree);
-    }
+    disposalLoopInfosByCode.remove(underlyingAST.getCode());
   }
 
   /**
-   * Returns the method tree of the given underlying AST, if it is a method CFG.
+   * Computes the called methods of the potential disposal loops in the code of {@code cfg}, which
+   * {@link RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each
+   * loop, {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the
+   * loop body definitely calls on the iterated element, and this method records them.
    *
-   * @param underlyingAST the underlying AST
-   * @return the method tree, or {@code null} if {@code underlyingAST} is not a method
-   */
-  private @Nullable MethodTree getMethodTree(UnderlyingAST underlyingAST) {
-    if (underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
-      return null;
-    }
-    return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
-  }
-
-  /**
-   * Computes the called methods of this method's potential disposal loops, which {@link
-   * RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each loop,
-   * {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the loop body
-   * is guaranteed to call on the iterated element, and this method records them.
-   *
-   * <p>This runs before this checker's dataflow analysis of the method. During that analysis,
-   * {@link CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the
-   * iterated element's must-call methods. Later, the Resource Leak Checker's {@link
+   * <p>This runs before this checker's dataflow analysis of the code. During that analysis, {@link
+   * CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the iterated
+   * element's must-call methods. Later, the Resource Leak Checker's {@link
    * MustCallConsistencyAnalyzer} uses the recorded loops when it checks collection obligations.
    */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    if (ast.getKind() != UnderlyingAST.Kind.METHOD) {
-      return;
-    }
-
     Set<DisposalLoopInfo> disposalLoopInfos = getDisposalLoopInfos(ast);
     removeDisposalLoopInfos(ast);
     if (disposalLoopInfos.isEmpty()) {
@@ -381,7 +363,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
     for (DisposalLoopInfo disposalLoopInfo : disposalLoopInfos) {
-      Set<String> calledMethods =
+      AnnotationMirror calledMethods =
           mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoopInfo);
       if (calledMethods != null) {
         recordDisposalLoop(disposalLoopInfo, calledMethods);
@@ -403,7 +385,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
     super.setRoot(root);
-    // postCFGConstruction removes each method's entry for disposalLoopInfosByMethod; clear the
+    // postCFGConstruction removes each CFG's entry for disposalLoopInfosByCode; clear the
     // remaining fields at each compilation unit.
     conditionToDisposalLoopInfoMap.clear();
     conditionalBlockToDisposalLoopInfoMap.clear();
@@ -595,6 +577,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
+   * Returns true if some {@code @CreatesMustCallFor} target of the invoked method, resolved at the
+   * call site, is {@code this} (or {@code super}).
+   *
+   * @param node a method invocation
+   * @return true if the invocation creates a must-call obligation for {@code this}
+   */
+  public boolean createsMustCallForThis(MethodInvocationNode node) {
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+    for (JavaExpression target :
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
+            node, rlAtf, rlAtf)) {
+      if (target instanceof ThisReference || target instanceof SuperReference) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Returns true if the given tree is an invocation of {@code Iterator.hasNext()} or of a method
    * that overrides it.
    *
@@ -634,34 +636,63 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or {@code null} if the call has no such argument.
-   *
-   * <p>The current heuristic is that the inserted element is the last argument at the call site.
-   * TODO: Make @CreatesCollectionObligation accept an index for the inserted elements position.
+   * call, or {@code null} if the call has no such argument. See {@link
+   * CreatesCollectionObligation#element}.
    *
    * @param tree a method invocation tree
    * @return the inserted argument tree, or null if there is none
    */
   public @Nullable ExpressionTree getInsertedArgumentTree(MethodInvocationTree tree) {
-    if (tree.getArguments().isEmpty()) {
-      return null;
-    }
-    return tree.getArguments().get(tree.getArguments().size() - 1);
+    List<? extends ExpressionTree> args = tree.getArguments();
+    int index = getInsertedParameterIndex(TreeUtils.elementFromUse(tree));
+    return index >= 0 && index < args.size() ? args.get(index) : null;
   }
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or {@code null} if the call has no such argument.
+   * call, or {@code null} if the call has no such argument. See {@link
+   * CreatesCollectionObligation#element}.
    *
    * @param node a method invocation node
    * @return the inserted argument node, or null if there is none
    */
   public @Nullable Node getInsertedArgumentNode(MethodInvocationNode node) {
     List<Node> args = node.getArguments();
-    if (args.isEmpty()) {
-      return null;
+    int index = getInsertedParameterIndex(node.getTarget().getMethod());
+    return index >= 0 && index < args.size() ? args.get(index) : null;
+  }
+
+  /**
+   * Returns the {@code element} of the given method's {@code @CreatesCollectionObligation}
+   * annotation, which names the inserted parameter, or the empty string if it names none.
+   *
+   * @param method a method, which may inherit {@code @CreatesCollectionObligation}
+   * @return the {@code element} of the method's {@code @CreatesCollectionObligation} annotation
+   */
+  public String getInsertedParameterReference(ExecutableElement method) {
+    AnnotationMirror anno = getDeclAnnotation(method, CreatesCollectionObligation.class);
+    return anno == null
+        ? ""
+        : AnnotationUtils.getElementValue(
+            anno, createsCollectionObligationElementElement, String.class, "");
+  }
+
+  /**
+   * Returns the index of the parameter that the given {@code @CreatesCollectionObligation} method
+   * inserts: the parameter named by the annotation's {@code element}, or else the last parameter.
+   *
+   * @param method a method, which may inherit {@code @CreatesCollectionObligation}
+   * @return the index of the inserted parameter, or -1 if the method has no parameters or {@code
+   *     element} does not name one
+   */
+  public int getInsertedParameterIndex(ExecutableElement method) {
+    int numParams = method.getParameters().size();
+    String element = getInsertedParameterReference(method);
+    if (element.isEmpty()) {
+      return numParams - 1;
     }
-    return args.get(args.size() - 1);
+    int paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    return paramIndex >= 0 && paramIndex < numParams ? paramIndex : -1;
   }
 
   /**
@@ -747,37 +778,24 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * If the given type is a collection, this method returns the MustCall values of its elements or
-   * null if there are none or if the given type is not a collection.
+   * Returns the must-call methods of the elements of the given collection type. For example, it
+   * returns {@code ["close"]} for {@code List<Socket>}. Returns null if the type is not a
+   * collection, or if the must-call methods of its elements cannot be determined.
    *
-   * <p>That is, if the given type is a Java.util.Collection implementation, this method returns the
-   * MustCall values of its type variable upper bound if there are any or else null.
-   *
-   * @param atm the AnnotatedTypeMirror, or null if the type is not available
-   * @return if the given type is a collection, returns the MustCall values of its elements or null
-   *     if there are none, if the given type is not a collection, or if {@code atm} is null
+   * @param atm a type, or null if the type is not available
+   * @return the must-call methods of the elements of {@code atm}, or null
    */
   public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(
       @Nullable AnnotatedTypeMirror atm) {
     if (atm == null) {
       return null;
     }
-    boolean isCollectionType = ResourceLeakUtils.isCollection(atm.getUnderlyingType());
-
-    AnnotatedTypeMirror componentType = null;
-    if (isCollectionType) {
-      List<? extends AnnotatedTypeMirror> typeArgs =
-          ((AnnotatedDeclaredType) atm).getTypeArguments();
-      if (typeArgs.size() == 1) {
-        componentType = typeArgs.get(0);
-      }
+    AnnotatedTypeMirror annotatedElementType =
+        ResourceLeakUtils.getCollectionElementTypeArgument(atm, processingEnv);
+    if (annotatedElementType != null) {
+      return ResourceLeakUtils.getMcValues(annotatedElementType, mcAtf);
     }
-
-    if (componentType != null) {
-      return ResourceLeakUtils.getMcValues(componentType, mcAtf);
-    } else {
-      return null;
-    }
+    return getMustCallValuesOfResourceCollectionComponent(atm.getUnderlyingType());
   }
 
   /**
@@ -799,32 +817,16 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * If the given type is a collection, this method returns the MustCall values of its elements. It
-   * returns null if there are none or if the given type is not a collection.
+   * Returns the must-call methods of the elements of the given collection type. For example, it
+   * returns {@code ["close"]} for {@code List<Socket>}. Returns null if the type is not a
+   * collection, or if the must-call methods of its elements cannot be determined.
    *
-   * <p>That is, if the given type is a Java.util.Collection implementation, this method returns the
-   * MustCall values of its type variable upper bound if there are any or else null.
-   *
-   * @param t the TypeMirror
-   * @return if the given type is a collection, returns the MustCall values of its elements or null
-   *     if there are none or if the given type is not a collection
+   * @param t a type
+   * @return the must-call methods of the elements of {@code t}, or null
    */
   public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
-    boolean isCollectionType = ResourceLeakUtils.isCollection(t);
-
-    TypeMirror componentType = null;
-    if (isCollectionType) {
-      List<? extends TypeMirror> typeArgs = ((DeclaredType) t).getTypeArguments();
-      if (typeArgs.size() == 1) {
-        componentType = typeArgs.get(0);
-      }
-    }
-
-    if (componentType != null) {
-      return ResourceLeakUtils.getMcValues(componentType, mcAtf);
-    } else {
-      return null;
-    }
+    TypeMirror elementType = ResourceLeakUtils.getCollectionElementType(t, processingEnv);
+    return elementType == null ? null : ResourceLeakUtils.getMcValues(elementType, mcAtf);
   }
 
   /**
@@ -995,10 +997,19 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * The TypeAnnotator for the Collection Ownership type system.
+   * The TypeAnnotator for the Collection Ownership type system. It gives the receiver, return type,
+   * and parameters of a method the collection ownership qualifiers that are not written:
    *
-   * <p>This TypeAnnotator defaults resource collection return types to OwningCollection, and
-   * resource collection parameters to NotOwningCollection.
+   * <ol>
+   *   <li>An overriding method takes them from the methods it overrides, so that it follows the
+   *       same contract.
+   *   <li>A method that returns a resource collection gives the caller its obligations, so the
+   *       return type is {@code @OwningCollection}. A constructor's return type is
+   *       {@code @OwningCollectionWithoutObligation}.
+   *   <li>A receiver or parameter that could be a resource collection is
+   *       {@code @NotOwningCollection}: the method only borrows it, so a caller can pass any
+   *       collection. A method that discards elements or takes ownership has to be annotated.
+   * </ol>
    */
   private class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
 
@@ -1013,136 +1024,258 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
     @Override
     public Void visitExecutable(AnnotatedExecutableType t, Void p) {
-
       AnnotatedDeclaredType receiverType = t.getReceiverType();
-      AnnotationMirror receiverAnno =
-          receiverType == null ? null : receiverType.getAnnotationInHierarchy(TOP);
-      boolean receiverHasExplicitAnno =
-          receiverAnno != null && !AnnotationUtils.areSameByName(BOTTOM, receiverAnno);
-      // A receiver whose type is not a collection (see ResourceLeakUtils.isCollection), such as a
-      // user-defined class that implements Iterator<String>, is never a resource collection, so it
-      // keeps its default.  Inheriting a qualifier such as @NotOwningCollection from the
-      // overridden method would make `this` incompatible with the receivers of the class's other
-      // methods.
-      boolean inheritReceiverAnno =
-          !receiverHasExplicitAnno
-              && receiverType != null
-              && ResourceLeakUtils.isCollection(receiverType.getUnderlyingType());
-
       AnnotatedTypeMirror returnType = t.getReturnType();
-      AnnotationMirror returnAnno = returnType.getAnnotationInHierarchy(TOP);
-      boolean returnHasExplicitAnno =
-          returnAnno != null && !AnnotationUtils.areSameByName(BOTTOM, returnAnno);
+      List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
+      boolean returnsResourceCollection = isResourceCollection(returnType.getUnderlyingType());
 
-      // inherit supertype annotations
-
+      // Only the receiver of a collection class inherits a qualifier. The receiver of any other
+      // class, such as one that overrides toString(), keeps its default.
+      boolean inheritsReceiver =
+          receiverType != null
+              && ResourceLeakUtils.isCollection(receiverType.getUnderlyingType(), processingEnv);
       Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
           AnnotatedTypes.overriddenMethods(
               elements, CollectionOwnershipAnnotatedTypeFactory.this, t.getElement());
-
-      for (ExecutableElement superElt : overriddenMethods.values()) {
-        AnnotatedExecutableType annotatedSuperMethod =
-            CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
-
-        if (inheritReceiverAnno) {
-          AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
-          assert receiverType != null && superReceiver != null
+      for (ExecutableElement overriddenElt : overriddenMethods.values()) {
+        AnnotatedExecutableType overridden =
+            CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(overriddenElt);
+        if (inheritsReceiver) {
+          AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
+          assert receiverType != null && overriddenReceiver != null
               : "@AssumeAssertion(nullness): an overriding method and the method it overrides are instance methods";
-          AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
-          if (superReceiverAnno != null
-              && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
-              && !AnnotationUtils.areSameByName(POLY, superReceiverAnno)) {
-            receiverType.replaceAnnotation(superReceiverAnno);
-          }
+          inheritQualifier(receiverType, overriddenReceiver);
         }
-
-        if (!returnHasExplicitAnno) {
-          AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
-          AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
-          if (superReturnAnno != null
-              && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
-              && !AnnotationUtils.areSameByName(POLY, superReturnAnno)) {
-            returnType.replaceAnnotation(superReturnAnno);
-          }
+        AnnotatedTypeMirror overriddenReturnType = overridden.getReturnType();
+        if (inheritQualifier(returnType, overriddenReturnType)
+            && returnsResourceCollection
+            && overriddenReturnType.hasPrimaryAnnotation(POLY)) {
+          // An override of a @PolyOwningCollection method that returns a resource collection,
+          // such as an iterator() method that returns the iterator of an owning field, returns
+          // @NotOwningCollection: its result never owns the elements, it's a read-only view.
+          returnType.replaceAnnotation(NOTOWNINGCOLLECTION);
         }
-
-        List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
-        List<? extends AnnotatedTypeMirror> superParamTypes =
-            annotatedSuperMethod.getParameterTypes();
-        for (int i = 0; i < superParamTypes.size(); i++) {
-          AnnotationMirror paramAnno = paramTypes.get(i).getAnnotationInHierarchy(TOP);
-          boolean paramHasExplicitAnno =
-              paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
-          if (!paramHasExplicitAnno) {
-            AnnotationMirror superParamAnno =
-                superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
-            if (superParamAnno != null
-                && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
-                && !AnnotationUtils.areSameByName(POLY, superParamAnno)) {
-              paramTypes.get(i).replaceAnnotation(superParamAnno);
-            }
-          }
+        List<? extends AnnotatedTypeMirror> overriddenParamTypes = overridden.getParameterTypes();
+        for (int i = 0; i < overriddenParamTypes.size(); i++) {
+          inheritQualifier(paramTypes.get(i), overriddenParamTypes.get(i));
         }
       }
 
-      if (isResourceCollection(returnType.getUnderlyingType())) {
-        AnnotationMirror manualAnno = returnType.getAnnotationInHierarchy(TOP);
-        if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
-          boolean isConstructor = t.getElement().getKind() == ElementKind.CONSTRUCTOR;
-          if (isConstructor) {
-            returnType.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
-          } else {
-            returnType.replaceAnnotation(OWNINGCOLLECTION);
-          }
-        }
+      if (returnsResourceCollection && isMissingAnnotation(returnType)) {
+        returnType.replaceAnnotation(
+            t.getElement().getKind() == ElementKind.CONSTRUCTOR
+                ? OWNINGCOLLECTIONWITHOUTOBLIGATION
+                : OWNINGCOLLECTION);
       }
 
-      for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
-        if (isResourceCollection(paramType.getUnderlyingType())) {
-          AnnotationMirror manualAnno = paramType.getAnnotationInHierarchy(TOP);
-          if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
-            paramType.replaceAnnotation(NOTOWNINGCOLLECTION);
-          }
-        }
+      if (receiverType != null) {
+        borrow(receiverType);
+      }
+      for (AnnotatedTypeMirror paramType : paramTypes) {
+        borrow(paramType);
       }
 
       return super.visitExecutable(t, p);
     }
+
+    /**
+     * Gives a type in an overriding method the qualifier of the corresponding type in an overridden
+     * method, if the type has no qualifier and the overridden type has one.
+     *
+     * @param type the receiver, return, or a parameter type of the overriding method, which this
+     *     method side-effects
+     * @param overriddenType the corresponding type of the overridden method
+     * @return true if {@code type} inherited the qualifier of {@code overriddenType}
+     */
+    private boolean inheritQualifier(AnnotatedTypeMirror type, AnnotatedTypeMirror overriddenType) {
+      AnnotationMirror anno = type.getAnnotationInHierarchy(TOP);
+      AnnotationMirror overriddenAnno = overriddenType.getPrimaryAnnotationInHierarchy(TOP);
+      if (!isMissingAnnotation(anno) || isMissingAnnotation(overriddenAnno)) {
+        return false;
+      }
+      // At a call, this runs again after the call has resolved @PolyOwningCollection, possibly to
+      // bottom. So bottom does not inherit @PolyOwningCollection; only a missing qualifier does.
+      if (anno != null && AnnotationUtils.areSameByName(POLY, overriddenAnno)) {
+        return false;
+      }
+      type.replaceAnnotation(overriddenAnno);
+      return true;
+    }
+
+    /**
+     * Makes the given receiver or parameter type {@code @NotOwningCollection} if it could be a
+     * resource collection and has no qualifier.
+     *
+     * @param type a receiver or parameter type, which this method side-effects
+     */
+    private void borrow(AnnotatedTypeMirror type) {
+      if (couldBeResourceCollection(type.getUnderlyingType()) && isMissingAnnotation(type)) {
+        type.replaceAnnotation(NOTOWNINGCOLLECTION);
+      }
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Also resolves {@code @PolyOwningCollection} where the framework leaves it unresolved: in a
+   * method reference, and in an invocation typed during type argument inference. For example,
+   * without this, inference fails for {@code lists.stream().map(List::iterator)}: the return type
+   * {@code @PolyOwningCollection Iterator<String>} does not fit {@code map}'s type argument.
+   */
+  @Override
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
+    ParameterizedExecutableType result =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
+    AnnotatedExecutableType methodType = result.executableType();
+    if (tree instanceof MemberReferenceTree memberReference) {
+      // list::iterator resolves as list.iterator() would; List::iterator, to bottom.
+      boolean boundToNonBottomReceiver =
+          TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReference)
+                  == TreeUtils.MemberReferenceKind.BOUND
+              && receiverType != null
+              && !isMissingAnnotation(receiverType);
+      replacePoly(methodType, boundToNonBottomReceiver ? NOTOWNINGCOLLECTION : BOTTOM);
+    } else if (tree instanceof MethodInvocationTree && !inferTypeArgs) {
+      // A stand-in for inference, typed again later: accept any argument, fit any type argument.
+      if (methodType.getReceiverType() != null) {
+        replacePoly(methodType.getReceiverType(), NOTOWNINGCOLLECTION);
+      }
+      for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+        replacePoly(paramType, NOTOWNINGCOLLECTION);
+      }
+      replacePoly(methodType.getReturnType(), BOTTOM);
+    }
+    return result;
+  }
+
+  /**
+   * Replaces each {@code @PolyOwningCollection} in the given type by the given qualifier.
+   *
+   * @param type a type, which this method side-effects
+   * @param replacement the qualifier that replaces {@code @PolyOwningCollection}
+   */
+  private void replacePoly(AnnotatedTypeMirror type, AnnotationMirror replacement) {
+    new SimpleAnnotatedTypeScanner<Void, Void>(
+            (t, p) -> {
+              if (t.hasPrimaryAnnotation(POLY)) {
+                t.replaceAnnotation(replacement);
+              }
+              return null;
+            })
+        .visit(type);
+  }
+
+  /**
+   * Returns true if the given type has no collection ownership qualifier, or has the default
+   * qualifier, bottom.
+   *
+   * @param type a type
+   * @return true if the type has no collection ownership qualifier other than bottom
+   */
+  private boolean isMissingAnnotation(AnnotatedTypeMirror type) {
+    return isMissingAnnotation(type.getAnnotationInHierarchy(TOP));
+  }
+
+  /**
+   * Returns true if the given collection ownership qualifier is missing or is the default
+   * qualifier, bottom.
+   *
+   * @param anno a collection ownership qualifier, or null if there is none
+   * @return true if {@code anno} is null or bottom
+   */
+  @EnsuresNonNullIf(expression = "#1", result = false)
+  private boolean isMissingAnnotation(@Nullable AnnotationMirror anno) {
+    return anno == null || AnnotationUtils.areSameByName(BOTTOM, anno);
+  }
+
+  /**
+   * Returns true if a value of the given type could be a resource collection. That is the case for
+   * {@code Object}, and for a collection whose element type is a type variable, a wildcard, or a
+   * type whose must-call methods are non-empty or unknown. For example, it is true for {@code
+   * List<T>}, {@code List<?>}, and {@code List<Socket>}, and false for {@code List<String>}.
+   *
+   * @param type a type
+   * @return true if a value of the given type could be a resource collection
+   */
+  private boolean couldBeResourceCollection(TypeMirror type) {
+    if (TypesUtils.isObject(type)) {
+      return true;
+    }
+    TypeMirror elementType = ResourceLeakUtils.getCollectionElementType(type, processingEnv);
+    if (elementType == null) {
+      return false;
+    }
+    if (elementType.getKind() == TypeKind.TYPEVAR || elementType.getKind() == TypeKind.WILDCARD) {
+      return true;
+    }
+    List<String> mcValues = ResourceLeakUtils.getMcValues(elementType, mcAtf);
+    return mcValues == null || !mcValues.isEmpty();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>In a class that cannot hold resources, {@code this} is bottom, so that the class's methods
+   * can call each other. By default, {@code this} has the qualifier of the enclosing method's
+   * receiver, and in such a class the receivers differ. For example, in
+   *
+   * <pre>{@code
+   * class StringIterator implements Iterator<String> {
+   *   private boolean inRange() { ... }
+   *   public boolean hasNext() { return inRange(); }
+   * }
+   * }</pre>
+   *
+   * {@code hasNext()} inherits a {@code @NotOwningCollection} receiver from {@code
+   * Iterator.hasNext()}, but {@code inRange()} has a bottom receiver, so the call {@code inRange()}
+   * would be rejected.
+   */
+  @Override
+  public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
+    AnnotatedDeclaredType selfType = super.getSelfType(tree);
+    if (selfType == null || couldBeResourceCollection(selfType.getUnderlyingType())) {
+      return selfType;
+    }
+    AnnotatedDeclaredType bottomSelfType = selfType.deepCopy();
+    bottomSelfType.replaceAnnotation(BOTTOM);
+    return bottomSelfType;
   }
 
   /*
-   * Defaults resource collection field uses within member methods to @OwningCollection.
+   * Defaults a use of a resource collection field to @OwningCollection, or to
+   * @OwningCollectionWithoutObligation in a constructor.
    */
   @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
     super.addComputedTypeAnnotations(tree, type, iUseFlow);
 
-    if (type.getKind() == TypeKind.DECLARED) {
-      Element elt = TreeUtils.elementFromTree(tree);
-      if (elt != null) {
-        boolean isField = elt.getKind() == ElementKind.FIELD;
-        if (isField && isResourceCollection(type.getUnderlyingType())) {
-          AnnotationMirror fieldAnno = type.getAnnotationInHierarchy(TOP);
-          if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
-            TreePath currentPath = getPath(tree);
-            MethodTree enclosingMethodTree =
-                currentPath == null ? null : TreePathUtil.enclosingMethod(currentPath);
-            if (enclosingMethodTree != null && TreeUtils.isConstructor(enclosingMethodTree)) {
-              type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
-            } else {
-              type.replaceAnnotation(OWNINGCOLLECTION);
-            }
-          }
-        }
-      }
+    if (type.getKind() != TypeKind.DECLARED) {
+      return;
+    }
+    Element elt = TreeUtils.elementFromTree(tree);
+    if (elt != null
+        && elt.getKind() == ElementKind.FIELD
+        && isResourceCollection(type.getUnderlyingType())
+        && isMissingAnnotation(type)) {
+      TreePath currentPath = getPath(tree);
+      MethodTree enclosingMethodTree =
+          currentPath == null ? null : TreePathUtil.enclosingMethod(currentPath);
+      boolean inConstructor =
+          enclosingMethodTree != null && TreeUtils.isConstructor(enclosingMethodTree);
+      type.replaceAnnotation(inConstructor ? OWNINGCOLLECTIONWITHOUTOBLIGATION : OWNINGCOLLECTION);
     }
   }
 
-  // Default resource collection fields to @OwningCollection and resource collection parameters
-  // to @NotOwningCollection (inside the method).
+  // Defaults resource collection fields to @OwningCollection, and gives a use of a resource
+  // collection parameter in its method the parameter's qualifier.
   //
-  // A resource collection is a `Iterable` or `Iterator`, whose component has non-empty
-  // @MustCall type, as defined by the predicate isResourceCollection(AnnotatedTypeMirror).
+  // A resource collection is an Iterable or Iterator whose elements have a non-empty must-call
+  // type; see isResourceCollection(TypeMirror).
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(elt, type);
@@ -1150,24 +1283,20 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (elt instanceof VariableElement) {
       if (isResourceCollection(type.getUnderlyingType())) {
         if (elt.getKind() == ElementKind.FIELD) {
-          AnnotationMirror fieldAnno = type.getAnnotationInHierarchy(TOP);
-          if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
+          if (isMissingAnnotation(type)) {
             type.replaceAnnotation(OWNINGCOLLECTION);
           }
         } else if (elt.getKind() == ElementKind.PARAMETER) {
-          // Propagate the parameter annotation to the use site.
           ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
-          AnnotatedExecutableType annotatedMethod =
-              CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(method);
-          List<? extends VariableElement> params = method.getParameters();
-          List<? extends AnnotatedTypeMirror> paramTypes = annotatedMethod.getParameterTypes();
-          for (int i = 0; i < params.size(); i++) {
-            if (params.get(i).equals(elt)) {
-              AnnotationMirror paramAnno = paramTypes.get(i).getAnnotationInHierarchy(TOP);
-              if (paramAnno != null) {
-                type.replaceAnnotation(paramAnno);
-              }
-              break;
+          int index = method.getParameters().indexOf(elt);
+          if (index >= 0) {
+            AnnotationMirror paramAnno =
+                getAnnotatedType(method)
+                    .getParameterTypes()
+                    .get(index)
+                    .getAnnotationInHierarchy(TOP);
+            if (paramAnno != null) {
+              type.replaceAnnotation(paramAnno);
             }
           }
         }
