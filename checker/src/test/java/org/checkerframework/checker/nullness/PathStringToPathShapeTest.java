@@ -18,7 +18,9 @@ import org.junit.Test;
  * expected results are checked against the running JDK: the Unix results when the tests run on
  * Unix, and the Windows results when the tests run on Windows. The expected Windows {@code File}
  * result covers JDKs both before JDK 22 and from JDK 22 on, which differ, so it is checked to be no
- * more specific than the running JDK's result.
+ * more specific than the running JDK's result. Some JDKs' {@code Path.of} rejects the long-path
+ * prefix {@code \\?\}, so on such a JDK the expected Windows {@code Path} result for a string with
+ * that prefix is {@code BOTTOM}.
  */
 public class PathStringToPathShapeTest {
 
@@ -63,7 +65,8 @@ public class PathStringToPathShapeTest {
       Assert.assertEquals("actual Unix Path " + s, unixPath, actualPathShape(s));
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
     } else if (File.separatorChar == '\\') {
-      Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
+      Assert.assertEquals(
+          "actual Windows Path " + s, expectedNativeWindowsPath(s, windowsPath), actualPathShape(s));
       PathShape actualFile = actualFileShape(s);
       // A JDK either strips a long-path prefix (JDK 22 and later) or does not.
       PathShape beforeJdk22 = PathStringToPathShape.windowsFileBeforeJdk22(s);
@@ -103,10 +106,45 @@ public class PathStringToPathShapeTest {
           PathStringToPathShape.unixPath(PathStringToPathShape.join(strings, '/')),
           actual);
     } else if (File.separatorChar == '\\') {
+      String joined = PathStringToPathShape.join(strings, '\\');
       Assert.assertEquals(
           "actual Windows Path " + desc,
-          PathStringToPathShape.windowsPath(PathStringToPathShape.join(strings, '\\')),
+          expectedNativeWindowsPath(joined, PathStringToPathShape.windowsPath(joined)),
           actual);
+    }
+  }
+
+  /**
+   * Returns the expected path shape of {@code Path.of(s)} on the running Windows JDK. Some JDKs
+   * (such as JDK 17) do not recognize the long-path prefix {@code \\?\} in a {@code Path}, so
+   * {@code Path.of} rejects every string that starts with it; on such a JDK, the result is {@code
+   * BOTTOM}. Otherwise, the result is {@code windowsPath}.
+   *
+   * @param s a path string
+   * @param windowsPath the path shape of {@code Path.of(s)} on a Windows JDK that recognizes the
+   *     long-path prefix
+   * @return the expected path shape of {@code Path.of(s)} on the running Windows JDK
+   */
+  private static PathShape expectedNativeWindowsPath(String s, PathShape windowsPath) {
+    boolean hasLongPathPrefix = !PathStringToPathShape.stripLongPathPrefix(s).equals(s);
+    if (hasLongPathPrefix && !pathAcceptsLongPathPrefix()) {
+      return BOTTOM;
+    }
+    return windowsPath;
+  }
+
+  /**
+   * Returns true if the running JDK's {@code Path.of} accepts a string that starts with the
+   * long-path prefix {@code \\?\}. Call this only on Windows.
+   *
+   * @return true if the running JDK's {@code Path.of} accepts the long-path prefix
+   */
+  private static boolean pathAcceptsLongPathPrefix() {
+    try {
+      Path.of("\\\\?\\C:\\foo");
+      return true;
+    } catch (InvalidPathException e) {
+      return false;
     }
   }
 
