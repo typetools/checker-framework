@@ -3705,7 +3705,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Evaluate the receiver.
+    // The receiver is evaluated before the arguments.
     Node receiver = getReceiver(methodSelect);
 
     List<Node> arguments;
