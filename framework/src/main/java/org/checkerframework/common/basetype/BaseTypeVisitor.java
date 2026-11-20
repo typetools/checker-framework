@@ -471,8 +471,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * If the case label at {@code caseLabelPath} is a type pattern, reports a {@code
    * case.pattern.unsafe} warning if the type of its binding variable is not a safe downcast from
    * the type that {@link #instanceofPatternMatchedType} returns for the type of the switch's
-   * selector expression. This is the same check that {@link #checkInstanceofPattern} performs for
-   * a type pattern in an {@code instanceof}.
+   * selector expression. This is the same check that {@link #checkInstanceofPattern} performs for a
+   * type pattern in an {@code instanceof}.
    *
    * <p>For example, in the Tainting Checker, if {@code o} is {@code @Tainted}, then this method
    * warns about {@code case @Untainted String s} in {@code switch (o)}.

@@ -70,6 +70,29 @@ public class RecordPatternInLoop {
     }
   }
 
+  record Pair<A, B>(A a, B b) {}
+
+  // Only the first type argument of the matched type differs between iterations.
+  void firstTypeArgument(@Untainted String u, @Tainted String t, boolean b) {
+    String x = u;
+    while (b) {
+      // :: error: [assignment]
+      if (new Pair<>(x, u) instanceof Pair(@Untainted String first, String second)) {}
+      x = t;
+    }
+  }
+
+  void firstTypeArgumentVar(@Untainted String u, @Tainted String t, boolean b) {
+    String x = u;
+    while (b) {
+      if (new Pair<>(x, u) instanceof Pair(var first, var second)) {
+        // :: error: [assignment]
+        @Untainted String y = first;
+      }
+      x = t;
+    }
+  }
+
   // The declared type of `bx` does not depend on the dataflow analysis.
   void declaredMatchedType(@Untainted String u, @Tainted String t, boolean b) {
     String x = u;
