@@ -1,0 +1,284 @@
+package org.checkerframework.checker.nullness;
+
+import java.io.File;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ * Tests {@link PathStringToPathShape}.
+ *
+ * <p>The project does not run tests on Windows, so the expected Windows results are derived from
+ * the JDK source code: {@code sun.nio.fs.WindowsPathParser} and {@code sun.nio.fs.WindowsPath} for
+ * {@code Path}, and {@code java.io.WinNTFileSystem} and {@code java.io.File} for {@code File}. The
+ * expected results are checked against the running JDK: the Unix results when the tests run on
+ * Unix, and the Windows results when the tests run on Windows. The expected Windows {@code File}
+ * result covers JDKs both before JDK 22 and from JDK 22 on, which differ, so it is checked to be no
+ * more specific than the running JDK's result. Some JDKs' {@code Path.of} rejects the long-path
+ * prefix {@code \\?\}, so on such a JDK the expected Windows {@code Path} result for a string with
+ * that prefix is {@code BOTTOM}.
+ */
+public class PathStringToPathShapeTest {
+
+  /** Abbreviation for {@link PathShape#HAS_NAME}. */
+  private static final PathShape HAS_NAME = PathShape.HAS_NAME;
+
+  /** Abbreviation for {@link PathShape#HAS_PARENT}. */
+  private static final PathShape HAS_PARENT = PathShape.HAS_PARENT;
+
+  /** Abbreviation for {@link PathShape#UNKNOWN}. */
+  private static final PathShape UNKNOWN = PathShape.UNKNOWN;
+
+  /** Abbreviation for {@link PathShape#BOTTOM}. */
+  private static final PathShape BOTTOM = PathShape.BOTTOM;
+
+  /**
+   * Checks the path shape of the given string under each set of rules.
+   *
+   * @param s a path string
+   * @param unixPath the expected path shape of {@code Path.of(s)} on Unix, or {@code BOTTOM} if it
+   *     throws
+   * @param windowsPath the expected path shape of {@code Path.of(s)} on Windows, or {@code BOTTOM}
+   *     if it throws
+   * @param unixFile the expected path shape of {@code new File(s)} on Unix
+   * @param windowsFile the expected path shape of {@code new File(s)} on Windows
+   */
+  private static void check(
+      String s,
+      PathShape unixPath,
+      PathShape windowsPath,
+      PathShape unixFile,
+      PathShape windowsFile) {
+    Assert.assertEquals("unixPath " + s, unixPath, PathStringToPathShape.unixPath(s));
+    Assert.assertEquals("windowsPath " + s, windowsPath, PathStringToPathShape.windowsPath(s));
+    Assert.assertEquals("unixFile " + s, unixFile, PathStringToPathShape.unixFile(s));
+    Assert.assertEquals("windowsFile " + s, windowsFile, PathStringToPathShape.windowsFile(s));
+    Assert.assertEquals(
+        "forPath " + s, unixPath.lub(windowsPath), PathStringToPathShape.forPath(s));
+    Assert.assertEquals(
+        "forFile " + s, unixFile.lub(windowsFile), PathStringToPathShape.forFile(s));
+    if (File.separatorChar == '/') {
+      Assert.assertEquals("actual Unix Path " + s, unixPath, actualPathShape(s));
+      Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
+    } else if (File.separatorChar == '\\') {
+      Assert.assertEquals(
+          "actual Windows Path " + s, expectedNativeWindowsPath(s, windowsPath), actualPathShape(s));
+      PathShape actualFile = actualFileShape(s);
+      // A JDK either strips a long-path prefix (JDK 22 and later) or does not.
+      PathShape beforeJdk22 = PathStringToPathShape.windowsFileBeforeJdk22(s);
+      PathShape sinceJdk22 =
+          PathStringToPathShape.windowsFileBeforeJdk22(
+              PathStringToPathShape.stripLongPathPrefix(s));
+      Assert.assertTrue(
+          "actual Windows File " + s + " is " + actualFile,
+          actualFile == beforeJdk22 || actualFile == sinceJdk22);
+      Assert.assertEquals("sound Windows File " + s, windowsFile, windowsFile.lub(actualFile));
+    }
+  }
+
+  /**
+   * Checks the path shape of {@code Path.of(first, more...)}, under both {@link
+   * PathStringToPathShape} and the running JDK.
+   *
+   * @param expected the expected result of {@link PathStringToPathShape#forPath(List)}
+   * @param first a path string, the first argument to {@code Path.of}
+   * @param more path strings, the remaining arguments to {@code Path.of}
+   */
+  private static void checkJoin(PathShape expected, String first, String... more) {
+    List<String> strings = new ArrayList<>();
+    strings.add(first);
+    strings.addAll(Arrays.asList(more));
+    String desc = strings.toString();
+    Assert.assertEquals("forPath " + desc, expected, PathStringToPathShape.forPath(strings));
+    PathShape actual;
+    try {
+      actual = actualShape(Path.of(first, more));
+    } catch (InvalidPathException e) {
+      actual = BOTTOM;
+    }
+    if (File.separatorChar == '/') {
+      Assert.assertEquals(
+          "actual Unix Path " + desc,
+          PathStringToPathShape.unixPath(PathStringToPathShape.join(strings, '/')),
+          actual);
+    } else if (File.separatorChar == '\\') {
+      String joined = PathStringToPathShape.join(strings, '\\');
+      Assert.assertEquals(
+          "actual Windows Path " + desc,
+          expectedNativeWindowsPath(joined, PathStringToPathShape.windowsPath(joined)),
+          actual);
+    }
+  }
+
+  /**
+   * Returns the expected path shape of {@code Path.of(s)} on the running Windows JDK. Some JDKs
+   * (such as JDK 17) do not recognize the long-path prefix {@code \\?\} in a {@code Path}, so
+   * {@code Path.of} rejects every string that starts with it; on such a JDK, the result is {@code
+   * BOTTOM}. Otherwise, the result is {@code windowsPath}.
+   *
+   * @param s a path string
+   * @param windowsPath the path shape of {@code Path.of(s)} on a Windows JDK that recognizes the
+   *     long-path prefix
+   * @return the expected path shape of {@code Path.of(s)} on the running Windows JDK
+   */
+  private static PathShape expectedNativeWindowsPath(String s, PathShape windowsPath) {
+    boolean hasLongPathPrefix = !PathStringToPathShape.stripLongPathPrefix(s).equals(s);
+    if (hasLongPathPrefix && !pathAcceptsLongPathPrefix()) {
+      return BOTTOM;
+    }
+    return windowsPath;
+  }
+
+  /**
+   * Returns true if the running JDK's {@code Path.of} accepts a string that starts with the
+   * long-path prefix {@code \\?\}. Call this only on Windows.
+   *
+   * @return true if the running JDK's {@code Path.of} accepts the long-path prefix
+   */
+  private static boolean pathAcceptsLongPathPrefix() {
+    try {
+      Path.of("\\\\?\\C:\\foo");
+      return true;
+    } catch (InvalidPathException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Returns the path shape of {@code Path.of(s)} on the current platform.
+   *
+   * @param s a path string
+   * @return the path shape of {@code Path.of(s)}, or {@code BOTTOM} if {@code s} is not a valid
+   *     path
+   */
+  private static PathShape actualPathShape(String s) {
+    try {
+      return actualShape(Path.of(s));
+    } catch (InvalidPathException e) {
+      return BOTTOM;
+    }
+  }
+
+  /**
+   * Returns the path shape of the given path.
+   *
+   * @param p a path
+   * @return the path shape of {@code p}
+   */
+  private static PathShape actualShape(Path p) {
+    Path fileName = p.getFileName();
+    return PathShape.of(fileName != null && !fileName.toString().isEmpty(), p.getParent() != null);
+  }
+
+  /**
+   * Returns the path shape of {@code new File(s)} on the current platform.
+   *
+   * @param s a path string
+   * @return the path shape of {@code new File(s)}
+   */
+  private static PathShape actualFileShape(String s) {
+    File f = new File(s);
+    return PathShape.of(!f.getPath().isEmpty() && !f.getName().isEmpty(), f.getParent() != null);
+  }
+
+  @Test
+  public void testRelative() {
+    check("a", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("a/", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check(".", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("..", HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    check("a/b", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("a/..", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    // A backslash is a separator on Windows, but not on Unix.
+    check("a\\b", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+  }
+
+  @Test
+  public void testEmptyAndRoots() {
+    check("", UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
+    check("/", UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
+    check("//", UNKNOWN, BOTTOM, UNKNOWN, UNKNOWN);
+    check("\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("/a", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+    check("\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+  }
+
+  @Test
+  public void testDrives() {
+    check("C:", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("C:/", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("C:foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("C:\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("a:b", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    // A Windows File removes slashes before a drive letter; a Windows Path forbids the colon.
+    check("/C:/x", HAS_PARENT, BOTTOM, HAS_PARENT, HAS_PARENT);
+  }
+
+  @Test
+  public void testUnc() {
+    check("\\\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\server", HAS_NAME, BOTTOM, HAS_NAME, HAS_PARENT);
+    // A Path treats "\\server\share" as a root, but a File treats it as having a parent.
+    check("\\\\server\\share", HAS_NAME, UNKNOWN, HAS_NAME, HAS_PARENT);
+    check("\\\\server\\share\\", HAS_NAME, UNKNOWN, HAS_NAME, HAS_PARENT);
+    check("\\\\server\\share\\a", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("//server/share", HAS_PARENT, UNKNOWN, HAS_PARENT, HAS_PARENT);
+    check("//server/share/a", HAS_PARENT, HAS_PARENT, HAS_PARENT, HAS_PARENT);
+  }
+
+  @Test
+  public void testLongPathPrefix() {
+    check("\\\\?\\C:\\foo", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    check("\\\\?\\UNC\\server\\share\\a", HAS_NAME, HAS_PARENT, HAS_NAME, HAS_PARENT);
+    // A Path requires an absolute path after the long-path prefix.  A File on JDK 22 or later
+    // strips the prefix, leaving the relative path "foo".
+    check("\\\\?\\foo", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    // As a Windows File, "\\?\foo" has the parent "\\?" on a JDK before JDK 22.
+    Assert.assertEquals(HAS_PARENT, PathStringToPathShape.windowsFileBeforeJdk22("\\\\?\\foo"));
+    Assert.assertEquals(
+        HAS_NAME,
+        PathStringToPathShape.windowsFileBeforeJdk22(
+            PathStringToPathShape.stripLongPathPrefix("\\\\?\\foo")));
+    // A File on JDK 22 or later strips the prefix, leaving a root.
+    check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN);
+    check("\\\\?\\C:", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\?\\UNC", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\?\\UNC\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+    check("\\\\?\\\\", HAS_NAME, BOTTOM, HAS_NAME, UNKNOWN);
+  }
+
+  @Test
+  public void testJoin() {
+    checkJoin(HAS_NAME, "a");
+    checkJoin(HAS_PARENT, "a", "b");
+    checkJoin(HAS_PARENT, "a", "", "b");
+    checkJoin(HAS_NAME, "", "a");
+    checkJoin(UNKNOWN, "", "");
+    checkJoin(HAS_PARENT, "/", "a");
+    checkJoin(HAS_PARENT, "a/", "/b");
+    // Windows joins the strings with a backslash, which forms the long-path prefix "\\?\", so
+    // the result is the root "C:\".  On Unix, the result has two names.
+    checkJoin(UNKNOWN, "\\\\?", "C:\\");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testJoinEmpty() {
+    PathStringToPathShape.forPath(new ArrayList<>());
+  }
+
+  @Test
+  public void testInvalid() {
+    // A Windows Path forbids some characters and a trailing space; a File does not.
+    check("foo:bar", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    check("a?b", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    check("a ", HAS_NAME, BOTTOM, HAS_NAME, HAS_NAME);
+    check("\\\\a?b\\share\\c", HAS_NAME, BOTTOM, HAS_NAME, HAS_PARENT);
+    // No Path can contain the NUL character.
+    check("a\u0000b", BOTTOM, BOTTOM, HAS_NAME, HAS_NAME);
+  }
+}
