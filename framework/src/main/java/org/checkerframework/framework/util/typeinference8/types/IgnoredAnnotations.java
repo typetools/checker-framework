@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -796,6 +797,13 @@ final class IgnoredAnnotations {
    * <p>Positions correspond only where the two types have the same structure; elsewhere, nothing is
    * replaced. See {@link #allCorrespondingPositionsMatch}.
    *
+   * <p>A position can correspond to several positions of the other type: for example, given {@code
+   * interface Repeat<A> extends Pair<A, A>}, the type argument of {@code Repeat<T>} corresponds to
+   * both type arguments of {@code Pair<? extends @NonNull String, ? extends @Nullable String>}. If
+   * such a position gets annotations from several distinct positions, the result does not depend on
+   * their order; see {@link #combineCopies}. All annotations are read from the types before any is
+   * replaced.
+   *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
    * @param ignored1 the ignored positions of {@code atm1}
@@ -816,6 +824,9 @@ final class IgnoredAnnotations {
       boolean keepBothIgnored,
       QualifierHierarchy qh,
       Types types) {
+    // The copies into each position, collected before any is made so that every annotation that is
+    // copied is read from the unmodified types.
+    IdentityHashMap<AnnotatedTypeMirror, List<Copy>> copies = new IdentityHashMap<>();
     allCorrespondingPositionsMatch(
         atm1,
         atm2,
@@ -831,16 +842,100 @@ final class IgnoredAnnotations {
           }
           AnnotationMirrorSet into2 = new AnnotationMirrorSet(hierarchies2);
           into2.removeAll(hierarchies1);
-          // The two sets are disjoint, so the order of these copies does not matter.
           if (!into1.isEmpty()) {
-            copyPrimaryAnnotations(boundOf(position2), position1, into1, qh);
+            copies
+                .computeIfAbsent(position1, k -> new ArrayList<>())
+                .add(new Copy(position2, into1));
           }
           if (!into2.isEmpty()) {
-            copyPrimaryAnnotations(boundOf(position1), position2, into2, qh);
+            copies
+                .computeIfAbsent(position2, k -> new ArrayList<>())
+                .add(new Copy(position1, into2));
           }
           return true;
         },
         types);
+    for (Map.Entry<AnnotatedTypeMirror, List<Copy>> entry : copies.entrySet()) {
+      combineCopies(entry.getKey(), entry.getValue(), qh);
+    }
+  }
+
+  /**
+   * A copy of annotations into an ignored position, from a corresponding position of the other
+   * type.
+   *
+   * @param from the position whose annotations are copied; if it is a wildcard, the annotations of
+   *     its bound are copied (see {@link #boundOf})
+   * @param hierarchies the top annotations of the hierarchies in which to copy annotations
+   */
+  private record Copy(AnnotatedTypeMirror from, AnnotationMirrorSet hierarchies) {}
+
+  /**
+   * Gives {@code target} the annotations of the positions of {@code copies}, in their hierarchies.
+   * The result does not depend on the order of {@code copies}.
+   *
+   * <p>In a hierarchy in which every copy is from the same type, {@code target} gets its primary
+   * annotation as by {@link #copyPrimaryAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror,
+   * AnnotationMirrorSet, QualifierHierarchy)}. Otherwise, the annotations that are copied are
+   * combined so that {@code target} satisfies every position it is copied from, if possible:
+   *
+   * <ul>
+   *   <li>a wildcard with a lower bound requires the annotation to be above that of its bound;
+   *   <li>any other wildcard requires the annotation to be below that of its bound;
+   *   <li>any other type requires the annotation to be that of the type.
+   * </ul>
+   *
+   * <p>{@code target} gets the least upper bound of the annotations that it must be above, if there
+   * are any; otherwise, the greatest lower bound of the annotations that it must be below. For
+   * example, if the copies are from {@code ? extends @NonNull String} and {@code ? extends @Nullable
+   * String}, then {@code target} gets {@code @NonNull}, which satisfies both.
+   *
+   * @param target an ignored position; side-effected by this method
+   * @param copies the copies into {@code target}
+   * @param qh the qualifier hierarchy
+   */
+  private static void combineCopies(
+      AnnotatedTypeMirror target, List<Copy> copies, QualifierHierarchy qh) {
+    if (copies.size() == 1) {
+      Copy copy = copies.get(0);
+      copyPrimaryAnnotations(boundOf(copy.from()), target, copy.hierarchies(), qh);
+      return;
+    }
+    for (AnnotationMirror top : qh.getTopAnnotations()) {
+      Set<AnnotatedTypeMirror> sources = Collections.newSetFromMap(new IdentityHashMap<>());
+      @Nullable AnnotationMirror lower = null;
+      @Nullable AnnotationMirror upper = null;
+      for (Copy copy : copies) {
+        if (!copy.hierarchies().contains(top)) {
+          continue;
+        }
+        AnnotatedTypeMirror source = boundOf(copy.from());
+        sources.add(source);
+        AnnotationMirror anno = source.getAnnotationInHierarchy(top);
+        if (anno == null) {
+          continue;
+        }
+        boolean isWildcard = copy.from().getKind() == TypeKind.WILDCARD;
+        boolean hasLowerBound =
+            isWildcard
+                && ((AnnotatedWildcardType) copy.from()).getSuperBound().getKind()
+                    != TypeKind.NULL;
+        if (!isWildcard || hasLowerBound) {
+          lower = lower == null ? anno : qh.leastUpperBoundQualifiersOnly(lower, anno);
+        }
+        if (!isWildcard || !hasLowerBound) {
+          upper = upper == null ? anno : qh.greatestLowerBoundQualifiersOnly(upper, anno);
+        }
+      }
+      if (sources.size() == 1) {
+        copyPrimaryAnnotations(
+            sources.iterator().next(), target, AnnotationMirrorSet.singleton(top), qh);
+      } else if (lower != null) {
+        target.replaceAnnotation(lower);
+      } else if (upper != null) {
+        target.replaceAnnotation(upper);
+      }
+    }
   }
 
   /**
