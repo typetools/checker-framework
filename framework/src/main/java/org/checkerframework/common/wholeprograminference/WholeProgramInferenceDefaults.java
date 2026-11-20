@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -140,14 +141,14 @@ import org.checkerframework.javacutil.AnnotationUtils;
   }
 
   /**
-   * Removes from {@code atm} each primary annotation that would be redundant (see {@link
-   * #isRedundant}).
+   * Removes from {@code atm} each annotation that would be redundant (see {@link #isRedundant}):
+   * each primary annotation, and each annotation on an array component type at any depth.
    *
    * @param atm the inferred type of a location, which this method side-effects; or null
    * @param defaulted the type that the location has when no annotation is written there, or null if
    *     that type is not known
    */
-  /*package-private*/ void removeRedundantPrimaryAnnotations(
+  /*package-private*/ void removeRedundantAnnotations(
       @Nullable AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
     if (atm == null) {
       return;
@@ -156,6 +157,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
       if (isRedundant(anno, atm, defaulted)) {
         atm.removePrimaryAnnotation(anno);
       }
+    }
+    if (atm instanceof AnnotatedArrayType array
+        && defaulted instanceof AnnotatedArrayType defaultedArray) {
+      removeRedundantAnnotations(array.getComponentType(), defaultedArray.getComponentType());
     }
   }
 
