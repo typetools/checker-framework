@@ -1,7 +1,9 @@
 package org.checkerframework.framework.util;
 
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +58,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *       parameter, compare Java types and ignore annotations.
  * </ul>
  *
- * <p>This class also differs from JLS 4.10.5 in two ways:
+ * <p>This class also differs from JLS 4.10.5 in three ways:
  *
  * <ul>
  *   <li>The upward projection of a restricted type variable is the upward projection of its upper
@@ -68,6 +70,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>Where JLS 4.10.5 gives a wildcard {@code ? extends U} whose bound U is an intersection
  *       type, this class gives {@code ?}, because the bound of a wildcard cannot be an intersection
  *       type.
+ *   <li>Where the downward projection in JLS 4.10.5 gives a wildcard {@code ? super U} whose bound
+ *       U is an intersection type, this class treats the downward projection as undefined.
  * </ul>
  */
 public final class AnnotatedTypeProjection {
@@ -80,6 +84,9 @@ public final class AnnotatedTypeProjection {
 
   /** The javac type utilities. */
   private final com.sun.tools.javac.code.Types javacTypes;
+
+  /** The javac symbol table. */
+  private final Symtab symtab;
 
   /** The restricted type variables, or null if every captured type variable is restricted. */
   private final @Nullable Collection<TypeVariable> restricted;
@@ -102,9 +109,9 @@ public final class AnnotatedTypeProjection {
       AnnotatedTypeFactory atypeFactory, @Nullable Collection<TypeVariable> restricted) {
     this.atypeFactory = atypeFactory;
     this.types = atypeFactory.types;
-    this.javacTypes =
-        com.sun.tools.javac.code.Types.instance(
-            ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext());
+    Context context = ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext();
+    this.javacTypes = com.sun.tools.javac.code.Types.instance(context);
+    this.symtab = Symtab.instance(context);
     this.restricted = restricted;
   }
 
@@ -283,9 +290,13 @@ public final class AnnotatedTypeProjection {
               }
               typeArgs.add(createWildcard(upperBound, null, true));
             } else {
-              typeArgs.add(
-                  createWildcard(
-                      upward(wildcard.getExtendsBound()), upward(wildcard.getSuperBound()), false));
+              AnnotatedTypeMirror lowerBound = upward(wildcard.getSuperBound());
+              // A wildcard's bound cannot be an intersection type, so treat the downward
+              // projection as undefined.  This is sound but loses precision.
+              if (lowerBound.getKind() == TypeKind.INTERSECTION) {
+                return null;
+              }
+              typeArgs.add(createWildcard(upward(wildcard.getExtendsBound()), lowerBound, false));
             }
           }
         }
@@ -445,7 +456,12 @@ public final class AnnotatedTypeProjection {
    */
   private AnnotatedArrayType withComponentType(
       AnnotatedArrayType type, AnnotatedTypeMirror componentType) {
-    ArrayType javaType = types.getArrayType(componentType.getUnderlyingType());
+    TypeMirror javaComponentType = componentType.getUnderlyingType();
+    // `Types.getArrayType` rejects an intersection component type.
+    ArrayType javaType =
+        javaComponentType.getKind() == TypeKind.INTERSECTION
+            ? new Type.ArrayType((Type) javaComponentType, symtab.arrayClass)
+            : types.getArrayType(javaComponentType);
     AnnotatedArrayType result =
         (AnnotatedArrayType) AnnotatedTypeMirror.createType(javaType, atypeFactory, false);
     result.addAnnotations(type.getPrimaryAnnotations());

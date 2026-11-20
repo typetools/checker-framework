@@ -10,6 +10,7 @@
 // https://github.com/typetools/checker-framework/issues/602
 
 import java.util.List;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
@@ -45,6 +46,27 @@ public class RecordPatternInLoop {
         @Untainted String y = l.get(0);
       }
       x = t;
+    }
+  }
+
+  record ListHolder(List<String> l) {
+    @SuppressWarnings("tainting") // the field's type is not @PolyTainted
+    public @PolyTainted List<@PolyTainted String> l(@PolyTainted ListHolder this) {
+      return l;
+    }
+  }
+
+  // The type argument of the type of `l` depends on the refined qualifier of `h`, which is
+  // @Tainted on the second iteration.  The type of `l` must not be cached from the first
+  // iteration.
+  void refinedReceiver(@Untainted ListHolder u, @Tainted ListHolder t, boolean b) {
+    ListHolder h = u;
+    while (b) {
+      if (h instanceof ListHolder(var l)) {
+        // :: error: [assignment]
+        List<@Untainted String> y = l;
+      }
+      h = t;
     }
   }
 
