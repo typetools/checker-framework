@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 
@@ -92,5 +93,12 @@ class PolyOwningCollectionReturn {
     it.next();
     it.remove();
     takeIterator(l.iterator());
+  }
+
+  // A list iterator view does not own its elements.
+  @OwningCollection
+  ListIterator<Resource> listIteratorViewDoesNotOwnElements(List<Resource> c) {
+    // :: error: return
+    return c.listIterator();
   }
 }

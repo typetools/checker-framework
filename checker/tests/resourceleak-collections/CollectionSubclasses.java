@@ -4,6 +4,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.PriorityBlockingQueue;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 
@@ -61,5 +62,10 @@ class CollectionSubclasses {
       r.close();
       r.flush();
     }
+  }
+
+  // A priority blocking queue may contain resources.
+  void priorityBlockingQueueAcceptsResources() {
+    PriorityBlockingQueue<Resource> q = new PriorityBlockingQueue<>();
   }
 }
