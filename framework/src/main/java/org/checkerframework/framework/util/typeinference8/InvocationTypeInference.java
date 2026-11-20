@@ -58,16 +58,16 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * Performs invocation type inference as described in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2">JLS Section
- * 18.5.2</a>. Main entry point is {@link InvocationTypeInference#infer(ExpressionTree,
- * AnnotatedExecutableType)}
+ * 18.5.2</a>. The main entry point is {@link InvocationTypeInference#infer(ExpressionTree,
+ * AnnotatedExecutableType)}.
  *
  * <p>Invocation type inference is the process by which method type arguments are inferred for a
  * given method invocation. An overview of the process is given below.
  *
  * <p>1. Inference creates an inference variable for each method type argument for a given method
- * invocation. Each inference variable may have zero or more upper, lower, and equal bounds. The
- * bounds of an inference variable are initially the bounds on the type argument. More bounds may be
- * inferred in later steps.
+ * invocation. Each inference variable can have zero or more upper, lower, and equal bounds. The
+ * bounds of an inference variable are initially the bounds on the type argument. More bounds might
+ * be inferred in later steps.
  *
  * <p>Bounds are between an inference variable and an abstract type. {@link AbstractType}s are
  * type-like structures that might include inference variables. Abstract types might also be an
@@ -77,7 +77,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>An inference variable is represented by a {@link Variable} object which holds bounds for the
  * inference variable, in a {@link
  * org.checkerframework.framework.util.typeinference8.types.VariableBounds} object. Additional
- * inference variables may be created in later steps if any subexpression of the method invocation
+ * inference variables might be created in later steps if any subexpression of the method invocation
  * requires type inference.
  *
  * <p>2. Next, inference creates constraints between the arguments to the method invocation and its
@@ -93,16 +93,16 @@ import org.checkerframework.javacutil.TypesUtils;
  * (see {@link CheckedExceptionConstraint}). Groups of constraints are stored in {@link
  * ConstraintSet}s.
  *
- * <p>3. Next, these constraints are "reduced" producing bounds on the inference variables.
+ * <p>3. Next, these constraints are "reduced", producing bounds on the inference variables.
  * Reduction depends on the kind of constraint and is defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2">JLS section
  * 18.2</a>. In this code base, constraints are reduced via {@link
  * ConstraintSet#reduce(Java8InferenceContext)}.
  *
- * <p>4. The inference variables' bounds are then "incorporated" which produces more bounds and/or
+ * <p>4. The inference variables' bounds are then "incorporated", which produces more bounds and/or
  * constraints that must then be "reduced" or "incorporated". Incorporation and reduction continue
  * until no new bounds or constraints are produced. Bounds are incorporated via {@link
- * BoundSet#incorporateToFixedPoint(BoundSet)}. Incorporation in defined in <a
+ * BoundSet#incorporateToFixedPoint(BoundSet)}. Incorporation is defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.3">JLS section
  * 18.3</a>.
  *
@@ -178,7 +178,7 @@ public class InvocationTypeInference {
     if (!paramType.isProper()) {
       return null;
     }
-    // AbstractType.isProper() only means "mentions no inference variable of this problem".  The
+    // AbstractType.isProper() only means "contains no inference variable of this problem".  The
     // target type is derived from the lambda's context, which may include a method type variable
     // belonging to a different, unfinished inference -- for example when the lambda is an argument
     // of a call whose receiver is a generic invocation that is itself under inference and so was
@@ -186,7 +186,7 @@ public class InvocationTypeInference {
     // to instantiate, so this problem has not determined the parameter's type.  Returning it would
     // let the type variable escape as a lambda parameter's type, which later fails in
     // AnnotatedTypes.asMemberOf.
-    if (mentionsMethodTypeVariable(paramType.getJavaType())) {
+    if (containsMethodTypeVariable(paramType.getJavaType())) {
       return null;
     }
     // Copy, because AbstractType.getAnnotatedType() returns a type that inference itself uses: it
@@ -196,55 +196,55 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Returns whether {@code type} mentions a type variable that is declared by a method or
+   * Returns true if {@code type} contains a type variable that is declared by a method or
    * constructor, rather than by a class or interface.
    *
    * <p>Bounds of a type variable are not searched: a type variable is judged only by its own
    * declaration, so that an F-bounded type variable does not cause infinite recursion.
    *
    * @param type a type
-   * @return whether {@code type} mentions a type variable declared by a method or constructor
+   * @return true if {@code type} contains a type variable declared by a method or constructor
    */
-  private static boolean mentionsMethodTypeVariable(TypeMirror type) {
+  private static boolean containsMethodTypeVariable(TypeMirror type) {
     return switch (type.getKind()) {
       case TYPEVAR ->
           ((TypeVariable) type).asElement().getEnclosingElement() instanceof ExecutableElement;
       case DECLARED -> {
         DeclaredType declared = (DeclaredType) type;
-        // The enclosing type carries type arguments of its own: in `Outer<T>.Inner`, `T` is
-        // mentioned only there.  It is a NoType, whose kind falls through to false below, when
-        // there is no enclosing type.
-        yield anyMentionsMethodTypeVariable(declared.getTypeArguments())
-            || mentionsMethodTypeVariable(declared.getEnclosingType());
+        // The enclosing type carries type arguments of its own: in `Outer<T>.Inner`, `T` appears
+        // only there.  It is a NoType, whose kind falls through to false below, when there is no
+        // enclosing type.
+        yield anyContainsMethodTypeVariable(declared.getTypeArguments())
+            || containsMethodTypeVariable(declared.getEnclosingType());
       }
-      case ARRAY -> mentionsMethodTypeVariable(((ArrayType) type).getComponentType());
+      case ARRAY -> containsMethodTypeVariable(((ArrayType) type).getComponentType());
       case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
         yield (wildcard.getExtendsBound() != null
-                && mentionsMethodTypeVariable(wildcard.getExtendsBound()))
+                && containsMethodTypeVariable(wildcard.getExtendsBound()))
             || (wildcard.getSuperBound() != null
-                && mentionsMethodTypeVariable(wildcard.getSuperBound()));
+                && containsMethodTypeVariable(wildcard.getSuperBound()));
       }
-      case INTERSECTION -> anyMentionsMethodTypeVariable(((IntersectionType) type).getBounds());
-      case UNION -> anyMentionsMethodTypeVariable(((UnionType) type).getAlternatives());
+      case INTERSECTION -> anyContainsMethodTypeVariable(((IntersectionType) type).getBounds());
+      case UNION -> anyContainsMethodTypeVariable(((UnionType) type).getAlternatives());
       default -> false;
     };
   }
 
   /**
-   * Returns whether any of {@code types} mentions a type variable that is declared by a method or
+   * Returns true if any of {@code types} contains a type variable that is declared by a method or
    * constructor.
    *
    * @param types some types
-   * @return whether any of {@code types} mentions a type variable declared by a method or
+   * @return true if any of {@code types} contains a type variable declared by a method or
    *     constructor
    */
-  private static boolean anyMentionsMethodTypeVariable(List<? extends TypeMirror> types) {
-    return types.stream().anyMatch(InvocationTypeInference::mentionsMethodTypeVariable);
+  private static boolean anyContainsMethodTypeVariable(List<? extends TypeMirror> types) {
+    return types.stream().anyMatch(InvocationTypeInference::containsMethodTypeVariable);
   }
 
   /**
-   * Perform invocation type inference on {@code invocation}. See <a
+   * Performs invocation type inference on {@code invocation}. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    *
@@ -317,7 +317,7 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Perform invocation type inference on {@code invocation}. See <a
+   * Performs invocation type inference on {@code invocation}. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    *
@@ -382,12 +382,12 @@ public class InvocationTypeInference {
    *                 type parameter declaration.
    *   <li value="2">Adding any bounds implied by the throws clause of {@code executableType}.
    *   <li value="3">Constructing constraints between formal parameters and arguments that are
-   *                 "pertinent to applicability" (See <a
+   *                 "pertinent to applicability" (see <a
    *                 href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.12.2.2">JLS
-   *                 Section 15.12.2.2</a>). Generally, all arguments are applicable except: inexact
-   *                 method reference, implicitly typed lambdas, or explicitly typed lambda whose
-   *                 return expression(s) are not pertinent.
-   *   <li value="4">Reducing and incorporating those constraints which finally produces B2.
+   *                 Section 15.12.2.2</a>). Generally, all arguments are pertinent to applicability
+   *                 except: inexact method references, implicitly typed lambdas, or explicitly
+   *                 typed lambdas whose return expression(s) are not pertinent.
+   *   <li value="4">Reducing and incorporating those constraints, which finally produces B2.
    * </ol>
    *
    * <p>If unchecked conversion is necessary to reduce and incorporate those constraints, then this
@@ -450,7 +450,7 @@ public class InvocationTypeInference {
   /**
    * Same as {@link #createB2(ExpressionTree, AbstractExecutableType, List, Theta)}, but for method
    * references. A list of types is used instead of a list of arguments. These types are the types
-   * of the formal parameters of function type of target type of the method reference.
+   * of the formal parameters of the function type of the target type of the method reference.
    *
    * <p>If unchecked conversion is necessary for the compile-time declaration to be applicable, then
    * this method records that the method reference needs unchecked conversion.
@@ -541,7 +541,7 @@ public class InvocationTypeInference {
    *     Theta)} or {@link #createB2MethodRef}, which records whether {@code invocation} needs
    *     unchecked conversion
    * @param invocation a method or constructor invocation
-   * @param executableType the type of the method or constructor invoked by expression
+   * @param executableType the type of the method or constructor invoked by {@code invocation}
    * @param target target type of the invocation
    * @param map map of type variables to (inference) variables
    * @return bound set created by constraints against the target type of the invocation
@@ -701,12 +701,12 @@ public class InvocationTypeInference {
    * expression.
    *
    * <p>If {@code ei} is a method invocation or new class tree, that expression might require type
-   * argument inference. In that case the additional variables, bounds, and constraints are added
+   * argument inference. In that case, the additional variables, bounds, and constraints are added
    * here.
    *
    * <p>(See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
-   * 18.5.2.2</a>)
+   * 18.5.2.2</a>.)
    *
    * @param ei expression that is an argument to a method that corresponds to the formal parameter
    *     whose type is {@code fi}
@@ -734,7 +734,7 @@ public class InvocationTypeInference {
         if (LambdaBodyConstraint.mustDefer(lambda, fi)) {
           // The lambda is implicitly typed and its parameters do not have types yet, so the body
           // cannot be examined.  Defer the body's constraints; JLS 18.5.2.2 resolves this
-          // constraint's input variables -- the variables that the parameter types mention --
+          // constraint's input variables -- the variables that the parameter types contain --
           // before reducing it.  See LambdaBodyConstraint.
           c.add(new LambdaBodyConstraint(lambda, fi));
         } else {
@@ -772,7 +772,7 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Returns the additional argument constraints (See <a
+   * Returns the additional argument constraints (see <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>) produced by {@code invocation}, a poly method invocation or new class tree that
    * is itself an argument (or, transitively, part of an argument) of another invocation under
@@ -798,8 +798,8 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Recursively search for method invocations and new class trees. If any are found, the additional
-   * variables, bounds, and constraints are returned. This method is called by {@link
+   * Recursively searches for method invocations and new class trees. If any are found, the
+   * additional variables, bounds, and constraints are returned. This method is called by {@link
    * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)} when that method
    * encounters a lambda. This method is different because it does not add checked exception
    * constraints for lambdas or method references.

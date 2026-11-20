@@ -26,10 +26,10 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * A bound of the form: {@code G<a1, ..., an> = capture(G<A1, ..., An>)}. The variables a1, ..., an
  * represent the result of capture conversion applied to {@code G<A1, ..., An>} (where A1, ..., An
- * may be types or wildcards and may mention inference variables).
+ * can be types or wildcards and can contain inference variables).
  */
 public final class CaptureBound {
-  /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
+  /** {@code G<A1, ..., An>}, sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
   /**
@@ -74,7 +74,7 @@ public final class CaptureBound {
     List<AbstractType> capturedTypeArgs = capturedType.getTypeArguments();
     assert capturedTypeArgs != null : "@AssumeAssertion(nullness): capturedType is a declared type";
     // Mark which capture variables capture a wildcard before calling initialBounds on any of them.
-    // initialBounds on one variable can add a bound that mentions another variable, and
+    // initialBounds on one variable can add a bound that contains another variable, and
     // incorporating that bound checks whether the other variable captures a wildcard.
     Iterator<Variable> alphas = this.map.values().iterator();
     for (AbstractType Ai : capturedTypeArgs) {
@@ -118,7 +118,7 @@ public final class CaptureBound {
   }
 
   /**
-   * Incorporate this capture bound. See JLS 18.3.2.
+   * Incorporates this capture bound. See JLS 18.3.2.
    *
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
@@ -208,7 +208,7 @@ public final class CaptureBound {
    * @param variables inference variables
    * @return true if this bound contains any {@code variables}
    */
-  public boolean mentionsAny(Collection<Variable> variables) {
+  public boolean containsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
       if (map.containsValue(a)) {
         return true;
@@ -222,10 +222,10 @@ public final class CaptureBound {
    * groups ai, Ai, and the upper bound of the corresponding type variable.
    *
    * @param alpha fresh inference variable (in the left-hand side of the capture). (Also referred to
-   *     as beta in some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> =
+   *     as beta in some places in the JLS.) For example, {@code a1} in {@code G<a1, ..., an> =
    *     capture(G<A1, ..., An>)}.
-   * @param capturedTypeArg type argument in the right-hand side for the capture. For example {@code
-   *     A1} in {@code G<a1, ..., an> = capture(G<A1, ..., An>)}.
+   * @param capturedTypeArg type argument in the right-hand side for the capture. For example,
+   *     {@code A1} in {@code G<a1, ..., an> = capture(G<A1, ..., An>)}.
    * @param bound upper bound of one of the type parameters of G that has been substituted using the
    *     fresh inference variables
    */

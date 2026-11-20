@@ -63,8 +63,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * LTLengthOf(arr) is safe to access arr. If that fails, it checks if the access is still safe. To
    * do so, it checks if the Value Checker knows the minimum length of arr by querying the Value
    * Annotated Type Factory. If the minimum length of the array is known, the visitor can check if
-   * the index is less than that minimum length. If so, then the access is still safe. Otherwise,
-   * report a potential unsafe access.
+   * the index is less than that minimum length. If so, then the access is still safe. Otherwise, it
+   * reports a potentially unsafe access.
    */
   @Override
   public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
@@ -284,7 +284,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * Returns true if the assignment is legal based on the relaxed assignment rules.
    *
    * <p>The relaxed assignment rules are the following: Assuming the varType (left-hand side) is
-   * less than the length of some array given some offset
+   * less than the length of some array given some offset.
    *
    * <p>1. If both the offset and the value expression (rhs) are ints known at compile time, and if
    * the min length of the array is greater than offset + value, then the assignment is legal. (This
@@ -301,8 +301,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * true if the relaxed rules above apply for each array.
    *
    * <p>If the varType is an array type and the value expression is an array initializer, then the
-   * above rules are applied for expression in the initializer where the varType is the component
-   * type of the array.
+   * above rules are applied for each expression in the initializer where the varType is the
+   * component type of the array.
    *
    * @param varType the type of the left-hand side (the variable in the assignment)
    * @param valueExp the right-hand side (the expression in the assignment)
@@ -521,7 +521,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   /**
-   * Tests a constant value (value) against the minlen (minlens) of an array (arrayName) with a
+   * Tests a constant value (value) against the minlen (minLen) of an array (arrayName) with a
    * qualifier (varQual).
    */
   private boolean testMinLen(Long value, int minLen, String arrayName, LessThanLengthOf varQual) {

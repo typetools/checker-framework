@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An inference variable. It corresponds to a type argument for a particular method invocation, new
- * class tree or method reference that needs to be inferred.
+ * class tree, or method reference that needs to be inferred.
  */
 @Interned public class Variable {
 
@@ -56,8 +56,8 @@ import org.checkerframework.javacutil.TypesUtils;
    * Creates a variable.
    *
    * @param typeVariable an annotated type variable
-   * @param typeVariableJava a java type variable
-   * @param invocation the invocation for which this variable is a type argument for
+   * @param typeVariableJava a Java type variable
+   * @param invocation the invocation for which this variable is a type argument
    * @param context the context
    * @param map a mapping from type variable to inference variable
    */
@@ -74,8 +74,8 @@ import org.checkerframework.javacutil.TypesUtils;
    * Creates a variable.
    *
    * @param typeVariable an annotated type variable
-   * @param typeVariableJava a java type variable
-   * @param invocation the invocation for which this variable is a type argument for
+   * @param typeVariableJava a Java type variable
+   * @param invocation the invocation for which this variable is a type argument
    * @param context the context
    * @param map a mapping from type variable to inference variable
    * @param id a unique number for this variable
@@ -134,7 +134,7 @@ import org.checkerframework.javacutil.TypesUtils;
       variableBounds.addBound(null, BoundKind.UPPER, t1);
     }
     if (variableBounds.findProperUpperBounds().isEmpty()) {
-      // Every bound added above mentions an inference variable, so this resulted in no proper
+      // Every bound added above contains an inference variable, so this resulted in no proper
       // upper bounds for al (only dependencies).  Therefore, add the bound al <: Object, per the
       // last clause of the comment above.  This happens for a type parameter such as the P1 of
       // <P1 extends P2, P2>, whose only upper bound is a dependency.
@@ -213,8 +213,8 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Restore the bounds to the state previously saved. This method is called if the first attempt at
-   * resolution fails.
+   * Restores the bounds to the state previously saved. This method is called if the first attempt
+   * at resolution fails.
    */
   public void restore() {
     variableBounds.restore();
@@ -240,7 +240,7 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * The Java type variable.
+   * Returns the Java type variable.
    *
    * @return the Java type variable
    */

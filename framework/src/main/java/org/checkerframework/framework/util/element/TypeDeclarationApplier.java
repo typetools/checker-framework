@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** Apply annotations to a declared type based on its declaration. */
+/** Applies annotations to a declared type based on its declaration. */
 public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
   public static void apply(
@@ -22,7 +22,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
   }
 
   /**
-   * If a type_index == -1 it means that the index refers to the immediate supertype class of the
+   * If a type_index == -1, it means that the index refers to the immediate supertype class of the
    * declaration. There is only ever one of these since Java has no multiple inheritance.
    */
   public static final int SUPERCLASS_INDEX = -1;
@@ -88,9 +88,9 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
   }
 
   /**
-   * While more than just annotations on extends or implements clause are annotated by this class,
-   * only these annotations are passed to handleTargeted (as they are the only in the
-   * annotatedTargets list). See extractAndApply for type parameters
+   * While more than just annotations on extends or implements clauses are annotated by this class,
+   * only these annotations are passed to handleTargeted (as they are the only ones in the
+   * annotatedTargets list). See extractAndApply for type parameters.
    *
    * @param extendsAndImplementsAnnos annotations with a TargetType of CLASS_EXTENDS
    */

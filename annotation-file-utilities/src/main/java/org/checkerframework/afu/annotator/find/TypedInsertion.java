@@ -8,9 +8,9 @@ import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.checker.modifiability.qual.Growable;
 
 /**
- * An insertion that may result in code generation other than just annotations. {@code
+ * An insertion that might result in code generation other than just annotations. {@code
  * TypedInsertion}s keep track of insertions on inner types. If there is no type given in the
- * source, one may be generated (along with other code necessary in the context) to serve as an
+ * source, one might be generated (along with other code necessary in the context) to serve as an
  * insertion site.
  *
  * <p>We don't know until the end of the whole insertion process whether the type already exists or
@@ -25,7 +25,7 @@ public abstract class TypedInsertion extends Insertion {
   /** The type for insertion. */
   protected Type type;
 
-  /** If true only the annotations from {@link #type} will be inserted. */
+  /** If true, only the annotations from {@link #type} will be inserted. */
   protected boolean annotationsOnly;
 
   /** The inner types to go on this insertion. See {@link ReceiverInsertion} for more details. */
@@ -60,7 +60,7 @@ public abstract class TypedInsertion extends Insertion {
   }
 
   /**
-   * If {@code true} only the annotations on {@code type} will be inserted. This is useful when the
+   * If {@code true}, only the annotations on {@code type} will be inserted. This is useful when the
    * "new" has already been inserted.
    */
   public void setAnnotationsOnly(boolean annotationsOnly) {
