@@ -146,7 +146,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
-  public Iterator<@KeyFor("this") AnnotationMirror> iterator(
+  public @PolyOwningCollection Iterator<@KeyFor("this") AnnotationMirror> iterator(
       @PolyOwningCollection AnnotationMirrorSet this) {
     return shadowSet.iterator();
   }
