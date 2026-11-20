@@ -304,6 +304,13 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (ElementUtils.isStatic(member)) {
       return null;
     }
+    if (tree instanceof MethodInvocationTree invocation
+        && TreeUtils.isSuperConstructorCall(invocation)) {
+      // A super() call is adapted as if `this` is the receiver, as in methodFromUse.  In
+      // `outer.super(...)`, `outer` is the enclosing instance rather than the receiver.
+      TypeElement enclosingClass = enclosingClasses.peek();
+      return enclosingClass == null ? null : enclosingClass.asType();
+    }
     ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
     if (receiver != null) {
       return TreeUtils.typeOf(receiver);
@@ -342,9 +349,13 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         && receiverKind != TypeKind.INTERSECTION) {
       return false;
     }
+    // The receiver needs qualifiers, including on wildcard bounds, because asMemberOf captures it,
+    // and capture conversion computes greatest lower bounds of qualifiers.
+    AnnotatedTypeMirror annotatedReceiverType =
+        AnnotatedTypeMirror.createType(receiverType, this, false);
+    addDefaultAnnotations(annotatedReceiverType);
     return containsPathShapeQualifier(
-        AnnotatedTypes.asMemberOf(
-            types, this, AnnotatedTypeMirror.createType(receiverType, this, false), member));
+        AnnotatedTypes.asMemberOf(types, this, annotatedReceiverType, member));
   }
 
   /**
