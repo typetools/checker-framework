@@ -69,6 +69,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       AnnotatedTypeMirror type2 = tIter2.next();
 
       r = first ? scan(type1, type2, param) : scanAndReduce(type1, type2, param, r);
+      first = false;
     }
 
     return r;

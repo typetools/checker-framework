@@ -13,8 +13,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -150,8 +152,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
    * @param bindingVariable a binding variable declared by a {@code var} pattern
    * @param f the annotated type factory
    * @return the type of {@code bindingVariable}
-   * @throws BugInCF if the erasure of P is not a subtype of the erasure of the Java type of {@code
-   *     bindingVariable}
+   * @throws BugInCF if P is not a subtype of the Java type of {@code bindingVariable}, ignoring
+   *     type arguments
    */
   private static AnnotatedTypeMirror varPatternType(
       VariableTree bindingVariable, AnnotatedTypeFactory f) {
@@ -177,12 +179,58 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // more specific than the record pattern's Java type, such as Box<String> for Box<? extends
     // CharSequence>(var x).  A `var` pattern matches every value of the record component, so its
     // binding variable takes the qualifiers of the type arguments of the component's type.
-    if (!TypesUtils.isErasedSubtype(projectedType.getUnderlyingType(), javacType, f.types)) {
+    if (!isErasedSubtypeOfEachBound(projectedType.getUnderlyingType(), javacType, f.types)) {
       throw new BugInCF(
           "The type %s of `var` binding variable %s is not a subtype of its Java type %s",
           projectedType, TreeUtils.toStringTruncated(bindingVariable, 65), javacType);
     }
     return AnnotatedTypes.asSuper(f, projectedType, f.type(bindingVariable));
+  }
+
+  /**
+   * Returns true if, for each bound B of {@code supertype}, some bound of {@code subtype} has an
+   * erasure that is a subtype of the erasure of B. The bounds of an intersection type are its
+   * bounds, in any order; the only bound of any other type is the type itself.
+   *
+   * @param subtype a type
+   * @param supertype a type
+   * @param types the type utilities
+   * @return true if, for each bound of {@code supertype}, some bound of {@code subtype} is an
+   *     erased subtype of it
+   */
+  private static boolean isErasedSubtypeOfEachBound(
+      TypeMirror subtype, TypeMirror supertype, Types types) {
+    // The erasure of an intersection type is the erasure of its leftmost bound (JLS 4.6), so
+    // `TypesUtils.isErasedSubtype` depends on the order of the bounds and ignores all but the
+    // first.
+    List<? extends TypeMirror> subtypeBounds = bounds(subtype);
+    for (TypeMirror superBound : bounds(supertype)) {
+      boolean found = false;
+      for (TypeMirror subBound : subtypeBounds) {
+        if (TypesUtils.isErasedSubtype(subBound, superBound, types)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns the bounds of {@code type} if it is an intersection type, and otherwise a list
+   * containing {@code type}.
+   *
+   * @param type a type
+   * @return the bounds of {@code type} if it is an intersection type, and otherwise a list
+   *     containing {@code type}
+   */
+  private static List<? extends TypeMirror> bounds(TypeMirror type) {
+    return type.getKind() == TypeKind.INTERSECTION
+        ? ((IntersectionType) type).getBounds()
+        : List.of(type);
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That

@@ -7,16 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.AnnotatedTypeProjection;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -87,10 +84,11 @@ public class RecordPatternTypeInference {
    *
    * @param matchedType the type of the values that are matched against the record pattern
    * @param failure why inference failed, or null if it did not fail
-   * @param componentTypes the types of the record components as members of the type of the record
-   *     pattern, in declaration order; if inference failed, the type of the record pattern is its
-   *     Java type with default annotations, except that its primary qualifiers are those of {@code
-   *     matchedType}, limited to the qualifier upper bound of the record class
+   * @param componentTypes the types of the record components as members of the inferred
+   *     parameterization of the record class, before upward projection, in declaration order; if
+   *     inference failed, they are members of the Java type of the record pattern with default
+   *     annotations, except that its primary qualifiers are those of {@code matchedType}, limited
+   *     to the qualifier upper bound of the record class
    */
   public record Result(
       AnnotatedTypeMirror matchedType,
@@ -264,26 +262,15 @@ public class RecordPatternTypeInference {
 
     // Step 5: resolve alpha1, ..., alphan, skipping directly to the resolution step that introduces
     // fresh type variables.
-    List<Variable> uninstantiated = new ArrayList<>();
-    for (Variable v : map.values()) {
-      if (v.getInstantiation() == null) {
-        uninstantiated.add(v);
-      }
-    }
     Resolution.resolveWithFreshTypeVariablesOnly(new ArrayList<>(alphas), boundSet, context);
-    // Each fresh type variable Y1, ..., Yp that resolution introduced is the instantiation of a
-    // variable in `uninstantiated`.
-    List<TypeVariable> freshTypeVariables = new ArrayList<>();
-    for (Variable v : uninstantiated) {
-      ProperType instantiation = v.getInstantiation();
-      if (instantiation != null && instantiation.getJavaType().getKind() == TypeKind.TYPEVAR) {
-        freshTypeVariables.add((TypeVariable) instantiation.getJavaType());
-      }
-    }
 
     // Step 6: let A1, ..., An be the instantiations of alpha1, ..., alphan.  The type of the record
-    // pattern is the upward projection of R<A1, ..., An> (`patternType`) with respect to
-    // Y1, ..., Yp (`freshTypeVariables`).
+    // pattern is the upward projection of R<A1, ..., An> (`patternType`) with respect to the fresh
+    // type variables.  The component types are computed from R<A1, ..., An> instead, and the type
+    // of
+    // a `var` binding variable is the upward projection of its component type.  Projecting
+    // R<A1, ..., An> first would lose bounds: `AnnotatedTypeProjection` gives `?` for
+    // `? extends A & B`, and the capture of `?` is bounded only by the type parameter's bound.
     List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(alphas.size());
     TypeMirror[] javaTypeArgs = new TypeMirror[alphas.size()];
     for (int i = 0; i < alphas.size(); i++) {
@@ -298,11 +285,7 @@ public class RecordPatternTypeInference {
     AnnotatedDeclaredType patternType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(javaType, typeFactory, false);
     patternType.setTypeArguments(typeArgs);
-    return createResult(
-        matchedType,
-        null,
-        (AnnotatedDeclaredType)
-            AnnotatedTypeProjection.upward(typeFactory, patternType, freshTypeVariables));
+    return createResult(matchedType, null, patternType);
   }
 
   /**

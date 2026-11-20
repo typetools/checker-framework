@@ -31,10 +31,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * Computes the upward projection of an annotated type, and the downward projections that it uses,
  * as defined in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>. A
- * projection is with respect to a set of restricted type variables: either every captured type
- * variable, including the fresh type variables that the Checker Framework's type inference creates,
- * or the type variables that the caller passes to {@link #upward(AnnotatedTypeFactory,
- * AnnotatedTypeMirror, Collection)}.
+ * projection is with respect to a set of restricted type variables: every captured type variable,
+ * including the fresh type variables that the Checker Framework's type inference creates.
  *
  * <p>JLS 4.10.5 defines projection only for Java types. This class handles annotations as follows:
  *
@@ -84,9 +82,6 @@ public final class AnnotatedTypeProjection {
   /** The javac type utilities. */
   private final com.sun.tools.javac.code.Types javacTypes;
 
-  /** The restricted type variables, or null if every captured type variable is restricted. */
-  private final @Nullable Collection<TypeVariable> restricted;
-
   /**
    * The restricted type variables whose upward projection is being computed. Computing the upward
    * projection of one of these type variables again would not terminate, because its upper bound
@@ -98,17 +93,13 @@ public final class AnnotatedTypeProjection {
    * Creates an {@code AnnotatedTypeProjection}.
    *
    * @param atypeFactory the type factory
-   * @param restricted the restricted type variables, or null if every captured type variable is
-   *     restricted
    */
-  private AnnotatedTypeProjection(
-      AnnotatedTypeFactory atypeFactory, @Nullable Collection<TypeVariable> restricted) {
+  private AnnotatedTypeProjection(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
     this.types = atypeFactory.types;
     this.javacTypes =
         com.sun.tools.javac.code.Types.instance(
             ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext());
-    this.restricted = restricted;
   }
 
   /**
@@ -121,28 +112,11 @@ public final class AnnotatedTypeProjection {
    */
   public static AnnotatedTypeMirror upward(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type) {
-    return new AnnotatedTypeProjection(atypeFactory, null).upward(type);
+    return new AnnotatedTypeProjection(atypeFactory).upward(type);
   }
 
   /**
-   * Returns the upward projection of {@code type} with respect to the type variables in {@code
-   * restricted}: a supertype of {@code type} that does not mention any of them.
-   *
-   * @param atypeFactory the type factory
-   * @param type the type to project; not a wildcard
-   * @param restricted the restricted type variables
-   * @return the upward projection of {@code type}
-   */
-  public static AnnotatedTypeMirror upward(
-      AnnotatedTypeFactory atypeFactory,
-      AnnotatedTypeMirror type,
-      Collection<TypeVariable> restricted) {
-    return new AnnotatedTypeProjection(atypeFactory, restricted).upward(type);
-  }
-
-  /**
-   * Returns the upward projection of {@code type} with respect to the restricted type variables
-   * (see {@link #restricted}).
+   * Returns the upward projection of {@code type} with respect to the restricted type variables.
    *
    * @param type the type to project; not a wildcard
    * @return the upward projection of {@code type}
@@ -490,9 +464,7 @@ public final class AnnotatedTypeProjection {
    * @return true if {@code typeVariable} is restricted
    */
   private boolean isRestricted(TypeVariable typeVariable) {
-    return restricted == null
-        ? TypesUtils.isCapturedTypeVariable(typeVariable)
-        : containsSame(restricted, typeVariable);
+    return TypesUtils.isCapturedTypeVariable(typeVariable);
   }
 
   /**
