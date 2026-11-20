@@ -30,6 +30,13 @@ class CreatesCollectionObligationElement {
     void insertAtMissing(E e, int index) {
       add(index, e);
     }
+
+    // The parameter number is larger than Integer.MAX_VALUE.
+    @CreatesCollectionObligation(element = "#2147483648")
+    // :: error: creates.collection.obligation.element.missing
+    void insertAtOverflow(E e, int index) {
+      add(index, e);
+    }
   }
 
   void insertAtNotDisposed() {

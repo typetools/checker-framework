@@ -224,6 +224,8 @@ public class CollectionOwnershipTransfer
    * May refine the type of the collection to @OwningCollectionWithoutObligation in the else store
    * of the incoming transfer result. Does so if the given AST tree is the condition for a disposal
    * loop whose body definitely calls every must-call method on every element of the collection.
+   * If the loop has several CFG copies (as in a {@code finally} block), which share the condition
+   * tree, every copy must do so.
    *
    * @param res the incoming transfer result
    * @param tree the AST tree that may represent a disposal-loop condition
@@ -231,10 +233,12 @@ public class CollectionOwnershipTransfer
    */
   private TransferResult<CFValue, CollectionOwnershipStore> updateStoreForDisposalLoop(
       TransferResult<CFValue, CollectionOwnershipStore> res, Tree tree) {
-    DisposalLoopInfo disposalLoopInfo = atypeFactory.getDisposalLoopInfoForConditionTree(tree);
-    if (disposalLoopInfo != null) {
+    List<DisposalLoopInfo> disposalLoopInfos =
+        atypeFactory.getDisposalLoopInfosForConditionTree(tree);
+    if (!disposalLoopInfos.isEmpty()) {
       CollectionOwnershipStore elseStore = res.getElseStore();
-      ExpressionTree collectionExpression = disposalLoopInfo.expressionTree();
+      // All the copies have the same collection expression.
+      ExpressionTree collectionExpression = disposalLoopInfos.get(0).expressionTree();
       JavaExpression collectionJE = JavaExpression.fromTree(collectionExpression);
 
       // Read the collection's type at the loop condition, not before the collection expression:
@@ -247,7 +251,7 @@ public class CollectionOwnershipTransfer
         List<String> requiredElementMethods =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(collectionExpression);
         if (requiredElementMethods != null
-            && atypeFactory.callsOnEveryElement(disposalLoopInfo, requiredElementMethods)) {
+            && callsOnEveryElement(disposalLoopInfos, requiredElementMethods)) {
           elseStore.clearValue(collectionJE);
           elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
           return new ConditionalTransferResult<>(
@@ -256,6 +260,24 @@ public class CollectionOwnershipTransfer
       }
     }
     return res;
+  }
+
+  /**
+   * Returns true if the body of each of the given loops definitely calls all of {@code methods} on
+   * every iterated element.
+   *
+   * @param disposalLoopInfos disposal loops
+   * @param methods the names of the methods to check
+   * @return true if each loop body definitely calls all of {@code methods} on every element
+   */
+  private boolean callsOnEveryElement(
+      List<DisposalLoopInfo> disposalLoopInfos, List<String> methods) {
+    for (DisposalLoopInfo disposalLoopInfo : disposalLoopInfos) {
+      if (!atypeFactory.callsOnEveryElement(disposalLoopInfo, methods)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

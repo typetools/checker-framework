@@ -55,6 +55,15 @@ class NotOwningByDefault {
     dispose(l);
   }
 
+  // An unannotated parameter is @NotOwningCollection, so it cannot take an owning element.
+  void insertOwningIntoUnannotated(Collection<Resource> c) {
+    Resource r = new Resource();
+    // :: error: illegal.collection.mutator.owning.insert.into.notowning
+    c.add(r);
+    r.close();
+    r.flush();
+  }
+
   void discardingWithoutObligation() {
     List<Resource> l = new ArrayList<>();
     l.add(new Resource());

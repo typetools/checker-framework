@@ -18,6 +18,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -29,27 +30,6 @@ public final class CollectionOwnershipUtils {
   /** Do not instantiate */
   private CollectionOwnershipUtils() {
     throw new BugInCF("CollectionOwnershipUtils is a utility class and should not be instantiated");
-  }
-
-  /**
-   * Returns the first CFG block associated with the given tree.
-   *
-   * @param cfg the CFG containing the tree
-   * @param tree a tree
-   * @return the first CFG block associated with {@code tree}, or {@code null} if none is known
-   */
-  static @Nullable Block firstBlockForTree(ControlFlowGraph cfg, Tree tree) {
-    Set<Node> nodes = cfg.getNodesCorrespondingToTree(tree);
-    if (nodes == null || nodes.isEmpty()) {
-      return null;
-    }
-    for (Node n : nodes) {
-      Block block = n.getBlock();
-      if (block != null) {
-        return block;
-      }
-    }
-    return null;
   }
 
   /**
@@ -189,6 +169,38 @@ public final class CollectionOwnershipUtils {
     ExecutableElement method = TreeUtils.elementFromUse(invocation);
     return coAtf.isCreatesCollectionObligationMethod(method)
         || REPLACING_METHODS.contains(method.getSimpleName().toString());
+  }
+
+  /**
+   * Returns true if {@code collection} is an owning collection field of {@code this}. A call whose
+   * {@code @CreatesMustCallFor} target is {@code this} might insert into such a field; see {@link
+   * #createsMustCallForThis}.
+   *
+   * @param collection a collection expression
+   * @param coAtf the CO type factory
+   * @return true if {@code collection} is an owning collection field of {@code this}
+   */
+  static boolean isOwningCollectionFieldOfThis(
+      ExpressionTree collection, CollectionOwnershipAnnotatedTypeFactory coAtf) {
+    return coAtf.isOwningCollectionField(collection) && TreeUtils.isSelfAccess(collection);
+  }
+
+  /**
+   * Returns true if some {@code @CreatesMustCallFor} target of {@code invocation}, resolved at the
+   * call site, is {@code this}. Such a call might insert into an owning collection field of {@code
+   * this}.
+   *
+   * @param invocation a method invocation
+   * @param cfg the CFG that contains {@code invocation}
+   * @param coAtf the CO type factory
+   * @return true if {@code invocation} creates a must-call obligation for {@code this}
+   */
+  static boolean createsMustCallForThis(
+      MethodInvocationTree invocation,
+      ControlFlowGraph cfg,
+      CollectionOwnershipAnnotatedTypeFactory coAtf) {
+    return anyNodeForTree(cfg, invocation) instanceof MethodInvocationNode node
+        && coAtf.createsMustCallForThis(node);
   }
 
   /**

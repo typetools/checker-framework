@@ -92,8 +92,8 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   }
 
   /**
-   * Matches a {@link DisposalLoopInfo} that uses while-loops and resolves their CFG-local loop
-   * facts.
+   * Matches while-loops that may fulfill collection obligations and resolves the CFG-local loop
+   * facts of each CFG copy of the loop.
    *
    * @param tree the while-loop to inspect
    * @param p the scan parameter
@@ -101,10 +101,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
    */
   @Override
   public Void visitWhileLoop(WhileLoopTree tree, Void p) {
-    DisposalLoopInfo disposalLoopInfo = whileDisposalLoopMatcher.match(tree);
-    if (disposalLoopInfo != null) {
-      disposalLoopInfos.add(disposalLoopInfo);
-    }
+    disposalLoopInfos.addAll(whileDisposalLoopMatcher.match(tree));
     return super.visitWhileLoop(tree, p);
   }
 

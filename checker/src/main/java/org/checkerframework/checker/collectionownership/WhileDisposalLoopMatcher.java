@@ -27,6 +27,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -126,8 +127,12 @@ final class WhileDisposalLoopMatcher {
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo} if the {@code while} loop {@code tree} matches one of the
-   * supported header forms and has exactly one compatible extraction in its body.
+   * Returns a {@link DisposalLoopInfo} for each CFG copy of the {@code while} loop {@code tree}, if
+   * the loop matches one of the supported header forms and has exactly one compatible extraction in
+   * its body.
+   *
+   * <p>A loop can have several CFG copies, because the CFG copies a {@code finally} block for each
+   * way of leaving its {@code try} block; see {@link EnhancedForDisposalLoopMatcher#match}.
    *
    * <p>For example:
    *
@@ -147,13 +152,14 @@ final class WhileDisposalLoopMatcher {
    * }</pre>
    *
    * @param tree the while-loop to inspect
-   * @return the matched disposal loop info, or {@code null} if the loop does not match
+   * @return a disposal loop info for each CFG copy of the loop, or an empty set if the loop does
+   *     not match
    */
-  @Nullable DisposalLoopInfo match(WhileLoopTree tree) {
+  Set<DisposalLoopInfo> match(WhileLoopTree tree) {
     ExpressionTree conditionWithoutParens = TreeUtils.withoutParens(tree.getCondition());
     WhileHeaderInfo headerMatch = matchWhileHeader(conditionWithoutParens, tree);
     if (headerMatch == null) {
-      return null;
+      return Set.of();
     }
 
     // Validate the loop body and recover the unique extraction call that represents the iterated
@@ -163,52 +169,75 @@ final class WhileDisposalLoopMatcher {
                 headerMatch.headerVarName,
                 headerMatch.headerVarElement,
                 headerMatch.collectionVarNameForInvalidation,
+                headerMatch.collectionIsFieldOfThis,
                 headerMatch.allowedExtractMethods)
             .scanLoopBody(tree.getStatement());
     if (extractionCall == null) {
-      return null;
+      return Set.of();
     }
 
-    // After the tree match succeeds, recover the CFG blocks corresponding to the loop condition,
-    // body entry, and loop back edge.
-    Block conditionBlock = CollectionOwnershipUtils.firstBlockForTree(cfg, conditionWithoutParens);
-    if (conditionBlock == null) {
-      return null;
+    Set<Node> conditionNodes = cfg.getNodesCorrespondingToTree(conditionWithoutParens);
+    Set<Node> extractionNodes = cfg.getNodesCorrespondingToTree(extractionCall);
+    if (conditionNodes == null || extractionNodes == null) {
+      return Set.of();
     }
+    Tree loopConditionTree =
+        CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, conditionWithoutParens);
 
-    ConditionalBlock conditionalBlock = findImmediateConditionalSuccessor(conditionBlock);
-    if (conditionalBlock == null) {
-      // Some while-loop conditions are represented through exception blocks before reaching the
-      // actual conditional branch. Retry from the peeled predecessor.
-      Block peeledPredecessor = peelExceptionBlocksToPredecessor(conditionBlock);
-      if (peeledPredecessor != null) {
-        conditionalBlock = findImmediateConditionalSuccessor(peeledPredecessor);
+    // After the tree match succeeds, recover the CFG blocks of each copy of the loop: the loop
+    // condition, body entry, and loop back edge.
+    Set<DisposalLoopInfo> result = new LinkedHashSet<>();
+    Set<ConditionalBlock> seenConditionalBlocks = new HashSet<>();
+    for (Node conditionNode : conditionNodes) {
+      Block conditionBlock = conditionNode.getBlock();
+      if (conditionBlock == null) {
+        continue;
       }
-    }
-    if (conditionalBlock == null) {
-      return null;
-    }
 
-    Block loopBodyEntryBlock = conditionalBlock.getThenSuccessor();
-    Node iteratedElementNode = CollectionOwnershipUtils.anyNodeForTree(cfg, extractionCall);
-    if (iteratedElementNode == null) {
-      return null;
-    }
+      ConditionalBlock conditionalBlock = findImmediateConditionalSuccessor(conditionBlock);
+      if (conditionalBlock == null) {
+        // Some while-loop conditions are represented through exception blocks before reaching the
+        // actual conditional branch. Retry from the peeled predecessor.
+        Block peeledPredecessor = peelExceptionBlocksToPredecessor(conditionBlock);
+        if (peeledPredecessor != null) {
+          conditionalBlock = findImmediateConditionalSuccessor(peeledPredecessor);
+        }
+      }
+      if (conditionalBlock == null || !seenConditionalBlocks.add(conditionalBlock)) {
+        continue;
+      }
 
-    Block loopUpdateBlock =
-        chooseLoopUpdateBlock(loopBodyEntryBlock, conditionalBlock, getOrCreateWhileLoopCache());
-    if (loopUpdateBlock == null) {
-      return null;
-    }
+      Block loopBodyEntryBlock = conditionalBlock.getThenSuccessor();
+      LoopBlocks loopBlocks =
+          chooseLoop(loopBodyEntryBlock, conditionalBlock, getOrCreateWhileLoopCache());
+      if (loopBlocks == null) {
+        continue;
+      }
 
-    return new DisposalLoopInfo(
-        headerMatch.collectionTree,
-        extractionCall,
-        iteratedElementNode,
-        CollectionOwnershipUtils.cfgAssociatedTreeFor(cfg, conditionWithoutParens),
-        conditionalBlock,
-        loopBodyEntryBlock,
-        loopUpdateBlock);
+      // The extraction call in this copy of the loop.
+      Node iteratedElementNode = null;
+      for (Node extractionNode : extractionNodes) {
+        Block extractionBlock = extractionNode.getBlock();
+        if (extractionBlock != null && loopBlocks.blocks().contains(extractionBlock)) {
+          iteratedElementNode = extractionNode;
+          break;
+        }
+      }
+      if (iteratedElementNode == null) {
+        continue;
+      }
+
+      result.add(
+          new DisposalLoopInfo(
+              headerMatch.collectionTree,
+              extractionCall,
+              iteratedElementNode,
+              loopConditionTree,
+              conditionalBlock,
+              loopBodyEntryBlock,
+              loopBlocks.updateBlock()));
+    }
+    return result;
   }
 
   /**
@@ -284,6 +313,7 @@ final class WhileDisposalLoopMatcher {
     return new WhileHeaderInfo(
         collectionTree,
         collectionVarName,
+        CollectionOwnershipUtils.isOwningCollectionFieldOfThis(collectionTree, coAtf),
         iteratorVarName,
         iteratorElement,
         ITERATOR_EXTRACT_METHODS);
@@ -390,9 +420,12 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
 
+    // A loop that empties the collection also disposes of inserted elements, so it does not need to
+    // know whether the collection is a field of `this`.
     return new WhileHeaderInfo(
         collectionTree,
         collectionVarName,
+        false,
         collectionVarName,
         collectionElement,
         NONEMPTY_EXTRACT_METHODS);
@@ -562,7 +595,9 @@ final class WhileDisposalLoopMatcher {
    * <ul>
    *   <li>does not overwrite the header variable or the matched collection variable
    *   <li>for an iterator loop, does not insert into or replace elements of the collection (an
-   *       iterator might not visit the new elements, as for {@code CopyOnWriteArrayList})
+   *       iterator might not visit the new elements, as for {@code CopyOnWriteArrayList}), and, if
+   *       the collection is an owning collection field of {@code this}, does not call a method
+   *       whose {@code @CreatesMustCallFor} target is {@code this}
    *   <li>uses the header variable only as the receiver of a permitted call (see {@link
    *       #isPermittedCallOnHeaderVar}), and not within a lambda or class body
    *   <li>contains exactly one allowed extraction call on the header/collection variable, and that
@@ -579,6 +614,12 @@ final class WhileDisposalLoopMatcher {
 
     /** Collection variable whose writes should invalidate the match, if one exists. */
     private final @Nullable Name collectionVarNameForInvalidation;
+
+    /**
+     * True if this is an iterator loop over an owning collection field of {@code this}, which a
+     * call whose {@code @CreatesMustCallFor} target is {@code this} might insert into.
+     */
+    private final boolean collectionIsFieldOfThis;
 
     /** Extraction methods allowed by the matched header form. */
     private final Set<String> allowedExtractMethods;
@@ -604,16 +645,20 @@ final class WhileDisposalLoopMatcher {
      * @param headerVarName iterator or collection variable constrained by the header
      * @param headerVarElement the element of {@code headerVarName}
      * @param collectionVarNameForInvalidation collection variable whose writes invalidate the match
+     * @param collectionIsFieldOfThis true if this is an iterator loop over an owning collection
+     *     field of {@code this}
      * @param allowedExtractMethods extraction methods allowed by the matched header form
      */
     private WhileBodyScanner(
         Name headerVarName,
         Element headerVarElement,
         @Nullable Name collectionVarNameForInvalidation,
+        boolean collectionIsFieldOfThis,
         Set<String> allowedExtractMethods) {
       this.headerVarName = headerVarName;
       this.headerVarElement = headerVarElement;
       this.collectionVarNameForInvalidation = collectionVarNameForInvalidation;
+      this.collectionIsFieldOfThis = collectionIsFieldOfThis;
       this.allowedExtractMethods = allowedExtractMethods;
     }
 
@@ -747,16 +792,23 @@ final class WhileDisposalLoopMatcher {
     /**
      * Rejects a loop body that inserts into or replaces elements of the iterated collection, in an
      * iterator loop. (In a loop that empties the collection, the loop also disposes of inserted
-     * elements.)
+     * elements.) If the collection is an owning collection field of {@code this}, a call whose
+     * {@code @CreatesMustCallFor} target is {@code this}, such as a helper that adds to the field,
+     * might insert into it.
      *
      * @param invocation a method invocation in the loop body
      */
     private void markMutationOfIteratedCollection(MethodInvocationTree invocation) {
-      if (collectionVarNameForInvalidation == null || !isIteratorLoop()) {
+      if (!isIteratorLoop()) {
         return;
       }
-      if (CollectionOwnershipUtils.insertsIntoOrReplacesElementsOf(
-          invocation, collectionVarNameForInvalidation, coAtf)) {
+      if (collectionVarNameForInvalidation != null
+          && CollectionOwnershipUtils.insertsIntoOrReplacesElementsOf(
+              invocation, collectionVarNameForInvalidation, coAtf)) {
+        illegal = true;
+      }
+      if (collectionIsFieldOfThis
+          && CollectionOwnershipUtils.createsMustCallForThis(invocation, cfg, coAtf)) {
         illegal = true;
       }
     }
@@ -968,19 +1020,27 @@ final class WhileDisposalLoopMatcher {
   }
 
   /**
-   * Chooses the loop-update block for a matched while loop by selecting the smallest natural loop
-   * that contains both the body entry and the loop conditional.
+   * The blocks of one CFG copy of a matched while loop.
+   *
+   * @param updateBlock the loop-update block: the target of the loop's back edge
+   * @param blocks the blocks of the natural loop
+   */
+  private record LoopBlocks(Block updateBlock, Set<Block> blocks) {}
+
+  /**
+   * Chooses the loop-update block and the blocks of a matched while loop by selecting the smallest
+   * natural loop that contains both the body entry and the loop conditional.
    *
    * @param bodyEntryBlock the loop body entry block
    * @param conditionalBlock the loop conditional block
    * @param whileLoopCache cached CFG facts for while-loop resolution
-   * @return the chosen loop-update block, or {@code null} if none is found
+   * @return the chosen loop, or {@code null} if none is found
    */
-  private @Nullable Block chooseLoopUpdateBlock(
+  private @Nullable LoopBlocks chooseLoop(
       Block bodyEntryBlock,
       ConditionalBlock conditionalBlock,
       WhileLoopResolutionCache whileLoopCache) {
-    Block bestLoopUpdateBlock = null;
+    LoopBlocks bestLoop = null;
     int bestLoopSize = Integer.MAX_VALUE;
 
     for (WhileLoopResolutionCache.BackEdge backEdge : whileLoopCache.getBackEdges()) {
@@ -997,11 +1057,11 @@ final class WhileDisposalLoopMatcher {
       // which most closely matches the while loop being resolved.
       if (naturalLoop.size() < bestLoopSize) {
         bestLoopSize = naturalLoop.size();
-        bestLoopUpdateBlock = backEdge.targetBlock;
+        bestLoop = new LoopBlocks(backEdge.targetBlock, naturalLoop);
       }
     }
 
-    return bestLoopUpdateBlock;
+    return bestLoop;
   }
 
   /**
@@ -1022,6 +1082,8 @@ final class WhileDisposalLoopMatcher {
    * @param collectionTree collection expression whose element obligations may be discharged.
    * @param collectionVarNameForInvalidation collection variable whose writes should invalidate the
    *     match, if one exists.
+   * @param collectionIsFieldOfThis true if this is an iterator loop and the collection is an owning
+   *     collection field of {@code this}, which a call such as {@code this.add(r)} might insert into.
    * @param headerVarName iterator variable or collection variable constrained by the loop header.
    * @param headerVarElement the element of {@code headerVarName}.
    * @param allowedExtractMethods extraction methods accepted for this matched header.
@@ -1029,6 +1091,7 @@ final class WhileDisposalLoopMatcher {
   private record WhileHeaderInfo(
       ExpressionTree collectionTree,
       @Nullable Name collectionVarNameForInvalidation,
+      boolean collectionIsFieldOfThis,
       Name headerVarName,
       Element headerVarElement,
       Set<String> allowedExtractMethods) {}

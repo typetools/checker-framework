@@ -54,6 +54,18 @@ class UnboundedTypeArgumentParameter {
     }
   }
 
+  static class Counter {
+    Counter(List<?> list) {}
+  }
+
+  void passToConstructorWildcard(@OwningCollection List<Resource> resources) {
+    new Counter(resources);
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+  }
+
   void passToOwningWildcard(@OwningCollection List<Resource> resources) {
     // :: error: argument
     takeWildcard(resources);

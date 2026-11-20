@@ -135,7 +135,7 @@ final class EnhancedForDisposalLoopMatcher {
     Name collectionName =
         CollectionOwnershipUtils.getNameFromExpressionTree(TreeUtils.withoutParens(collection));
     boolean isFieldOfThis =
-        coAtf.isOwningCollectionField(collection) && TreeUtils.isSelfAccess(collection);
+        CollectionOwnershipUtils.isOwningCollectionFieldOfThis(collection, coAtf);
     @Nullable Boolean result =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -146,9 +146,7 @@ final class EnhancedForDisposalLoopMatcher {
               return true;
             }
             if (isFieldOfThis
-                && CollectionOwnershipUtils.anyNodeForTree(cfg, tree)
-                    instanceof MethodInvocationNode node
-                && coAtf.createsMustCallForThis(node)) {
+                && CollectionOwnershipUtils.createsMustCallForThis(tree, cfg, coAtf)) {
               return true;
             }
             return super.visitMethodInvocation(tree, p);

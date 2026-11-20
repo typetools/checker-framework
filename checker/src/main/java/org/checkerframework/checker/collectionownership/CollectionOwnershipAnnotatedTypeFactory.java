@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -100,8 +101,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   private final MustCallAnnotatedTypeFactory mcAtf;
 
-  /** Map from a loop-condition {@code Tree} to its corresponding {@link DisposalLoopInfo}. */
-  private final IdentityHashMap<Tree, DisposalLoopInfo> conditionToDisposalLoopInfoMap =
+  /**
+   * Map from a loop-condition {@code Tree} to its corresponding {@link DisposalLoopInfo}s. A {@code
+   * while} loop in a {@code finally} block has a {@link DisposalLoopInfo} for each CFG copy of the
+   * loop, and all of them have the same condition tree.
+   */
+  private final IdentityHashMap<Tree, List<DisposalLoopInfo>> conditionToDisposalLoopInfoMap =
       new IdentityHashMap<>();
 
   /**
@@ -225,15 +230,16 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo} corresponding to the loop condition {@code tree}, if one
-   * exists.
+   * Returns the {@link DisposalLoopInfo}s corresponding to the loop condition {@code tree}: one for
+   * each CFG copy of the loop that {@link #postCFGConstruction} recorded.
    *
    * @param tree the condition tree
-   * @return the {@link DisposalLoopInfo} for condition {@code tree}, or {@code null} if {@link
+   * @return the {@link DisposalLoopInfo}s for condition {@code tree}; empty if {@link
    *     #postCFGConstruction} has not recorded one
    */
-  public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionTree(Tree tree) {
-    return conditionToDisposalLoopInfoMap.get(tree);
+  public List<DisposalLoopInfo> getDisposalLoopInfosForConditionTree(Tree tree) {
+    List<DisposalLoopInfo> result = conditionToDisposalLoopInfoMap.get(tree);
+    return result == null ? Collections.emptyList() : Collections.unmodifiableList(result);
   }
 
   /**
@@ -293,7 +299,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   private void recordDisposalLoop(
       DisposalLoopInfo disposalLoopInfo, AnnotationMirror calledMethods) {
-    conditionToDisposalLoopInfoMap.put(disposalLoopInfo.loopConditionTree(), disposalLoopInfo);
+    conditionToDisposalLoopInfoMap
+        .computeIfAbsent(disposalLoopInfo.loopConditionTree(), k -> new ArrayList<>())
+        .add(disposalLoopInfo);
     conditionalBlockToDisposalLoopInfoMap.put(
         disposalLoopInfo.loopConditionalBlock(), disposalLoopInfo);
     disposalLoopInfoToCalledMethodsMap.put(disposalLoopInfo, calledMethods);
@@ -675,7 +683,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (element.isEmpty()) {
       return numParams - 1;
     }
-    int paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    int paramIndex;
+    try {
+      paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    } catch (NumberFormatException e) {
+      // The parameter number is too large to be an int, so it names no parameter.
+      return -1;
+    }
     return paramIndex >= 0 && paramIndex < numParams ? paramIndex : -1;
   }
 

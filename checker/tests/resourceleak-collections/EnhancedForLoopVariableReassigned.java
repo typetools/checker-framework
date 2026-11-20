@@ -26,10 +26,12 @@ class EnhancedForLoopVariableReassigned {
     }
   }
 
-  // The loop disposes of every element: after `r = t`, `r` refers to the element again.
-  void aliasThenReassignBack(@OwningCollection List<Resource> resources) {
+  // The loop disposes of every element: after `r = other`, `r = t` makes `r` refer to the element
+  // again.
+  void aliasThenReassignBack(@OwningCollection List<Resource> resources, Resource other) {
     for (Resource r : resources) {
       Resource t = r;
+      r = other;
       r = t;
       r.close();
       r.flush();

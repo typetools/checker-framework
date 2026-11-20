@@ -29,6 +29,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -37,6 +38,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
@@ -44,6 +46,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -238,17 +241,49 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
+   * True if the Collection Ownership Checker runs, as part of the Resource Leak Checker. Null until
+   * {@link #isCollectionOwnershipCheckerRunning} computes it.
+   */
+  private @MonotonicNonNull Boolean collectionOwnershipCheckerIsRunning;
+
+  /**
+   * Returns true if the Collection Ownership Checker runs, as part of the Resource Leak Checker.
+   * It does not run when the Must Call Checker runs on its own.
+   *
+   * @return true if the Collection Ownership Checker runs
+   */
+  private boolean isCollectionOwnershipCheckerRunning() {
+    if (collectionOwnershipCheckerIsRunning == null) {
+      boolean found = false;
+      for (SourceChecker c = checker.getParentChecker(); c != null; c = c.getParentChecker()) {
+        if (c instanceof CollectionOwnershipChecker) {
+          found = true;
+          break;
+        }
+      }
+      collectionOwnershipCheckerIsRunning = found;
+    }
+    return collectionOwnershipCheckerIsRunning;
+  }
+
+  /**
    * {@inheritDoc}
    *
    * <p>Also changes the type arguments of the collection types in a method's return and parameter
    * types; see {@link #replaceCollectionTypeVarsWithBottomIfTop}. Changing the method's type,
    * rather than each tree, makes the change apply both in the method body and at its calls.
+   *
+   * <p>This change is made only if the Collection Ownership Checker runs. At a call, {@link
+   * #changeBorrowedCollectionElementTypesToTop} undoes it for the parameters that the method
+   * borrows, and that requires the Collection Ownership Checker. Without it, a call to {@code int
+   * count(List<?> list)} could not pass a {@code List<Socket>}.
    */
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(elt, type);
 
-    if (type instanceof AnnotatedExecutableType methodType) {
+    if (type instanceof AnnotatedExecutableType methodType
+        && isCollectionOwnershipCheckerRunning()) {
       if (methodType.getReturnType() instanceof AnnotatedDeclaredType returnType) {
         replaceCollectionTypeVarsWithBottomIfTop(null, returnType);
       }
@@ -329,6 +364,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // constructor that it invokes, so use `type`'s element rather than the element of `tree`.
     ExecutableElement declaration = type.getElement();
     changeNonOwningParameterTypesToTop(declaration, type);
+    changeBorrowedCollectionElementTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
 

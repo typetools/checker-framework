@@ -700,8 +700,13 @@ A Java expression is a \textit{resource collection} if:
 For example, expressions of type \code{List<Socket>} or \code{Iterable<?\ extends @MustCallUnknown Object>} are resource collections, but expressions of type \code{Set<String>} or \code{Map<String, Socket>} are not.
 It is a limitation of the Resource Leak Checker that a map, such as a \code{Map<String, Socket>}, cannot own resources.
 
-A user-defined collection class can contain resources only if the upper bound
-of its element type parameter is \<@MustCallUnknown>:
+The element type of a collection is the type argument of its \<Iterable>
+supertype.  A user-defined collection class that fixes its element type, such
+as \code{class SocketList extends ArrayList<Socket>}, is a resource collection
+because its element type, \<Socket>, has a must-call method.  A generic
+user-defined collection class, whose element type is one of its type
+parameters, can contain resources only if the upper bound of that type
+parameter is \<@MustCallUnknown>:
 
 \begin{verbatim}
 class ResourceList<E extends @MustCallUnknown Object> extends ArrayList<E> { ... }
@@ -787,19 +792,31 @@ To determine which methods such a loop calls, the checker does the following:
 \end{itemize}
 
 An enhanced \<for> loop must not assign to the variable that holds the collection.
-Its body must not insert into or replace elements of the collection.
+Its body must not insert into or replace elements of the collection.  If the
+collection is a field of \<this>, the body also must not call a method
+annotated with \<@CreatesMustCallFor("this")>, which might insert into the field.
 
 Two forms of \<while> loops are supported:
 
 \begin{itemize}
-  \item An iterator loop: the condition is \<it.hasNext()>, where \<it> is a local variable that is declared in the statement immediately before the loop and is initialized by a call to \<iterator()> on the collection, as in the example below.  The loop body calls \<it.next()> exactly once.
+  \item An iterator loop: the condition is \<it.hasNext()>, where \<it> is a local variable that is declared in the statement immediately before the loop and is initialized by a call to \<iterator()> on the collection itself, as in the example below.  (Calling \<iterator()> on a view of the collection, such as \<c.subList(0, 1).iterator()>, does not work, because iterating over the view does not visit every element of the collection.)  The loop body calls \<it.next()> exactly once.
   \item A loop that empties the collection: the condition is \<!c.isEmpty()>, \code{c.size() > 0}, or \<0 < c.size()>, and the loop body removes an element exactly once, with \<poll()>, \<pollFirst()>, \<pollLast()>, \<remove()>, \<removeFirst()>, \<removeLast()>, or \<pop()>.
 \end{itemize}
 
 \noindent
-The loop body must not assign to the iterator or collection variable.  The
-body of an iterator loop must not add elements to the collection or replace
-its elements, because the iterator might not visit the new elements.
+The call to \<next()> or to the removal method must not be in a loop nested
+within the loop body, even one that runs only once.
+The loop body must not assign to the iterator or collection variable in the
+loop condition.  The body may use that variable only as the receiver of a
+method call:  of \<next()> or the removal method, or of a method that neither
+advances the iterator nor removes elements, such as \<hasNext()> or
+\<peek()>.  In particular, the body must not pass the variable as an argument,
+even to a method that only reads it, and must not assign it to another
+variable.  The body of an iterator loop must not add elements to the
+collection or replace its elements, because the iterator might not visit the
+new elements.  If the collection is a field of \<this>, the body of an
+iterator loop also must not call a method annotated with
+\<@CreatesMustCallFor("this")>, which might add elements to the field.
 
 \begin{verbatim}
 Iterator<Socket> it = socketList.iterator();
@@ -828,13 +845,15 @@ List<Socket> sockets = new ArrayList<>();
 // `sockets` is now @OwningCollectionWithoutObligation
 \end{Verbatim}
 
-When code adds an element to the collection, the type of the collection becomes \<@OwningCollection>.
+When code adds an element other than \<null> to the collection, the type of the collection becomes \<@OwningCollection>.
+(Adding \<null>, as in \<sockets.add(null)>, does not change its type.)
+In this example, \<connect(i)> returns a new \<Socket> and does not throw a checked exception:
 
 \begin{Verbatim}
 List<Socket> sockets = new ArrayList<>();
 // `sockets` is @OwningCollectionWithoutObligation
 for (int i = 0; i < n; i++) {
-  sockets.add(new Socket(myHost, myPort + i));
+  sockets.add(connect(i));
   // `sockets` is @OwningCollection
 }
 // `sockets` is @OwningCollection
@@ -895,7 +914,11 @@ transferred from the call-site argument to the method parameter. The Resource
 Leak Checker changes the type of the argument at the call site to
 \<@NotOwningCollection>, in order to maintain the invariant that there is at
 most one owning reference for each resource collection.  The parameter takes on
-the responsibility of disposing of the collection.
+the responsibility of disposing of the collection, but only if the method
+returns normally.  If the method throws an exception, the caller keeps the
+obligation, so the caller must dispose of the collection on that exceptional
+path (as for an \<@Owning> parameter;
+see Section~\ref{resource-leak-owning-parameters-and-exceptions}).
 
 Resource collection return types default to \<@OwningCollection>. Returning a
 resource collection from a method with that return type discharges the method's
@@ -903,7 +926,7 @@ responsibility for the collection's obligation:  the obligation and ownership
 are both transferred to the method invocation expression at the call site.
 
 \begin{verbatim}
-List<Socket> returnSocketList() {
+List<Socket> returnSocketList() throws IOException {
   List<Socket> socketList = new ArrayList<>();
   // `socketList` is @OwningCollectionWithoutObligation
   socketList.add(new Socket(myHost, myPort));
@@ -962,7 +985,7 @@ To verify a resource collection field \<field>, the checker requires the followi
 \begin{enumerate}
   \item The enclosing class has a \<@MustCall> type. In the example, the class has type \<@MustCall("close")> because it implements \<Closeable>.
   \item One of the methods in the \<@MustCall> type of the enclosing class (usually there's just one) is annotated with \<@CollectionFieldDestructor("field")>. This postcondition annotation asserts that \<field> has type \<@OwningCollectionWithoutObligation> when the method exits, even by throwing an exception, and the checker verifies that assertion.
-  \item Every method that calls a method that creates an obligation for the resource collection field, such as \<socketList.add(Socket)> in the example, is annotated with \<@CreatesMustCallFor("this")>.
+  \item Every method that calls a method that creates an obligation for the resource collection field, such as \<socketList.add(Socket)> in the example, is annotated with \<@CreatesMustCallFor("this")>.  A constructor that adds to a field of the object it constructs needs no such annotation, because constructing an object already creates its obligation.
 \end{enumerate}
 
 As a result, each client of the \<Aggregator> class is responsible for calling \<close()> on each instance before the instance goes out of scope.
