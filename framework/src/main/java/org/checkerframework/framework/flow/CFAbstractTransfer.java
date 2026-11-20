@@ -1710,7 +1710,14 @@ public abstract class CFAbstractTransfer<
         return true;
       }
       for (ArrayAccess arrayElement : arrayElements) {
-        if (analysis.canAlias(arrayElement.getArray(), aa.getArray())) {
+        JavaExpression written = arrayElement.getArray();
+        JavaExpression read = aa.getArray();
+        // A false result is used to retain a refinement, so it must be sound.  CFAbstractAnalysis
+        // #canAlias is not conservative for interface component types:  one `Integer[]` can be
+        // both a `Number[]` and a `Comparable<?>[]`.
+        if (analysis.canAlias(written, read)
+            || TypesUtils.canAliasConservative(
+                written.getType(), read.getType(), analysis.getTypes())) {
           return true;
         }
       }
