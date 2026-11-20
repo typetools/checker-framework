@@ -4,6 +4,7 @@
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Stack;
+import java.util.Vector;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 
 class DequeAndStackInsert {
@@ -59,5 +60,15 @@ class DequeAndStackInsert {
     d.push(r);
     r.flush();
     r.close();
+  }
+
+  // `Vector.addElement` transfers the resource obligation to the collection.
+  void vectorAddElementDisposed() {
+    Vector<Resource> c = new Vector<>();
+    c.addElement(new Resource());
+    for (Resource r : c) {
+      r.flush();
+      r.close();
+    }
   }
 }
