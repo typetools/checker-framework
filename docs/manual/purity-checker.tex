@@ -252,10 +252,12 @@ such as \<-AassumeSideEffectFree> grants to every call is not required.  There
 is no error if the referenced method cannot be overridden (for example, it is
 static, private, or final), its body is available in source code, and the body
 evidently does not rely on the assumption:  each direct use of the parameter
-in the body stores it, returns it, compares it, or calls a method other than
-the functional method on it.  If the referenced method is available only as a
-class file, the checker cannot inspect its body, so it assumes that the body
-relies on the assumption.
+in the body stores it, overwrites it, returns it, compares it, or calls a
+method other than the functional method on it.  If the referenced method is
+available only as a class file, the checker cannot inspect its body, so it
+assumes that the body relies on the assumption.  If the checker has not yet
+attributed the body, it conservatively treats every identifier with the
+parameter's name as a use that relies on the assumption.
 
 \begin{Verbatim}
   class Util {

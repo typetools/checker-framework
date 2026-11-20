@@ -1989,10 +1989,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
    * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
-   * operand of a binary operator such as {@code ==}, as the value of an assignment, of a variable
-   * initializer, or of a return statement, or as the receiver of a call to a method other than
-   * {@code parameterFunction} and its overrides, such as {@code hashCode}. An override of {@code
-   * method} can rely on the purity that {@code method} promises of its arguments.
+   * operand of a binary operator such as {@code ==}, as the destination or the value of an
+   * assignment, as the value of a variable initializer or of a return statement, or as the receiver
+   * of a call to a method other than {@code parameterFunction} and its overrides, such as {@code
+   * hashCode}. An override of {@code method} can rely on the purity that {@code method} promises of
+   * its arguments.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter} is treated as a use that might rely on the purity.
@@ -2044,9 +2045,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * SHARED} rather than the argument.
    *
    * <p>The result is false only if {@code method} is a variable-arity method that cannot be
-   * overridden, its body is in source code, and the body uses the varargs parameter only to read
-   * an element or its length, or as the expression of an enhanced {@code for} statement. An
-   * override of {@code method} inherits its annotation but might assign an element.
+   * overridden, its body is in source code, and the body uses the varargs parameter only to read an
+   * element or its length, or as the expression of an enhanced {@code for} statement. An override
+   * of {@code method} inherits its annotation but might assign an element.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of the varargs parameter is treated as a use of it.
@@ -2269,9 +2270,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Overwriting {@link #parameter} does not read the argument, so the destination is not a use
+     * if it is {@link #parameter} itself. A compound destination, such as an array access, is
+     * scanned, because its subexpressions are evaluated.
+     */
     @Override
     public Void visitAssignment(AssignmentTree tree, Void p) {
-      scan(tree.getVariable(), p);
+      scanUnlessParameter(tree.getVariable());
       scanUnlessParameter(tree.getExpression());
       return null;
     }
@@ -5937,11 +5945,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>For an unbound reference, {@code this} and {@code super} are the interface method's first
      * parameter. For a constructor reference, the expression {@code this} is dropped, because the
-     * object under construction did not exist before the call. An expression that is reached through
-     * that object, such as {@code this.f}, may denote an object that existed before the call, but
-     * the interface method's annotation cannot name it; this method returns null in that case. For a
-     * bound or {@code super} reference, {@code this} is the bound receiver, which the interface
-     * method's annotation cannot name either; this method returns null in that case too.
+     * object under construction did not exist before the call. An expression that is reached
+     * through that object, such as {@code this.f}, may denote an object that existed before the
+     * call, but the interface method's annotation cannot name it; this method returns null in that
+     * case. For a bound or {@code super} reference, {@code this} is the bound receiver, which the
+     * interface method's annotation cannot name either; this method returns null in that case too.
      *
      * <p>This method requires that {@link #overriderTree} is a method reference.
      *
