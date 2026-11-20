@@ -6,6 +6,7 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -100,6 +101,7 @@ import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ValueLiteral;
@@ -2003,13 +2005,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private boolean mightRelyOnFunctionalParameter(
       ExecutableElement method, VariableElement parameter, ExecutableElement parameterFunction) {
-    boolean overridable =
-        method.getKind() == ElementKind.METHOD
-            && !ElementUtils.isStatic(method)
-            && !method.getModifiers().contains(Modifier.PRIVATE)
-            && !ElementUtils.isFinal(method)
-            && !ElementUtils.isFinal(method.getEnclosingElement());
-    if (overridable) {
+    if (isOverridable(method)) {
       return true;
     }
     if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
@@ -2021,6 +2017,177 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             parameter, parameterFunction, atypeFactory.getProcessingEnv());
     scanner.scan(methodTree.getBody(), null);
     return scanner.found;
+  }
+
+  /**
+   * Returns true if {@code method} can be overridden.
+   *
+   * @param method a method or constructor
+   * @return true if {@code method} can be overridden
+   */
+  private static boolean isOverridable(ExecutableElement method) {
+    return method.getKind() == ElementKind.METHOD
+        && !ElementUtils.isStatic(method)
+        && !method.getModifiers().contains(Modifier.PRIVATE)
+        && !ElementUtils.isFinal(method)
+        && !ElementUtils.isFinal(method.getEnclosingElement());
+  }
+
+  /**
+   * Returns true if code that a call to {@code method} runs might store a value into an element of
+   * {@code method}'s varargs parameter, or might let other code do so.
+   *
+   * <p>A {@code @SideEffectsOnly} expression such as {@code #1[0].f} is interpreted when the effect
+   * occurs. Under variable-arity invocation, {@code #1[0]} is the caller's argument only if the
+   * element still holds that argument then. If the body executes {@code nodes[0] = SHARED;
+   * nodes[0].f = x;}, the annotation permits both statements, but the second one modifies {@code
+   * SHARED} rather than the argument.
+   *
+   * <p>The result is false only if {@code method} is a variable-arity method that cannot be
+   * overridden, its body is in source code, and the body uses the varargs parameter only to read
+   * an element or its length, or as the expression of an enhanced {@code for} statement. An
+   * override of {@code method} inherits its annotation but might assign an element.
+   *
+   * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
+   * has the name of the varargs parameter is treated as a use of it.
+   *
+   * @param method a method or constructor
+   * @return true if code that a call to {@code method} runs might reassign an element of its
+   *     varargs parameter
+   */
+  private boolean varargsElementsMightBeReassigned(ExecutableElement method) {
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (!method.isVarArgs() || parameters.isEmpty() || isOverridable(method)) {
+      return true;
+    }
+    if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
+        || methodTree.getBody() == null) {
+      return true;
+    }
+    VarargsElementWriteScanner scanner =
+        new VarargsElementWriteScanner(parameters.get(parameters.size() - 1));
+    scanner.scan(methodTree.getBody(), null);
+    return scanner.found;
+  }
+
+  /**
+   * Scans code for a use of a varargs parameter that might store into one of its elements; see
+   * {@link #varargsElementsMightBeReassigned}.
+   */
+  private static class VarargsElementWriteScanner extends TreeScanner<Void, Void> {
+
+    /** The varargs parameter whose uses are sought. */
+    private final VariableElement parameter;
+
+    /** True if a use that might store into an element of {@link #parameter} has been found. */
+    boolean found = false;
+
+    /**
+     * Creates a scanner for uses of {@code parameter}.
+     *
+     * @param parameter a varargs parameter
+     */
+    VarargsElementWriteScanner(VariableElement parameter) {
+      this.parameter = parameter;
+    }
+
+    @Override
+    public Void scan(@Nullable Tree tree, Void p) {
+      return found ? null : super.scan(tree, p);
+    }
+
+    /**
+     * Returns true if {@code tree} is a use of {@link #parameter}, possibly in parentheses. In an
+     * unattributed body, an identifier with the parameter's name is treated as a use.
+     *
+     * @param tree an expression
+     * @return true if {@code tree} is a use of {@link #parameter}
+     */
+    private boolean isParameter(ExpressionTree tree) {
+      if (!(TreeUtils.withoutParens(tree) instanceof IdentifierTree identifier)) {
+        return false;
+      }
+      Element elt = TreeUtils.elementFromTree(identifier);
+      return elt == null
+          ? identifier.getName().contentEquals(parameter.getSimpleName())
+          : parameter.equals(elt);
+    }
+
+    /**
+     * Records a use of {@link #parameter} if {@code target}, the target of an assignment, is an
+     * element of it; otherwise scans {@code target}.
+     *
+     * @param target the target of an assignment, compound assignment, increment, or decrement
+     */
+    private void scanTarget(ExpressionTree target) {
+      if (TreeUtils.withoutParens(target) instanceof ArrayAccessTree arrayAccess
+          && isParameter(arrayAccess.getExpression())) {
+        found = true;
+      } else {
+        scan(target, null);
+      }
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      if (isParameter(tree)) {
+        found = true;
+      }
+      return null;
+    }
+
+    @Override
+    public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
+      // Reading an element does not change it.  An assignment to an element is handled by
+      // `scanTarget`.
+      if (!isParameter(tree.getExpression())) {
+        scan(tree.getExpression(), p);
+      }
+      scan(tree.getIndex(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      if (isParameter(tree.getExpression()) && tree.getIdentifier().contentEquals("length")) {
+        return null;
+      }
+      return super.visitMemberSelect(tree, p);
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+      scan(tree.getVariable(), p);
+      if (!isParameter(tree.getExpression())) {
+        scan(tree.getExpression(), p);
+      }
+      scan(tree.getStatement(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      scanTarget(tree.getVariable());
+      scan(tree.getExpression(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+      scanTarget(tree.getVariable());
+      scan(tree.getExpression(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, Void p) {
+      switch (tree.getKind()) {
+        case POSTFIX_INCREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, PREFIX_DECREMENT ->
+            scanTarget(tree.getExpression());
+        default -> scan(tree.getExpression(), p);
+      }
+      return null;
+    }
   }
 
   /**
@@ -5501,6 +5668,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // treated like a lambda whose body calls the referenced method.  Like such a call, a
       // side-effect-free referenced method that returns void is deterministic.
       EnumSet<PurityKind> subPurity = purityKinds(overrider.getElement(), true);
+      // `f::apply`, where `f` is a functional-interface parameter of the enclosing method, denotes
+      // the code that the caller of that method was required to check, as in
+      // `checkFunctionalArgument`.
+      EnumSet<PurityKind> parameterPurity =
+          PurityChecker.functionalParameterCallPurity(
+              atypeFactory,
+              ((MemberReferenceTree) overriderTree).getQualifierExpression(),
+              overrider.getElement(),
+              TreePathUtil.enclosingMethod(getCurrentPath()),
+              atypeFactory.getProcessingEnv());
+      if (parameterPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        subPurity.remove(PurityKind.SIDE_EFFECTS_ONLY);
+      }
+      subPurity.addAll(parameterPurity);
 
       boolean ok;
       if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
@@ -5750,13 +5931,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>The two methods' parameters do not necessarily correspond positionally; see {@link
      * #methodRefParameterOffset}. When the referenced method is invoked with variable arity, an
      * element {@code #n[k]} of its varargs parameter {@code #n} is the interface method's
-     * corresponding parameter; any other use of {@code #n} has no counterpart there, because the
-     * array is created for the call.
+     * corresponding parameter, provided that the referenced method cannot reassign the element (see
+     * {@link BaseTypeVisitor#varargsElementsMightBeReassigned}); any other use of {@code #n} has no
+     * counterpart there, because the array is created for the call.
      *
-     * <p>For a constructor reference, the expression {@code this} is dropped, because the object
-     * under construction did not exist before the call. An expression that is reached through that
-     * object, such as {@code this.f}, may denote an object that existed before the call, but the
-     * interface method's annotation cannot name it; this method returns null in that case. For a
+     * <p>For an unbound reference, {@code this} and {@code super} are the interface method's first
+     * parameter. For a constructor reference, the expression {@code this} is dropped, because the
+     * object under construction did not exist before the call. An expression that is reached through
+     * that object, such as {@code this.f}, may denote an object that existed before the call, but
+     * the interface method's annotation cannot name it; this method returns null in that case. For a
      * bound or {@code super} reference, {@code this} is the bound receiver, which the interface
      * method's annotation cannot name either; this method returns null in that case too.
      *
@@ -5811,14 +5994,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             protected JavaExpression visitArrayAccess(ArrayAccess arrayAccess, Void unused) {
               // Under variable-arity invocation, element `k` of the varargs array is the interface
               // method's parameter at the varargs position plus `k`.
+              // That holds only if the element still holds the argument when the effect occurs; see
+              // `varargsElementsMightBeReassigned`.
               if (varargsAdapted
                   && arrayAccess.getArray() instanceof FormalParameter array
                   && array.getIndex() == subParameterCount
                   && arrayAccess.getIndex() instanceof ValueLiteral indexLiteral
                   && indexLiteral.getValue() instanceof Integer k) {
-                int superIndex = subParameterCount - 1 + shift + k;
-                if (k >= 0 && superIndex < superParameters.size()) {
-                  return superParameters.get(superIndex);
+                // The index of the interface method's parameter that is element 0.
+                int firstVarargsIndex = subParameterCount - 1 + shift;
+                // Compare `k` before adding to it, because the sum can overflow.
+                if (k >= 0
+                    && k < superParameters.size() - firstVarargsIndex
+                    && !varargsElementsMightBeReassigned(overrider.getElement())) {
+                  return superParameters.get(firstVarargsIndex + k);
                 }
               }
               return super.visitArrayAccess(arrayAccess, unused);
@@ -5826,13 +6015,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             @Override
             protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+              return receiverAtFunctionalInterfaceMethod(thisExpr.getType());
+            }
+
+            @Override
+            protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+              // `super.f` is field `f` of the receiver, as declared in the superclass.  The field
+              // access that contains this reference retains that field.
+              return receiverAtFunctionalInterfaceMethod(superExpr.getType());
+            }
+
+            /**
+             * Returns the expression at the interface method's declaration that denotes the
+             * referenced method's receiver.
+             *
+             * @param type the type of the receiver expression being translated
+             * @return the interface method's first parameter for an unbound reference, or {@link
+             *     Unknown} otherwise
+             */
+            private JavaExpression receiverAtFunctionalInterfaceMethod(TypeMirror type) {
               if (methodRefKind.isUnbound()) {
                 return superParameters.get(0);
               }
               // The receiver is fixed by the method reference itself, or is the object under
               // construction, so no expression at the interface method's declaration denotes it.
               // `Unknown` is never covered.
-              return new Unknown(thisExpr.getType());
+              return new Unknown(type);
             }
           };
 

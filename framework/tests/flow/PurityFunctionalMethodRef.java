@@ -188,4 +188,39 @@ public class PurityFunctionalMethodRef {
     // :: error: [purity.methodref.functional.parameter]
     ImpureDefaultApplier b = PurityFunctionalMethodRef::applyStatic;
   }
+
+  /** A class, not a functional interface, whose implementation of apply is side-effect-free. */
+  static final class PureFixedFunction implements Function<String, Integer> {
+    @Override
+    @SideEffectFree
+    public Integer apply(String s) {
+      return 0;
+    }
+  }
+
+  /** A class whose implementation of apply has no purity annotation. */
+  static final class ImpureFixedFunction implements Function<String, Integer> {
+    @Override
+    public Integer apply(String s) {
+      return 0;
+    }
+  }
+
+  @FunctionalInterface
+  interface PureFixedApplier {
+    int apply(PureFixedFunction f, String s);
+  }
+
+  @FunctionalInterface
+  interface ImpureFixedApplier {
+    int apply(ImpureFixedFunction f, String s);
+  }
+
+  void classTypedCallback() {
+    // A call through PureFixedApplier checks nothing, but every PureFixedFunction implements
+    // Function.apply with a side-effect-free method.
+    PureFixedApplier a = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    ImpureFixedApplier b = PurityFunctionalMethodRef::applyStatic;
+  }
 }

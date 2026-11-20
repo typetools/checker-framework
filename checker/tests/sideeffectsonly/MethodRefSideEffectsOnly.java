@@ -275,4 +275,97 @@ public class MethodRefSideEffectsOnly {
     // :: error: (purity.methodref)
     TwoChildMutator m = MethodRefSideEffectsOnly::mutatesFirstChild;
   }
+
+  static Node shared = new Node();
+
+  interface NodeMutator {
+    @SideEffectsOnly("#1")
+    void apply(Node node);
+  }
+
+  @SideEffectsOnly("#1[0]")
+  static void reassignsFirstThenMutates(Node... nodes) {
+    nodes[0] = shared;
+    nodes[0].child.add(1);
+  }
+
+  @SideEffectsOnly("#1[0]")
+  static void readsFirstThenMutates(Node... nodes) {
+    if (nodes.length > 0) {
+      for (Node n : nodes) {}
+      nodes[0].child.add(1);
+    }
+  }
+
+  void varargsElementReassignedNotOk() {
+    // The body stores `shared` into `#1[0]` before modifying `#1[0].child`, so what it modifies is
+    // not reached through the interface method's `#1`.
+    // :: warning: (purity.parameters.sideeffectsonly) :: error: (purity.methodref)
+    NodeMutator m = MethodRefSideEffectsOnly::reassignsFirstThenMutates;
+  }
+
+  void varargsElementReadOk() {
+    // The body only reads the elements of `nodes`, so `#1[0]` is the interface method's `#1`.
+    NodeMutator m = MethodRefSideEffectsOnly::readsFirstThenMutates;
+  }
+
+  @SideEffectsOnly("#1[2147483647].child")
+  static void mutatesHugeIndex(Node... nodes) {}
+
+  void varargsElementHugeIndexNotOk() {
+    // The index is beyond the interface method's parameters.
+    // :: warning: (purity.parameters.sideeffectsonly) :: error: (purity.methodref)
+    ChildMutator m = MethodRefSideEffectsOnly::mutatesHugeIndex;
+  }
+
+  static class Parent {
+    Collection<Integer> data = new java.util.ArrayList<>();
+  }
+
+  static class Child extends Parent {
+    // Hides Parent.data.
+    Collection<Integer> data = new java.util.ArrayList<>();
+
+    @SideEffectsOnly("super.data")
+    void mutatesParentData() {
+      super.data.add(1);
+    }
+  }
+
+  interface ChildDataMutator {
+    @SideEffectsOnly("#1")
+    void apply(Child c);
+  }
+
+  interface NoArgMutator {
+    @SideEffectsOnly("MethodRefSideEffectsOnly.staticSb")
+    void apply();
+  }
+
+  void superUnboundOk() {
+    // `super.data` is reached through the receiver, which is `#1` of `ChildDataMutator.apply`.
+    ChildDataMutator m = Child::mutatesParentData;
+  }
+
+  void superBoundNotOk() {
+    Child c = new Child();
+    // :: error: (purity.methodref)
+    NoArgMutator m = c::mutatesParentData;
+  }
+
+  interface LimitedFunction {
+    @SideEffectsOnly("#1")
+    Integer apply(Node n);
+  }
+
+  @SideEffectFree
+  static LimitedFunction wrap(java.util.function.Function<Node, Integer> f) {
+    // Every caller of `wrap` passes a side-effect-free `f`.
+    return f::apply;
+  }
+
+  static LimitedFunction wrapUnannotated(java.util.function.Function<Node, Integer> f) {
+    // :: error: (purity.methodref)
+    return f::apply;
+  }
 }
