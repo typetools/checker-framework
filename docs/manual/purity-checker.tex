@@ -179,10 +179,14 @@ method of the parameter's type other than its functional method, such as
 A call can reach the method through any method that it overrides, and such a
 call checks its arguments only against the overridden method's promise.  So
 the method can assume only the purity that it and every method it overrides
-promise for that parameter.  An overridden method that makes no promise, or
-whose parameter at that position is not a functional interface (for example,
-its type is a type variable), guarantees nothing, and the assumption does not
-apply.
+promise for that parameter.  An overridden method that makes no promise
+guarantees nothing, and the assumption does not apply.  If the overridden
+method's parameter at that position is not a functional interface, then it
+guarantees only what the purity annotations on its parameter type's
+implementation of the functional method promise:  for example, nothing if
+its type is a type variable with no bound, and side-effect-freedom if its type
+is a class whose implementation of the functional method is
+\<@SideEffectFree>.
 
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
@@ -235,6 +239,59 @@ deterministic:
 
 \begin{Verbatim}
   Objects.requireNonNull(x, () -> String.format("bad %s", y));  // error: [purity.call]
+\end{Verbatim}
+
+A method reference does not override the functional method that it
+implements, but a call through that functional method, or through any method
+that the functional method overrides, can run the referenced method.  Each
+such call checks its arguments only against the method that it invokes.  So a
+method reference is an error (\<purity.methodref.functional.parameter>) if
+the referenced method assumes a purity of a functional-interface argument that
+one of those methods does not promise.  A purity that a command-line option
+such as \<-AassumeSideEffectFree> grants to every call is not required.  There
+is no error if the referenced method cannot be overridden (for example, it is
+static, private, or final), its body is available in source code, and the body
+evidently does not rely on the assumption:  each direct use of the parameter
+in the body stores it, overwrites it, returns it, compares it, or calls a
+method other than the functional method on it.  If the referenced method is
+available only as a class file, the checker cannot inspect its body, so it
+assumes that the body relies on the assumption.  If the checker has not yet
+attributed the body, it conservatively treats every identifier with the
+parameter's name as a use that relies on the assumption.
+
+\begin{Verbatim}
+  class Util {
+    @SideEffectFree
+    static int call(Function<String, Integer> f, String s) {
+      return f.apply(s);  // permitted: apply is treated as side-effect-free
+    }
+
+    @SideEffectFree
+    static int ignore(Function<String, Integer> f, String s) {
+      return 0;
+    }
+  }
+
+  @FunctionalInterface
+  interface Caller {
+    int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface PureCaller {
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface StrongCaller extends Caller {
+    @Override
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  PureCaller c1 = Util::call;    // OK: PureCaller.run requires a side-effect-free f
+  Caller c2 = Util::call;        // error: c2.run(s -> count++, "hi") would have a side effect
+  StrongCaller c3 = Util::call;  // error: a call through Caller.run can run Util.call
+  Caller c4 = Util::ignore;      // OK: Util.ignore is static and never calls f.apply
 \end{Verbatim}
 
 The assumption affects purity checking, and the dataflow analysis of a lambda

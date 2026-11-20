@@ -6,8 +6,10 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
@@ -60,6 +62,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
@@ -73,12 +76,12 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -91,13 +94,17 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1957,7 +1964,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     } else {
       ExecutableElement argFunction =
-          functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+          PurityChecker.functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
       if (argFunction == null) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
@@ -1973,6 +1980,343 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (!argKinds.containsAll(required)) {
       reportFunctionalArgumentError(arg, argKinds, required, param, callee);
+    }
+  }
+
+  /**
+   * Returns true if code that a call to {@code method} runs might rely on the purity that {@link
+   * PurityChecker#functionalParameterPurity} computes for the argument to {@code parameter}.
+   *
+   * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
+   * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
+   * operand of a binary operator such as {@code ==}, as the destination or the value of an
+   * assignment, as the value of a variable initializer or of a return statement, or as the receiver
+   * of a call to a method other than {@code parameterFunction} and its overrides, such as {@code
+   * hashCode}. An override of {@code method} can rely on the purity that {@code method} promises of
+   * its arguments.
+   *
+   * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
+   * has the name of {@code parameter} is treated as a use that might rely on the purity.
+   *
+   * @param method a method or constructor
+   * @param parameter a functional-interface parameter of {@code method}
+   * @param parameterFunction the functional method of {@code parameter}'s type
+   * @return true if code that a call to {@code method} runs might rely on the purity of the
+   *     argument to {@code parameter}
+   */
+  private boolean mightRelyOnFunctionalParameter(
+      ExecutableElement method, VariableElement parameter, ExecutableElement parameterFunction) {
+    if (isOverridable(method)) {
+      return true;
+    }
+    if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
+        || methodTree.getBody() == null) {
+      return true;
+    }
+    FunctionalParameterUseScanner scanner =
+        new FunctionalParameterUseScanner(
+            parameter, parameterFunction, atypeFactory.getProcessingEnv());
+    scanner.scan(methodTree.getBody(), null);
+    return scanner.found;
+  }
+
+  /**
+   * Returns true if {@code method} can be overridden.
+   *
+   * @param method a method or constructor
+   * @return true if {@code method} can be overridden
+   */
+  private static boolean isOverridable(ExecutableElement method) {
+    return method.getKind() == ElementKind.METHOD
+        && !ElementUtils.isStatic(method)
+        && !method.getModifiers().contains(Modifier.PRIVATE)
+        && !ElementUtils.isFinal(method)
+        && !ElementUtils.isFinal(method.getEnclosingElement());
+  }
+
+  /**
+   * Returns true if code that a call to {@code method} runs might store a value into an element of
+   * {@code method}'s varargs parameter, or might let other code do so.
+   *
+   * <p>A {@code @SideEffectsOnly} expression such as {@code #1[0].f} is interpreted when the effect
+   * occurs. Under variable-arity invocation, {@code #1[0]} is the caller's argument only if the
+   * element still holds that argument then. If the body executes {@code nodes[0] = SHARED;
+   * nodes[0].f = x;}, the annotation permits both statements, but the second one modifies {@code
+   * SHARED} rather than the argument.
+   *
+   * <p>The result is false only if {@code method} is a variable-arity method that cannot be
+   * overridden, its body is in source code, and the body uses the varargs parameter only to read an
+   * element or its length, or as the expression of an enhanced {@code for} statement. An override
+   * of {@code method} inherits its annotation but might assign an element.
+   *
+   * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
+   * has the name of the varargs parameter is treated as a use of it.
+   *
+   * @param method a method or constructor
+   * @return true if code that a call to {@code method} runs might reassign an element of its
+   *     varargs parameter
+   */
+  private boolean varargsElementsMightBeReassigned(ExecutableElement method) {
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (!method.isVarArgs() || parameters.isEmpty() || isOverridable(method)) {
+      return true;
+    }
+    if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
+        || methodTree.getBody() == null) {
+      return true;
+    }
+    VarargsElementWriteScanner scanner =
+        new VarargsElementWriteScanner(parameters.get(parameters.size() - 1));
+    scanner.scan(methodTree.getBody(), null);
+    return scanner.found;
+  }
+
+  /**
+   * Scans code for a use of a varargs parameter that might store into one of its elements; see
+   * {@link #varargsElementsMightBeReassigned}.
+   */
+  private static class VarargsElementWriteScanner extends TreeScanner<Void, Void> {
+
+    /** The varargs parameter whose uses are sought. */
+    private final VariableElement parameter;
+
+    /** True if a use that might store into an element of {@link #parameter} has been found. */
+    boolean found = false;
+
+    /**
+     * Creates a scanner for uses of {@code parameter}.
+     *
+     * @param parameter a varargs parameter
+     */
+    VarargsElementWriteScanner(VariableElement parameter) {
+      this.parameter = parameter;
+    }
+
+    @Override
+    public Void scan(@Nullable Tree tree, Void p) {
+      return found ? null : super.scan(tree, p);
+    }
+
+    /**
+     * Returns true if {@code tree} is a use of {@link #parameter}, possibly in parentheses. In an
+     * unattributed body, an identifier with the parameter's name is treated as a use.
+     *
+     * @param tree an expression
+     * @return true if {@code tree} is a use of {@link #parameter}
+     */
+    private boolean isParameter(ExpressionTree tree) {
+      if (!(TreeUtils.withoutParens(tree) instanceof IdentifierTree identifier)) {
+        return false;
+      }
+      Element elt = TreeUtils.elementFromTree(identifier);
+      return elt == null
+          ? identifier.getName().contentEquals(parameter.getSimpleName())
+          : parameter.equals(elt);
+    }
+
+    /**
+     * Records a use of {@link #parameter} if {@code assignmentTarget}, the target of an assignment,
+     * is an element of it; otherwise scans {@code assignmentTarget}.
+     *
+     * @param assignmentTarget the target of an assignment, compound assignment, increment, or
+     *     decrement
+     */
+    private void scanTarget(ExpressionTree assignmentTarget) {
+      if (TreeUtils.withoutParens(assignmentTarget) instanceof ArrayAccessTree arrayAccess
+          && isParameter(arrayAccess.getExpression())) {
+        found = true;
+      } else {
+        scan(assignmentTarget, null);
+      }
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      if (isParameter(tree)) {
+        found = true;
+      }
+      return null;
+    }
+
+    @Override
+    public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
+      // Reading an element does not change it.  An assignment to an element is handled by
+      // `scanTarget`.
+      if (!isParameter(tree.getExpression())) {
+        scan(tree.getExpression(), p);
+      }
+      scan(tree.getIndex(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      if (isParameter(tree.getExpression()) && tree.getIdentifier().contentEquals("length")) {
+        return null;
+      }
+      return super.visitMemberSelect(tree, p);
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+      scan(tree.getVariable(), p);
+      if (!isParameter(tree.getExpression())) {
+        scan(tree.getExpression(), p);
+      }
+      scan(tree.getStatement(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      scanTarget(tree.getVariable());
+      scan(tree.getExpression(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+      scanTarget(tree.getVariable());
+      scan(tree.getExpression(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, Void p) {
+      switch (tree.getKind()) {
+        case POSTFIX_INCREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, PREFIX_DECREMENT ->
+            scanTarget(tree.getExpression());
+        default -> scan(tree.getExpression(), p);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Scans code for a use of a functional-interface parameter that might rely on the purity of the
+   * argument; see {@link #mightRelyOnFunctionalParameter}.
+   */
+  private static class FunctionalParameterUseScanner extends TreeScanner<Void, Void> {
+
+    /** The parameter whose uses are sought. */
+    private final VariableElement parameter;
+
+    /** The functional method of the type of {@link #parameter}. */
+    private final ExecutableElement parameterFunction;
+
+    /** The processing environment. */
+    private final ProcessingEnvironment env;
+
+    /** True if a use that might rely on the purity of the argument has been found. */
+    boolean found = false;
+
+    /**
+     * Creates a scanner for uses of {@code parameter}.
+     *
+     * @param parameter a functional-interface parameter
+     * @param parameterFunction the functional method of {@code parameter}'s type
+     * @param env the processing environment
+     */
+    FunctionalParameterUseScanner(
+        VariableElement parameter, ExecutableElement parameterFunction, ProcessingEnvironment env) {
+      this.parameter = parameter;
+      this.parameterFunction = parameterFunction;
+      this.env = env;
+    }
+
+    @Override
+    public Void scan(@Nullable Tree tree, Void p) {
+      return found ? null : super.scan(tree, p);
+    }
+
+    /**
+     * Scans {@code tree}, unless it is {@link #parameter} itself.
+     *
+     * @param tree an expression, or null
+     */
+    private void scanUnlessParameter(@Nullable ExpressionTree tree) {
+      if (!isParameter(tree)) {
+        scan(tree, null);
+      }
+    }
+
+    /**
+     * Returns true if {@code tree} is a use of {@link #parameter}, possibly in parentheses.
+     *
+     * @param tree an expression, or null
+     * @return true if {@code tree} is a use of {@link #parameter}
+     */
+    private boolean isParameter(@Nullable ExpressionTree tree) {
+      return tree != null
+          && TreeUtils.withoutParens(tree) instanceof IdentifierTree identifier
+          && Objects.equals(parameter, TreeUtils.elementFromTree(identifier));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The body might not have been attributed yet, as when it is in a top-level class that javac
+     * has not yet processed. An identifier that has no element is treated as a use of {@link
+     * #parameter} if it has the same name. Such a use can rely on the purity of the argument, even
+     * if it is in a context that {@link #isParameter} would otherwise exempt.
+     */
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt == null
+          ? tree.getName().contentEquals(parameter.getSimpleName())
+          : parameter.equals(elt)) {
+        found = true;
+      }
+      return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Overwriting {@link #parameter} does not read the argument, so the destination is not a use
+     * if it is {@link #parameter} itself. A compound destination, such as an array access, is
+     * scanned, because its subexpressions are evaluated.
+     */
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      scanUnlessParameter(tree.getVariable());
+      scanUnlessParameter(tree.getExpression());
+      return null;
+    }
+
+    @Override
+    public Void visitVariable(VariableTree tree, Void p) {
+      scan(tree.getModifiers(), p);
+      scan(tree.getType(), p);
+      scanUnlessParameter(tree.getInitializer());
+      return null;
+    }
+
+    @Override
+    public Void visitReturn(ReturnTree tree, Void p) {
+      scanUnlessParameter(tree.getExpression());
+      return null;
+    }
+
+    @Override
+    public Void visitBinary(BinaryTree tree, Void p) {
+      scanUnlessParameter(tree.getLeftOperand());
+      scanUnlessParameter(tree.getRightOperand());
+      return null;
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      if (tree.getMethodSelect() instanceof MemberSelectTree select
+          && isParameter(select.getExpression())
+          && !PurityChecker.isSameOrOverrides(
+              TreeUtils.elementFromUse(tree), parameterFunction, env)) {
+        scan(tree.getTypeArguments(), p);
+        scan(tree.getArguments(), p);
+        return null;
+      }
+      return super.visitMethodInvocation(tree, p);
     }
   }
 
@@ -2019,59 +2363,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
-   * or null if it has none.
-   *
-   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
-   * argument can also be of a class type, including an anonymous class, that implements the
-   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
-   * functional subinterface can implement {@code paramFunction} with a default method and declare
-   * an unrelated abstract method as its own functional method; the default method is what runs.
-   *
-   * @param type the type of an argument
-   * @param paramFunction the functional method of the parameter's type
-   * @param env the processing environment
-   * @return the method of {@code type} that implements {@code paramFunction}, or null
-   */
-  private @Nullable ExecutableElement functionalMethodOf(
-      TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
-    Elements elements = env.getElementUtils();
-    TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
-    if (functionalType != null) {
-      ExecutableElement function = TypesUtils.findFunction(functionalType, env);
-      if (PurityChecker.isSameOrOverrides(function, paramFunction, env)) {
-        return function;
-      }
-    }
-    if (type.getKind() == TypeKind.TYPEVAR) {
-      type = TypesUtils.upperBound(type);
-    }
-    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
-      // Only a class or interface type declares methods.  The null type, which is the type of
-      // the null literal, has an element whose members cannot be queried.
-      return null;
-    }
-    TypeElement typeElement = TypesUtils.getTypeElement(type);
-    if (typeElement == null) {
-      return null;
-    }
-    // The members of a class that inherits its implementation from a superclass include both
-    // that implementation and the interface's abstract method.  The implementation is what runs.
-    ExecutableElement abstractMatch = null;
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-      if (method.equals(paramFunction) || elements.overrides(method, paramFunction, typeElement)) {
-        if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
-          return method;
-        }
-        if (abstractMatch == null) {
-          abstractMatch = method;
-        }
-      }
-    }
-    return abstractMatch;
-  }
-
-  /**
    * Returns the purity of a method that implements a functional method: its declared purity, plus
    * whatever the command-line assumptions grant it, plus determinism if it is side-effect-free and
    * returns no value.
@@ -2110,6 +2401,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the annotations corresponding to {@code purityKinds}, space-separated
    */
   protected static String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+    return purityKindsToString(purityKinds, "@SideEffectsOnly");
+  }
+
+  /**
+   * Formats purity kinds for a diagnostic message, as {@link #purityKindsToString(EnumSet)} does,
+   * but represents {@link PurityKind#SIDE_EFFECTS_ONLY} by the given text.
+   *
+   * @param purityKinds a set of purity kinds
+   * @param sideEffectsOnly the text that represents {@link PurityKind#SIDE_EFFECTS_ONLY}, such as
+   *     {@code @SideEffectsOnly("this")}
+   * @return the annotations corresponding to {@code purityKinds}, space-separated
+   */
+  private static String purityKindsToString(
+      EnumSet<PurityKind> purityKinds, String sideEffectsOnly) {
     if (purityKinds.isEmpty()) {
       return "(no side effect annotation)";
     }
@@ -2117,6 +2422,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (PurityKind purityKind : purityKinds) {
       switch (purityKind) {
         case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+        case SIDE_EFFECTS_ONLY -> result.add(sideEffectsOnly);
         case DETERMINISTIC -> result.add("@Deterministic");
       }
     }
@@ -5331,6 +5637,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Formats a method's name and formal parameters for a diagnostic message.
+     *
+     * @param method a method
+     * @return the method's name and formal parameters
+     */
+    private String methodSignature(ExecutableElement method) {
+      List<? extends VariableElement> parameters = method.getParameters();
+      StringJoiner result =
+          new StringJoiner(", ", ElementUtils.getSimpleDescription(method) + "(", ")");
+      for (int i = 0; i < parameters.size(); i++) {
+        VariableElement parameter = parameters.get(i);
+        TypeMirror parameterType = parameter.asType();
+        String typeString;
+        if (method.isVarArgs() && i == parameters.size() - 1) {
+          typeString =
+              TypesUtils.simpleTypeName(((ArrayType) parameterType).getComponentType()) + "...";
+        } else {
+          typeString = TypesUtils.simpleTypeName(parameterType);
+        }
+        result.add(typeString + " " + parameter.getSimpleName());
+      }
+      return result.toString();
+    }
+
+    /**
      * Checks that the referenced method is at least as pure as the functional interface method that
      * the method reference implements.
      *
@@ -5341,23 +5672,448 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!checkPurityAnnotations) {
         return;
       }
-      EnumSet<PurityKind> superPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
+      EnumSet<PurityKind> superPurity = purityKinds(overridden.getElement(), false);
       // Apply the command-line assumptions to the referenced method, so that a method reference is
       // treated like a lambda whose body calls the referenced method.  Like such a call, a
       // side-effect-free referenced method that returns void is deterministic.
-      EnumSet<PurityKind> subPurity = implementationPurityKinds(overrider.getElement());
-      if (!subPurity.containsAll(superPurity)) {
+      EnumSet<PurityKind> subPurity = purityKinds(overrider.getElement(), true);
+      // `f::apply`, where `f` is a functional-interface parameter of the enclosing method, denotes
+      // the code that the caller of that method was required to check, as in
+      // `checkFunctionalArgument`.
+      EnumSet<PurityKind> parameterPurity =
+          PurityChecker.functionalParameterCallPurity(
+              atypeFactory,
+              ((MemberReferenceTree) overriderTree).getQualifierExpression(),
+              overrider.getElement(),
+              TreePathUtil.enclosingMethod(getCurrentPath()),
+              atypeFactory.getProcessingEnv());
+      if (parameterPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        subPurity.remove(PurityKind.SIDE_EFFECTS_ONLY);
+      }
+      subPurity.addAll(parameterPurity);
+
+      boolean ok;
+      if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+        if (!checkPurityAnnotationsOption) {
+          // A @SideEffectsOnly annotation is verified only when -AcheckPurityAnnotations itself was
+          // supplied, not merely -AsuggestPureMethods or -Ainfer; see
+          // checkSideEffectsOnlyAnnotation.
+          ok = true;
+        } else if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+          ok = true;
+        } else if (subPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+          // Both methods are annotated with @SideEffectsOnly, and the referenced method is
+          // allowed to perform fewer side effects.
+          ok = sideEffectsOnlyIsNarrowed();
+        } else {
+          // The functional interface method has @SideEffectsOnly, and the referenced method has
+          // no side-effect annotation.  The referenced method inherits nothing from the functional
+          // interface method.
+          ok = false;
+        }
+        // The tests above account only for side effects.  The referenced method must also satisfy
+        // every other purity kind, such as @Deterministic, that the functional interface method
+        // promises.
+        EnumSet<PurityKind> superNonSideEffectKinds = superPurity.clone();
+        superNonSideEffectKinds.remove(PurityKind.SIDE_EFFECTS_ONLY);
+        ok = ok && subPurity.containsAll(superNonSideEffectKinds);
+      } else {
+        // The referenced method is allowed to make more guarantees.
+        ok = subPurity.containsAll(superPurity);
+      }
+
+      if (!ok) {
         checker.reportError(
             overriderTree,
             "purity.methodref",
             overriderType,
-            purityKindsToString(subPurity),
+            purityKindsToString(subPurity, overrider.getElement()),
             overrider,
             overriddenType,
-            purityKindsToString(superPurity),
+            purityKindsToString(superPurity, overridden.getElement()),
             overridden);
       }
+      if (!infer) {
+        checkMethodReferenceFunctionalParameters();
+      }
+    }
+
+    /**
+     * Checks that every call that can run the referenced method through the method reference
+     * guarantees, of the code that it passes to each functional-interface parameter of the
+     * referenced method, the purity that the referenced method's body assumes of it. That is the
+     * purity that {@link PurityChecker#functionalParameterPurity} computes, less the purity that
+     * every call to the parameter's functional method has regardless of the argument: the purity of
+     * the functional method's own annotations and of the command-line assumptions such as {@code
+     * -AassumeSideEffectFree}.
+     *
+     * <p>A call through the functional method, or through any method that the functional method
+     * overrides, can run the referenced method. Each call checks its arguments against the
+     * declaration that it invokes.
+     */
+    private void checkMethodReferenceFunctionalParameters() {
+      ExecutableElement referenced = overrider.getElement();
+      ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+      if (PurityChecker.functionalParameterKinds(atypeFactory, referenced, env).isEmpty()) {
+        // The referenced method assumes nothing of its functional-interface arguments.
+        return;
+      }
+      ExecutableElement functionalMethod = overridden.getElement();
+      // The methods through which a call can run the referenced method.
+      List<ExecutableElement> declarations = new ArrayList<>();
+      declarations.add(functionalMethod);
+      declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
+      int offset = methodRefParameterOffset();
+      List<? extends VariableElement> params = referenced.getParameters();
+      for (int i = 0; i < params.size(); i++) {
+        ExecutableElement parameterFunction =
+            PurityChecker.parameterFunctionalMethod(referenced, i, env);
+        if (parameterFunction == null) {
+          continue;
+        }
+        EnumSet<PurityKind> assumed =
+            PurityChecker.functionalParameterPurity(
+                atypeFactory, referenced, i, parameterFunction, env);
+        assumed.removeAll(implementationPurityKinds(parameterFunction));
+        if (assumed.isEmpty()) {
+          continue;
+        }
+        for (ExecutableElement declaration : declarations) {
+          EnumSet<PurityKind> provided =
+              PurityChecker.guaranteedFunctionalArgumentPurity(
+                  atypeFactory, declaration, i + offset, parameterFunction, env);
+          if (!provided.containsAll(assumed)) {
+            // The error message names the first declaration whose calls lack the guarantee.
+            if (mightRelyOnFunctionalParameter(referenced, params.get(i), parameterFunction)) {
+              reportErrorOnce(
+                  overriderTree,
+                  "purity.methodref.functional.parameter",
+                  params.get(i).getSimpleName(),
+                  ElementUtils.getSimpleDescription(referenced),
+                  BaseTypeVisitor.purityKindsToString(assumed),
+                  ElementUtils.getSimpleDescription(declaration),
+                  BaseTypeVisitor.purityKindsToString(provided));
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    /**
+     * Returns the index of the functional interface method's parameter that corresponds to the
+     * referenced method's first parameter. It is 1 for an unbound method reference such as {@code
+     * Collection::clear}, whose functional interface method's first parameter is the referenced
+     * method's receiver; then the interface method's parameter {@code #(i+1)} is the referenced
+     * method's parameter {@code #i}. It is 0 for every other method reference.
+     *
+     * <p>This method requires that {@link #overriderTree} is a method reference.
+     *
+     * @return 1 if the method reference is unbound, and 0 otherwise
+     */
+    private int methodRefParameterOffset() {
+      return MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+              .isUnbound()
+          ? 1
+          : 0;
+    }
+
+    /**
+     * Returns the purity kinds of {@code method}, including {@link PurityKind#SIDE_EFFECTS_ONLY} if
+     * {@code method} is not side-effect-free and has or inherits a {@code @SideEffectsOnly}
+     * annotation.
+     *
+     * <p>{@link PurityUtils#getPurityKinds} never reports {@link PurityKind#SIDE_EFFECTS_ONLY}.
+     * {@code @SideEffectsOnly} is not inherited as an annotation; see {@link
+     * AnnotatedTypeFactory#getSideEffectsOnlyExpressionMap}.
+     *
+     * @param method a method
+     * @param isImplementation true if {@code method} is the referenced method, which implements the
+     *     functional interface method. If so, the result also includes what the command-line
+     *     assumptions, such as {@code -AassumeSideEffectFree}, grant {@code method}, and it
+     *     includes {@link PurityKind#DETERMINISTIC} if {@code method} is side-effect-free and
+     *     returns void; see {@link #implementationPurityKinds}.
+     * @return the purity kinds of {@code method}
+     */
+    private EnumSet<PurityKind> purityKinds(ExecutableElement method, boolean isImplementation) {
+      EnumSet<PurityKind> result =
+          isImplementation
+              ? implementationPurityKinds(method)
+              : PurityUtils.getPurityKinds(atypeFactory, method);
+      if (!result.contains(PurityKind.SIDE_EFFECT_FREE)
+          && atypeFactory.getSideEffectsOnlyExpressionMap(method) != null) {
+        result.add(PurityKind.SIDE_EFFECTS_ONLY);
+      }
+      return result;
+    }
+
+    /**
+     * Returns true if the overriding method's {@code @SideEffectsOnly} annotation permits no more
+     * side effects than the overridden method's does. That is the case when every expression in the
+     * overrider's annotation is covered by some expression in the overridden method's annotation:
+     * it is that expression, or it is reached through it.
+     *
+     * <p>This method requires that both the overrider and the overridden method are annotated with
+     * {@code @SideEffectsOnly}.
+     *
+     * @return true if the overrider's side effects are within the overridden method's
+     */
+    private boolean sideEffectsOnlyIsNarrowed() {
+      Map<ExecutableElement, List<String>> seOnlySuperStrings =
+          atypeFactory.getSideEffectsOnlyExpressionMap(overridden.getElement());
+      Map<ExecutableElement, List<String>> seOnlySubStrings =
+          atypeFactory.getSideEffectsOnlyExpressionMap(overrider.getElement());
+      if (seOnlySuperStrings == null || seOnlySubStrings == null) {
+        throw new BugInCF(
+            "sideEffectsOnlyIsNarrowed requires @SideEffectsOnly on both methods: %s %s",
+            overridden.getElement(), overrider.getElement());
+      }
+
+      List<JavaExpression> seOnlySuperExpressions = parseSideEffectsOnly(seOnlySuperStrings);
+      List<JavaExpression> seOnlySubExpressions = parseReceiverRelative(seOnlySubStrings);
+      if (seOnlySuperExpressions == null || seOnlySubExpressions == null) {
+        // An argument could not be parsed, so the annotations cannot be compared.  The strings
+        // cannot be compared instead, because the two methods' parameters need not correspond
+        // positionally.  The parse error itself is reported at the declaration that contains it,
+        // if that declaration is being compiled; if it appears in a stub file or in another
+        // compilation unit, it is reported nowhere.
+        return false;
+      }
+
+      seOnlySubExpressions = atFunctionalInterfaceMethod(seOnlySubExpressions);
+      if (seOnlySubExpressions == null) {
+        return false;
+      }
+
+      for (JavaExpression seOnlySubExpression : seOnlySubExpressions) {
+        if (!isPermittedSideEffect(seOnlySubExpression, seOnlySuperExpressions)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Parses the given {@code @SideEffectsOnly} expressions, as {@link #parseSideEffectsOnly} does,
+     * but replaces each {@code this} that is not the receiver of the method that declares it, such
+     * as {@code Outer.this}, by {@link Unknown}. Afterward, every {@link ThisReference} in the
+     * result is the receiver of the declaring method, and therefore of the method that inherits the
+     * annotation.
+     *
+     * @param expressionStrings {@code @SideEffectsOnly} expressions, indexed by the method whose
+     *     declaration contains them
+     * @return the parsed expressions, or null if any of them cannot be parsed
+     */
+    private @Nullable List<JavaExpression> parseReceiverRelative(
+        Map<ExecutableElement, List<String>> expressionStrings) {
+      List<JavaExpression> result = new ArrayList<>();
+      for (Map.Entry<ExecutableElement, List<String>> entry : expressionStrings.entrySet()) {
+        List<JavaExpression> parsed =
+            parseSideEffectsOnly(Collections.singletonMap(entry.getKey(), entry.getValue()));
+        if (parsed == null) {
+          return null;
+        }
+        TypeElement declaringClass = ElementUtils.enclosingTypeElement(entry.getKey());
+        JavaExpressionConverter outerThisToUnknown =
+            new JavaExpressionConverter() {
+              @Override
+              protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+                // The parser gives the receiver `this` the type of the declaring class, and an
+                // outer `this`, whether written or implicit, the type of the outer class.
+                if (Objects.equals(declaringClass, TypesUtils.getTypeElement(thisExpr.getType()))) {
+                  return thisExpr;
+                }
+                return new Unknown(thisExpr.getType());
+              }
+            };
+        for (JavaExpression expr : parsed) {
+          result.add(outerThisToUnknown.convert(expr));
+        }
+      }
+      return result;
+    }
+
+    /**
+     * Translates expressions written at the declaration of the method that a method reference
+     * refers to, into the frame of the functional interface method that the reference implements.
+     *
+     * <p>The two methods' parameters do not necessarily correspond positionally; see {@link
+     * #methodRefParameterOffset}. When the referenced method is invoked with variable arity, an
+     * element {@code #n[k]} of its varargs parameter {@code #n} is the interface method's
+     * corresponding parameter, provided that the referenced method cannot reassign the element (see
+     * {@link BaseTypeVisitor#varargsElementsMightBeReassigned}); any other use of {@code #n} has no
+     * counterpart there, because the array is created for the call.
+     *
+     * <p>For an unbound reference, {@code this} and {@code super} are the interface method's first
+     * parameter. For a constructor reference, the expression {@code this} is dropped, because the
+     * object under construction did not exist before the call. An expression that is reached
+     * through that object, such as {@code this.f}, may denote an object that existed before the
+     * call, but the interface method's annotation cannot name it; this method returns null in that
+     * case. For a bound or {@code super} reference, {@code this} is the bound receiver, which the
+     * interface method's annotation cannot name either; this method returns null in that case too.
+     *
+     * <p>This method requires that {@link #overriderTree} is a method reference.
+     *
+     * @param subExpressions expressions written at the referenced method's declaration, as returned
+     *     by {@link #parseReceiverRelative}
+     * @return the expressions written at the interface method's declaration, or null if some
+     *     expression has no counterpart there
+     */
+    private @Nullable List<JavaExpression> atFunctionalInterfaceMethod(
+        List<JavaExpression> subExpressions) {
+      MemberReferenceKind methodRefKind =
+          MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree);
+      List<FormalParameter> superParameters =
+          JavaExpression.getFormalParameters(overridden.getElement());
+      int shift = methodRefParameterOffset();
+      int subParameterCount = overrider.getElement().getParameters().size();
+      // True if the referenced method is invoked with variable arity:  the interface method's
+      // parameters from the varargs position onward become the elements of a new array, which is
+      // the referenced method's varargs parameter.  That is so even when the two methods have the
+      // same number of parameters.
+      boolean varargsAdapted = TreeUtils.hasVarargsParameter((MemberReferenceTree) overriderTree);
+      // The parameter correspondence matters only if some expression refers to a formal parameter.
+      // It does not matter for `this`:  for an unbound reference, `this` is always the interface
+      // method's first parameter, and otherwise `this` has no counterpart regardless of arity.
+      boolean needsCorrespondence =
+          subExpressions.stream().anyMatch(e -> e.containsOfClass(FormalParameter.class));
+      if (needsCorrespondence
+          && !varargsAdapted
+          && superParameters.size() != subParameterCount + shift) {
+        // The parameters do not correspond one-to-one.  Do not guess at a correspondence.
+        reportParametersDoNotCorrespond();
+        return null;
+      }
+
+      // Set to true if an expression uses the varargs array other than through a constant index.
+      // That array is created for the call, so it has no counterpart at the interface method.
+      boolean[] usesVarargsArray = {false};
+      JavaExpressionConverter converter =
+          new JavaExpressionConverter() {
+            @Override
+            protected JavaExpression visitFormalParameter(FormalParameter parameter, Void unused) {
+              if (varargsAdapted && parameter.getIndex() == subParameterCount) {
+                usesVarargsArray[0] = true;
+                return new Unknown(parameter.getType());
+              }
+              return superParameters.get(parameter.getIndex() - 1 + shift);
+            }
+
+            @Override
+            protected JavaExpression visitArrayAccess(ArrayAccess arrayAccess, Void unused) {
+              // Under variable-arity invocation, element `k` of the varargs array is the interface
+              // method's parameter at the varargs position plus `k`.
+              // That holds only if the element still holds the argument when the effect occurs; see
+              // `varargsElementsMightBeReassigned`.
+              if (varargsAdapted
+                  && arrayAccess.getArray() instanceof FormalParameter array
+                  && array.getIndex() == subParameterCount
+                  && arrayAccess.getIndex() instanceof ValueLiteral indexLiteral
+                  && indexLiteral.getValue() instanceof Integer k) {
+                // The index of the interface method's parameter that is element 0.
+                int firstVarargsIndex = subParameterCount - 1 + shift;
+                // Compare `k` before adding to it, because the sum can overflow.
+                if (k >= 0
+                    && k < superParameters.size() - firstVarargsIndex
+                    && !varargsElementsMightBeReassigned(overrider.getElement())) {
+                  return superParameters.get(firstVarargsIndex + k);
+                }
+              }
+              return super.visitArrayAccess(arrayAccess, unused);
+            }
+
+            @Override
+            protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+              return receiverAtFunctionalInterfaceMethod(thisExpr.getType());
+            }
+
+            @Override
+            protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+              // `super.f` is field `f` of the receiver, as declared in the superclass.  The field
+              // access that contains this reference retains that field.
+              return receiverAtFunctionalInterfaceMethod(superExpr.getType());
+            }
+
+            /*
+             * Returns the expression at the interface method's declaration that denotes the
+             * referenced method's receiver.
+             *
+             * @param type the type of the receiver expression being translated
+             * @return the interface method's first parameter for an unbound reference, or {@link
+             *     Unknown} otherwise
+             */
+            private JavaExpression receiverAtFunctionalInterfaceMethod(TypeMirror type) {
+              if (methodRefKind.isUnbound()) {
+                return superParameters.get(0);
+              }
+              // The receiver is fixed by the method reference itself, or is the object under
+              // construction, so no expression at the interface method's declaration denotes it.
+              // `Unknown` is never covered.
+              return new Unknown(type);
+            }
+          };
+
+      List<JavaExpression> result = new ArrayList<>(subExpressions.size());
+      for (JavaExpression subExpression : subExpressions) {
+        if (methodRefKind.isConstructorReference() && subExpression instanceof ThisReference) {
+          // The object under construction did not exist before the call, so modifying it is not a
+          // side effect that is visible to the caller.
+          continue;
+        }
+        JavaExpression converted = converter.convert(subExpression);
+        if (usesVarargsArray[0]) {
+          reportParametersDoNotCorrespond();
+          return null;
+        }
+        if (converted.containsOfClass(Unknown.class)) {
+          return null;
+        }
+        result.add(converted);
+      }
+      return result;
+    }
+
+    /**
+     * Warns that the referenced method's {@code @SideEffectsOnly} annotation cannot be translated
+     * to the interface method's frame, because the two methods' parameters do not correspond. That
+     * is the case when the arities differ, or when the annotation mentions the varargs array that a
+     * variable-arity invocation creates.
+     */
+    private void reportParametersDoNotCorrespond() {
+      checker.reportWarning(
+          overriderTree,
+          "purity.parameters.sideeffectsonly",
+          ElementUtils.getSimpleDescription(overrider.getElement()),
+          methodSignature(overrider.getElement()),
+          methodSignature(overridden.getElement()));
+    }
+
+    /**
+     * Formats purity kinds for a diagnostic message, as {@link
+     * BaseTypeVisitor#purityKindsToString(EnumSet)} does, but with the arguments of the method's
+     * {@link SideEffectsOnly} annotation.
+     *
+     * @param purityKinds a set of purity kinds
+     * @param method the method that {@code purityKinds} are the purity kinds of, used to print the
+     *     arguments of its {@link SideEffectsOnly} annotation
+     * @return the annotations corresponding to {@code purityKinds}, space-separated
+     */
+    private String purityKindsToString(EnumSet<PurityKind> purityKinds, ExecutableElement method) {
+      if (!purityKinds.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+        return BaseTypeVisitor.purityKindsToString(purityKinds);
+      }
+      return BaseTypeVisitor.purityKindsToString(purityKinds, sideEffectsOnlyToString(method));
+    }
+
+    /**
+     * Formats the given method's {@link SideEffectsOnly} annotation, with its arguments, as a user
+     * would write it.
+     *
+     * @param method a method that is annotated with {@link SideEffectsOnly}
+     * @return the method's {@link SideEffectsOnly} annotation, as a user would write it
+     */
+    private String sideEffectsOnlyToString(ExecutableElement method) {
+      return sideEffectsOnlyToString(atypeFactory.getSideEffectsOnlyExpressionMap(method));
     }
 
     /**
@@ -5376,11 +6132,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private void checkSideEffectsOnly() {
       if (isMethodReference) {
-        // TODO: Check a method reference against the `@SideEffectsOnly` annotation of the
-        // functional interface method.  The two annotations are written in unrelated scopes:  the
-        // referenced method's formal parameters do not correspond to the interface method's when
-        // the receiver of the reference stands for the interface method's first parameter.
-        // Comparing them requires viewpoint adaptation that this check does not perform.
+        // `checkMethodReferencePurity` checks a method reference against the `@SideEffectsOnly`
+        // annotation of the functional interface method.
         return;
       }
       Map<ExecutableElement, List<String>> overriddenExpressionStrings =
