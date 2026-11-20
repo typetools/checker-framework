@@ -1127,12 +1127,14 @@ path-separated list of IntelliJ IDEA annotation files, directories, and
 An annotation file that is named directly may have any name (but a name
 ending with \<.jar> or \<.zip>, in any case, denotes an archive).
 Within a directory or archive, every file named \code{annotations.xml} is
-read, wherever it appears, and no other file is read.
+read, wherever it appears, and no other file is read, with two exceptions.
+First, an archive within a directory is not read; the Checker Framework
+issues a note about it.  Name each archive in the list.  Second, a file
+within a hidden directory (one whose name starts with ``\<.>'') within a
+directory or archive is not read, such as \<.backup/annotations.xml>.
 (By convention, IntelliJ IDEA places each \code{annotations.xml} file in a
 directory whose path matches the package name of the elements it annotates,
 but the Checker Framework does not require that layout.)
-An archive within a directory is not read; the Checker Framework issues a
-note about it.  Name each archive in the list.
 The path separator is colon on Unix and semicolon on Windows.
 
 For example:
