@@ -4560,6 +4560,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     @Override
+    public Void visitBinary(BinaryTree tree, Void p) {
+      // String conversion of an operand that is a non-String reference calls its toString().
+      if (tree.getKind() == Tree.Kind.PLUS
+          && TypesUtils.isString(TreeUtils.typeOf(tree))
+          && (callsToStringInConcatenation(TreeUtils.typeOf(tree.getLeftOperand()))
+              || callsToStringInConcatenation(TreeUtils.typeOf(tree.getRightOperand())))) {
+        mightHaveSideEffects = true;
+      }
+      return super.visitBinary(tree, p);
+    }
+
+    /**
+     * Returns true if string conversion of an operand of type {@code type}, in a string
+     * concatenation, might call a {@code toString()} method.
+     *
+     * @param type the type of a string concatenation operand
+     * @return true if string conversion of a value of type {@code type} might call {@code
+     *     toString()}
+     */
+    private boolean callsToStringInConcatenation(TypeMirror type) {
+      TypeKind kind = type.getKind();
+      return !kind.isPrimitive() && kind != TypeKind.NULL && !TypesUtils.isString(type);
+    }
+
+    @Override
     public Void visitUnary(UnaryTree tree, Void p) {
       switch (tree.getKind()) {
         case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT ->
