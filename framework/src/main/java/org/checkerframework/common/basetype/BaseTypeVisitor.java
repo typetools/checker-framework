@@ -1983,8 +1983,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
    * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
-   * operand of a binary operator such as {@code ==}, as the value of an assignment, of a variable
-   * initializer, or of a return statement, or as the receiver of a call to a method other than
+   * operand of a binary operator such as {@code ==}, as the destination or the value of an
+   * assignment, as the value of a variable initializer or of a return statement, or as the
+   * receiver of a call to a method other than
    * {@code parameterFunction} and its overrides, such as {@code hashCode}. An override of {@code
    * method} can rely on the purity that {@code method} promises of its arguments.
    *
@@ -2098,9 +2099,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Overwriting {@link #parameter} does not read the argument, so the destination is not a
+     * use if it is {@link #parameter} itself. A compound destination, such as an array access, is
+     * scanned, because its subexpressions are evaluated.
+     */
     @Override
     public Void visitAssignment(AssignmentTree tree, Void p) {
-      scan(tree.getVariable(), p);
+      scanUnlessParameter(tree.getVariable());
       scanUnlessParameter(tree.getExpression());
       return null;
     }

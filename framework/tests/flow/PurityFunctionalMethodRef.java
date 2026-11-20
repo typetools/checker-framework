@@ -124,11 +124,29 @@ public class PurityFunctionalMethodRef {
     return applyStatic(f, s);
   }
 
+  @SideEffectFree
+  static int overwriteStatic(Function<String, Integer> f, String s) {
+    f = null;
+    return 0;
+  }
+
+  @SideEffectFree
+  static int overwriteArrayStatic(Function<String, Integer> f, String s) {
+    int[] a = new int[1];
+    // :: error: [purity.assign.array]
+    a[f.apply(s)] = 0;
+    return 0;
+  }
+
   void bodyDoesNotRelyOnParameter() {
     // None of these bodies relies on the purity of f, so no call can make one run impure code.
     UnannotatedApplier a = PurityFunctionalMethodRef::ignoreStatic;
     UnannotatedApplier b = PurityFunctionalMethodRef::storeStatic;
     UnannotatedApplier c = this::ignoreFinal;
+    UnannotatedApplier f = PurityFunctionalMethodRef::overwriteStatic;
+    // The index of the array access calls f.
+    // :: error: [purity.methodref.functional.parameter]
+    UnannotatedApplier g = PurityFunctionalMethodRef::overwriteArrayStatic;
     // An override of ignoreOverridable might call f.
     // :: error: [purity.methodref.functional.parameter]
     UnannotatedApplier d = this::ignoreOverridable;
@@ -137,10 +155,61 @@ public class PurityFunctionalMethodRef {
     UnannotatedApplier e = PurityFunctionalMethodRef::passStatic;
   }
 
+  /** A subinterface that redeclares {@code Function.apply}, with no purity annotation. */
+  @FunctionalInterface
+  interface PlainFunction extends Function<String, Integer> {
+    @Override
+    Integer apply(String s);
+  }
+
+  @FunctionalInterface
+  interface PlainSubApplier {
+    @SideEffectFree
+    int apply(PlainFunction f, String s);
+  }
+
   void contravariantCallbackParameter() {
     // A call through SubApplier passes a PureFunction, whose apply is what applyStatic's call to
     // Function.apply runs.
     SubApplier a = PurityFunctionalMethodRef::applyStatic;
+    // PlainFunction.apply promises nothing, but a call through PlainSubApplier.apply checks that
+    // its argument's implementation of PlainFunction.apply, which is also its implementation of
+    // Function.apply, is side-effect-free.
+    PlainSubApplier b = PurityFunctionalMethodRef::applyStatic;
+  }
+
+  /** A class, not a functional interface, that implements {@code Function.apply} purely. */
+  static final class PureImpl implements Function<String, Integer> {
+    @Override
+    @SideEffectFree
+    public Integer apply(String s) {
+      return 0;
+    }
+  }
+
+  /** A class, not a functional interface, that implements {@code Function.apply} impurely. */
+  static final class ImpureImpl implements Function<String, Integer> {
+    @Override
+    public Integer apply(String s) {
+      return 0;
+    }
+  }
+
+  @FunctionalInterface
+  interface PureImplApplier {
+    int apply(PureImpl f, String s);
+  }
+
+  @FunctionalInterface
+  interface ImpureImplApplier {
+    int apply(ImpureImpl f, String s);
+  }
+
+  void classCallbackParameter() {
+    // Every argument is a PureImpl, whose apply is side-effect-free.
+    PureImplApplier a = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    ImpureImplApplier b = PurityFunctionalMethodRef::applyStatic;
   }
 
   /**
