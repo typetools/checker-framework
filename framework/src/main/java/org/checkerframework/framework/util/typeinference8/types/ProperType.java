@@ -742,7 +742,7 @@ public class ProperType extends AbstractType {
     }
     ReplacedTypes compared =
         IgnoredAnnotations.replaceIgnoredForEquality(
-            this, other, typeFactory.getQualifierHierarchy());
+            this, other, typeFactory.getQualifierHierarchy(), context.modelTypes);
     AnnotatedTypeMirror thisATM = compared.type1();
     AnnotatedTypeMirror otherATM = compared.type2();
     // Compare using the type hierarchy in both directions rather than AnnotatedTypeMirror#equals,
