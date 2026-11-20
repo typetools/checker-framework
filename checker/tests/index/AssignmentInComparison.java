@@ -3,6 +3,7 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 // A comparison of an assignment refines only the sides that have the assigned value afterward.
 public class AssignmentInComparison {
@@ -64,6 +65,30 @@ public class AssignmentInComparison {
     if ((x = y) + z < a.length) {
       @LTLengthOf(value = "a", offset = "z") int w = x;
       @LTLengthOf(value = "a", offset = "z") int v = y;
+    }
+  }
+
+  @SideEffectFree
+  static int choose() {
+    return (int) System.nanoTime();
+  }
+
+  @Pure
+  static int deterministic() {
+    return 1;
+  }
+
+  static void nondeterministicOffset(int[] a, int x, int y) {
+    if ((x = y) + choose() < a.length) {
+      // Another call to `choose()` might return a different value than the one added to `x`.
+      // :: error: [assignment]
+      @LTLengthOf(value = "a", offset = "choose()") int w = x;
+    }
+  }
+
+  static void deterministicOffset(int[] a, int x, int y) {
+    if ((x = y) + deterministic() < a.length) {
+      @LTLengthOf(value = "a", offset = "deterministic()") int w = x;
     }
   }
 

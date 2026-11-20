@@ -304,8 +304,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * <p>A symbolic offset such as {@code z} denotes the value of {@code z} at the point where the
    * store is used, but the fact being recorded is about the value that {@code offsetNode} had when
    * it was evaluated. If that value might change before the comparison completes, as {@code z}
-   * does in {@code (x = y) + z < (z = a.length)}, then this method uses only the compile-time
-   * constant value of {@code offsetNode}, if there is one, and otherwise returns UNKNOWN.
+   * does in {@code (x = y) + z < (z = a.length)}, or if it is not deterministic, as {@code choose()}
+   * is in {@code (x = y) + choose() < a.length} for a nondeterministic method {@code choose}, then
+   * this method uses only the compile-time constant value of {@code offsetNode}, if there is one,
+   * and otherwise returns UNKNOWN.
    *
    * @param qualifier the qualifier to offset
    * @param offsetNode a node in an operand of a comparison, whose value is the offset
@@ -313,7 +315,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * @return {@code qualifier} plus or minus the value of {@code offsetNode}
    */
   private UBQualifier offsetByComparedNode(UBQualifier qualifier, Node offsetNode, char op) {
-    if (nodesWithValueOf(offsetNode).contains(offsetNode)) {
+    if (nodesWithValueOf(offsetNode).contains(offsetNode)
+        && JavaExpression.fromNode(offsetNode).isDeterministic(atypeFactory)) {
       return op == '+'
           ? qualifier.plusOffset(offsetNode, atypeFactory)
           : qualifier.minusOffset(offsetNode, atypeFactory);

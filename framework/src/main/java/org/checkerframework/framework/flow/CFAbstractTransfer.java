@@ -29,6 +29,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -1009,8 +1010,9 @@ public abstract class CFAbstractTransfer<
    *       evaluated before {@code b[i]}.
    * </ul>
    *
-   * A method call, object creation, or string conversion (which calls {@code toString()}) might
-   * write any field or array element, unless the method or constructor is side-effect-free (see
+   * A method call, object creation, string conversion (which calls {@code toString()}), or record
+   * pattern (which calls record component accessors) might write any field or array element, unless
+   * the method or constructor is side-effect-free (see
    * {@link AnnotatedTypeFactory#isSideEffectFree}). The result omits a field that such a call might
    * write even when the store would keep the field's refinement across the call, as it does for a
    * refinement to the target of a monotonic qualifier (see {@link
@@ -1300,9 +1302,10 @@ public abstract class CFAbstractTransfer<
    * field, or an array element, such as {@code x}, {@code o.f}, or {@code a[i]}. {@link #add} adds
    * a write to a given location, and {@link #scan} adds the writes that evaluating a tree might
    * perform: its assignments, compound assignments, increments, decrements, method calls, object
-   * creations, and string conversions. A method call, object creation, or string conversion (which
-   * calls {@code toString()}) might write every non-final field and every array element, unless the
-   * method or constructor is side-effect-free; {@link #anyHeapLocation} records that.
+   * creations, string conversions, and record patterns. A method call, object creation, string
+   * conversion (which calls {@code toString()}), or record pattern (which calls record component
+   * accessors) might write every non-final field and every array element, unless the method or
+   * constructor is side-effect-free; {@link #anyHeapLocation} records that.
    *
    * <p>{@link #scan} does not descend into lambda bodies or class bodies, because they do not
    * execute when the tree is evaluated. The writes of such a body to fields and array elements are
@@ -1357,7 +1360,8 @@ public abstract class CFAbstractTransfer<
     /**
      * Adds the writes that the given tree performs itself, after its subtrees are evaluated: the
      * write of an assignment, compound assignment, increment, or decrement, and the writes of a
-     * method call, object creation, or string conversion. Does not add the writes of the subtrees.
+     * method call, object creation, string conversion, or record pattern. Does not add the writes
+     * of the subtrees.
      *
      * @param tree a tree
      */
@@ -1384,6 +1388,31 @@ public abstract class CFAbstractTransfer<
         addCall(TreeUtils.elementFromUse(newClassTree));
       } else if (tree instanceof BinaryTree binaryTree && tree.getKind() == Tree.Kind.PLUS) {
         addStringConversions(binaryTree.getLeftOperand(), binaryTree.getRightOperand());
+      } else if (TreeUtils.isDeconstructionPatternTree(tree)) {
+        addRecordAccessorCalls(tree);
+      }
+    }
+
+    /**
+     * Adds the writes of the calls to record component accessors that matching the given record
+     * pattern performs, such as the call to {@code x()} when matching {@code R(var x)}. The writes
+     * of nested record patterns are added when they are scanned.
+     *
+     * @param deconstructionPattern a record pattern (a {@code DeconstructionPatternTree})
+     */
+    private void addRecordAccessorCalls(Tree deconstructionPattern) {
+      TypeElement record = TypesUtils.getTypeElement(TreeUtils.typeOf(deconstructionPattern));
+      if (record == null || record.getKind() != ElementKind.RECORD) {
+        anyHeapLocation = true;
+        return;
+      }
+      for (RecordComponentElement component : record.getRecordComponents()) {
+        ExecutableElement accessor = component.getAccessor();
+        if (accessor == null) {
+          anyHeapLocation = true;
+        } else {
+          addCall(accessor);
+        }
       }
     }
 
