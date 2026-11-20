@@ -3586,15 +3586,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Look up the method to invoke.  The access does not throw a NullPointerException, because the
-    // receiver is tested for nullness only after the arguments are evaluated.  The
-    // MethodInvocationNode, which follows the arguments, may throw any RuntimeException, including
-    // a NullPointerException for a null receiver.
+    // The receiver is evaluated before the arguments.
     Node receiver = getReceiver(methodSelect);
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
-
-    extendWithNode(target);
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -3608,6 +3603,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
+
+    // Look up the method to invoke, which tests the receiver for nullness after the arguments are
+    // evaluated.  The NullPointerException for a null receiver is thrown here rather than by the
+    // MethodInvocationNode, so its exceptional store is the one before the call, without any
+    // postcondition of the method, which never ran.
+    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
 
     // TODO: lock the receiver for synchronized methods
 

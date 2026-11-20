@@ -420,18 +420,20 @@ public class NullnessTransfer
     boolean isMethodSideEffectFree = atypeFactory.isSideEffectFree(method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
-    // The receiver is refined here, after the invocation completes normally, rather than at the
-    // MethodAccessNode.  A call tests its receiver for nullness after evaluating its arguments, so
-    // neither the arguments nor a handler for the call's NullPointerException may assume that the
-    // receiver is non-null.
+    // The receiver is refined here, after the invocation completes normally.  A call tests its
+    // receiver for nullness after evaluating its arguments (at the MethodAccessNode, which follows
+    // the arguments), so neither the arguments nor a handler for the NullPointerException may
+    // assume that the receiver is non-null.
     // The refinement applies to the receiver expression, not to the value that was evaluated
     // before the arguments, so it is skipped if evaluating the arguments might reassign the
-    // receiver expression, as in `r.m(r = null)`.
+    // receiver expression, as in `r.m(r = null)`.  It is also skipped for a synthetic invocation
+    // that has no tree, whose arguments cannot be examined.
     JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
     if (!n.getTarget().isStatic()
         && (nonNullAssumptionAfterInvocation
             || isMethodSideEffectFree
             || !receiverExpr.isAssignableByOtherCode())
+        && tree != null
         && !argumentsMayReassign(tree.getArguments(), receiverExpr)) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
