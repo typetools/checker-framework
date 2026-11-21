@@ -475,8 +475,8 @@ public final class PathStringToPathShape {
   }
 
   /**
-   * Returns the length of the prefix of a normalized Windows {@code File} path string, as {@code
-   * WinNTFileSystem.prefixLength} does.
+   * Returns the length of the prefix of the given normalized Windows {@code File} path string, as
+   * {@code WinNTFileSystem.prefixLength} does.
    *
    * @param path a normalized path string
    * @return the length of the prefix: 0 for a path with no root, such as {@code foo}; 1 for a path
