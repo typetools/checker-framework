@@ -139,9 +139,9 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Returns a collection of all inference variables mentioned by this constraint.
+   * Returns a collection of all inference variables contained in this constraint.
    *
-   * @return a collection of all inference variables mentioned by this constraint
+   * @return a collection of all inference variables contained in this constraint
    */
   public Collection<Variable> getInferenceVariables() {
     return T.getInferenceVariables();
@@ -149,7 +149,7 @@ public abstract class TypeConstraint implements Constraint {
 
   /**
    * For lambda and method reference constraints, input variables are roughly the inference
-   * variables mentioned by the function type's parameter types and return types. For conditional
+   * variables contained in the function type's parameter types and return types. For conditional
    * expression constraints and switch expression constraints, input variables are the union of the
    * input variables of its subexpressions. For all other constraints, no input variables exist.
    *
@@ -253,10 +253,10 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Returns the inference variables mentioned by the parameter types of the function type of {@code
+   * Returns the inference variables contained in the parameter types of the function type of {@code
    * T}, or null if {@code T} is not a functional interface type.
    *
-   * @return the inference variables mentioned by the parameter types of the function type of {@code
+   * @return the inference variables contained in the parameter types of the function type of {@code
    *     T}, or null if {@code T} is not a functional interface type
    */
   protected @Nullable List<Variable> functionTypeParameterVariables() {
@@ -272,8 +272,8 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Applies the given instantiations to any type mentioned in this constraint -- that is, replaces
-   * any mention of a variable in {@code instantiations} with its proper type.
+   * Applies the instantiations of inference variables to the types in this constraint -- that is,
+   * replaces each occurrence of an instantiated variable with its proper type.
    */
   public void applyInstantiations() {
     T = T.applyInstantiations();
