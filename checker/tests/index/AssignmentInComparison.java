@@ -17,6 +17,11 @@ public class AssignmentInComparison {
     return c;
   }
 
+  @NonNegative int resetArr(int[] c) {
+    arr = c;
+    return 0;
+  }
+
   @Pure
   @NonNegative int size() {
     return f;
@@ -82,13 +87,15 @@ public class AssignmentInComparison {
     if ((x = y) + choose() < a.length) {
       // Another call to `choose()` might return a different value than the one added to `x`.
       // :: error: [assignment]
-      @LTLengthOf(value = "a", offset = "choose()") int w = x;
+      @LTLengthOf(value = "a", offset = "choose()")
+      int w = x;
     }
   }
 
   static void deterministicOffset(int[] a, int x, int y) {
     if ((x = y) + deterministic() < a.length) {
-      @LTLengthOf(value = "a", offset = "deterministic()") int w = x;
+      @LTLengthOf(value = "a", offset = "deterministic()")
+      int w = x;
     }
   }
 
@@ -97,6 +104,30 @@ public class AssignmentInComparison {
       // `setArr` sets `this.arr` to `c`, which might not have the same length as `b`.
       // :: error: [assignment]
       int @SameLen("b") [] x = this.arr;
+    }
+  }
+
+  void otherOperandReassignsArrayOfGreater(@LTLengthOf("arr") int x, int i, int[] c) {
+    if (x > (i = (arr = c).length)) {
+      // `x` is less than the length of the array that `arr` referred to before the right operand
+      // reassigned `arr`.  `i` is the length of the new array.
+      // :: error: [assignment]
+      @LTLengthOf("arr") int y = i;
+    }
+  }
+
+  void otherOperandReassignsArrayOfGreaterOrEqual(@LTLengthOf("arr") int x, int i, int[] c) {
+    if (x >= (i = (arr = c).length)) {
+      // :: error: [assignment]
+      @LTLengthOf("arr") int y = i;
+    }
+  }
+
+  void otherOperandCallReassignsArray(@LTLengthOf("arr") int x, @NonNegative int i, int[] c) {
+    if (x > i + resetArr(c)) {
+      // `resetArr` reassigns `arr`, so `i` might not be less than the length of the new array.
+      // :: error: [assignment]
+      @LTLengthOf("arr") int y = i;
     }
   }
 }

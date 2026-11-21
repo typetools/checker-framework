@@ -108,6 +108,7 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1012,9 +1013,9 @@ public abstract class CFAbstractTransfer<
    *
    * A method call, object creation, string conversion (which calls {@code toString()}), or record
    * pattern (which calls record component accessors) might write any field or array element, unless
-   * the method or constructor is side-effect-free (see
-   * {@link AnnotatedTypeFactory#isSideEffectFree}). The result omits a field that such a call might
-   * write even when the store would keep the field's refinement across the call, as it does for a
+   * the method or constructor is side-effect-free (see {@link
+   * AnnotatedTypeFactory#isSideEffectFree}). The result omits a field that such a call might write
+   * even when the store would keep the field's refinement across the call, as it does for a
    * refinement to the target of a monotonic qualifier (see {@link
    * org.checkerframework.framework.qual.MonotonicQualifier}): whether the store keeps a refinement
    * depends on the refined value, which this method does not know.
@@ -1249,6 +1250,52 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns true if the given annotation contains a Java expression whose value might change after
+   * the given node is evaluated and before the comparison (such as {@code ==} or {@code <}) that
+   * contains the node completes. The Java expressions in an annotation are the strings that {@link
+   * DependentTypesHelper} parses, such as {@code "a"} in {@code @LTLengthOf("a")}.
+   *
+   * <p>An annotation of {@code node} describes the values that the expressions in the annotation
+   * had when {@code node} was evaluated. A client that uses the annotation to refine a different
+   * node according to the outcome of the comparison can call this method to discard an annotation
+   * that might no longer hold when the comparison completes. For example, in {@code x > (i = (b =
+   * c).length)}, the type {@code @IndexFor("b")} of {@code x} is about the array that {@code b}
+   * referred to before the right operand reassigned {@code b}, so it does not imply that {@code i}
+   * is an index for {@code b} afterward.
+   *
+   * @param anno an annotation of {@code node}
+   * @param node a node in an operand of a comparison
+   * @return true if {@code anno} contains a Java expression whose value might change after {@code
+   *     node} is evaluated and before the comparison completes
+   */
+  protected boolean containsExpressionChangedBeforeComparisonCompletes(
+      AnnotationMirror anno, Node node) {
+    DependentTypesHelper dependentTypesHelper = analysis.atypeFactory.getDependentTypesHelper();
+    if (!dependentTypesHelper.hasDependentAnnotations()) {
+      return false;
+    }
+    TreePath path = sourcePath(node);
+    if (path == null) {
+      return false;
+    }
+    WrittenLocations written = locationsWrittenUntilComparison(node);
+    if (written.isEmpty()) {
+      return false;
+    }
+    boolean[] result = {false};
+    dependentTypesHelper.convertAnnotationMirror(
+        expression -> {
+          JavaExpression expr = analysis.atypeFactory.parseJavaExpressionString(expression, path);
+          if (written.mayChange(expr, false)) {
+            result[0] = true;
+          }
+          return expr;
+        },
+        anno);
+    return result[0];
+  }
+
+  /**
    * Returns the path to the tree of the given node. If the node has no tree, or if its tree is not
    * in the compilation unit (as for the artificial tree of an unboxing conversion), returns the
    * result of this method for the first operand of the node for which that result is non-null.
@@ -1336,6 +1383,15 @@ public abstract class CFAbstractTransfer<
 
     /** Creates an empty set of locations. */
     WrittenLocations() {}
+
+    /**
+     * Returns true if no location might be written.
+     *
+     * @return true if no location might be written
+     */
+    boolean isEmpty() {
+      return locals.isEmpty() && fields.isEmpty() && arrayElements.isEmpty() && !anyHeapLocation;
+    }
 
     /**
      * Adds a write to the given location.

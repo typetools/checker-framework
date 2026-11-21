@@ -36,7 +36,8 @@ public class ComparisonRecordPatternAccessor {
   }
 
   void impureAccessorInSwitch(Impure r, String expected) {
-    if (g == (switch (r) {
+    if (g
+        == (switch (r) {
           case Impure(var x) -> expected;
         })) {
       // The accessor `x()` is called after `g` is read, and it sets `g` to null.
@@ -54,7 +55,8 @@ public class ComparisonRecordPatternAccessor {
   }
 
   void impureAccessorInNestedPattern(Outer o, String expected) {
-    if (g == (switch (o) {
+    if (g
+        == (switch (o) {
           case Outer(Impure(var x)) -> expected;
         })) {
       // The accessor `x()` is called after `g` is read, and it sets `g` to null.
@@ -64,7 +66,8 @@ public class ComparisonRecordPatternAccessor {
   }
 
   void pureAccessor(Pure1 r, String expected) {
-    if (g == (switch (r) {
+    if (g
+        == (switch (r) {
           case Pure1(var x) -> expected;
         })) {
       g.toString();
