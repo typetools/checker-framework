@@ -38,9 +38,11 @@ import org.checkerframework.javacutil.BugInCF;
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.4">JLS Section
  * 18.4</a>.
  *
- * <p>The entry points are two static methods, {@link #resolve(Collection, BoundSet,
- * Java8InferenceContext)} and {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, which
- * create {@link Resolution} objects that actually perform the resolution.
+ * <p>The entry points are the static methods {@link #resolve(Collection, BoundSet,
+ * Java8InferenceContext)}, {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, and {@link
+ * #resolveWithFreshTypeVariablesOnly}, which create {@link Resolution} objects that actually
+ * perform the resolution. {@link #resolveWithFreshTypeVariablesOnly} always uses the resolution
+ * algorithm for captured variables.
  */
 public final class Resolution {
 
@@ -56,6 +58,48 @@ public final class Resolution {
    */
   public static BoundSet resolve(
       Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
+    return resolve(as, boundSet, context, false);
+  }
+
+  /**
+   * Instantiates a set of variables, {@code as}. Unlike {@link #resolve(Collection, BoundSet,
+   * Java8InferenceContext)}, this never instantiates a variable from its proper lower or upper
+   * bounds. As JLS 18.5.5 specifies, it skips directly to the resolution step that introduces fresh
+   * type variables.
+   *
+   * <p>This method removes from {@code as} every variable that already has an instantiation.
+   *
+   * @param as the set of variables to resolve; this method removes elements from it
+   * @param boundSet the bound set that includes {@code as}
+   * @param context the inference context
+   * @return bound set where {@code as} have instantiations
+   */
+  public static BoundSet resolveWithFreshTypeVariablesOnly(
+      Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
+    return resolve(as, boundSet, context, true);
+  }
+
+  /**
+   * Like {@link #resolve(Collection, BoundSet, Java8InferenceContext)}, but if {@code
+   * freshTypeVariablesOnly} is true, skips directly to the resolution step that introduces fresh
+   * type variables and never instantiates a variable from its proper lower or upper bounds (JLS
+   * 18.5.5).
+   *
+   * <p>This method removes from {@code as} every variable that already has an instantiation.
+   *
+   * @param as the set of variables to resolve; this method removes elements from it
+   * @param boundSet the bound set that includes {@code as}
+   * @param context the inference context
+   * @param freshTypeVariablesOnly if true, skip directly to the resolution step that introduces
+   *     fresh type variables; if false, first try to instantiate each variable from its proper
+   *     lower or upper bounds
+   * @return bound set where {@code as} have instantiations
+   */
+  private static BoundSet resolve(
+      Collection<Variable> as,
+      BoundSet boundSet,
+      Java8InferenceContext context,
+      boolean freshTypeVariablesOnly) {
 
     // Remove any variables that already have instantiations
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
@@ -82,7 +126,7 @@ public final class Resolution {
     }
 
     // Resolve the variables
-    Resolution resolution = new Resolution(context, dependencies);
+    Resolution resolution = new Resolution(context, dependencies, freshTypeVariablesOnly);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
     return boundSet;
@@ -104,7 +148,7 @@ public final class Resolution {
 
     LinkedHashSet<Variable> unresolvedVars = new LinkedHashSet<>();
     unresolvedVars.add(a);
-    Resolution resolution = new Resolution(context, dependencies);
+    Resolution resolution = new Resolution(context, dependencies, false);
     boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
     return boundSet;
@@ -130,14 +174,25 @@ public final class Resolution {
   private final Dependencies dependencies;
 
   /**
+   * If true, resolution skips directly to the step that introduces fresh type variables, rather
+   * than instantiating a variable from its proper lower or upper bounds.
+   */
+  private final boolean freshTypeVariablesOnly;
+
+  /**
    * Creates a resolution.
    *
    * @param context the context
    * @param dependencies the dependencies
+   * @param freshTypeVariablesOnly if true, skip directly to the resolution step that introduces
+   *     fresh type variables; if false, first try to instantiate each variable from its proper
+   *     lower or upper bounds
    */
-  private Resolution(Java8InferenceContext context, Dependencies dependencies) {
+  private Resolution(
+      Java8InferenceContext context, Dependencies dependencies, boolean freshTypeVariablesOnly) {
     this.context = context;
     this.dependencies = dependencies;
+    this.freshTypeVariablesOnly = freshTypeVariablesOnly;
   }
 
   /**
@@ -201,6 +256,9 @@ public final class Resolution {
   /**
    * Resolves {@code as}.
    *
+   * <p>If {@link #freshTypeVariablesOnly} is true, this method uses only the resolution algorithm
+   * for captured variables, which introduces fresh type variables.
+   *
    * @param as the smallest set of unresolved variables that includes any variable on which a
    *     variable in the set depends
    * @param boundSet current bound set
@@ -208,6 +266,16 @@ public final class Resolution {
    */
   private BoundSet resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
     checkNoFalse(boundSet, "on entry to resolveSmallestSet for", as);
+
+    if (freshTypeVariablesOnly) {
+      // TODO: Two variables in `as` with an equal bound to each other, such as a record pattern's
+      // alpha and the beta for a captured wildcard, each get their own fresh type variable, and
+      // each variable ends up with the other variable's fresh type variable as an additional
+      // equal bound.  The upward projection of the record pattern's type removes both fresh type
+      // variables, so the extra equal bounds have no known effect.  Creating one fresh type
+      // variable per set of equal variables would avoid the extra equal bounds.
+      return resolveWithCapture(as, boundSet, context);
+    }
 
     if (boundSet.containsCapture(as)) {
       // Wait to resolve variables that have an equal bound to a capture variable that has not been
