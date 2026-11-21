@@ -346,11 +346,18 @@ public class AnnotationFileElementTypes {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top
         // level directory of the jar that contains the checker.
+        String namedPath = path;
         if (path.startsWith("checker.jar/")) {
           path = "/" + path.substring("checker.jar/".length());
         }
         URL classpathResource = checker.getClass().getResource(path);
         if (classpathResource != null) {
+          // A classpath resource is read as a single annotation file (never as an archive), so its
+          // name must have the file name extension of its file type.
+          if (!AnnotationFileUtil.hasAnnotationFileExtension(path, fileType)) {
+            warnUnusableNamedFile(namedPath, fileType);
+            continue;
+          }
           parseAnnotationFileResource(urlResource(path, classpathResource), parseType);
         } else {
           // Didn't find the file.  Issue a warning.
