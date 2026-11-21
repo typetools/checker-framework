@@ -3392,8 +3392,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * Operands to which no promotion applies are returned unchanged.
    *
-   * @param operator the operator of a binary operation or compound assignment, such as {@code
-   *     Tree.Kind.DIVIDE} or {@code Tree.Kind.DIVIDE_ASSIGNMENT}
+   * @param operator the operator of a binary operation or compound assignment
    * @param left the type of the operation's left argument
    * @param right the type of the operation's right argument
    * @return the types of the two arguments
@@ -3422,11 +3421,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the primitive kind of the given type if it is a numeric primitive or boxed primitive
-   * type.
+   * type, or {@code NONE} if {@code type} is not a numeric primitive or boxed primitive type
    *
    * @param type a type, such as {@code Integer} or {@code int}
-   * @return the numeric primitive kind of {@code type}, such as {@code INT}, or {@code NONE} if
-   *     {@code type} is not a numeric primitive or boxed primitive type
+   * @return the numeric primitive kind of {@code type}, such as {@code INT},
    */
   private static TypeKind numericTypeKind(AnnotatedTypeMirror type) {
     TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type.getUnderlyingType());
