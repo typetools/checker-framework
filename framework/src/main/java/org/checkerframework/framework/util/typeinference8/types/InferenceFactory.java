@@ -1037,15 +1037,16 @@ public class InferenceFactory {
       if (properType.ignoreAnnotations == ignoreAnnotations) {
         lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atm, lubTM);
       } else if (properType.ignoreAnnotations) {
-        // The primary annotations of `atm` are ignored, but not lubSoFarATM.  Make the primary
-        // annotations of `atm` bottom, so that they don't change the lub.
+        // The primary annotations of `atm` are ignored, but not those of `lubSoFarATM`.  Make the
+        // primary annotations of `atm` bottom, so that they don't change the lub.
         AnnotatedTypeMirror atmWithBottomPrimary = atm.deepCopy();
         atmWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
         lubATM =
             AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atmWithBottomPrimary, lubTM);
       } else {
         assert ignoreAnnotations;
-        // Only the primary annotations of `lubSoFarATM` are ignored; see the previous case.
+        // The primary annotations of `lubSoFarATM` are ignored, but not those of `atm`.  Make the
+        // primary annotations of `lubSoFarATM` bottom, so that they don't change the lub.
         AnnotatedTypeMirror lubSoFarATMWithBottomPrimary = lubSoFarATM.deepCopy();
         lubSoFarATMWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
         lubATM =
@@ -1230,8 +1231,10 @@ public class InferenceFactory {
     // The annotations of a type that ignores annotations put no constraint on the result, so the
     // result ignores annotations only if both types do.  This is the same rule as in `lub`.
     boolean ignoreAnnotations = a.ignoreAnnotations && b.ignoreAnnotations;
-    // As in `lub`, the result keeps the record of ignored positions of an input that it differs
-    // from only in its primary annotations and at those ignored positions.
+    // As in `lub`, if an input has an origin (see ProperType#origin), and the result has that
+    // input's Java type and differs from it only in the primary annotations and at the input's
+    // ignored positions, and those positions are still ignored, then the result gets the input's
+    // origin.
     List<AbstractType> inputs = Arrays.asList(a, b);
     ProperType withOrigin = withOriginOf(a, inputs, glb, glbATM, ignoreAnnotations);
     if (withOrigin == null) {
@@ -1475,7 +1478,8 @@ public class InferenceFactory {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      // A copy, because the substitution below does not copy and can mutate what it substitutes.
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does

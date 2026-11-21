@@ -277,12 +277,12 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a number that changes whenever the instantiation (see {@link Variable#getInstantiation})
-   * of a variable that {@code variables} depend on changes. The variables that {@code variables}
-   * depend on are {@code variables} themselves and, transitively, the variables in the origins of
-   * their current instantiations (see {@link #originVariables}), because applying instantiations
-   * to a type that contains a variable uses the variable's instantiation, which is itself made from
-   * its origin.
+   * Returns a number that changes whenever the instantiation (see {@link
+   * Variable#getInstantiation}) of a variable that {@code variables} depend on changes. The
+   * variables that {@code variables} depend on are {@code variables} themselves and, transitively,
+   * the variables in the origins of their current instantiations (see {@link #originVariables}),
+   * because applying instantiations to a type that contains a variable uses the variable's
+   * instantiation, which is itself made from its origin.
    *
    * <p>The result is the largest stamp of those variables (see {@link
    * VariableBounds#getLastInstantiationChange}). It changes whenever one of their instantiations
@@ -414,6 +414,8 @@ public class ProperType extends AbstractType {
    */
   private static <K extends @NonNull Object, V> @Nullable V getOrCompute(
       Map<K, V> map, K key, Supplier<@Nullable V> compute) {
+    // This is `Map.computeIfAbsent`, but the Nullness Checker rejects a mapping function passed to
+    // `computeIfAbsent` that may return null.
     @Nullable V result = map.get(key);
     if (result == null) {
       result = compute.get();
