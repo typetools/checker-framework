@@ -317,7 +317,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Sets the default annotations for a certain Element.
+   * Sets the default annotation for the given element and location.
    *
    * <p>The default is treated like a {@code @DefaultQualifier} annotation written on {@code elem}:
    * it applies within {@code elem} and within the elements that {@code elem} encloses, and it is
