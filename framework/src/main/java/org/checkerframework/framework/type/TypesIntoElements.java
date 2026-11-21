@@ -153,11 +153,12 @@ public final class TypesIntoElements {
       VariableTree var) {
     VarSymbol sym = (VarSymbol) TreeUtils.elementFromDeclaration(var);
     AnnotatedTypeMirror type;
-    if (atypeFactory instanceof GenericAnnotatedTypeFactory) {
+    if (atypeFactory
+        instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAnnotatedTypeFactory) {
       // TODO: this is rather ugly: we do not want refinement from the
       // initializer of the field. We need a general way to get
       // the "defaulted" type of a variable.
-      type = ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory).getAnnotatedTypeLhs(var);
+      type = genericAnnotatedTypeFactory.getAnnotatedTypeLhs(var);
     } else {
       type = atypeFactory.getAnnotatedType(var);
     }
