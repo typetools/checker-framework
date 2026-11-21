@@ -47,69 +47,6 @@ public class ResourceLeakCountMustCallTest {
     assertCounts("UserClassAsJdkType.java", false, 0, 0);
   }
 
-  /** An owning field is counted, and is not verified if it is overwritten. */
-  @Test
-  public void overwrittenFieldIsNotVerified() {
-    assertCounts("OverwrittenField.java", false, 3, 2);
-  }
-
-  /**
-   * An owning field is not verified if a method that reassigns it lacks a {@code
-   * CreatesMustCallFor} annotation for the field's receiver.
-   */
-  @Test
-  public void fieldReassignedWithoutCreatesMustCallForIsNotVerified() {
-    assertCounts("MissingCreatesMustCallFor.java", false, 2, 1);
-  }
-
-  /**
-   * An owning field is not verified if a method that reassigns it has a {@code CreatesMustCallFor}
-   * annotation for a different target.
-   */
-  @Test
-  public void fieldReassignedWithIncompatibleCreatesMustCallForIsNotVerified() {
-    assertCounts("IncompatibleCreatesMustCallFor.java", false, 2, 1);
-  }
-
-  /** An owning field is counted, and is not verified if the destructor does not close it. */
-  @Test
-  public void unclosedFieldIsNotVerified() {
-    assertCounts("UnclosedField.java", false, 2, 1);
-  }
-
-  /** A field is not verified if its destructor's declared cleanup postcondition fails. */
-  @Test
-  public void failedDestructorPostconditionIsNotVerified() {
-    assertCounts("BadDestructor.java", false, 2, 1);
-  }
-
-  /**
-   * A field is not verified if its destructor relies on a helper method whose cleanup postcondition
-   * fails.
-   */
-  @Test
-  public void failedHelperPostconditionIsNotVerified() {
-    assertCounts("FailedHelperPostcondition.java", false, 2, 1);
-  }
-
-  /** Suppressing a failed cleanup postcondition does not verify the field. */
-  @Test
-  public void suppressedDestructorPostconditionIsNotVerified() {
-    assertCounts("SuppressedBadDestructor.java", true, 2, 1);
-  }
-
-  /** A field is not verified if its destructor fails to clean up on an exceptional exit. */
-  @Test
-  public void failedExceptionalDestructorPostconditionIsNotVerified() {
-    assertCounts("ExceptionalBadDestructor.java", false, 2, 1);
-  }
-
-  /** A failed promise to call an unrelated method does not invalidate verified cleanup. */
-  @Test
-  public void unrelatedPostconditionDoesNotFailFieldObligation() {
-    assertCounts("UnrelatedPostcondition.java", false, 2, 2);
-  }
-
   /** Independent conditional resets combine count keys without enumerating all combinations. */
   @Test(timeout = 60000)
   public void independentResetsDoNotMultiplyAnalysisStates() {
@@ -126,15 +63,6 @@ public class ResourceLeakCountMustCallTest {
   @Test
   public void wrapperOfUserClassIsCounted() {
     assertCounts("WrappedUserStream.java", false, 1, 0);
-  }
-
-  /**
-   * A field is not verified if its destructor relies on a helper method whose conditional cleanup
-   * postcondition fails.
-   */
-  @Test
-  public void failedConditionalHelperPostconditionIsNotVerified() {
-    assertCounts("FailedConditionalHelperPostcondition.java", false, 2, 1);
   }
 
   /**

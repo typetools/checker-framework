@@ -27,17 +27,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
-import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.ReturnStatementStore;
-import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -432,105 +426,6 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    */
   /*package-private*/ record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {}
 
-  @Override
-  protected void checkPostcondition(
-      MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
-    super.checkPostcondition(methodTree, annotation, expression);
-    if (checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
-      countFailedFieldPostcondition(
-          expression, annotation, atypeFactory.getRegularExitStore(methodTree));
-    }
-  }
-
-  @Override
-  protected void checkConditionalPostcondition(
-      MethodTree methodTree,
-      AnnotationMirror annotation,
-      JavaExpression expression,
-      boolean result) {
-    super.checkConditionalPostcondition(methodTree, annotation, expression, result);
-    if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)
-        || !TypesUtils.isBooleanType(TreeUtils.typeOf(methodTree.getReturnType()))) {
-      return;
-    }
-    for (ReturnStatementStore<?, ?> returnStore :
-        atypeFactory.getReturnStatementStores(methodTree)) {
-      TransferResult<?, ?> transferResult = returnStore.transferResult();
-      if (transferResult == null) {
-        // The return statement is unreachable.
-        continue;
-      }
-      // A return statement whose result is a boolean literal other than `result` need not satisfy
-      // the postcondition.
-      if (returnStore.returnNode().getResult() instanceof BooleanLiteralNode literal
-          && literal.getValue() != result) {
-        continue;
-      }
-      countFailedFieldPostcondition(
-          expression,
-          annotation,
-          (CFAbstractStore<?, ?>)
-              (result ? transferResult.getThenStore() : transferResult.getElseStore()));
-    }
-  }
-
-  @Override
-  protected void checkExceptionalPostcondition(
-      EnsuresCalledMethodOnExceptionContract postcond, MethodTree tree) {
-    super.checkExceptionalPostcondition(postcond, tree);
-    if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
-      return;
-    }
-    JavaExpression expression;
-    try {
-      expression = StringToJavaExpression.atMethodBody(postcond.expression(), tree, checker);
-    } catch (JavaExpressionParseException ex) {
-      // The superclass reports an invalid expression.
-      return;
-    }
-    countFailedFieldPostcondition(
-        expression,
-        rlTypeFactory.createCalledMethods(postcond.method()),
-        atypeFactory.getExceptionalExitStore(tree));
-  }
-
-  /**
-   * Record the obligation of the owning field in the given expression as failed if the given
-   * postcondition promises a must-call method of the field that the given exit store does not
-   * guarantee was called. The postcondition need not be a destructor's: a destructor can rely on
-   * the postcondition of a helper method.
-   *
-   * @param expression an expression in a method's postcondition
-   * @param annotation the postcondition's called-methods annotation
-   * @param exitStore a store at an exit of the method to which the postcondition applies, or null
-   *     if that exit is unreachable
-   */
-  private void countFailedFieldPostcondition(
-      JavaExpression expression,
-      AnnotationMirror annotation,
-      @Nullable CFAbstractStore<?, ?> exitStore) {
-    if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)
-        || exitStore == null
-        || !(expression instanceof FieldAccess fieldAccess)
-        || !rlTypeFactory.hasOwning(fieldAccess.getField())) {
-      return;
-    }
-    CFAbstractValue<?> value = exitStore.getValue(expression);
-    AnnotationMirror inferred =
-        value == null
-            ? null
-            : qualHierarchy.findAnnotationInSameHierarchy(value.getAnnotations(), annotation);
-    for (String requiredMethod : rlTypeFactory.getMustCallValues(fieldAccess.getField())) {
-      AnnotationMirror required = rlTypeFactory.createCalledMethods(requiredMethod);
-      if (qualHierarchy.isSubtypeQualifiersOnly(annotation, required)
-          && !checkContract(expression, required, inferred, exitStore)) {
-        ResourceLeakUtils.getResourceLeakChecker(checker)
-            .countFailedObligation(fieldAccess.getField());
-        return;
-      }
-    }
-  }
-
   /**
    * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the
    * type of {@code field} is {@code @MustCall("m")}. This method checks that the enclosing class of
@@ -561,9 +456,6 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     if (mustCallObligationsOfOwningField.isEmpty()) {
       return;
     }
-
-    ResourceLeakChecker rlc = ResourceLeakUtils.getResourceLeakChecker(checker);
-    rlc.countFoundObligation(field, field.asType());
 
     // This value is side-effected.
     Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField = new LinkedHashSet<>();
@@ -657,7 +549,6 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
         missingMethods.add(obligation.mustCallMethod);
       }
 
-      rlc.countFailedObligation(field);
       checker.reportError(
           field,
           "required.method.not.called",

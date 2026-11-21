@@ -55,8 +55,7 @@ public class ResourceLeakChecker extends AggregateChecker {
    *
    * <ul>
    *   <li>an invocation whose result has a must-call obligation,
-   *   <li>an owning or must-call-alias formal parameter,
-   *   <li>an owning field, or
+   *   <li>an owning or must-call-alias formal parameter, or
    *   <li>the target of an invocation of a {@code CreatesMustCallFor} method, if the target is a
    *       non-owning local variable or formal parameter that already has a tracked obligation.
    * </ul>
@@ -73,11 +72,8 @@ public class ResourceLeakChecker extends AggregateChecker {
    * the checker fails to verify is not counted as verified, even if the checker does not report the
    * failure (for example, because a warning is suppressed).
    *
-   * <p>A resource that is stored in an owning field is counted twice. It is counted once where it
-   * is created or passed as a formal parameter; storing it in the field verifies that obligation.
-   * It is counted again as the obligation of the owning field, which the destructor of the field's
-   * class verifies. For example, {@code C(@Owning Socket s) { this.s = s; }} has 2 obligations: one
-   * for the parameter and one for the field.
+   * <p>An owning field is not counted. Storing a resource in an owning field verifies the
+   * obligation of the resource.
    */
   public static final String COUNT_MUST_CALL = "countMustCall";
 
@@ -124,7 +120,7 @@ public class ResourceLeakChecker extends AggregateChecker {
    * Recording the same key again has no effect.
    *
    * @param key an object that identifies a must-call obligation, such as the element of an owning
-   *     field or of an owning formal parameter. Keys are compared with {@code equals}.
+   *     formal parameter. Keys are compared with {@code equals}.
    * @param type the static type of the expression that holds the obligation when it is created
    * @return {@code key} if this method recorded it, or null otherwise
    */
