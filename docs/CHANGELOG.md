@@ -7,7 +7,53 @@
 
 ### User-visible changes
 
+A pattern variable, such as `s` in `o instanceof String s`, now defaults to the
+top qualifier, like a local variable, and is refined to the qualifiers of the
+value that the pattern matches.
+
+The qualifiers of a record pattern's type are inferred from the type that the
+pattern is matched against, in the same way that javac infers the record
+pattern's type arguments (JLS 18.5.5).  For example, given
+`record Box<T>(T t) {}` and `Box<@Untainted String> b`, in
+`b instanceof Box(var s)` the variable `s` has type `@Untainted String`.  If
+the qualifiers cannot be inferred, the Checker Framework issues a
+`type.arguments.not.inferred` error.
+
+A type pattern nested in a record pattern, such as `String s` in
+`Box(String s)`, is checked against the type of the record component: as an
+assignment if the pattern is unconditional for that type, and like an
+`instanceof` type pattern otherwise.  As a result, the Checker Framework may
+issue new `assignment` errors and `nested.pattern.unsafe` warnings.
+
 ### Changes for type system implementers
+
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
+`ElementUtils.isLocalVariable()` returns true for pattern variables.
+
+New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
+binding variable of an `instanceof` type pattern.  A subclass can override the
+new method `BaseTypeVisitor.instanceofPatternMatchedType()` to exclude values
+that a type pattern never matches, such as null.
+
+New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
+pattern variable.
+
+New overridable methods `BaseTypeVisitor.checkRecordPatternTypeInference()`,
+`BaseTypeVisitor.checkNestedTypePatterns()`, and
+`BaseTypeVisitor.checkConditionalNestedTypePattern()` check a record pattern.
+New method `AnnotatedTypeFactory.getRecordPatternComponentTypes()` returns the
+inferred types of the record components of a record pattern.  New class
+`RecordPatternTypeInference` infers the type of a record pattern, and new class
+`AnnotatedTypeProjection` computes the upward projection of an annotated type
+(JLS 4.10.5).
+
+New method `QualifierPolymorphism.resolveWithReceiver()` resolves the
+polymorphic qualifiers of a method invoked with no arguments on a receiver of a
+given type; a class that implements `QualifierPolymorphism` directly, rather
+than by extending `AbstractQualifierPolymorphism`, must implement it.  New
+overridable method `AnnotatedTypeFactory.resolvePolymorphicQualifiersWithReceiver()`
+resolves the polymorphic qualifiers of such a method; the implementation in
+`GenericAnnotatedTypeFactory` calls `QualifierPolymorphism.resolveWithReceiver()`.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a

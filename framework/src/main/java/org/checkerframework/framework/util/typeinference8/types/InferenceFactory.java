@@ -751,22 +751,93 @@ public class InferenceFactory {
     }
     TypeElement typeEle =
         (TypeElement) ((DeclaredType) functionalInterface.getJavaType()).asElement();
-    AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
+    Theta map = createThetaForTypeParameters(lambda, typeEle);
+    context.maps.put(lambda, map);
+    return map;
+  }
 
+  /**
+   * Creates an inference variable for each type parameter of {@code typeEle}; the bounds of each
+   * variable are the declared bounds of its type parameter. Unlike {@link #createThetaForLambda},
+   * this method neither reads nor writes {@code context.maps}, so it creates new variables on every
+   * call.
+   *
+   * @param tree the tree for which this method creates the inference variables
+   * @param typeEle a generic class or interface
+   * @return a mapping of the type parameters of {@code typeEle} to the new inference variables
+   */
+  public Theta createThetaForTypeParameters(ExpressionTree tree, TypeElement typeEle) {
+    AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(typeEle);
     Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
     Theta map = new Theta();
     for (TypeParameterElement param : typeEle.getTypeParameters()) {
       TypeVariable typeVar = (TypeVariable) param.asType();
       AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
       @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
-      Variable ai = new @Interned Variable(atv, typeVar, lambda, context, map);
+      Variable ai = new @Interned Variable(atv, typeVar, tree, context, map);
       map.put(typeVar, ai);
     }
     for (Variable v : map.values()) {
       v.initialBounds(map);
     }
-    context.maps.put(lambda, map);
     return map;
+  }
+
+  /**
+   * Adds to {@code map} an inference variable for each captured type variable that is a type
+   * argument of one of {@code capturedTypes} and that is not already in {@code map}. The bounds of
+   * each new variable are the bounds of the captured type variable that it replaces (JLS 18.5.5,
+   * step 3).
+   *
+   * @param deconstructor the deconstructor of a record pattern whose type is being inferred (JLS
+   *     18.5.5); the tree for which this method creates the new variables
+   * @param capturedTypes the captures of the matched type, or of the parameterized types that bound
+   *     it (JLS 18.5.5, step 3)
+   * @param map the mapping to add to
+   */
+  public void addVariablesForCapturedTypeArguments(
+      ExpressionTree deconstructor, List<AnnotatedDeclaredType> capturedTypes, Theta map) {
+    // This replaces every captured type variable that is a type argument of a captured type,
+    // including one that the matched type already mentions.  JLS 18.5.5 step 3 requires this:
+    // "This includes type variables produced by the capture conversion in this step, and type
+    // variables produced by capture conversion elsewhere."  For example, if an outer record
+    // pattern has type Pair<? extends B> and the record class Pair<T> has a component of type
+    // Box<T>, then a record pattern nested at that component is matched against Box<CAP#1>, where
+    // CAP#1 is the capture of ? extends B.  Resolution instantiates the new variable for CAP#1 with
+    // a fresh type variable, and upward projection then removes that fresh type variable, so the
+    // type of the nested record pattern is Box<? extends B>.
+    //
+    // Every variable is added to map before the bounds of any are initialized, because the bound
+    // of a captured type variable of one captured type can mention a captured type variable of
+    // another.
+    List<Variable> newVariables = new ArrayList<>();
+    for (AnnotatedDeclaredType capturedType : capturedTypes) {
+      for (AnnotatedTypeMirror typeArg : capturedType.getTypeArguments()) {
+        if (typeArg.getKind() != TypeKind.TYPEVAR
+            || !TypesUtils.isCapturedTypeVariable(typeArg.getUnderlyingType())
+            || map.get(typeArg.getUnderlyingType()) != null) {
+          continue;
+        }
+        AnnotatedTypeVariable zi = (AnnotatedTypeVariable) typeArg;
+        @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
+        Variable betai =
+            new @Interned Variable(zi, zi.getUnderlyingType(), deconstructor, context, map);
+        map.put(zi.getUnderlyingType(), betai);
+        newVariables.add(betai);
+      }
+    }
+    for (Variable betai : newVariables) {
+      betai.initialBounds(map);
+      AnnotatedTypeMirror lowerBound = betai.typeVariable.getLowerBound();
+      if (lowerBound.getKind() != TypeKind.NULL) {
+        betai
+            .getBounds()
+            .addBound(
+                null,
+                VariableBounds.BoundKind.LOWER,
+                InferenceType.create(lowerBound, map, context));
+      }
+    }
   }
 
   /**

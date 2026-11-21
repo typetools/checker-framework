@@ -1,0 +1,74 @@
+import java.util.function.Supplier;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+// @below-java21-jdk-skip-test
+
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
+// do.
+// @infer-jaifs-skip-test
+// @infer-ajava-skip-test
+// @infer-stubs-skip-test
+public class RecordPatternInferenceError {
+
+  interface First<A> {}
+
+  interface Second<A> {}
+
+  record Both<T>(T t) implements First<T>, Second<T> {}
+
+  record NonNullSupplier<T extends @NonNull Object>(T t) implements Supplier<T> {
+    public T get() {
+      return t;
+    }
+  }
+
+  // alpha is the inference variable for Both's type parameter T (JLS 18.5.5).  The two elements of
+  // the intersection give alpha = @Nullable String and alpha = @NonNull String.
+  <X extends First<@Nullable String> & Second<String>> void conflictingBounds(X x) {
+    // :: error: [type.arguments.not.inferred]
+    if (x instanceof Both(var s)) {}
+  }
+
+  // When inference fails, an explicitly typed nested pattern is checked against the record
+  // pattern's Java type, Both<String>, and no other diagnostic is issued.
+  <X extends First<@Nullable String> & Second<String>> void conflictingBoundsExplicit(X x) {
+    // :: error: [type.arguments.not.inferred]
+    if (x instanceof Both(String s)) {
+      s.length();
+    }
+    // :: error: [type.arguments.not.inferred]
+    if (x instanceof Both(@Nullable String s)) {
+      s.length();
+    }
+  }
+
+  <X extends First<@Nullable String> & Second<String>> void conflictingBoundsSwitch(X x) {
+    switch (x) {
+      // :: error: [type.arguments.not.inferred]
+      case Both(var s) -> {}
+      default -> {}
+    }
+  }
+
+  // The matched type gives alpha = @Nullable String, which violates the declared bound of
+  // NonNullSupplier's T.
+  void matchedTypeViolatesBound(Supplier<@Nullable String> s) {
+    // :: error: [type.arguments.not.inferred]
+    if (s instanceof NonNullSupplier(var t)) {}
+  }
+
+  void matchedTypeViolatesBoundSwitch(Supplier<@Nullable String> s) {
+    switch (s) {
+      // :: error: [type.arguments.not.inferred]
+      case NonNullSupplier(var t) -> {}
+      default -> {}
+    }
+  }
+
+  void matchedTypeSatisfiesBound(Supplier<String> s) {
+    if (s instanceof NonNullSupplier(var t)) {
+      t.length();
+    }
+  }
+}
