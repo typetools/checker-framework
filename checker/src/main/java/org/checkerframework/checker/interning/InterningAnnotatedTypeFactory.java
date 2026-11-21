@@ -253,15 +253,50 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Unboxes the type and replaces any interning type annotations with @Interned, since all
-   * primitives can safely use ==. See case 4 in the class comments.
+   * Replaces any interning type annotation with @Interned, since all primitives can safely use ==.
+   * See case 4 in the class comments.
    *
    * <p>{@inheritDoc}
    */
   @Override
-  public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {
-    AnnotatedPrimitiveType primitive = super.getUnboxedType(type);
-    primitive.replaceAnnotation(INTERNED);
-    return primitive;
+  public AnnotationMirrorSet getUnboxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    return replaceInterningAnnotation(annos, INTERNED);
+  }
+
+  /**
+   * Replaces any interning type annotation with @UnknownInterned, since a boxed value need not be
+   * interned, even though every primitive is. For example, {@code Integer.valueOf(1000) ==
+   * Integer.valueOf(1000)} can be false. The exceptions are {@code boolean} and {@code byte}:
+   * {@code Boolean.valueOf()} and {@code Byte.valueOf()} return a cached object for every value, so
+   * a boxed {@code boolean} or {@code byte} is @Interned.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  public AnnotationMirrorSet getBoxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    boolean everyValueCached = primitiveKind == TypeKind.BOOLEAN || primitiveKind == TypeKind.BYTE;
+    return replaceInterningAnnotation(annos, everyValueCached ? INTERNED : TOP);
+  }
+
+  /**
+   * Returns a copy of {@code annos} in which {@code interningAnno} replaces the annotation of the
+   * interning hierarchy, if any.
+   *
+   * @param annos a set of annotations
+   * @param interningAnno an annotation of the interning hierarchy
+   * @return a copy of {@code annos} that contains {@code interningAnno} in place of the annotation
+   *     of the interning hierarchy
+   */
+  private AnnotationMirrorSet replaceInterningAnnotation(
+      AnnotationMirrorSet annos, AnnotationMirror interningAnno) {
+    AnnotationMirrorSet result = new AnnotationMirrorSet(annos);
+    AnnotationMirror old = qualHierarchy.findAnnotationInSameHierarchy(annos, interningAnno);
+    if (old != null) {
+      result.remove(old);
+    }
+    result.add(interningAnno);
+    return result;
   }
 }

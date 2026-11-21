@@ -7,7 +7,14 @@
 
 ### User-visible changes
 
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
+
 ### Changes for type system implementers
+
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
@@ -15,8 +22,26 @@ A default that a type system registers for an element through
 suppressed the `@DefaultQualifier` annotations on the element and on the
 element's enclosing elements.
 
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
+
+Dataflow analysis gives the result of a boxing or unboxing conversion the
+qualifiers of the converted value, as adapted by the new methods
+`AnnotatedTypeFactory.getBoxedAnnotations()` and
+`AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
+qualifiers at boxing or unboxing should override those methods rather than
+`getBoxedType()` and `getUnboxedType()`.
+
+Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
+`isConstantToByteShortOrChar()`.  New method
+`CFGTranslationPhaseOne.convertConstant()` converts a compile-time constant to
+`byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
+conversion does.
 
 ### Closed issues
 
@@ -57,6 +82,28 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
+and else-store:  the result's then-store and else-store are both their least
+upper bound.  Use it when the input's then-store and else-store describe an
+earlier node, such as an operand.  New method
+`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
+then-store and else-store; use it when they describe the current node, as for a
+cast.
+
+These methods of `CFAbstractTransfer` no longer call `visitNode()`:
+`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
+`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
+`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call,
+when the input has a then-store and an else-store); for boolean operands,
+`visitBitwiseAnd()`, `visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`,
+and `visitNotEqual()`; and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+
+`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
+function of the lambda's result node; it uses the value that the result node
+already computed.
 
 Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
