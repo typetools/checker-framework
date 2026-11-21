@@ -112,8 +112,9 @@ public final class TypesUtils {
   // Creating a Class<?>
 
   /**
-   * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
-   * cannot determine anything more specific.
+   * Returns the {@link Class} for a given {@link TypeMirror}. For a type variable or intersection
+   * type, returns the class of its erasure. Returns {@code Object.class} if it cannot determine
+   * anything more specific.
    *
    * @param typeMirror a TypeMirror
    * @return the class for {@code typeMirror}
@@ -143,6 +144,12 @@ public final class TypesUtils {
       case ARRAY:
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
         return componentClass.arrayType();
+
+      case TYPEVAR:
+        return getClassFromType(((TypeVariable) typeMirror).getUpperBound());
+
+      case INTERSECTION:
+        return getClassFromType(((IntersectionType) typeMirror).getBounds().get(0));
 
       case DECLARED:
         // BUG: need to compute a @ClassGetName, but this code computes a
@@ -422,6 +429,91 @@ public final class TypesUtils {
    */
   public static boolean isBoxedPrimitive(TypeMirror type) {
     return isDeclaredOfName(type, fqBoxedTypes);
+  }
+
+  /**
+   * Returns the boxed primitive type that unboxing conversion (JLS 5.1.8) unboxes when applied to
+   * the given type, or null if unboxing conversion does not apply to the given type. The result is
+   * the given type itself if it is a boxed primitive, or the erasure of the given type if it is a
+   * type variable or intersection type whose erasure is a boxed primitive. A wildcard is treated as
+   * its extends bound.
+   *
+   * <p>Javac's unboxing API accepts wrapper classes, such as {@code Integer}, but rejects type
+   * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code
+   * Integer}, which the API can unbox to {@code int}. Erasure handles both ordinary and captured
+   * type variables.
+   *
+   * <p>This agrees with javac's own rule ({@code com.sun.tools.javac.code.Types.unboxedType}),
+   * which unboxes any type that has a boxed primitive as a supertype. Every boxed primitive is a
+   * final class, and a class bound of a type variable or intersection type precedes its interface
+   * bounds, so the erasure is the boxed primitive whenever any bound is.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return the boxed primitive type that unboxing conversion unboxes, or null
+   */
+  public static @Nullable TypeMirror boxedPrimitiveForUnboxing(TypeMirror type, Types types) {
+    if (type.getKind() == TypeKind.WILDCARD) {
+      TypeMirror extendsBound = ((WildcardType) type).getExtendsBound();
+      if (extendsBound == null) {
+        return null;
+      }
+      type = extendsBound;
+    }
+    TypeKind kind = type.getKind();
+    if (kind == TypeKind.TYPEVAR || kind == TypeKind.INTERSECTION) {
+      type = types.erasure(type);
+    }
+    return isBoxedPrimitive(type) ? type : null;
+  }
+
+  /**
+   * Returns true if unboxing conversion (JLS 5.1.8) applies to the given type. See {@link
+   * #boxedPrimitiveForUnboxing} for the types to which unboxing conversion applies.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if unboxing conversion applies to the given type
+   */
+  public static boolean isUnboxable(TypeMirror type, Types types) {
+    return boxedPrimitiveForUnboxing(type, types) != null;
+  }
+
+  /**
+   * If unboxing conversion (JLS 5.1.8) applies to the given type, returns the resulting primitive
+   * type; otherwise returns the given type.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return the unboxed version of the given type, or the given type itself
+   */
+  public static TypeMirror unboxedTypeOrSelf(TypeMirror type, Types types) {
+    TypeMirror boxed = boxedPrimitiveForUnboxing(type, types);
+    return boxed == null ? type : types.unboxedType(boxed);
+  }
+
+  /**
+   * Returns true if the given type is a numeric primitive, or if unboxing conversion (JLS 5.1.8)
+   * converts it to a numeric primitive.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if the given type is a numeric primitive or can be unboxed to one
+   */
+  public static boolean isNumericAfterUnboxing(TypeMirror type, Types types) {
+    return isNumeric(unboxedTypeOrSelf(type, types));
+  }
+
+  /**
+   * Returns true if the given type is boolean, or if unboxing conversion (JLS 5.1.8) converts it to
+   * boolean.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if the given type is boolean or can be unboxed to boolean
+   */
+  public static boolean isBooleanAfterUnboxing(TypeMirror type, Types types) {
+    return isBooleanType(unboxedTypeOrSelf(type, types));
   }
 
   /**
@@ -1230,22 +1322,28 @@ public final class TypesUtils {
   // Substitutions
 
   /**
-   * Returns the return type of a method, given the receiver of the method call.
+   * Returns the return type of the given method as a member of the given receiver type, which is
+   * the type of a call's result. For example, if {@code methodElement} is {@code
+   * Iterable.iterator()}, whose declared return type is {@code Iterator<T>}, and {@code
+   * receiverType} is {@code List<String>}, then the result is {@code Iterator<String>}.
    *
-   * @param methodElement a method
-   * @param substitutedReceiverType the receiver type, after substitution
-   * @param env the environment
-   * @return the return type of the method
+   * @param methodElement the method, which is a member of {@code receiverType}
+   * @param receiverType the type of a receiver expression
+   * @param env the processing environment
+   * @return the return type of {@code methodElement} as a member of {@code receiverType}, which
+   *     might contain captured type variables
    */
   public static TypeMirror substituteMethodReturnType(
-      Element methodElement, TypeMirror substitutedReceiverType, ProcessingEnvironment env) {
+      Element methodElement, TypeMirror receiverType, ProcessingEnvironment env) {
 
     com.sun.tools.javac.code.Types types =
         com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
 
-    Type substitutedMethodType =
-        types.memberType((Type) substitutedReceiverType, (Symbol) methodElement);
-    return substitutedMethodType.getReturnType();
+    // The receiver expression's type is captured, but its upper bound might not be, as for a type
+    // variable whose bound is `List<?>`.  As a member of an uncaptured type, a method's return
+    // type might be a wildcard, which is not a type.
+    Type site = types.capture((Type) upperBound(receiverType));
+    return types.memberType(site, (Symbol) methodElement).getReturnType();
   }
 
   /**
@@ -1743,9 +1841,7 @@ public final class TypesUtils {
    * @return true if assignment to the type might be a narrowing
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
-    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
-    TypeMirror unboxedType = isBoxedPrimitive(type) ? types.unboxedType(type) : type;
-    TypeKind unboxedKind = unboxedType.getKind();
+    TypeKind unboxedKind = unboxedTypeOrSelf(type, types).getKind();
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
         || unboxedKind == TypeKind.CHAR;

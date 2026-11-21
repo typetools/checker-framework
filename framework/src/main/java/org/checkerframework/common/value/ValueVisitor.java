@@ -346,8 +346,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     // The cast is from a numeric type and is to a numeric type.
 
+    // A type variable use, such as `T` in `<T extends Integer>`, might have no primary annotation.
     AnnotationMirror castAnno = castType.getPrimaryAnnotation();
     AnnotationMirror exprAnno = exprType.getPrimaryAnnotation();
+    if (castAnno == null || exprAnno == null) {
+      return super.isTypeCastSafe(castType, exprType);
+    }
     if (castAnno.equals(exprAnno)) {
       return true;
     }

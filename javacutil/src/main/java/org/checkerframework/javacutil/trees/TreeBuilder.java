@@ -13,6 +13,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -96,25 +97,31 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(iterableExpr));
     assert exprType != null : "expression must be of declared type Iterable<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the iterator() method of the iterable type
-    Symbol.MethodSymbol iteratorMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("iterator")) {
-        iteratorMethod = (Symbol.MethodSymbol) method;
-      }
+    // Find the iterator() method that a call on the iterable expression invokes.  If the type
+    // inherits iterator() from several supertypes, javac's method resolution chooses among them.
+    Symbol.MethodSymbol iteratorMethod =
+        (Symbol.MethodSymbol) ElementUtils.resolveNoArgumentCall(exprType, "iterator", env);
+    if (iteratorMethod == null) {
+      throw new BugInCF("no iterator method for %s of type %s", iterableExpr, exprType);
     }
 
-    assert iteratorMethod != null
-        : "@AssumeAssertion(nullness): no iterator method declared for expression type";
-
-    Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
+    // The type of a generic method is a Type.ForAll; asMethodType() unwraps it.
+    Type.MethodType methodType = iteratorMethod.asType().asMethodType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
-    DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
-    iteratorType =
-        (DeclaredType) javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
+    // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
+    // List<T>.  It need not be a declared type:  it might be a type variable, as in
+    // `class C<I extends Iterator<String>> implements Iterable<String> { I iterator(); }`.
+    // asSuper() handles a type variable by using its upper bound.  As in javac's translation (JLS
+    // 14.14.2), the result has type Iterator, even if iterator() returns a subtype, so the loop's
+    // hasNext() and next() calls are Iterator's methods.
+    Type iteratorReturnType =
+        (Type) TypesUtils.substituteMethodReturnType(iteratorMethod, exprType, env);
+    Type iteratorSuper = javacTypes.asSuper(iteratorReturnType, symtab.iteratorType.asElement());
+    if (iteratorSuper == null) {
+      throw new BugInCF(
+          "return type %s of %s is not an Iterator", iteratorReturnType, iteratorMethod);
+    }
+    DeclaredType iteratorType = (DeclaredType) iteratorSuper;
 
     int numIterTypeArgs = iteratorType.getTypeArguments().size();
     assert numIterTypeArgs <= 1 : "expected at most one type argument for Iterator";
@@ -122,8 +129,15 @@ public class TreeBuilder {
     if (numIterTypeArgs == 1) {
       TypeMirror elementType = iteratorType.getTypeArguments().get(0);
       // Remove captured type variable from a wildcard.
-      if (elementType instanceof Type.CapturedType) {
-        elementType = ((Type.CapturedType) elementType).wildcard;
+      if (elementType instanceof Type.CapturedType captured) {
+        elementType = captured.wildcard;
+        // The wildcard may lack a bound of the capture that unboxing conversion depends on. For
+        // example, given `class Box<T extends Integer>`, the capture of `Box<?>`'s type argument
+        // is bounded by Integer, but the wildcard is not.
+        TypeMirror boxed = TypesUtils.boxedPrimitiveForUnboxing(captured, modelTypes);
+        if (boxed != null && !TypesUtils.isUnboxable(elementType, modelTypes)) {
+          elementType = new Type.WildcardType((Type) boxed, BoundKind.EXTENDS, symtab.boundClass);
+        }
         TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
         assert iteratorElt != null
             : "@AssumeAssertion(nullness): the iterator type always has an element";
@@ -174,20 +188,10 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TreeUtils.typeOf(iteratorExpr);
     assert exprType != null : "expression must be of declared type Iterator<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the hasNext() method of the iterator type
-    Symbol.MethodSymbol hasNextMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("hasNext")) {
-        hasNextMethod = (Symbol.MethodSymbol) method;
-        break;
-      }
-    }
-
+    Symbol.MethodSymbol hasNextMethod =
+        (Symbol.MethodSymbol) ElementUtils.resolveNoArgumentCall(exprType, "hasNext", env);
     if (hasNextMethod == null) {
-      throw new BugInCF("no hasNext method declared for " + exprElement);
+      throw new BugInCF("no hasNext method for %s of type %s", iteratorExpr, exprType);
     }
 
     JCTree.JCFieldAccess hasNextAccess = TreeUtils.Select(maker, iteratorExpr, hasNextMethod);
@@ -206,28 +210,26 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TreeUtils.typeOf(iteratorExpr);
     assert exprType != null : "expression must be of declared type Iterator<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the next() method of the iterator type
-    Symbol.MethodSymbol nextMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("next")) {
-        nextMethod = (Symbol.MethodSymbol) method;
-      }
+    Symbol.MethodSymbol nextMethod =
+        (Symbol.MethodSymbol) ElementUtils.resolveNoArgumentCall(exprType, "next", env);
+    if (nextMethod == null) {
+      throw new BugInCF("no next method for %s of type %s", iteratorExpr, exprType);
     }
 
-    assert nextMethod != null
-        : "@AssumeAssertion(nullness): no next method declared for expression type";
-
-    Type.MethodType methodType = (Type.MethodType) nextMethod.asType();
+    // The type of a generic method is a Type.ForAll; asMethodType() unwraps it.
+    Type.MethodType methodType = nextMethod.asType().asMethodType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
     Type elementType;
 
     if (exprType.getTypeArguments().isEmpty()) {
       elementType = symtab.objectType;
     } else {
-      elementType = (Type) exprType.getTypeArguments().get(0);
+      // The iterator's type argument might be a wildcard, as in `Iterator<? extends Integer>` for
+      // an iterable expression of type `List<? extends Integer>`.  A wildcard is not the type of an
+      // expression, so the result of next() has the wildcard's upper bound, such as `Integer`.
+      // Then, assignment conversion unboxes the result of next() if the loop variable is a
+      // primitive, as in `for (int x : list)`.
+      elementType = javacTypes.wildUpperBound((Type) exprType.getTypeArguments().get(0));
     }
 
     // Replace the next method's generic return type with
@@ -471,14 +473,18 @@ public class TreeBuilder {
    * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float, where
    * * is the corresponding primitive type (i.e. shortValue or floatValue).
    *
-   * @param expr an expression whose type is a boxed type
+   * @param expr an expression to whose type unboxing conversion applies (see {@link
+   *     TypesUtils#boxedPrimitiveForUnboxing})
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
-    TypeMirror boxedType = TreeUtils.typeOf(expr);
+    TypeMirror exprType = TreeUtils.typeOf(expr);
+    TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(exprType, modelTypes);
+    if (boxedType == null) {
+      throw new BugInCF("Cannot unbox %s of type %s", expr, exprType);
+    }
     TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
 
-    assert TypesUtils.isBoxedPrimitive(boxedType);
     TypeMirror unboxedType = modelTypes.unboxedType(boxedType);
 
     // Find the *Value() method of the boxed type

@@ -3,7 +3,7 @@ import java.util.List;
 import org.checkerframework.framework.testchecker.util.*;
 
 // The loop variable gets the element type of the iterable expression, even when assignment
-// conversion unboxes or widens the element.
+// conversion unboxes, boxes, or widens the element.
 public class EnhancedForConversion {
   @Odd Integer[] field;
 
@@ -41,6 +41,12 @@ public class EnhancedForConversion {
     }
   }
 
+  <T extends @Odd Integer> void unboxWildcardTypeVariableList(List<? extends T> list) {
+    for (int x : list) {
+      @Odd int y = x;
+    }
+  }
+
   // The return type of iterator() is Iterator<@Odd Integer>, so next() returns an @Odd Integer.
   abstract static class OddIntegers implements Iterable<@Odd Integer> {
     @Override
@@ -59,6 +65,20 @@ public class EnhancedForConversion {
     }
   }
 
+  // RawSource.iterator() returns a raw type, which is return-type-substitutable for
+  // Iterator<String> only by unchecked conversion.  Neither iterator() method overrides the other.
+  @SuppressWarnings("rawtypes")
+  interface RawSource {
+    Iterator iterator();
+  }
+
+  @SuppressWarnings("unchecked")
+  interface RawIterable extends RawSource, Iterable<String> {}
+
+  void rawIterator(RawIterable strings) {
+    for (String s : strings) {}
+  }
+
   void unboxArray(@Odd Integer[] array) {
     for (int x : array) {
       @Odd int y = x;
@@ -74,6 +94,21 @@ public class EnhancedForConversion {
   void widenArray(@Odd int[] array) {
     for (long x : array) {
       @Odd long y = x;
+    }
+  }
+
+  void boxArray(@Odd int[] array) {
+    for (Integer x : array) {
+      @Odd Integer y = x;
+    }
+  }
+
+  void boxArrayToSupertype(@Odd int[] array) {
+    for (Number x : array) {
+      @Odd Number y = x;
+    }
+    for (Object x : array) {
+      @Odd Object y = x;
     }
   }
 

@@ -7,7 +7,19 @@
 
 ### User-visible changes
 
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
+
 ### Changes for type system implementers
+
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
+
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
@@ -17,6 +29,23 @@ element's enclosing elements.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
+
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
+
+Dataflow analysis gives the result of a boxing or unboxing conversion the
+qualifiers of the converted value, as adapted by the new methods
+`AnnotatedTypeFactory.getBoxedAnnotations()` and
+`AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
+qualifiers at boxing or unboxing should override those methods rather than
+`getBoxedType()` and `getUnboxedType()`.
+
+Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
+`isConstantToByteShortOrChar()`.  New method
+`CFGTranslationPhaseOne.convertConstant()` converts a compile-time constant to
+`byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
+conversion does.
 
 ### Closed issues
 
