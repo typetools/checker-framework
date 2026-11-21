@@ -240,8 +240,13 @@ public class AnnotationFileElementTypes {
       }
     } catch (IOException e) {
       checker.message(
-          Diagnostic.Kind.NOTE,
-          "Could not read annotation resource from " + checkerClass + ": " + stubFileName);
+          Diagnostic.Kind.WARNING,
+          "Could not read annotation resource from "
+              + checkerClass
+              + ": "
+              + stubFileName
+              + ": "
+              + e);
     }
   }
 
@@ -284,7 +289,8 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+      checker.message(
+          Diagnostic.Kind.WARNING, "Could not read ajava file: " + ajavaPath + ": " + e);
     } finally {
       parsing = false;
     }
@@ -333,8 +339,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.WARNING,
+                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
           }
         }
       } else {
@@ -402,7 +408,8 @@ public class AnnotationFileElementTypes {
             }
           }
         } catch (IOException e) {
-          checker.message(Diagnostic.Kind.NOTE, "Could not read annotation resource: " + path);
+          checker.message(
+              Diagnostic.Kind.WARNING, "Could not read annotation resource: " + path + ": " + e);
         }
       }
     }
