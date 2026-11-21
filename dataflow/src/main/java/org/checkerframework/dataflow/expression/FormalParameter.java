@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 
@@ -48,6 +49,12 @@ public class FormalParameter extends JavaExpression {
    */
   public VariableElement getElement() {
     return element;
+  }
+
+  @Override
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    // Only an assignment to this formal parameter changes its value.
+    return this.equals(other);
   }
 
   @Override

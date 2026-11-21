@@ -979,6 +979,79 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if an expression of type {@code a} and an expression of type {@code b} might
+   * evaluate to the same object, judging by the types: that is, true unless the types show that no
+   * object has both of them.
+   *
+   * <p>This method compares the erasures of the types, because an object can have two
+   * parameterizations of a generic type. For example, an object of type {@code Box<Integer>} is
+   * both a {@code Box<? extends Number>} and a {@code Box<? super Integer>}, so the method returns
+   * true for them, and heap pollution can make a {@code Box<String>} also a {@code Box<Integer>}.
+   * Two erased types have no common object if a value of one cannot be cast to the other (JLS 5.5):
+   * for example, if both erased types are classes and neither is a subclass of the other, or if one
+   * is a final class that does not implement the other. One object can have two unrelated interface
+   * types, such as {@code Runnable} and {@code Serializable}, or a class type and an unrelated
+   * interface type.
+   *
+   * <p>This method compares the type parameter that a wildcard is a type argument for, because a
+   * value of the wildcard has that type too, but the erasure of a wildcard that has an extends
+   * bound is the erasure of only its extends bound. For example, if {@code Box} is declared as
+   * {@code class Box<T extends Number>}, then the {@code ?} in {@code Box<? extends Comparable<?>>}
+   * cannot be the same object as a {@code String}, though a {@code Comparable} can be cast to a
+   * {@code String}.
+   *
+   * <p>This method compares every alternative of a union type, because the erasure of a union type
+   * is the erasure of the first bound of the alternatives' least upper bound, which is less
+   * precise. For example, if {@code E1}, {@code E2}, and {@code E3} are subclasses of {@code Base},
+   * then the exception parameter {@code e} of {@code catch (E1 | E2 e)} cannot be the same object
+   * as an expression of type {@code E3}, though the erasure of the type of {@code e} is {@code
+   * Base}.
+   *
+   * @param a the type of an expression
+   * @param b the type of another expression
+   * @param javacTypes the javac type utilities
+   * @return true if an expression of type {@code a} and an expression of type {@code b} might
+   *     evaluate to the same object
+   */
+  public static boolean canAlias(
+      TypeMirror a, TypeMirror b, com.sun.tools.javac.code.Types javacTypes) {
+    if (a.getKind() == TypeKind.UNION) {
+      for (TypeMirror alternative : ((UnionType) a).getAlternatives()) {
+        if (canAlias(alternative, b, javacTypes)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (b.getKind() == TypeKind.UNION) {
+      return canAlias(b, a, javacTypes);
+    }
+    if (!typeParameterCanAlias(a, b, javacTypes) || !typeParameterCanAlias(b, a, javacTypes)) {
+      return false;
+    }
+    return javacTypes.isCastable(javacTypes.erasure((Type) a), javacTypes.erasure((Type) b));
+  }
+
+  /**
+   * Returns false if {@code a} is a wildcard and the type parameter that it is a type argument for
+   * shows that no object has both type {@code a} and type {@code b}. Returns true otherwise.
+   *
+   * @param a the type of an expression
+   * @param b the type of another expression
+   * @param javacTypes the javac type utilities
+   * @return false if the type parameter of wildcard {@code a} cannot alias {@code b}
+   */
+  private static boolean typeParameterCanAlias(
+      TypeMirror a, TypeMirror b, com.sun.tools.javac.code.Types javacTypes) {
+    if (a.getKind() != TypeKind.WILDCARD) {
+      return true;
+    }
+    // The type parameter is null if the wildcard is from bytecode.
+    TypeVariable typeParameter = ((Type.WildcardType) a).bound;
+    return typeParameter == null || canAlias(typeParameter, b, javacTypes);
+  }
+
+  /**
    * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
    * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
    *
