@@ -1410,8 +1410,8 @@ public abstract class CFAbstractTransfer<
     assert lubResult != null
         : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
     if (n.labelsUntested()) {
-      // The CFG does not test the case expressions, so the facts that hold when they match hold
-      // after this node.
+      // The CFG omits the test of this case's labels, so the facts that hold when one of this
+      // case's labels matches hold after this node.
       return new RegularTransferResult<>(
           null, lubResult.getThenStore(), exceptionalStores, lubResult.storeChanged());
     }
@@ -1447,13 +1447,10 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns true if the switch selector expression (the right-hand side of {@code
    * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
-   * If this returns false, a transfer function must not refine the selector expression at {@code
-   * n}, but it is permitted to refine the synthetic variable (the left-hand side of {@code
-   * n.getSwitchOperand()}).
    *
    * <p>The selector expression might not denote the tested value if code with side effects, such as
    * the guard of an earlier case or a record accessor that a record pattern invokes, ran after the
-   * switch evaluated the selector expression (see {@link CaseNode#codeRanSinceSelector()}). That
+   * switch evaluated the selector expression (see {@link CaseNode#sideEffectSinceSelector()}). That
    * code cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign a
    * field, change the result of a method call, or mutate the object that the selector expression
    * evaluates to.
@@ -1462,7 +1459,7 @@ public abstract class CFAbstractTransfer<
    * @return true if the switch selector expression still denotes the value that the switch tests
    */
   protected boolean selectorExpressionDenotesSwitchValue(CaseNode n) {
-    if (!n.codeRanSinceSelector()) {
+    if (!n.sideEffectSinceSelector()) {
       return true;
     }
     JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
