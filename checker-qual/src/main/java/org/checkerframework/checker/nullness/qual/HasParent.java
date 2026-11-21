@@ -24,6 +24,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * not on Unix. It does not depend on the state of the file system; for example, it does not depend
  * on whether the file or its parent directory exists. Therefore, no operation, such as creating or
  * deleting a file, can make a {@code @HasParent} path lose its parent.
+ *
+ * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
