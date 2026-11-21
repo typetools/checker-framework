@@ -5453,8 +5453,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that the referenced method is at least as pure as the functional interface method that
-     * the method reference implements.
+     * Checks that the referenced method is at least as pure as each method through which a call can
+     * run it: the functional interface method that the method reference implements, and the other
+     * methods that {@link #methodsThatRunReference} returns.
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
      * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
@@ -5463,22 +5464,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!checkPurityAnnotations) {
         return;
       }
-      EnumSet<PurityKind> superPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
       // Apply the command-line assumptions to the referenced method, so that a method reference is
       // treated like a lambda whose body calls the referenced method.  Like such a call, a
       // side-effect-free referenced method that returns void is deterministic.
       EnumSet<PurityKind> subPurity = implementationPurityKinds(overrider.getElement());
-      if (!subPurity.containsAll(superPurity)) {
-        checker.reportError(
-            overriderTree,
-            "purity.methodref",
-            overriderType,
-            purityKindsToString(subPurity),
-            overrider,
-            overriddenType,
-            purityKindsToString(superPurity),
-            overridden);
+      for (ExecutableElement declaration :
+          methodsThatRunReference(atypeFactory.getProcessingEnv())) {
+        EnumSet<PurityKind> superPurity = PurityUtils.getPurityKinds(atypeFactory, declaration);
+        if (!subPurity.containsAll(superPurity)) {
+          AnnotatedExecutableType declarationType =
+              declaration.equals(overridden.getElement())
+                  ? overridden
+                  : AnnotatedTypes.asMemberOf(types, atypeFactory, overriddenType, declaration);
+          checker.reportError(
+              overriderTree,
+              "purity.methodref",
+              overriderType,
+              purityKindsToString(subPurity),
+              overrider,
+              overriddenType,
+              purityKindsToString(superPurity),
+              declarationType);
+          // The error message names the first declaration whose purity the referenced method lacks.
+          break;
+        }
       }
       if (!infer) {
         checkMethodReferenceFunctionalParameters();
