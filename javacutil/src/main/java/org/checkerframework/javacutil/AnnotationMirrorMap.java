@@ -7,6 +7,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.returnsreceiver.qual.This;
@@ -113,7 +114,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
 
   @Override
   @Pure
-  public @Nullable V get(Object key) {
+  public @NotOwning @Nullable V get(Object key) {
     if (key instanceof AnnotationMirror am) {
       AnnotationMirror keyAnno = AnnotationUtils.getSame(shadowMap.keySet(), am);
       if (keyAnno != null) {
@@ -130,7 +131,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }) // delegation
   @Override
   @SideEffectsOnly("this")
-  public @Nullable V put(AnnotationMirror key, V value) {
+  public @NotOwning @Nullable V put(AnnotationMirror key, V value) {
     V pre = get(key);
     remove(key);
     shadowMap.put(key, value);

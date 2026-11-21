@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,7 +24,13 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
+import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -31,16 +38,22 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.QualifierUpperBounds;
@@ -52,6 +65,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -156,6 +170,131 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     tempVars.clear();
   }
 
+  /**
+   * Changes {@code @MustCallUnknown} to {@code @MustCall({})} on each wildcard and type variable
+   * that is a type argument of the given collection type (see {@link
+   * ResourceLeakUtils#isCollection}), or of a collection type nested in its type arguments. For
+   * example, {@code List<?>} becomes {@code List<? extends @MustCall({}) Object>}.
+   *
+   * <p>The annotated JDK bounds the type parameters of collection classes by
+   * {@code @MustCallUnknown}, so that a collection can hold resources, as in {@code List<Socket>}.
+   * A wildcard without a bound, as in {@code List<?>}, takes that bound, so without this method an
+   * ordinary {@code List<?>} would look like it might hold resources. A {@code @MustCallUnknown}
+   * bound written in the checked code, as in {@code List<? extends @MustCallUnknown Object>}, is
+   * kept.
+   *
+   * @param tree the tree whose type is {@code adt}, or null
+   * @param adt a type, which this method side-effects
+   */
+  private void replaceCollectionTypeVarsWithBottomIfTop(
+      @Nullable Tree tree, AnnotatedDeclaredType adt) {
+    if (!ResourceLeakUtils.isCollection(adt.getUnderlyingType(), processingEnv)) {
+      return;
+    }
+    for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+      if (typeArg instanceof AnnotatedDeclaredType declaredTypeArg) {
+        replaceCollectionTypeVarsWithBottomIfTop(null, declaredTypeArg);
+        continue;
+      }
+      if (typeArg.getKind() != TypeKind.WILDCARD && typeArg.getKind() != TypeKind.TYPEVAR) {
+        continue;
+      }
+      if (tree != null && TreeUtils.isDiamondTree(tree)) {
+        // Type argument inference determines the type arguments of a diamond `new` expression.
+        continue;
+      }
+      AnnotationMirror mcAnno = typeArg.getAnnotationInHierarchy(TOP);
+      if (mcAnno == null || !AnnotationUtils.areSameByName(TOP, mcAnno)) {
+        continue;
+      }
+      // The bound of a captured wildcard comes from the collection class, not from the checked
+      // code, so it is not a written bound.
+      boolean isWrittenBound =
+          typeArg instanceof AnnotatedTypeVariable typeVariable
+              ? !typeArg.containsCapturedTypes()
+                  && ResourceLeakUtils.hasManualMustCallUnknownAnno(
+                      typeVariable.getUpperBound(), this)
+              : ResourceLeakUtils.hasManualMustCallUnknownAnno(
+                  ((WildcardType) typeArg.getUnderlyingType()).getExtendsBound());
+      if (!isWrittenBound) {
+        typeArg.replaceAnnotation(BOTTOM);
+      }
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Also changes the type arguments of a collection type; see {@link
+   * #replaceCollectionTypeVarsWithBottomIfTop}. The type of a class declaration, whose type
+   * arguments are the class's own type parameters, is left unchanged.
+   */
+  @Override
+  public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    super.addComputedTypeAnnotations(tree, type, useFlow);
+
+    if (tree.getKind() != Tree.Kind.CLASS
+        && tree.getKind() != Tree.Kind.INTERFACE
+        && type instanceof AnnotatedDeclaredType declaredType) {
+      replaceCollectionTypeVarsWithBottomIfTop(tree, declaredType);
+    }
+  }
+
+  /**
+   * True if the Collection Ownership Checker runs, as part of the Resource Leak Checker. Null until
+   * {@link #isCollectionOwnershipCheckerRunning} computes it.
+   */
+  private @MonotonicNonNull Boolean collectionOwnershipCheckerIsRunning;
+
+  /**
+   * Returns true if the Collection Ownership Checker runs, as part of the Resource Leak Checker.
+   * It does not run when the Must Call Checker runs on its own.
+   *
+   * @return true if the Collection Ownership Checker runs
+   */
+  private boolean isCollectionOwnershipCheckerRunning() {
+    if (collectionOwnershipCheckerIsRunning == null) {
+      boolean found = false;
+      for (SourceChecker c = checker.getParentChecker(); c != null; c = c.getParentChecker()) {
+        if (c instanceof CollectionOwnershipChecker) {
+          found = true;
+          break;
+        }
+      }
+      collectionOwnershipCheckerIsRunning = found;
+    }
+    return collectionOwnershipCheckerIsRunning;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Also changes the type arguments of the collection types in a method's return and parameter
+   * types; see {@link #replaceCollectionTypeVarsWithBottomIfTop}. Changing the method's type,
+   * rather than each tree, makes the change apply both in the method body and at its calls.
+   *
+   * <p>This change is made only if the Collection Ownership Checker runs. At a call, {@link
+   * #changeBorrowedCollectionElementTypesToTop} undoes it for the parameters that the method
+   * borrows, and that requires the Collection Ownership Checker. Without it, a call to {@code int
+   * count(List<?> list)} could not pass a {@code List<Socket>}.
+   */
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+
+    if (type instanceof AnnotatedExecutableType methodType
+        && isCollectionOwnershipCheckerRunning()) {
+      if (methodType.getReturnType() instanceof AnnotatedDeclaredType returnType) {
+        replaceCollectionTypeVarsWithBottomIfTop(null, returnType);
+      }
+      for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+        if (paramType instanceof AnnotatedDeclaredType declaredParamType) {
+          replaceCollectionTypeVarsWithBottomIfTop(null, declaredParamType);
+        }
+      }
+    }
+  }
+
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     // Explicitly name the qualifiers, in order to exclude @MustCallAlias.
@@ -214,6 +353,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
     changeNonOwningParameterTypesToTop(declaration, type);
+    changeBorrowedCollectionElementTypesToTop(declaration, type);
     super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
 
@@ -224,6 +364,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // constructor that it invokes, so use `type`'s element rather than the element of `tree`.
     ExecutableElement declaration = type.getElement();
     changeNonOwningParameterTypesToTop(declaration, type);
+    changeBorrowedCollectionElementTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
 
@@ -330,6 +471,93 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         varargsType.replaceAnnotation(TOP);
       }
     }
+  }
+
+  /**
+   * Changes to {@code @MustCallUnknown} the element type of each collection parameter that the
+   * invoked method only borrows, so that a caller can pass a collection of resources. For example,
+   * a call to {@code int count(List<?> list)} or {@code <T> int count(List<T> list)} can pass a
+   * {@code List<Socket>}.
+   *
+   * <p>A collection parameter is borrowed unless the Collection Ownership Checker gives it the type
+   * {@link OwningCollection}; see {@link CollectionOwnershipAnnotatedTypeFactory}. That checker
+   * forbids a method to insert resources into a borrowed collection or to discard its elements, so
+   * the caller keeps their obligations. As in {@link #changeNonOwningParameterTypesToTop}, only the
+   * call changes: the method body is checked with the declared element type, which has no must-call
+   * methods (see {@link #replaceCollectionTypeVarsWithBottomIfTop}).
+   *
+   * @param declaration the invoked method
+   * @param type the type of the invoked method, before its type arguments are substituted, which
+   *     this method side-effects
+   */
+  private void changeBorrowedCollectionElementTypesToTop(
+      ExecutableElement declaration, AnnotatedExecutableType type) {
+    List<AnnotatedTypeMirror> paramTypes = type.getParameterTypes();
+    List<? extends AnnotatedTypeMirror> coParamTypes = null;
+    // The type variables of the invoked method that are the element type of a borrowed parameter.
+    Set<Element> elementTypeVariables = new HashSet<>();
+    for (int i = 0; i < paramTypes.size(); i++) {
+      AnnotatedTypeMirror elementType =
+          ResourceLeakUtils.getCollectionElementTypeArgument(paramTypes.get(i), processingEnv);
+      if (elementType == null) {
+        continue;
+      }
+      if (coParamTypes == null) {
+        try {
+          coParamTypes =
+              ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
+                  .getAnnotatedType(declaration)
+                  .getParameterTypes();
+        } catch (IllegalArgumentException e) {
+          // The Collection Ownership Checker is not running, as when the Must Call Checker runs
+          // on its own.
+          return;
+        }
+      }
+      if (coParamTypes.get(i).hasPrimaryAnnotation(OwningCollection.class)) {
+        continue;
+      }
+      if (elementType instanceof AnnotatedWildcardType wildcard) {
+        if (wildcard.getUnderlyingType().getSuperBound() != null) {
+          // List<? super T>: widen the wildcard's upper bound; T is handled below.
+          wildcard.removePrimaryAnnotationInHierarchy(TOP);
+          wildcard.getExtendsBound().replaceAnnotation(TOP);
+          elementType = wildcard.getSuperBound();
+        } else if (wildcard.getExtendsBound() instanceof AnnotatedTypeVariable) {
+          // List<? extends T>: T is handled below.
+          elementType = wildcard.getExtendsBound();
+        } else {
+          // List<?> or List<? extends Foo>.
+          wildcard.getExtendsBound().replaceAnnotation(TOP);
+          continue;
+        }
+      }
+      if (elementType instanceof AnnotatedTypeVariable typeVariable) {
+        TypeVariable underlying = typeVariable.getUnderlyingType();
+        TypeMirror bound = underlying.getUpperBound();
+        // Only a type variable of the invoked method, and only if its bound is not written.
+        if (declaration.getTypeParameters().contains(underlying.asElement())
+            && TypesUtils.isObject(bound)
+            && !AnnotationUtils.containsSameByClass(bound.getAnnotationMirrors(), MustCall.class)
+            && !ResourceLeakUtils.hasManualMustCallUnknownAnno(bound)) {
+          elementTypeVariables.add(underlying.asElement());
+        }
+      }
+    }
+    if (elementTypeVariables.isEmpty()) {
+      return;
+    }
+    // Raise the bound in every use of the type variable in the method's type, so that type
+    // argument inference can choose an element type with must-call methods.
+    new SimpleAnnotatedTypeScanner<Void, Void>(
+            (t, p) -> {
+              if (t instanceof AnnotatedTypeVariable typeVariable
+                  && elementTypeVariables.contains(typeVariable.getUnderlyingType().asElement())) {
+                typeVariable.getUpperBound().replaceAnnotation(TOP);
+              }
+              return null;
+            })
+        .visit(type);
   }
 
   @Override

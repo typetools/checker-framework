@@ -1,14 +1,42 @@
 package org.checkerframework.checker.resourceleak;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Collection of static utility functions related to the various (sub-) checkers within the
@@ -20,15 +48,6 @@ public final class ResourceLeakUtils {
   private ResourceLeakUtils() {
     throw new Error("Do not instantiate");
   }
-
-  /** List of checker names associated with the Resource Leak Checker. */
-  public static List<String> rlcCheckers =
-      new ArrayList<>(
-          Arrays.asList(
-              ResourceLeakChecker.class.getCanonicalName(),
-              RLCCalledMethodsChecker.class.getCanonicalName(),
-              MustCallChecker.class.getCanonicalName(),
-              MustCallNoCreatesMustCallForChecker.class.getCanonicalName()));
 
   /**
    * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
@@ -50,15 +69,50 @@ public final class ResourceLeakUtils {
    *     part of the Resource Leak hierarchy
    * @return the {@link ResourceLeakChecker} in the checker hierarchy
    */
-  public static ResourceLeakChecker getResourceLeakChecker(SourceChecker referenceChecker) {
+  public static ResourceLeakChecker getResourceLeakChecker(
+      @Nullable SourceChecker referenceChecker) {
     if (referenceChecker instanceof ResourceLeakChecker rlc) {
       return rlc;
     } else if (referenceChecker instanceof RLCCalledMethodsChecker
+        || referenceChecker instanceof CollectionOwnershipChecker
         || referenceChecker instanceof MustCallChecker) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
     } else {
       throw new TypeSystemError(
           "Bad argument to ResourceLeakUtils#getResourceLeakChecker(): "
+              + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
+    }
+  }
+
+  /**
+   * Given a checker part of the resource leak ecosystem, returns the {@link
+   * MustCallAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceChecker the checker to retrieve the {@link MustCallAnnotatedTypeFactory} from
+   * @return the {@link MustCallAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
+      @Nullable SourceChecker referenceChecker) {
+    if (referenceChecker instanceof MustCallChecker mcc) {
+      return (MustCallAnnotatedTypeFactory) mcc.getTypeFactory();
+    } else if (referenceChecker instanceof CollectionOwnershipChecker) {
+      return getMustCallAnnotatedTypeFactory(
+          referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
+    } else if (referenceChecker instanceof RLCCalledMethodsChecker) {
+      // getSubchecker matches exact classes; check MustCallNoCreatesMustCallForChecker separately.
+      MustCallChecker mcc = referenceChecker.getSubchecker(MustCallChecker.class);
+      return getMustCallAnnotatedTypeFactory(
+          mcc != null
+              ? mcc
+              : referenceChecker.getSubchecker(MustCallNoCreatesMustCallForChecker.class));
+    } else if (referenceChecker instanceof ResourceLeakChecker) {
+      return getMustCallAnnotatedTypeFactory(
+          referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
+    } else {
+      throw new IllegalArgumentException(
+          "Argument referenceChecker to"
+              + " ResourceLeakUtils#getMustCallAnnotatedTypeFactory(referenceChecker) expected to"
+              + " be an RLC checker but is "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
     }
   }
@@ -84,10 +138,14 @@ public final class ResourceLeakUtils {
    *     be part of the Resource Leak hierarchy
    * @return the {@link RLCCalledMethodsChecker} in the checker hierarchy
    */
-  public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(SourceChecker referenceChecker) {
+  public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(
+      @Nullable SourceChecker referenceChecker) {
     if (referenceChecker instanceof RLCCalledMethodsChecker rlccmc) {
       return rlccmc;
     } else if (referenceChecker instanceof ResourceLeakChecker) {
+      return getRLCCalledMethodsChecker(
+          referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
+    } else if (referenceChecker instanceof CollectionOwnershipChecker) {
       return getRLCCalledMethodsChecker(
           referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
     } else if (referenceChecker instanceof MustCallChecker) {
@@ -98,5 +156,359 @@ public final class ResourceLeakUtils {
               + " ResourceLeakUtils#getRLCCalledMethodsChecker(): "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
     }
+  }
+
+  /**
+   * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
+   * RLCCalledMethodsAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceAtf the type factory to retrieve the {@link
+   *     RLCCalledMethodsAnnotatedTypeFactory} from; must be part of the Resource Leak hierarchy
+   * @return the {@link RLCCalledMethodsAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static RLCCalledMethodsAnnotatedTypeFactory getRLCCalledMethodsAnnotatedTypeFactory(
+      AnnotatedTypeFactory referenceAtf) {
+    return getRLCCalledMethodsAnnotatedTypeFactory(referenceAtf.getChecker());
+  }
+
+  /**
+   * Given a checker that is part of the resource leak checker hierarchy, returns the {@link
+   * RLCCalledMethodsAnnotatedTypeFactory} in the hierarchy.
+   *
+   * @param referenceChecker the checker to retrieve the {@link
+   *     RLCCalledMethodsAnnotatedTypeFactory} from; must be part of the Resource Leak hierarchy
+   * @return the {@link RLCCalledMethodsAnnotatedTypeFactory} in the hierarchy
+   */
+  public static RLCCalledMethodsAnnotatedTypeFactory getRLCCalledMethodsAnnotatedTypeFactory(
+      SourceChecker referenceChecker) {
+    return (RLCCalledMethodsAnnotatedTypeFactory)
+        getRLCCalledMethodsChecker(referenceChecker).getTypeFactory();
+  }
+
+  /**
+   * Given a checker part of the resource leak ecosystem, returns the {@link
+   * CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceChecker the checker to retrieve the {@link
+   *     CollectionOwnershipAnnotatedTypeFactory} from
+   * @return the {@link CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static CollectionOwnershipAnnotatedTypeFactory getCollectionOwnershipAnnotatedTypeFactory(
+      @Nullable SourceChecker referenceChecker) {
+    if (referenceChecker instanceof CollectionOwnershipChecker coc) {
+      return (CollectionOwnershipAnnotatedTypeFactory) coc.getTypeFactory();
+    } else if (referenceChecker instanceof RLCCalledMethodsChecker
+        || referenceChecker instanceof MustCallChecker) {
+      return getCollectionOwnershipAnnotatedTypeFactory(referenceChecker.getParentChecker());
+    } else if (referenceChecker instanceof ResourceLeakChecker) {
+      return getCollectionOwnershipAnnotatedTypeFactory(
+          referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
+    } else {
+      throw new IllegalArgumentException(
+          "Argument referenceChecker to"
+              + " ResourceLeakUtils#getCollectionOwnershipAnnotatedTypeFactory(referenceChecker)"
+              + " expected to be an RLC checker but is "
+              + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
+    }
+  }
+
+  /**
+   * Given a type factory part of the resource leak ecosystem, returns the {@link
+   * CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceAtf the type factory to retrieve the {@link
+   *     CollectionOwnershipAnnotatedTypeFactory} from
+   * @return the {@link CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static CollectionOwnershipAnnotatedTypeFactory getCollectionOwnershipAnnotatedTypeFactory(
+      AnnotatedTypeFactory referenceAtf) {
+    return getCollectionOwnershipAnnotatedTypeFactory(referenceAtf.getChecker());
+  }
+
+  /**
+   * Returns true if the given {@link TypeMirror} is a java.lang.Iterable, java.util.Iterator, or
+   * java.util.Map subtype.
+   *
+   * @param type the TypeMirror
+   * @param env the processing environment
+   * @return true if type is subtype of a java.lang.Iterable, java.util.Iterator, or java.util.Map
+   */
+  public static boolean isCollection(@Nullable TypeMirror type, ProcessingEnvironment env) {
+    return isSubtypeOf(type, Iterable.class, env)
+        || isSubtypeOf(type, Iterator.class, env)
+        || isSubtypeOf(type, Map.class, env);
+  }
+
+  /**
+   * Returns true if the given {@link TypeMirror} is a java.util.Iterator subtype.
+   *
+   * @param type the TypeMirror
+   * @param env the processing environment
+   * @return true if type is a java.util.Iterator
+   */
+  public static boolean isIterator(@Nullable TypeMirror type, ProcessingEnvironment env) {
+    return isSubtypeOf(type, Iterator.class, env);
+  }
+
+  /**
+   * Returns true if the given type is a declared type whose erasure is a subtype of the given
+   * class.
+   *
+   * @param type a type
+   * @param clazz a class
+   * @param env the processing environment
+   * @return true if the given type is a declared type whose erasure is a subtype of {@code clazz}
+   */
+  private static boolean isSubtypeOf(
+      @Nullable TypeMirror type, Class<?> clazz, ProcessingEnvironment env) {
+    return type != null
+        && type.getKind() == TypeKind.DECLARED
+        && TypesUtils.isErasedSubtype(
+            type,
+            TypesUtils.typeFromClass(clazz, env.getTypeUtils(), env.getElementUtils()),
+            env.getTypeUtils());
+  }
+
+  /**
+   * Returns the element type of the given collection type: the type argument of its {@code
+   * Iterable} or {@code Iterator} supertype. For example, it is {@code Resource} for {@code
+   * List<Resource>}, for {@code ConcurrentHashMap.KeySetView<Resource, Boolean>}, and for a class
+   * that extends {@code ArrayList<Resource>}.
+   *
+   * <p>The element type comes from the {@code Iterable} or {@code Iterator} supertype because a
+   * collection's own type arguments may not include it, or may include others: {@code
+   * KeySetView<Resource, Boolean>} has two type arguments, and a class that implements {@code
+   * Iterable<Resource>} may have none.
+   *
+   * @param type a type
+   * @param env the processing environment
+   * @return the element type of the given type, or null if it is not an {@code Iterable} or {@code
+   *     Iterator} with a type argument, as for a {@code Map}
+   */
+  public static @Nullable TypeMirror getCollectionElementType(
+      TypeMirror type, ProcessingEnvironment env) {
+    if (type.getKind() != TypeKind.DECLARED) {
+      return null;
+    }
+    for (Class<?> clazz : List.of(Iterable.class, Iterator.class)) {
+      TypeMirror asSuper =
+          TypesUtils.asSuper(
+              type,
+              TypesUtils.typeFromClass(clazz, env.getTypeUtils(), env.getElementUtils()),
+              env);
+      if (asSuper instanceof DeclaredType declaredType
+          && declaredType.getTypeArguments().size() == 1) {
+        return declaredType.getTypeArguments().get(0);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the index of the type parameter of the given class that is its element type, as defined
+   * by {@link #getCollectionElementType}, or -1 if its element type is not one of its type
+   * parameters. For example, it is 0 for {@code ArrayList<E>} and for {@code KeySetView<K, V>}.
+   *
+   * @param classElt a class or interface
+   * @param env the processing environment
+   * @return the index of the type parameter that is the element type of the class, or -1
+   */
+  public static int collectionElementTypeParameterIndex(
+      TypeElement classElt, ProcessingEnvironment env) {
+    TypeMirror elementType = getCollectionElementType(classElt.asType(), env);
+    return elementType instanceof TypeVariable typeVariable
+        ? classElt.getTypeParameters().indexOf(typeVariable.asElement())
+        : -1;
+  }
+
+  /**
+   * Returns the type argument of the given type that is its element type, as defined by {@link
+   * #getCollectionElementType}. For example, it is {@code Socket} for {@code List<Socket>} and for
+   * {@code KeySetView<Socket, Boolean>}. Returns null if the type is not a collection, is raw, or
+   * has no type argument that is its element type, as for a class that implements {@code
+   * Iterable<Socket>} and has no type parameters.
+   *
+   * @param type a type
+   * @param env the processing environment
+   * @return the type argument of {@code type} that is its element type, or null
+   */
+  public static @Nullable AnnotatedTypeMirror getCollectionElementTypeArgument(
+      AnnotatedTypeMirror type, ProcessingEnvironment env) {
+    if (!(type instanceof AnnotatedDeclaredType declaredType)) {
+      return null;
+    }
+    TypeElement classElt = TypesUtils.getTypeElement(declaredType.getUnderlyingType());
+    if (classElt == null) {
+      return null;
+    }
+    int elementIndex = collectionElementTypeParameterIndex(classElt, env);
+    List<? extends AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+    return elementIndex >= 0 && typeArgs.size() == classElt.getTypeParameters().size()
+        ? typeArgs.get(elementIndex)
+        : null;
+  }
+
+  /**
+   * Safely extract the values of a given element in an {@link AnnotationMirror}. Returns the list
+   * of such values and the empty list if the element is not present.
+   *
+   * @param anno the annotation to extract values from
+   * @param element the element to access from the annotation
+   * @return the list of values of the given element in the given annotation and the empty list if
+   *     it is not present
+   */
+  public static List<String> getValuesInAnno(AnnotationMirror anno, ExecutableElement element) {
+    if (anno == null) {
+      throw new BugInCF("Annotation " + anno + " must not be null.");
+    } else {
+      AnnotationValue av = anno.getElementValues().get(element);
+      if (av == null) {
+        return new ArrayList<String>();
+      } else {
+        return AnnotationUtils.annotationValueToList(av, String.class);
+      }
+    }
+  }
+
+  /**
+   * Returns the list of mustcall obligations for the given {@code TypeMirror} upper bound (either
+   * the type variable itself if it is concrete or the upper bound if its a wildcard or generic).
+   * The upper bound of a type variable or wildcard may itself be a type variable, as for {@code T}
+   * in {@code <R extends Closeable, T extends R>}; this method uses its upper bound in turn. The
+   * obligations of an intersection type, such as the upper bound of {@code T} in {@code <T extends
+   * Socket & Comparable<T>>}, are those of all its bounds.
+   *
+   * <p>If the type variable has no upper bound, for instance if it is a wildcard with no extends
+   * clause the method returns null.
+   *
+   * @param type the {@code TypeMirror}
+   * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
+   * @return the list of mustcall obligations for the upper bound of {@code type} or null if the
+   *     upper bound is null
+   */
+  public static @Nullable List<String> getMcValues(
+      TypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
+    // Replace a type variable or wildcard with its upper bound, until the type is neither or the
+    // bound is annotated, as in `T extends @MustCall("close") R`.
+    while (type instanceof TypeVariable || type instanceof WildcardType) {
+      if (type instanceof TypeVariable typeVariable) {
+        type = typeVariable.getUpperBound();
+      } else {
+        type = ((WildcardType) type).getExtendsBound();
+      }
+      if (type == null) {
+        // There is no upper bound, as for a wildcard with no extends clause.
+        return null;
+      }
+      if (AnnotationUtils.containsSameByClass(type.getAnnotationMirrors(), MustCall.class)
+          || hasManualMustCallUnknownAnno(type)) {
+        break;
+      }
+    }
+
+    if (type instanceof IntersectionType intersectionType) {
+      Set<String> result = new LinkedHashSet<>();
+      for (TypeMirror bound : intersectionType.getBounds()) {
+        List<String> boundValues = getMcValues(bound, mcAtf);
+        if (boundValues != null) {
+          result.addAll(boundValues);
+        }
+      }
+      return new ArrayList<>(result);
+    }
+
+    AnnotationMirror manualAnno =
+        AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCall.class);
+    AnnotationMirror manualMcUnknownAnno =
+        AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCallUnknown.class);
+    if (manualAnno != null) {
+      return getValuesInAnno(manualAnno, mcAtf.getMustCallValueElement());
+    }
+    if (manualMcUnknownAnno != null) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
+    }
+
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) {
+      return new ArrayList<>();
+    }
+    AnnotationMirror imcAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
+    AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
+    AnnotationMirror mcUnknownAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, MustCallUnknown.class);
+    if (mcAnnotation != null) {
+      return getValuesInAnno(mcAnnotation, mcAtf.getMustCallValueElement());
+    }
+    if (imcAnnotation != null) {
+      return getValuesInAnno(imcAnnotation, mcAtf.getInheritableMustCallValueElement());
+    }
+    if (mcUnknownAnnotation != null) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
+    }
+    return new ArrayList<>();
+  }
+
+  /**
+   * Returns the list of mustcall obligations for the given {@code AnnotatedTypeMirror} upper bound
+   * (either the type variable itself if it is concrete or the upper bound if it's a wildcard or
+   * generic).
+   *
+   * @param type the {@code AnnotatedTypeMirror}
+   * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
+   * @return the list of mustcall obligations for the upper bound of {@code type}
+   */
+  public static List<String> getMcValues(
+      AnnotatedTypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
+    AnnotationMirror anno = type.getAnnotationInHierarchy(mcAtf.TOP);
+    if (anno == null) {
+      return Collections.emptyList();
+    }
+    if (AnnotationUtils.areSameByName(anno, mcAtf.TOP)) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
+    }
+    return getValuesInAnno(anno, mcAtf.getMustCallValueElement());
+  }
+
+  /**
+   * Returns true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation.
+   *
+   * @param typeMirror the {@code TypeMirror}
+   * @return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation
+   */
+  public static boolean hasManualMustCallUnknownAnno(TypeMirror typeMirror) {
+    if (typeMirror == null) {
+      return false;
+    }
+    for (AnnotationMirror paramAnno : typeMirror.getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(paramAnno, MustCallUnknown.class.getCanonicalName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the passed {@code AnnotatedTypeMirror} has a manual {@code MustCallUnknown}
+   * annotation.
+   *
+   * @param annotatedTypeMirror the {@code AnnotatedTypeMirror}
+   * @param mcAtf the annotated type factory of the MustCall type system
+   * @return true if the passed {@code AnnotatedTypeMirror} has a manual {@code MustCallUnknown}
+   *     annotation
+   */
+  public static boolean hasManualMustCallUnknownAnno(
+      AnnotatedTypeMirror annotatedTypeMirror, MustCallAnnotatedTypeFactory mcAtf) {
+    if (annotatedTypeMirror == null) {
+      return false;
+    }
+    AnnotationMirror manualMcAnno = annotatedTypeMirror.getPrimaryAnnotationInHierarchy(mcAtf.TOP);
+    if (manualMcAnno == null) {
+      return false;
+    }
+    if (AnnotationUtils.areSameByName(manualMcAnno, MustCallUnknown.class.getCanonicalName())) {
+      return true;
+    }
+    return false;
   }
 }
