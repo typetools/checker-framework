@@ -2201,7 +2201,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * of the selector expression. If so, the selector expression might no longer denote the value
      * that the switch tests.
      */
-    private boolean codeRanSinceSelector = false;
+    private boolean sideEffectSinceSelector = false;
 
     /**
      * Constructs a SwitchBuilder.
@@ -2481,7 +2481,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
      * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch statement
-     *     or switch expression. The CFG does not test its labels.
+     *     or switch expression that has no default case. The CFG omits the test of this case's
+     *     labels, but not of the labels of the switch's earlier cases.
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
@@ -2497,8 +2498,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
-          if (mightHaveSideEffects(exprTree)) {
-            codeRanSinceSelector = true;
+          if (SideEffectScanner.mightHaveSideEffects(exprTree, annotationProvider)) {
+            sideEffectSinceSelector = true;
           }
         }
 
@@ -2510,7 +2511,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 selectorExprAssignment,
                 exprs,
                 labelsUntested,
-                codeRanSinceSelector,
+                sideEffectSinceSelector,
                 env.getTypeUtils()));
         if (!labelsUntested) {
           Label labelsMatchLabel = new Label();
@@ -2522,8 +2523,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          if (mightHaveSideEffects(guardTree)) {
-            codeRanSinceSelector = true;
+          if (SideEffectScanner.mightHaveSideEffects(guardTree, annotationProvider)) {
+            sideEffectSinceSelector = true;
           }
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
@@ -4481,146 +4482,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
     extendWithNode(dcpN);
     return dcpN;
-  }
-
-  /**
-   * Returns true if evaluating {@code tree} might have a side effect, such as an assignment or a
-   * call to a method that is not side-effect-free. Evaluating a lambda expression or a class
-   * declaration does not run its body, so this method does not examine the body.
-   *
-   * @param tree an expression or a pattern
-   * @return true if evaluating {@code tree} might have a side effect
-   */
-  private boolean mightHaveSideEffects(Tree tree) {
-    SideEffectScanner scanner = new SideEffectScanner();
-    scanner.scan(tree, null);
-    return scanner.mightHaveSideEffects;
-  }
-
-  /**
-   * Determines whether evaluating a tree might have a side effect. A method or constructor has a
-   * side effect unless {@link #annotationProvider} considers it side-effect-free, which is the same
-   * test that a store uses when deciding whether a call undoes flow-sensitive refinement.
-   */
-  private class SideEffectScanner extends TreeScanner<Void, Void> {
-
-    /** True if a scanned tree might have a side effect. */
-    boolean mightHaveSideEffects = false;
-
-    /** Creates a SideEffectScanner. */
-    SideEffectScanner() {}
-
-    @Override
-    public Void scan(Tree tree, Void p) {
-      if (tree != null && TreeUtils.isDeconstructionPatternTree(tree)) {
-        // Matching a deconstruction pattern calls the record's accessor methods.
-        TypeElement recordElt = TypesUtils.getTypeElement(TreeUtils.typeOf(tree));
-        if (recordElt == null) {
-          mightHaveSideEffects = true;
-        } else {
-          for (RecordComponentElement component : recordElt.getRecordComponents()) {
-            ExecutableElement accessor = component.getAccessor();
-            if (accessor == null || !annotationProvider.isSideEffectFree(accessor)) {
-              mightHaveSideEffects = true;
-            }
-          }
-        }
-      }
-      return super.scan(tree, p);
-    }
-
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-      if (!annotationProvider.isSideEffectFree(TreeUtils.elementFromUse(tree))) {
-        mightHaveSideEffects = true;
-      }
-      return super.visitMethodInvocation(tree, p);
-    }
-
-    @Override
-    public Void visitNewClass(NewClassTree tree, Void p) {
-      // The initializers of an anonymous class run when it is instantiated.
-      if (tree.getClassBody() != null
-          || !annotationProvider.isSideEffectFree(TreeUtils.elementFromUse(tree))) {
-        mightHaveSideEffects = true;
-      }
-      return super.visitNewClass(tree, p);
-    }
-
-    @Override
-    public Void visitAssignment(AssignmentTree tree, Void p) {
-      mightHaveSideEffects = true;
-      return super.visitAssignment(tree, p);
-    }
-
-    @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-      mightHaveSideEffects = true;
-      return super.visitCompoundAssignment(tree, p);
-    }
-
-    @Override
-    public Void visitBinary(BinaryTree tree, Void p) {
-      // String conversion of an operand that is a non-String reference calls its toString().
-      if (tree.getKind() == Tree.Kind.PLUS
-          && TypesUtils.isString(TreeUtils.typeOf(tree))
-          && (callsToStringInConcatenation(TreeUtils.typeOf(tree.getLeftOperand()))
-              || callsToStringInConcatenation(TreeUtils.typeOf(tree.getRightOperand())))) {
-        mightHaveSideEffects = true;
-      }
-      return super.visitBinary(tree, p);
-    }
-
-    /**
-     * Returns true if string conversion of an operand of type {@code type}, in a string
-     * concatenation, might call a {@code toString()} method.
-     *
-     * @param type the type of a string concatenation operand
-     * @return true if string conversion of a value of type {@code type} might call {@code
-     *     toString()}
-     */
-    private boolean callsToStringInConcatenation(TypeMirror type) {
-      TypeKind kind = type.getKind();
-      return !kind.isPrimitive() && kind != TypeKind.NULL && !TypesUtils.isString(type);
-    }
-
-    @Override
-    public Void visitUnary(UnaryTree tree, Void p) {
-      switch (tree.getKind()) {
-        case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT ->
-            mightHaveSideEffects = true;
-        default -> {}
-      }
-      return super.visitUnary(tree, p);
-    }
-
-    @Override
-    public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-      // A loop over an Iterable calls iterator(), hasNext(), and next().
-      mightHaveSideEffects = true;
-      return super.visitEnhancedForLoop(tree, p);
-    }
-
-    @Override
-    public Void visitTry(TryTree tree, Void p) {
-      if (!tree.getResources().isEmpty()) {
-        // A try-with-resources statement calls close().
-        mightHaveSideEffects = true;
-      }
-      return super.visitTry(tree, p);
-    }
-
-    @Override
-    public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
-      // Evaluating a lambda expression does not run its body.
-      return null;
-    }
-
-    @Override
-    public Void visitClass(ClassTree tree, Void p) {
-      // A class declaration runs no code.
-      return null;
-    }
   }
 
   @Override
