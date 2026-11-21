@@ -123,11 +123,12 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         if (!atypeFactory.maybeIntegral(leftOpType) || !atypeFactory.maybeIntegral(rightOpType)) {
           break;
         }
-        if (leftOpType.hasPrimaryAnnotation(Unsigned.class)
-            && rightOpType.hasPrimaryAnnotation(Signed.class)) {
+        // A reference comparison leaves a type-variable operand unchanged, so use its effective
+        // annotations, which come from its upper bound.
+        if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
           checker.reportError(tree, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
-        } else if (leftOpType.hasPrimaryAnnotation(Signed.class)
-            && rightOpType.hasPrimaryAnnotation(Unsigned.class)) {
+        } else if (leftOpType.hasAnnotation(Signed.class)
+            && rightOpType.hasAnnotation(Unsigned.class)) {
           checker.reportError(tree, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
         }
         break;
