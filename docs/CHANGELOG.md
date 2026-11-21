@@ -27,6 +27,12 @@ New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
 pattern variable.  New method `AnnotatedTypeFactory.isNestedBindingVariable()`
 returns true for a pattern variable nested in a record pattern.
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
