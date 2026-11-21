@@ -151,6 +151,10 @@ public class ControlFlowGraph implements UniqueId {
    */
   public void checkInvariants() {
     // TODO: this is a big data structure with many more invariants...
+    // The predecessors of each block, computed once per block.  Block.getPredecessors takes time
+    // quadratic in the number of predecessors, and a block such as the exceptional exit can have
+    // thousands of predecessors.
+    IdentityHashMap<Block, Set<Block>> predecessors = new IdentityHashMap<>();
     for (Block b : getAllBlocks()) {
 
       // Each node in the block should have this block as its parent.
@@ -168,7 +172,9 @@ public class ControlFlowGraph implements UniqueId {
 
       // Each successor should have this block in its predecessors.
       for (Block succ : b.getSuccessors()) {
-        if (!succ.getPredecessors().contains(b)) {
+        if (!predecessors
+            .computeIfAbsent(succ, s -> new HashSet<>(s.getPredecessors()))
+            .contains(b)) {
           throw new IllegalStateException(
               "Block "
                   + b
