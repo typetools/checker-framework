@@ -16,6 +16,13 @@ over a `@DefaultQualifier` annotation on that same element.  Formerly, it
 suppressed the `@DefaultQualifier` annotations on the element and on the
 element's enclosing elements.
 
+`QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
+`AnnotatedTypeScanner<Void, Void>` rather than
+`AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
+may now apply more than one default; its `scan()`, `visitDeclared()`,
+`visitTypeVariable()`, `visitWildcard()`, and `visitBounds()` methods take a
+`Void` parameter accordingly.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
