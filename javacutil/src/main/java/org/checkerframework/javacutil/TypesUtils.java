@@ -29,6 +29,7 @@ import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
@@ -1037,6 +1038,72 @@ public final class TypesUtils {
         }
       }
     }
+    return false;
+  }
+
+  /**
+   * Returns true if an expression of type {@code a} and an expression of type {@code b} might
+   * evaluate to the same object. Unlike {@link #canAlias}, the answer is conservative when an
+   * interface type is involved: it is true if some erased bound of {@code a} and some erased bound
+   * of {@code b} might have a common subtype. For example, it returns true for {@code Number[]} and
+   * {@code Comparable[]}, because one {@code Integer[]} is both. Use this method rather than {@link
+   * #canAlias} when a false answer must be sound.
+   *
+   * @param a the type of an expression
+   * @param b the type of another expression
+   * @param types the type utilities
+   * @return true if an expression of type {@code a} and an expression of type {@code b} might
+   *     evaluate to the same object
+   */
+  public static boolean canAliasConservative(TypeMirror a, TypeMirror b, Types types) {
+    if (canAlias(a, b, types)) {
+      return true;
+    }
+    for (TypeMirror boundA : erasedBounds(a, types)) {
+      for (TypeMirror boundB : erasedBounds(b, types)) {
+        if (mayHaveCommonSubtype(boundA, boundB, types)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the given erased types might have a common subtype, other than the null type.
+   * Two classes have a common subtype only if one is a subtype of the other. An interface and a
+   * class that is not final might have a common subtype, as might two interfaces. Two array types
+   * have a common subtype if their component types do.
+   *
+   * @param a an erased type
+   * @param b another erased type
+   * @param types the type utilities
+   * @return true if {@code a} and {@code b} might have a common subtype
+   */
+  private static boolean mayHaveCommonSubtype(TypeMirror a, TypeMirror b, Types types) {
+    if (types.isSubtype(a, b) || types.isSubtype(b, a)) {
+      return true;
+    }
+    if (a.getKind() == TypeKind.ARRAY && b.getKind() == TypeKind.ARRAY) {
+      return mayHaveCommonSubtype(
+          ((ArrayType) a).getComponentType(), ((ArrayType) b).getComponentType(), types);
+    }
+    if (a.getKind() == TypeKind.DECLARED && b.getKind() == TypeKind.DECLARED) {
+      TypeElement elementA = (TypeElement) ((DeclaredType) a).asElement();
+      TypeElement elementB = (TypeElement) ((DeclaredType) b).asElement();
+      boolean interfaceA = elementA.getKind().isInterface();
+      boolean interfaceB = elementB.getKind().isInterface();
+      if (interfaceA && interfaceB) {
+        return true;
+      } else if (interfaceA) {
+        return !elementB.getModifiers().contains(Modifier.FINAL);
+      } else if (interfaceB) {
+        return !elementA.getModifiers().contains(Modifier.FINAL);
+      }
+      return false;
+    }
+    // Array types are subtypes only of Object, Cloneable, and Serializable, and of other array
+    // types; the subtype checks above handle those.  Primitive types have no common subtype.
     return false;
   }
 

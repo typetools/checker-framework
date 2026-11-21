@@ -319,8 +319,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * <p>A symbolic offset such as {@code z} denotes the value of {@code z} at the point where the
    * store is used, but the fact being recorded is about the value that {@code offsetNode} had when
    * it was evaluated. If that value might change before the comparison completes, as {@code z} does
-   * in {@code (x = y) + z < (z = a.length)}, then this method uses only the compile-time constant
-   * value of {@code offsetNode}, if there is one, and otherwise returns UNKNOWN.
+   * in {@code (x = y) + z < (z = a.length)}, or if it is not deterministic, as {@code choose()} is
+   * in {@code (x = y) + choose() < a.length} for a nondeterministic method {@code choose}, then
+   * this method uses only the compile-time constant value of {@code offsetNode}, if there is one,
+   * and otherwise returns UNKNOWN.
    *
    * @param qualifier the qualifier to offset
    * @param offsetNode a node in an operand of a comparison, whose value is the offset
@@ -328,7 +330,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * @return {@code qualifier} plus or minus the value of {@code offsetNode}
    */
   private UBQualifier offsetByComparedNode(UBQualifier qualifier, Node offsetNode, char op) {
-    if (nodesWithValueOf(offsetNode).contains(offsetNode)) {
+    if (nodesWithValueOf(offsetNode).contains(offsetNode)
+        && JavaExpression.fromNode(offsetNode).isDeterministic(atypeFactory)) {
       return op == '+'
           ? qualifier.plusOffset(offsetNode, atypeFactory)
           : qualifier.minusOffset(offsetNode, atypeFactory);
@@ -367,7 +370,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
     // larger > smaller
     UBQualifier largerQual =
-        UBQualifier.createUBQualifier(largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(
+                largerAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            larger);
     // larger + 1 >= smaller
     UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
     UBQualifier rightQualifier =
@@ -403,7 +409,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       return;
     }
     UBQualifier leftQualifier =
-        UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            left);
     UBQualifier rightQualifier =
         UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
     UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
@@ -446,7 +454,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         && !mayBeChangedByLaterOperand(offsetNode)) {
 
       Node minuend = subtractionNode.getLeftOperand();
-      UBQualifier minuendQual = getUBQualifier(minuend, in);
+      UBQualifier minuendQual =
+          qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend);
       Node subtrahend = subtractionNode.getRightOperand();
       UBQualifier subtrahendQual = getUBQualifier(subtrahend, in);
 
@@ -456,6 +465,26 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       insertValueForNodesWithValueOf(
           store, subtrahend, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
+  }
+
+  /**
+   * Returns the given qualifier of the given node, or UNKNOWN if the qualifier might not hold when
+   * the comparison that contains the node completes, because it contains an expression whose value
+   * might change after the node is evaluated (see {@link
+   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of one
+   * node that is used to refine a different node.
+   *
+   * @param qualifier a qualifier of {@code node}
+   * @param node a node in an operand of a comparison
+   * @return {@code qualifier}, or UNKNOWN if it might not hold when the comparison completes
+   */
+  private UBQualifier qualifierWhenComparisonCompletes(UBQualifier qualifier, Node node) {
+    if (qualifier.isLessThanLengthQualifier()
+        && containsExpressionChangedBeforeComparisonCompletes(
+            atypeFactory.convertUBQualifierToAnnotation(qualifier), node)) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    return qualifier;
   }
 
   /** Implements case 11. */
