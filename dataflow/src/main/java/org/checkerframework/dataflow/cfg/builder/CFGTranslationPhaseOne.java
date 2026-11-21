@@ -66,10 +66,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -136,6 +138,7 @@ import org.checkerframework.dataflow.cfg.node.LongLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode.BoxingConversion;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
@@ -163,7 +166,6 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.AssertMethod;
@@ -175,6 +177,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -283,6 +286,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** SwitchBuilder for the current switch. Used to match yield statements to enclosing switches. */
   private SwitchBuilder switchBuilder;
+
+  /** The switch expressions none of whose results may be null. */
+  private final Set<SwitchExpressionNode> neverNullSwitchExpressions =
+      Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
@@ -660,6 +667,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * Extend the list of extended nodes with a node that might throw a {@code NullPointerException}.
+   *
+   * @param node the node to add
+   * @param mayThrowNullPointerException true if the node might throw a {@code NullPointerException}
+   */
+  private void extendWithNode(Node node, boolean mayThrowNullPointerException) {
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(node, nullPointerExceptionType);
+    } else {
+      extendWithNode(node);
+    }
+  }
+
+  /**
    * Extends the list of extended nodes with a node, where {@code node} might throw the exception
    * {@code cause}.
    *
@@ -879,7 +900,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(valueOfCall);
       Node boxed =
           new MethodInvocationNode(
-              valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
+              valueOfCall,
+              valueOfAccess,
+              Collections.singletonList(node),
+              getCurrentPath(),
+              BoxingConversion.BOXING);
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
@@ -904,15 +929,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(primValueSelect);
       MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
       primValueAccess.setInSource(false);
-      // Method access may throw NullPointerException
-      insertNodeWithExceptionsAfter(
-          primValueAccess, Collections.singleton(nullPointerExceptionType), node);
+      if (mayBeNull(node)) {
+        insertNodeWithExceptionsAfter(
+            primValueAccess, Collections.singleton(nullPointerExceptionType), node);
+      } else {
+        insertNodeAfter(primValueAccess, node);
+      }
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
       Node unboxed =
           new MethodInvocationNode(
-              primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
+              primValueCall,
+              primValueAccess,
+              Collections.emptyList(),
+              getCurrentPath(),
+              BoxingConversion.UNBOXING);
       unboxed.setInSource(false);
 
       // Add Throwable to account for unchecked exceptions
@@ -1104,7 +1136,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // For narrowing conversion, see JLS 5.1.3
     assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
         : "narrowing must be applied to primitive types";
-    if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
+    // Test `!types.isSubtype(node.getType(), destType)` (that is, "not a widening conversion"),
+    // not `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a supertype
+    // of byte and short, but a constant char can be narrowed to byte or short (and a constant
+    // byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between distinct
+    // numeric primitive types that is not a widening conversion is a narrowing conversion (or,
+    // for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
+      // The conversion from the type of node to destType is a narrowing conversion (or, for byte
+      // to char, a widening and narrowing conversion).
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
@@ -1131,24 +1171,56 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if a conversion from the type of the node to varType requires narrowing.
+   * Returns true if the node is a compile-time constant and varType is byte, short, char, Byte,
+   * Short, or Character. Assignment conversion converts such a constant to the primitive type of
+   * varType, even by a narrowing conversion, before boxing it if varType is a boxed type (JLS 5.2),
+   * as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code Short s = (byte) 1;}.
    *
    * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return true if this conversion requires narrowing to succeed
+   * @return true if the node is a compile-time constant and varType is byte, short, char, Byte,
+   *     Short, or Character
    */
-  protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
-    // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
-        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+  protected boolean isConstantToByteShortOrChar(TypeMirror varType, Node node) {
+    return TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
+        && isCompileTimeConstant(node);
+  }
+
+  /**
+   * Converts the given compile-time constant to the given type, which is byte, short, char, Byte,
+   * Short, or Character, as assignment conversion does (JLS 5.2). The conversion widens or narrows
+   * the constant to the primitive type of varType, then boxes it if varType is a boxed type. For
+   * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
+   *
+   * @param node a node producing a compile-time constant of primitive type
+   * @param varType the type to convert the constant to
+   * @return a Node with the value converted to varType, which might be the input node
+   * @see #isConstantToByteShortOrChar
+   */
+  protected Node convertConstant(Node node, TypeMirror varType) {
+    boolean isBoxed = TypesUtils.isBoxedPrimitive(varType);
+    TypeMirror primitiveType = isBoxed ? types.unboxedType(varType) : varType;
+    Node converted =
+        types.isSubtype(node.getType(), primitiveType)
+            ? widen(node, primitiveType)
+            : narrow(node, primitiveType);
+    return isBoxed ? box(converted) : converted;
+  }
+
+  /**
+   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
+   * {@code 1 + 2}, or a use of a constant variable.
+   *
+   * @param node a node
+   * @return true if the node is a compile-time constant expression
+   */
+  private static boolean isCompileTimeConstant(Node node) {
+    Tree tree = node.getTree();
+    if (tree == null) {
+      return false;
+    }
+    Type type = (Type) TreeUtils.typeOf(tree);
+    return type != null && type.constValue() != null;
   }
 
   /**
@@ -1189,8 +1261,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrowAndBox(node, varType);
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+        node = convertConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1202,8 +1274,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrow(node, varType);
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+        node = convertConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.
@@ -1760,8 +1832,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       exprType = TypesUtils.upperBound(exprType);
 
       assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
-      DeclaredType declaredExprType = (DeclaredType) exprType;
-      declaredExprType.getTypeArguments();
 
       MemberSelectTree iteratorSelect = treeBuilder.buildIteratorMethodAccess(expression);
       handleArtificialTree(iteratorSelect);
@@ -1770,7 +1840,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(iteratorCall);
 
       VariableTree iteratorVariable =
-          createEnhancedForLoopIteratorVariable(iteratorCall, variableElement);
+          createIteratorVariableForEnhancedForLoop(iteratorCall, variableElement);
       handleArtificialTree(iteratorVariable);
 
       VariableDeclarationNode iteratorVariableDecl = new VariableDeclarationNode(iteratorVariable);
@@ -1780,27 +1850,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       Node expressionNode = scan(expression, p);
 
-      MethodAccessNode iteratorAccessNode = new MethodAccessNode(iteratorSelect, expressionNode);
-      iteratorAccessNode.setInSource(false);
-      extendWithNode(iteratorAccessNode);
       MethodInvocationNode iteratorCallNode =
-          new MethodInvocationNode(
-              iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
-      iteratorCallNode.setInSource(false);
-      // The iterator() call gets exceptional successors only if it terminates execution.
-      // Exceptional successors in general would cause Resource Leak Checker false positives:  on
-      // an exceptional successor of iterator(), the iterator variable is unassigned, and where
-      // that path merges with one on which the iterator variable is a @MustCallAlias of the
-      // Iterable (such as an exceptional successor of hasNext() or next()), the checker cannot
-      // determine the iterator variable's must-call type.  If iterator() terminates execution,
-      // then hasNext() and next() are unreachable, so no such merge occurs.
-      if (annotationProvider.getDeclAnnotation(
-              iteratorCallNode.getTarget().getMethod(), TerminatesExecution.class)
-          != null) {
-        extendWithMethodInvocationNode(iteratorCallNode);
-      } else {
-        extendWithNode(iteratorCallNode);
-      }
+          extendWithArtificialCall(iteratorCall, expressionNode, NullReceiver.THROWS);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1817,19 +1868,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree hasNextSelect = treeBuilder.buildHasNextMethodAccess(iteratorUse1);
       handleArtificialTree(hasNextSelect);
 
-      MethodAccessNode hasNextAccessNode =
-          new MethodAccessNode(hasNextSelect, iteratorReceiverNode);
-      hasNextAccessNode.setInSource(false);
-      extendWithNode(hasNextAccessNode);
-
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
 
-      MethodInvocationNode hasNextCallNode =
-          new MethodInvocationNode(
-              hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
-      hasNextCallNode.setInSource(false);
-      extendWithMethodInvocationNode(hasNextCallNode);
+      // The iterator is null only if iterator() returned null, and in that case the first call to
+      // hasNext() throws NullPointerException.  Later calls cannot throw NullPointerException, but
+      // treating every call as possibly throwing it loses no precision:  every call already has a
+      // RuntimeException edge, which subsumes the NullPointerException edge.
+      extendWithArtificialCall(hasNextCall, iteratorReceiverNode, NullReceiver.THROWS);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1846,23 +1892,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree nextSelect = treeBuilder.buildNextMethodAccess(iteratorUse2);
       handleArtificialTree(nextSelect);
 
-      MethodAccessNode nextAccessNode = new MethodAccessNode(nextSelect, iteratorReceiverNode2);
-      nextAccessNode.setInSource(false);
-      extendWithNode(nextAccessNode);
-
       MethodInvocationTree nextCall = treeBuilder.buildMethodInvocation(nextSelect);
       handleArtificialTree(nextCall);
 
       MethodInvocationNode nextCallNode =
-          new MethodInvocationNode(
-              nextCall, nextAccessNode, Collections.emptyList(), getCurrentPath());
+          // hasNext() was just called on the same iterator, so the iterator is not null.
+          extendWithArtificialCall(nextCall, iteratorReceiverNode2, NullReceiver.IMPOSSIBLE);
       // If the type of iteratorVariable is a capture, its type tree may be missing
       // annotations, so save the expression in the node so that the full type can be
       // found later.
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
-      nextCallNode.setInSource(false);
-      extendWithMethodInvocationNode(nextCallNode);
 
       AssignmentNode assignNode =
           translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
@@ -1882,7 +1922,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // TODO: Shift any labels after the initialization of the
       // temporary array variable.
 
-      VariableTree arrayVariable = createEnhancedForLoopArrayVariable(expression, variableElement);
+      VariableTree arrayVariable =
+          createArrayVariableForEnhancedForLoop(expression, variableElement);
       handleArtificialTree(arrayVariable);
 
       VariableDeclarationNode arrayVariableNode = new VariableDeclarationNode(arrayVariable);
@@ -1912,9 +1953,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       translateAssignment(indexVariable, new LocalVariableNode(indexVariable), zeroNode);
 
       // The array variable is never reassigned, so only the first access to its length can throw
-      // NullPointerException.  Represent that first access before the loop, and the access in the
-      // loop condition without the exception.
-      if (mayBeNull(expression)) {
+      // NullPointerException.  Represent that first access before the loop, and represent the
+      // access in the loop condition without the exception.
+      if (mayBeNull(expressionNode)) {
         extendWithArrayLengthAccess(arrayVariable, true);
       }
 
@@ -2011,18 +2052,109 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that is initialized to the iterator
-   * of an enhanced for loop.
+   * Returns true if the value of the given node may be null. Returns false only if the kind of the
+   * node guarantees that its value is never null, whatever the values of variables. For example,
+   * {@code this}, the result of {@code new}, and a call to {@code Integer.valueOf} are never null.
+   * An enum constant may be null, because it can be read during class initialization before it is
+   * assigned. A type name, as in {@code String.valueOf(x)}, is never null because it has no value.
    *
-   * @param iteratorCall the call to {@code iterator()} on the iterable expression of an enhanced
-   *     for loop
-   * @param variableElement the element of the loop's variable; the new variable has the same
-   *     enclosing element
+   * @param node a node of reference type, or a type name
+   * @return true if the value of the node may be null; false if it is never null
+   */
+  private boolean mayBeNull(Node node) {
+    if (node instanceof ThisNode
+        || node instanceof SuperNode
+        || node instanceof ClassNameNode
+        || node instanceof ObjectCreationNode
+        || node instanceof ArrayCreationNode
+        || node instanceof StringLiteralNode
+        || node instanceof StringConcatenateNode
+        || node instanceof FunctionalInterfaceNode) {
+      return false;
+    } else if (node instanceof FieldAccessNode fieldAccess) {
+      // A class literal or a qualified `this`.
+      String fieldName = fieldAccess.getFieldName();
+      return !(fieldName.equals("class") || fieldName.equals("this"));
+    } else if (node instanceof MethodInvocationNode invocation) {
+      return !isBoxedPrimitiveValueOf(invocation.getTarget().getMethod());
+    } else if (node instanceof TypeCastNode cast) {
+      return mayBeNull(cast.getOperand());
+    } else if (node instanceof TernaryExpressionNode ternary) {
+      return mayBeNull(ternary.getThenOperand()) || mayBeNull(ternary.getElseOperand());
+    } else if (node instanceof SwitchExpressionNode switchExpression) {
+      return !neverNullSwitchExpressions.contains(switchExpression);
+    } else if (node instanceof AssignmentNode assignment) {
+      return mayBeNull(assignment.getExpression());
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * Returns true if the given method is a static {@code valueOf} method of a boxed primitive type,
+   * such as {@code Integer.valueOf}. Such a method never returns null.
+   *
+   * @param method a method
+   * @return true if the method is a static {@code valueOf} method of a boxed primitive type
+   */
+  private static boolean isBoxedPrimitiveValueOf(ExecutableElement method) {
+    return ElementUtils.isStatic(method)
+        && method.getSimpleName().contentEquals("valueOf")
+        && TypesUtils.isBoxedPrimitive(method.getEnclosingElement().asType());
+  }
+
+  /**
+   * Returns true if accessing the given member through the given receiver may throw a {@code
+   * NullPointerException}.
+   *
+   * @param member the accessed field or method
+   * @param receiver the receiver of the access
+   * @return true if the access may throw a {@code NullPointerException}
+   */
+  private boolean accessMayThrowNullPointerException(Element member, Node receiver) {
+    return !ElementUtils.isStatic(member) && mayBeNull(receiver);
+  }
+
+  /**
+   * Returns the given type without its primary annotations, but with the annotations on its type
+   * arguments and array components. A variable declared with the result is refined by its
+   * initializer, like a local variable whose declared type has no primary annotations. Returns
+   * {@code type} itself if it is neither an array type nor a declared type. Does not side-effect
+   * {@code type}.
+   *
+   * @param type a type
+   * @return the type without its primary annotations; may be {@code type} itself
+   */
+  protected TypeMirror withoutPrimaryAnnotations(TypeMirror type) {
+    if (type instanceof ArrayType arrayType) {
+      // getArrayType always creates a new, unannotated type.
+      return types.getArrayType(arrayType.getComponentType());
+    } else if (type instanceof DeclaredType declaredType) {
+      TypeElement typeElement = (TypeElement) declaredType.asElement();
+      TypeMirror[] typeArgs = declaredType.getTypeArguments().toArray(new TypeMirror[0]);
+      TypeMirror enclosingType = declaredType.getEnclosingType();
+      if (enclosingType instanceof DeclaredType enclosingDeclaredType) {
+        return types.getDeclaredType(enclosingDeclaredType, typeElement, typeArgs);
+      } else {
+        return types.getDeclaredType(typeElement, typeArgs);
+      }
+    } else {
+      return type;
+    }
+  }
+
+  /**
+   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
+   * enhanced for loop over an {@code Iterable}.
+   *
+   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new iterator variable
    */
-  protected VariableTree createEnhancedForLoopIteratorVariable(
+  protected VariableTree createIteratorVariableForEnhancedForLoop(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
-    TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
+    TypeMirror iteratorType = withoutPrimaryAnnotations(TreeUtils.typeOf(iteratorCall));
 
     // Declare and initialize a new, unique iterator variable
     VariableTree iteratorVariable =
@@ -2060,17 +2192,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that is initialized to the array of
-   * an enhanced for loop.
+   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
+   * for loop over an array.
    *
-   * @param expression the array expression of an enhanced for loop
-   * @param variableElement the element of the loop's variable; the new variable has the same
-   *     enclosing element
+   * @param expression an array expression of an enhanced for loop, which initializes the new
+   *     variable
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new array variable
    */
-  protected VariableTree createEnhancedForLoopArrayVariable(
+  protected VariableTree createArrayVariableForEnhancedForLoop(
       ExpressionTree expression, VariableElement variableElement) {
-    TypeMirror arrayType = TreeUtils.typeOf(expression);
+    TypeMirror arrayType = withoutPrimaryAnnotations(TreeUtils.typeOf(expression));
 
     // Declare and initialize a temporary array variable
     VariableTree arrayVariable =
@@ -2099,23 +2232,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     handleArtificialTree(lengthSelect);
     FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
     lengthAccessNode.setInSource(false);
-    if (mayThrowNullPointerException) {
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
-    } else {
-      extendWithNode(lengthAccessNode);
-    }
+    extendWithNode(lengthAccessNode, mayThrowNullPointerException);
     return lengthAccessNode;
-  }
-
-  /**
-   * Returns false if the expression is never null, judging from its syntax.
-   *
-   * @param expression an expression of reference type
-   * @return false if the expression is never null; true if it might be null
-   */
-  private static boolean mayBeNull(ExpressionTree expression) {
-    expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   @Override
@@ -2181,6 +2299,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * The Node for the assignment of the switch selector expression to a synthetic local variable.
      */
     private AssignmentNode selectorExprAssignment;
+
+    /** True if some result of the switch expression may be null. */
+    private boolean someResultMayBeNull = false;
 
     /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
@@ -2294,6 +2415,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new SwitchExpressionNode(
                 TreeUtils.typeOf(switchTree), switchExpressionTree, switchExprVarUseNode);
         extendWithNode(switchExpressionNode);
+        if (!someResultMayBeNull) {
+          neverNullSwitchExpressions.add(switchExpressionNode);
+        }
         return switchExpressionNode;
       } else {
         return null;
@@ -2473,7 +2597,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = scan(resultExpression, null);
+      // Convert the result to the type of the switch expression, as by boxing `1` in
+      // `Object o = switch (x) { default -> 1; };`.
+      Node resultExprNode =
+          assignConvert(scan(resultExpression, null), switchExprVarUseNode.getType());
+      someResultMayBeNull |= mayBeNull(resultExprNode);
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
       handleArtificialTree(assign);
@@ -2570,13 +2698,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Map<Name, Label> oldContinueLabels = continueLabels;
 
     Label finallyLabel = null;
-    Label exceptionalFinallyLabel = null;
+    TryFinallyFrame exceptionalFinallyFrame = null;
 
     if (finallyBlock != null) {
       finallyLabel = new Label();
 
-      exceptionalFinallyLabel = new Label();
-      tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+      exceptionalFinallyFrame = new TryFinallyFrame(types, nodeList.size());
+      tryStack.pushFrame(exceptionalFinallyFrame);
 
       returnTargetLC = new LabelCell();
 
@@ -2623,8 +2751,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           tree,
           doneLabel,
           finallyLabel,
-          exceptionalFinallyLabel,
+          exceptionalFinallyFrame,
           () -> scan(finallyBlock, p),
+          primaryExceptionTypes -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
           oldBreakLabels,
@@ -2690,8 +2819,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label doneLabel = new Label();
     Label finallyLabel = new Label();
 
-    Label exceptionalFinallyLabel = new Label();
-    tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+    TryFinallyFrame exceptionalFinallyFrame = new TryFinallyFrame(types, nodeList.size());
+    tryStack.pushFrame(exceptionalFinallyFrame);
 
     returnTargetLC = new LabelCell();
 
@@ -2721,8 +2850,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         resourceDeclarationTree,
         doneLabel,
         finallyLabel,
-        exceptionalFinallyLabel,
+        exceptionalFinallyFrame,
         () -> addCloseCallForResource(resourceDeclarationTree, p),
+        primaryExceptionTypes ->
+            addSuppressingCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2741,6 +2872,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param p the value to pass to calls to {@code scan}
    */
   private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+    addCloseCallForResource(resourceDeclarationTree, Collections.emptySet(), p);
+  }
+
+  /**
+   * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
+   * in a try-with-resources.
+   *
+   * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
+   *     resource
+   * @param extraExceptionTypes types that label exceptional edges of the {@code close} call, in
+   *     addition to the types of the exceptions that the call might throw
+   * @param p the value to pass to calls to {@code scan}
+   */
+  private void addCloseCallForResource(
+      Tree resourceDeclarationTree, Set<TypeMirror> extraExceptionTypes, Void p) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
     Node receiverNode;
@@ -2764,10 +2910,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // A try-with-resources statement calls close() only if the resource is non-null (JLS
     // 14.20.3.1).  A resource variable is final, so it is non-null if its initializer is.
-    boolean resourceMayBeNull =
-        !(resourceDeclarationTree instanceof VariableTree variableTree
-            && variableTree.getInitializer() != null
-            && !mayBeNull(variableTree.getInitializer()));
+    boolean resourceMayBeNull = true;
+    if (resourceDeclarationTree instanceof VariableTree variableTree
+        && variableTree.getInitializer() != null) {
+      Set<Node> initializerNodes = treeToCfgNodes.get(variableTree.getInitializer());
+      resourceMayBeNull =
+          initializerNodes == null
+              || initializerNodes.isEmpty()
+              || initializerNodes.stream().anyMatch(this::mayBeNull);
+    }
     Label afterCloseLabel = new Label();
     if (resourceMayBeNull) {
       LiteralTree nullTree = treeBuilder.buildNullLiteral();
@@ -2792,18 +2943,106 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
-    closeAccessNode.setInSource(false);
-    extendWithNode(closeAccessNode);
-    MethodInvocationNode closeCallNode =
-        new MethodInvocationNode(
-            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
-    closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(closeCallNode);
+    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE, extraExceptionTypes);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
     }
+  }
+
+  /** What happens when the receiver of a call that desugars a statement is null. */
+  private enum NullReceiver {
+    /** The receiver may be null, and then the call throws a {@code NullPointerException}. */
+    THROWS,
+    /**
+     * The receiver is never null, for a reason that its syntax does not show, such as being a final
+     * variable whose initializer is never null. For a receiver whose syntax shows that it is never
+     * null, such as {@code this}, {@code IMPOSSIBLE} and {@code THROWS} are equivalent.
+     */
+    IMPOSSIBLE
+  }
+
+  /**
+   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
+   * call to {@code iterator()} in an enhanced for loop.
+   *
+   * @param call the call
+   * @param receiver the receiver of the call
+   * @param nullReceiver what happens when the receiver is null. If the receiver is never null, such
+   *     as {@code this}, the call does not throw a {@code NullPointerException}, regardless of this
+   *     argument.
+   * @return the node for the call
+   */
+  private MethodInvocationNode extendWithArtificialCall(
+      MethodInvocationTree call, Node receiver, NullReceiver nullReceiver) {
+    return extendWithArtificialCall(call, receiver, nullReceiver, Collections.emptySet());
+  }
+
+  /**
+   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
+   * call to {@code iterator()} in an enhanced for loop.
+   *
+   * @param call the call
+   * @param receiver the receiver of the call
+   * @param nullReceiver what happens when the receiver is null. If the receiver is never null, such
+   *     as {@code this}, the call does not throw a {@code NullPointerException}, regardless of this
+   *     argument.
+   * @param extraExceptionTypes types that label exceptional edges of the call, in addition to the
+   *     types of the exceptions that the call might throw
+   * @return the node for the call
+   */
+  private MethodInvocationNode extendWithArtificialCall(
+      MethodInvocationTree call,
+      Node receiver,
+      NullReceiver nullReceiver,
+      Set<TypeMirror> extraExceptionTypes) {
+    MethodAccessNode accessNode =
+        new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
+    accessNode.setInSource(false);
+    extendWithNode(accessNode, nullReceiver == NullReceiver.THROWS && mayBeNull(receiver));
+    MethodInvocationNode callNode =
+        new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
+    callNode.setInSource(false);
+    extendWithInvocationNode(callNode, callNode.getTarget().getMethod(), extraExceptionTypes);
+    return callNode;
+  }
+
+  /**
+   * Adds a synthetic {@code close} call to the CFG, as {@link #addCloseCallForResource} does, for
+   * the path on which an exception (the primary exception) reached the synthetic finally block of a
+   * try-with-resources statement. On that path, the statement suppresses any exception that {@code
+   * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
+   * successor of the added nodes is the node that follows them.
+   *
+   * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
+   * addition to the types of the exceptions that {@code close} might throw. So an analysis that
+   * ignores some exception types follows those edges, with the exceptional store of the call,
+   * whenever it follows the rethrow of the primary exception -- even if it ignores every exception
+   * that {@code close} might throw. Otherwise, if {@code close} terminates execution and might
+   * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
+   * unreachable.
+   *
+   * <p>If {@code close} terminates execution, the call has no normal successor, but its exceptional
+   * successors still reach the rethrow of the primary exception. That models termination by
+   * throwing an exception. (If {@code close} terminates execution by exiting the JVM, the primary
+   * exception does not propagate, but the CFG conservatively permits it to.)
+   *
+   * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
+   *     resource
+   * @param primaryExceptionTypes the types of the primary exception
+   * @param p the value to pass to calls to {@code scan}
+   */
+  private void addSuppressingCloseCallForResource(
+      Tree resourceDeclarationTree, Set<TypeMirror> primaryExceptionTypes, Void p) {
+    Label suppressedLabel = new Label();
+    tryStack.pushFrame(
+        new TryCatchFrame(
+            types,
+            Collections.singletonList(
+                new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
+    addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
+    tryStack.popFrame();
+    addLabelForNextNode(suppressedLabel);
   }
 
   /**
@@ -2815,9 +3054,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param doneLabel label for the normal successor of the try block (no exceptions, returns,
    *     breaks, or continues)
    * @param finallyLabel label for the entry of the finally block for the normal case
-   * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
-   *     throws an exception
-   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
+   * @param exceptionalFinallyFrame the frame that the exceptions of the try block and catch clauses
+   *     reach; its labels are the entries of the copies of the finally block for when an exception
+   *     reaches it
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, for each
+   *     path except the ones on which an exception reaches the finally block
+   * @param exceptionalFinallyBlockCFGGenerator generates CFG nodes and edges for the finally block,
+   *     for the paths on which an exception reaches the finally block; its argument is the types of
+   *     the exceptions that reach the copy of the finally block and that the copy rethrows
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
@@ -2833,8 +3077,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Tree markerTree,
       Label doneLabel,
       Label finallyLabel,
-      Label exceptionalFinallyLabel,
+      TryFinallyFrame exceptionalFinallyFrame,
       Runnable finallyBlockCFGGenerator,
+      Consumer<Set<TypeMirror>> exceptionalFinallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -2860,27 +3105,44 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    if (hasExceptionalPath(exceptionalFinallyLabel)) {
-      // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-      // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
-      // is no successful path, it will be removed in later phase.
-      // TODO: Don't we need a separate finally block for each kind of exception?
-      addLabelForNextNode(exceptionalFinallyLabel);
+    // For each exception that reaches the finally block, there is a copy of the finally block that
+    // rethrows that exception after the finally block completes normally.  If two exceptions
+    // shared a copy, the analysis would merge the stores of the paths that throw them, and the end
+    // of the copy would rethrow each exception with the merged store.  For example, an exception
+    // thrown while a resource is open would make the Resource Leak Checker report a leak on the
+    // path of another exception that is thrown after the resource is closed.  So exceptions that
+    // different nodes throw get different copies.  A transfer function can give a method
+    // invocation a different exceptional store for each type that it throws, as for a method
+    // annotated with @EnsuresCalledMethodsOnException, so each type that a method invocation
+    // throws gets its own copy.  Other exceptions that the same nodes throw share a copy:  a copy
+    // for each type would make the size of the CFG exponential, with a large base, in the depth of
+    // the nesting of finally blocks.
+    for (Map<TypeMirror, Label> group : exceptionGroups(exceptionalFinallyFrame)) {
+      for (Label label : group.values()) {
+        addLabelForNextNode(label);
+      }
+      String exceptionsString = group.keySet().toString();
       extendWithNode(
           new MarkerNode(
               markerTree,
-              "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
+              "start of finally block for "
+                  + exceptionsString
+                  + " #"
+                  + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      finallyBlockCFGGenerator.run();
+      exceptionalFinallyBlockCFGGenerator.accept(Collections.unmodifiableSet(group.keySet()));
 
       NodeWithExceptionsHolder throwing =
-          extendWithNodeWithException(
+          extendWithNodeWithExceptions(
               new MarkerNode(
                   markerTree,
-                  "end of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
+                  "end of finally block for "
+                      + exceptionsString
+                      + " #"
+                      + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
-              throwableType);
+              Collections.unmodifiableSet(group.keySet()));
 
       throwing.setTerminatesExecution(true);
     }
@@ -3006,22 +3268,60 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if an exceptional node for {@code target} exists in {@link #nodeList}.
+   * Returns the types of the exceptions that reach the given frame, grouped by the nodes that throw
+   * them. A type that a method invocation throws to the frame is alone in its group. Two other
+   * types are in the same group if and only if the same nodes throw them to the frame.
    *
-   * @param target label for exception
-   * @return true when an exceptional node for {@code target} exists in {@link #nodeList}
+   * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
+   * @return the groups, in the order that their first types reach {@code frame}; each group maps
+   *     each of its types to the type's label in {@code frame}. Empty if no exception reaches
+   *     {@code frame}.
    */
-  private boolean hasExceptionalPath(Label target) {
-    for (ExtendedNode node : nodeList) {
+  private List<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
+    Map<TypeMirror, Label> exceptionLabels = frame.getExceptionLabels();
+    if (exceptionLabels.isEmpty()) {
+      return Collections.emptyList();
+    }
+    Set<Label> frameLabels = new HashSet<>(exceptionLabels.values());
+    // The nodes that throw an exception to each label of the frame.
+    Map<Label, Set<ExtendedNode>> throwers = new HashMap<>();
+    // The labels of the frame to which a method invocation throws an exception.
+    Set<Label> invocationLabels = new HashSet<>();
+    for (ExtendedNode node : nodeList.subList(frame.firstNodeIndex, nodeList.size())) {
       if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
+        boolean isInvocation = exceptionalNode.getNode() instanceof MethodInvocationNode;
         for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
-          if (labels.contains(target)) {
-            return true;
+          for (Label label : labels) {
+            if (frameLabels.contains(label)) {
+              throwers.computeIfAbsent(label, l -> new HashSet<>()).add(node);
+              if (isInvocation) {
+                invocationLabels.add(label);
+              }
+            }
           }
         }
       }
     }
-    return false;
+    List<Map<TypeMirror, Label>> result = new ArrayList<>();
+    // The groups of the types that no method invocation throws, keyed by the nodes that throw them.
+    Map<Set<ExtendedNode>, Map<TypeMirror, Label>> groupsByThrowers = new HashMap<>();
+    for (Map.Entry<TypeMirror, Label> entry : exceptionLabels.entrySet()) {
+      TypeMirror type = entry.getKey();
+      Label label = entry.getValue();
+      if (invocationLabels.contains(label)) {
+        result.add(Collections.singletonMap(type, label));
+        continue;
+      }
+      Set<ExtendedNode> nodes = throwers.getOrDefault(label, Collections.emptySet());
+      Map<TypeMirror, Label> group = groupsByThrowers.get(nodes);
+      if (group == null) {
+        group = new ArrayMap<>();
+        groupsByThrowers.put(nodes, group);
+        result.add(group);
+      }
+      group.put(type, label);
+    }
+    return result;
   }
 
   @Override
@@ -3233,8 +3533,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    // Throwing a null value throws a NullPointerException (JLS 14.18).
+    Set<TypeMirror> causes;
+    if (exception.getKind() == TypeKind.NULL) {
+      causes = Collections.singleton(nullPointerExceptionType);
+    } else if (mayBeNull(expression)) {
+      causes = new LinkedHashSet<>(2);
+      causes.add(exception);
+      causes.add(nullPointerExceptionType);
+    } else {
+      causes = Collections.singleton(exception);
+    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
-    NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
+    NodeWithExceptionsHolder exNode = extendWithNodeWithExceptions(throwsNode, causes);
     exNode.setTerminatesExecution(true);
     return throwsNode;
   }
@@ -3397,17 +3708,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Look up method to invoke and possibly throw NullPointerException
+    // The receiver is evaluated before the arguments.
     Node receiver = getReceiver(methodSelect);
-
-    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
-
-    if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
-      // No NullPointerException can be thrown, use normal node
-      extendWithNode(target);
-    } else {
-      extendWithNodeWithException(target, nullPointerExceptionType);
-    }
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -3421,6 +3723,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
+
+    // Look up the method to invoke.  The access tests the receiver for nullness, which happens
+    // after the arguments are evaluated.  Its NullPointerException is separate from the exceptions
+    // of the MethodInvocationNode, which the invoked method throws after it is entered.  So, a
+    // handler for a NullPointerException from a null receiver does not assume the postconditions
+    // that the invoked method ensures on exceptional exit, such as
+    // @EnsuresCalledMethodsOnException.
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
+    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
 
     // TODO: lock the receiver for synchronized methods
 
@@ -3450,13 +3761,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param executable the method or constructor that {@code node} invokes
    */
   private void extendWithInvocationNode(Node node, ExecutableElement executable) {
+    extendWithInvocationNode(node, executable, Collections.emptySet());
+  }
+
+  /**
+   * Extends the CFG with the given node, which invokes the given method or constructor, accounting
+   * for potential exceptions thrown by the invocation. If {@code executable} is annotated {@link
+   * TerminatesExecution}, the invocation terminates execution.
+   *
+   * @param node a method invocation or object creation
+   * @param executable the method or constructor that {@code node} invokes
+   * @param extraExceptionTypes types that label exceptional edges of {@code node}, in addition to
+   *     the types of the exceptions that the invocation might throw
+   */
+  private void extendWithInvocationNode(
+      Node node, ExecutableElement executable, Set<TypeMirror> extraExceptionTypes) {
     List<? extends TypeMirror> thrownTypes = executable.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
+        ArraySet.newArraySetOrLinkedHashSet(
+            thrownTypes.size() + uncheckedExceptionTypes.size() + extraExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
+    // Add the extra types that label exceptional edges.
+    thrownSet.addAll(extraExceptionTypes);
 
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
     if (annotationProvider.getDeclAnnotation(executable, TerminatesExecution.class) != null) {
@@ -3584,12 +3913,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       target.setLValue();
 
       Element element = TreeUtils.elementFromUse(variable);
-      if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
-        // No NullPointerException can be thrown, use normal node
-        extendWithNode(target);
-      } else {
-        extendWithNodeWithException(target, nullPointerExceptionType);
-      }
+      extendWithNode(target, accessMayThrowNullPointerException(element, receiver));
 
       // add assignment node
       assignmentNode = new AssignmentNode(tree, target, expression);
@@ -4364,7 +4688,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node array = scan(tree.getExpression(), p);
     Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
     Node arrayAccess = new ArrayAccessNode(tree, array, index);
-    extendWithNodeWithExceptions(arrayAccess, arrayAccessExceptionTypes);
+    extendWithNodeWithExceptions(
+        arrayAccess,
+        mayBeNull(array)
+            ? arrayAccessExceptionTypes
+            : Collections.singleton(arrayIndexOutOfBoundsExceptionType));
     return arrayAccess;
   }
 
@@ -4390,14 +4718,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node node = new FieldAccessNode(tree, expr);
 
     Element element = TreeUtils.elementFromUse(tree);
-    if (ElementUtils.isStatic(element)
-        || expr instanceof ImplicitThisNode
-        || expr instanceof ExplicitThisNode) {
-      // No NullPointerException can be thrown, use normal node
-      extendWithNode(node);
-    } else {
-      extendWithNodeWithException(node, nullPointerExceptionType);
-    }
+    extendWithNode(node, accessMayThrowNullPointerException(element, expr));
 
     return node;
   }
@@ -4405,12 +4726,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   @Override
   public Node visitMemberReference(MemberReferenceTree tree, Void p) {
     Tree enclosingExpr = tree.getQualifierExpression();
+    Node qualifier = null;
     if (enclosingExpr != null) {
-      scan(enclosingExpr, p);
+      qualifier = scan(enclosingExpr, p);
     }
 
+    // Creating a bound method reference, such as `expr::method`, throws a NullPointerException if
+    // the qualifier is null (JLS 15.13.3).  Other kinds of member reference have a type or `super`
+    // as their qualifier.  On normal completion, the result is never null.
+    boolean mayThrowNullPointerException =
+        qualifier != null
+            && MemberReferenceKind.getMemberReferenceKind(tree) == MemberReferenceKind.BOUND
+            && mayBeNull(qualifier);
+
     Node node = new FunctionalInterfaceNode(tree);
-    extendWithNode(node);
+    extendWithNode(node, mayThrowNullPointerException);
 
     return node;
   }
