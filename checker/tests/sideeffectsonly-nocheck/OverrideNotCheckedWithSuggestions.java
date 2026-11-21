@@ -2,8 +2,7 @@
 // checked against the overridden method's `@SideEffectsOnly` annotation, so no diagnostic is
 // issued.  Like the check of a method body against its own `@SideEffectsOnly` annotation (see
 // NotCheckedWithoutOption.java), the override check runs only when `-AcheckPurityAnnotations`
-// itself is supplied.  See also
-// checker/tests/sideeffectsonly-infer/OverrideNotCheckedWithInfer.java.
+// itself is supplied.
 
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
