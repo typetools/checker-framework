@@ -1552,7 +1552,7 @@ public class ValueTransfer extends CFTransfer {
   protected void processConditionalPostconditions(
       MethodInvocationNode n,
       ExecutableElement methodElement,
-      ExpressionTree tree,
+      @Nullable ExpressionTree tree,
       CFStore thenStore,
       CFStore elseStore) {
     // For String.startsWith(String) and String.endsWith(String), refine the minimum length

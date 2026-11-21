@@ -73,7 +73,10 @@ public final class LocalLocation {
    * @param scopeLength the bytecode length of the variable's lifetime
    * @param index the offset of the variable in the stack frame
    */
-  @SuppressWarnings({"NarrowingCompoundAssignment", "CatchAndPrintStackTrace"}) // TODO
+  @SuppressWarnings({
+    "NarrowingCompoundAssignment", // TODO
+    "CatchAndPrintStackTrace", // TODO
+  })
   public LocalLocation(int scopeStart, int scopeLength, int index) {
     Label startLabel = new Label();
     Label endLabel = new Label();
@@ -91,13 +94,13 @@ public final class LocalLocation {
 
       short flags = (Short) flagsField.get(startLabel);
       flags |= FLAG_RESOLVED;
-      flagsField.set(startLabel, flags);
-      bytecodeOffsetField.set(startLabel, scopeStart);
+      flagsField.setShort(startLabel, flags);
+      bytecodeOffsetField.setInt(startLabel, scopeStart);
 
       flags = (Short) flagsField.get(endLabel);
       flags |= FLAG_RESOLVED;
-      flagsField.set(endLabel, flags);
-      bytecodeOffsetField.set(endLabel, scopeStart + scopeLength);
+      flagsField.setShort(endLabel, flags);
+      bytecodeOffsetField.setInt(endLabel, scopeStart + scopeLength);
     } catch (Exception e) {
       throw new Error(e);
     }

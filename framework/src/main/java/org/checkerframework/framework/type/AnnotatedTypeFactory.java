@@ -3162,9 +3162,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the annotated boxed type of the given primitive type. The returned type has only the
-   * annotations on the given type.
+   * annotations that {@link #getBoxedAnnotations} computes from the primary annotations of the
+   * given type.
    *
-   * <p>Subclasses can safely override this method to override this behavior.
+   * <p>Subclasses should override {@link #getBoxedAnnotations} rather than this method.
    *
    * @param type the primitive type
    * @return the boxed declared type of the passed primitive type
@@ -3172,15 +3173,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
     TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
     AnnotatedDeclaredType dt = fromElement(typeElt).asUse();
-    dt.addAnnotations(type.getPrimaryAnnotations());
+    // Replace, rather than add to, any annotations that `fromElement` gave the boxed type.
+    dt.replaceAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
     return dt;
+  }
+
+  /**
+   * Returns annotations applicable to the boxed primitive type of {@code primitiveKind} that are
+   * copied or adapted from {@code annos}, for a boxing conversion (JLS 5.1.7). For example, the
+   * Interning Checker returns {@code @UnknownInterned}, because a boxed value need not be interned.
+   *
+   * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
+   *
+   * @param annos annotations to box, from a primitive
+   * @param primitiveKind the primitive type to box, such as {@code int}
+   * @return result of converting {@code annos} from {@code primitiveKind} to its boxed primitive,
+   *     such as {@code Integer}
+   */
+  public AnnotationMirrorSet getBoxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    return annos;
   }
 
   /**
    * Returns a primitive type: either the argument, or the result of unboxing it (which might affect
    * its annotations).
    *
-   * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
+   * <p>Subclasses should override {@link #getUnboxedAnnotations} rather than this method.
    *
    * @param type a type: a primitive or boxed primitive
    * @return the unboxed variant of the type
@@ -3200,8 +3219,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the annotated primitive type of the given declared type if it is a boxed declared type.
    * Otherwise, it throws an <i>IllegalArgumentException</i>.
    *
-   * <p>In the {@code AnnotatedTypeFactory} implementation, the returned type has the same primary
-   * annotations as the given type. Subclasses can override this behavior.
+   * <p>The returned type has the annotations that {@link #getUnboxedAnnotations} computes from the
+   * primary annotations of the given type.
+   *
+   * <p>Subclasses should override {@link #getUnboxedAnnotations} rather than this method.
    *
    * @param type the declared type
    * @return the unboxed primitive type
@@ -3212,8 +3233,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     PrimitiveType primitiveType = types.unboxedType(type.getUnderlyingType());
     AnnotatedPrimitiveType pt =
         (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(primitiveType, this, false);
-    pt.addAnnotations(type.getPrimaryAnnotations());
+    pt.addAnnotations(getUnboxedAnnotations(type.getPrimaryAnnotations(), primitiveType.getKind()));
     return pt;
+  }
+
+  /**
+   * Returns annotations applicable to the primitive type {@code primitiveKind} that are copied or
+   * adapted from {@code annos}, for an unboxing conversion (JLS 5.1.8). For example, the Interning
+   * Checker returns {@code @Interned}, because every primitive value is interned.
+   *
+   * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
+   *
+   * @param annos annotations to unbox, from a boxed primitive such as {@code Integer}
+   * @param primitiveKind the primitive type that the boxed primitive unboxes to, such as {@code
+   *     int}
+   * @return result of converting {@code annos} from the boxed primitive to {@code primitiveKind}
+   */
+  public AnnotationMirrorSet getUnboxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    return annos;
   }
 
   /**

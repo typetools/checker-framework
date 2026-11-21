@@ -2,10 +2,12 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -88,13 +90,15 @@ public class AliasingTransfer extends CFTransfer {
    */
   @Override
   protected void processPostconditions(
-      Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
+      Node n, CFStore store, ExecutableElement executableElement, @Nullable ExpressionTree tree) {
     // TODO: Process ObjectCreationNode here after fixing issue:
     // https://github.com/eisop/checker-framework/issues/400
     if (!(n instanceof MethodInvocationNode min)) {
       return;
     }
-    if (TreeUtils.isEnumSuperCall(min.getTree())) {
+    // A method call in a custom CFG might have no tree.  Such a call is not an enum's super call.
+    MethodInvocationTree minTree = min.getTree();
+    if (minTree != null && TreeUtils.isEnumSuperCall(minTree)) {
       // Skipping the init() method for enums.
       return;
     }
@@ -140,12 +144,15 @@ public class AliasingTransfer extends CFTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    Tree parent = n.getTreePath().getParentPath().getLeaf();
-    boolean parentIsStatement = parent instanceof ExpressionStatementTree;
+    // A method call in a custom CFG might have no tree, and then its parent is unknown.  Treat such
+    // a call conservatively, as if its parent is not a statement.
+    boolean parentIsStatement =
+        n.getTree() != null
+            && n.getTreePath().getParentPath().getLeaf() instanceof ExpressionStatementTree;
 
     if (!parentIsStatement) {
 
-      ExecutableElement methodElement = TreeUtils.elementFromUse(n.getTree());
+      ExecutableElement methodElement = n.getTarget().getMethod();
       List<Node> args = n.getArguments();
       List<? extends VariableElement> params = methodElement.getParameters();
       assert (args.size() == params.size())
