@@ -861,9 +861,14 @@ for (int i = 0; i < n; i++) {
 
 More generally, a method that might add an element with an obligation to its
 receiver collection, such as \<Collection.add>, is annotated with
-\<@CreatesCollectionObligation>.  At a call to such a method, the Resource Leak
-Checker changes the type of the receiver collection to \<@OwningCollection> and
-creates a tracked obligation for the collection in the dataflow analysis.
+\<@CreatesCollectionObligation>.  At a call to such a method on an owning
+receiver (\<@OwningCollection> or \<@OwningCollectionWithoutObligation>), the
+Resource Leak Checker changes the type of the receiver collection to
+\<@OwningCollection> and creates a tracked obligation for the collection in the
+dataflow analysis.  A \<@NotOwningCollection> receiver remains
+\<@NotOwningCollection> and gains no obligation, because it can insert only
+non-owning elements
+(Section~\ref{resource-leak-collections-ownership-types}).
 By default, the inserted element is the method's last parameter, as in
 \<add(E)> and \<add(int, E)>.  A method whose inserted element is not its last
 parameter names it with \<element>.  For example,
