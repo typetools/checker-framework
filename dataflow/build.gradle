@@ -172,8 +172,8 @@ if (rootProject.ext.testJdkVersion >= 22) {
 }
 
 test {
-  // The tests are run by allDataflowTests.
-  exclude("**/*")
+  // The dataflow analysis tests are run by allDataflowTests.  This task runs only the JUnit tests.
+  include("org/checkerframework/dataflow/expression/**")
 }
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
