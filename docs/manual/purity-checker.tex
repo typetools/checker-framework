@@ -238,8 +238,12 @@ deterministic:
 \end{Verbatim}
 
 A method reference does not override the functional method that it
-implements, but a call through that functional method, or through any method
-that the functional method overrides, can run the referenced method.  Each
+implements, but a call through that functional method can run the referenced
+method, and so can a call through any other method of the functional
+interface or of its supertypes that has the same signature, such as a method
+that the functional method overrides.  For example, if \<interface C extends
+A, B> inherits \<run> from both \<A> and \<B>, then a call through either
+\<A.run> or \<B.run> can run a method reference of type \<C>.  Each
 such call checks its arguments only against the method that it invokes.  So a
 method reference is an error (\<purity.methodref.functional.parameter>) if
 the referenced method assumes a purity of a functional-interface argument that
@@ -248,11 +252,13 @@ such as \<-AassumeSideEffectFree> grants to every call is not required.  There
 is no error if the referenced method cannot be overridden (for example, it is
 static, private, or final), its source code is being compiled, and its body
 does not rely on the assumption:  the body uses the parameter only to store
-it, overwrite it, return it, compare it, or call a method other than the
-functional method on it.  The exemption does not apply to a method from a
-compiled library, whose body the checker cannot inspect.  If the checker has
-not yet attributed the body, it conservatively treats every identifier with
-the parameter's name as a use that relies on the assumption.
+it, overwrite it, return it, compare it with \<==> or \<!=>, concatenate it
+to a string, or call a method other than the functional method on it.  The exemption does not apply to a method from a
+compiled library, whose body the checker cannot inspect.  If javac has not yet
+type-checked the body (as when the referenced method is in a top-level class
+that appears later in the same source file), the checker conservatively
+treats every identifier with the parameter's name as a use that relies on the
+assumption.
 
 \begin{Verbatim}
   class Util {

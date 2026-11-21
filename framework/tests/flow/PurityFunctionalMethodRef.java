@@ -98,6 +98,25 @@ public class PurityFunctionalMethodRef {
     StrongApplier a = PurityFunctionalMethodRef::applyStatic;
   }
 
+  /**
+   * Inherits two functional methods, {@code Applier.apply} and {@code UnannotatedApplier.apply},
+   * neither of which overrides the other.
+   */
+  @FunctionalInterface
+  interface StrongFirstApplier extends Applier, UnannotatedApplier {}
+
+  /** Like {@link StrongFirstApplier}, but with its superinterfaces in the other order. */
+  @FunctionalInterface
+  interface UnannotatedFirstApplier extends UnannotatedApplier, Applier {}
+
+  void inheritedFunctionalMethods() {
+    // A call through UnannotatedApplier.apply can run the reference.
+    // :: error: [purity.methodref.functional.parameter]
+    StrongFirstApplier a = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    UnannotatedFirstApplier b = PurityFunctionalMethodRef::applyStatic;
+  }
+
   @SideEffectFree
   static int ignoreStatic(Function<String, Integer> f, String s) {
     return 0;

@@ -76,6 +76,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -1958,7 +1959,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     } else {
       ExecutableElement argFunction =
-          PurityChecker.functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+          PurityChecker.implementationOf(TreeUtils.typeOf(argument), paramFunction, env);
       if (argFunction == null) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
@@ -1984,10 +1985,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
    * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
    * operand of a binary operator such as {@code ==}, as the destination or the value of an
-   * assignment, as the value of a variable initializer or of a return statement, or as the
-   * receiver of a call to a method other than
-   * {@code parameterFunction} and its overrides, such as {@code hashCode}. An override of {@code
-   * method} can rely on the purity that {@code method} promises of its arguments.
+   * assignment, as the value of a variable initializer or of a return statement, or as the receiver
+   * of a call to a method other than {@code parameterFunction} and its overrides, such as {@code
+   * hashCode}. An override of {@code method} can rely on the purity that {@code method} promises of
+   * its arguments.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter} is treated as a use that might rely on the purity.
@@ -2102,8 +2103,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * {@inheritDoc}
      *
-     * <p>Overwriting {@link #parameter} does not read the argument, so the destination is not a
-     * use if it is {@link #parameter} itself. A compound destination, such as an array access, is
+     * <p>Overwriting {@link #parameter} does not read the argument, so the destination is not a use
+     * if it is {@link #parameter} itself. A compound destination, such as an array access, is
      * scanned, because its subexpressions are evaluated.
      */
     @Override
@@ -2129,6 +2130,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitBinary(BinaryTree tree, Void p) {
+      // A reference is an operand only of == or !=, or of a string concatenation, which calls
+      // toString rather than the functional method.
       scanUnlessParameter(tree.getLeftOperand());
       scanUnlessParameter(tree.getRightOperand());
       return null;
@@ -5491,9 +5494,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the functional method's own annotations and of the command-line assumptions such as {@code
      * -AassumeSideEffectFree}.
      *
-     * <p>A call through the functional method, or through any method that the functional method
-     * overrides, can run the referenced method. Each call checks its arguments against the
-     * declaration that it invokes.
+     * <p>A call through any method that {@link #methodsThatRunReference} returns can run the
+     * referenced method. Each call checks its arguments against the declaration that it invokes.
      */
     private void checkMethodReferenceFunctionalParameters() {
       ExecutableElement referenced = overrider.getElement();
@@ -5502,11 +5504,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // The referenced method assumes nothing of its functional-interface arguments.
         return;
       }
-      ExecutableElement functionalMethod = overridden.getElement();
-      // The methods through which a call can run the referenced method.
-      List<ExecutableElement> declarations = new ArrayList<>();
-      declarations.add(functionalMethod);
-      declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
+      List<ExecutableElement> declarations = methodsThatRunReference(env);
       int offset = methodRefParameterOffset();
       List<? extends VariableElement> params = referenced.getParameters();
       for (int i = 0; i < params.size(); i++) {
@@ -5542,6 +5540,47 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
         }
       }
+    }
+
+    /**
+     * Returns the methods through which a call can run the referenced method: the functional
+     * interface method that the method reference implements, and every other method of the
+     * functional interface or of its supertypes that is override-equivalent to it in the functional
+     * interface (JLS 8.4.2). The latter include each method that the functional interface method
+     * overrides, and each abstract method that the functional interface inherits from another
+     * superinterface, as {@code A.run} and {@code B.run} in {@code interface C extends A, B}.
+     *
+     * @param env the processing environment
+     * @return the methods through which a call can run the referenced method, starting with the
+     *     functional interface method
+     */
+    private List<ExecutableElement> methodsThatRunReference(ProcessingEnvironment env) {
+      ExecutableElement functionalMethod = overridden.getElement();
+      List<ExecutableElement> result = new ArrayList<>();
+      result.add(functionalMethod);
+      TypeElement functionalInterface =
+          (TypeElement) overriddenType.getUnderlyingType().asElement();
+      // Use the functional interface's declared type, whose type arguments are its own type
+      // variables, so that a wildcard in the type of the method reference does not matter.
+      DeclaredType interfaceType = (DeclaredType) functionalInterface.asType();
+      ExecutableType functionalMethodType =
+          (ExecutableType) types.asMemberOf(interfaceType, functionalMethod);
+      for (TypeElement supertype : ElementUtils.getAllSupertypes(functionalInterface, env)) {
+        for (ExecutableElement method : ElementFilter.methodsIn(supertype.getEnclosedElements())) {
+          if (method.equals(functionalMethod)
+              || !method.getSimpleName().contentEquals(functionalMethod.getSimpleName())
+              || method.getModifiers().contains(Modifier.STATIC)
+              || method.getModifiers().contains(Modifier.PRIVATE)) {
+            continue;
+          }
+          ExecutableType methodType = (ExecutableType) types.asMemberOf(interfaceType, method);
+          if (types.isSubsignature(functionalMethodType, methodType)
+              || types.isSubsignature(methodType, functionalMethodType)) {
+            result.add(method);
+          }
+        }
+      }
+      return result;
     }
 
     /**
