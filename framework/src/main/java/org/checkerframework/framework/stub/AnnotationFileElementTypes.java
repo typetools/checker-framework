@@ -144,6 +144,8 @@ public class AnnotationFileElementTypes {
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
    *       listed in @StubFiles annotation)
    *   <li>Stub files provided via {@code -Astubs} compiler option
+   *   <li>IntelliJ IDEA external annotations provided via {@code -AintellijAnnotations} compiler
+   *       option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
@@ -202,6 +204,13 @@ public class AnnotationFileElementTypes {
             SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
             AnnotationFileType.COMMAND_LINE_STUB);
       }
+
+      // 6. Annotations provided via -AintellijAnnotations command-line option
+      String intellijAnnotationsOption = checker.getOption("intellijAnnotations");
+      if (intellijAnnotationsOption != null) {
+        parseIntellijAnnotations(
+            SystemUtil.pathSeparatorSplitter.splitToList(intellijAnnotationsOption));
+      }
     } finally {
       parsing = false;
     }
@@ -240,8 +249,13 @@ public class AnnotationFileElementTypes {
       }
     } catch (IOException e) {
       checker.message(
-          Diagnostic.Kind.NOTE,
-          "Could not read annotation resource from " + checkerClass + ": " + stubFileName);
+          Diagnostic.Kind.WARNING,
+          "Could not read annotation resource from "
+              + checkerClass
+              + ": "
+              + stubFileName
+              + ": "
+              + e);
     }
   }
 
@@ -284,9 +298,62 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+      checker.message(
+          Diagnostic.Kind.WARNING, "Could not read ajava file: " + ajavaPath + ": " + e);
     } finally {
       parsing = false;
+    }
+  }
+
+  /**
+   * Parses IntelliJ annotation files.
+   *
+   * @param intellijAnnotationPaths list of files, directories, or jars/zips to parse
+   */
+  public void parseIntellijAnnotations(List<String> intellijAnnotationPaths) {
+    if (intellijAnnotationPaths.isEmpty()) {
+      return;
+    }
+    boolean wasParsing = parsing;
+    parsing = true;
+    try {
+      ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
+      }
+      SourceChecker checker = factory.getChecker();
+      for (String path : intellijAnnotationPaths) {
+        List<AnnotationFileResource> allFiles =
+            AnnotationFileUtil.allAnnotationFiles(path, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+        if (allFiles == null) {
+          checker.message(
+              Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
+        } else if (allFiles.isEmpty()) {
+          // The path exists but contains no annotations.xml file, so the user gets no
+          // annotations from it.  That is most likely a mistake, so warn rather than issuing a
+          // note, which javac does not display by default.
+          checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
+        } else {
+          for (AnnotationFileResource resource : allFiles) {
+            try (BufferedInputStream annotationFileStream =
+                new BufferedInputStream(resource.getInputStream())) {
+              IntelliJAnnotationParser.parseAnnotationsXml(
+                  resource.getDescription(),
+                  annotationFileStream,
+                  factory,
+                  processingEnv,
+                  annotationFileAnnos);
+            } catch (IOException e) {
+              checker.message(
+                  Diagnostic.Kind.ERROR,
+                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
+            }
+          }
+        }
+      }
+    } finally {
+      parsing = wasParsing;
     }
   }
 
@@ -309,103 +376,177 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.stubDebugStatic(
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
+    // We use parseStubFile here even for ajava files because at this stage ajava files are parsed
+    // as stub files. The extra annotation data in an ajava file is parsed when type-checking the
+    // ajava file's corresponding Java file.
+    AnnotationFileType parseType =
+        fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType;
     for (String path : annotationFiles) {
-      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
-      if (allFiles != null) {
-        for (AnnotationFileResource resource : allFiles) {
-          try (BufferedInputStream annotationFileStream =
-              new BufferedInputStream(resource.getInputStream())) {
-            // Is it necessary to also skip files that consist only of Java comments?
-            Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-            if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-              continue;
-            }
-            // We use parseStubFile here even for ajava files because at this stage
-            // ajava files are parsed as stub files. The extra annotation data in an
-            // ajava file is parsed when type-checking the ajava file's corresponding
-            // Java file.
-            AnnotationFileParser.parseStubFile(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
-          } catch (IOException e) {
-            checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read annotation resource: " + resource.getDescription());
-          }
+      File location = AnnotationFileUtil.findFileSystemLocation(path);
+      if (location != null) {
+        if (location.isFile()
+            && !AnnotationFileUtil.isArchive(location.getName())
+            && !AnnotationFileUtil.isUsableNamedFile(location.getName(), fileType)) {
+          warnUnusableNamedFile(path, fileType);
+          continue;
         }
+        AnnotationFileUtil.forEachAnnotationFile(
+            location,
+            fileType,
+            resource -> parseAnnotationFileResource(resource, parseType),
+            archive ->
+                checker.message(
+                    Diagnostic.Kind.NOTE,
+                    "Not reading archive "
+                        + archive
+                        + ", which is within directory "
+                        + location
+                        + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top
         // level directory of the jar that contains the checker.
+        String namedPath = path;
         if (path.startsWith("checker.jar/")) {
           path = "/" + path.substring("checker.jar/".length());
         }
-        try (InputStream in = checker.getClass().getResourceAsStream(path)) {
-          if (in != null) {
-            AnnotationFileParser.parseStubFile(
-                path, in, factory, processingEnv, annotationFileAnnos, fileType);
-          } else {
-            // Didn't find the file.  Issue a warning.
+        URL classpathResource = checker.getClass().getResource(path);
+        if (classpathResource != null) {
+          // A classpath resource is read as a single annotation file (never as an archive), so it
+          // is subject to the same naming rule as a file on disk.
+          if (!AnnotationFileUtil.isUsableNamedFile(path, fileType)) {
+            warnUnusableNamedFile(namedPath, fileType);
+            continue;
+          }
+          parseAnnotationFileResource(urlResource(path, classpathResource), parseType);
+        } else {
+          // Didn't find the file.  Issue a warning.
 
-            // When using a compound checker, the target file may be found by the
-            // current checker's parent checkers. Also check this to avoid a false
-            // warning. Currently, only the original checker will try to parse the
-            // target file, the parent checkers are only used to reduce false
-            // warnings.
-            SourceChecker currentChecker = checker;
-            boolean findByParentCheckers = false;
-            while (currentChecker != null) {
-              URL topLevelResource = currentChecker.getClass().getResource("/" + path);
-              if (topLevelResource != null) {
-                currentChecker.message(
-                    Diagnostic.Kind.WARNING,
-                    path
-                        + " should be in the same directory as "
-                        + currentChecker.getClass().getSimpleName()
-                        + ".class, but is at the top level of a jar file: "
-                        + topLevelResource);
-                findByParentCheckers = true;
-                break;
-              } else {
-                currentChecker = currentChecker.getParentChecker();
-              }
-            }
-            // If there exists one parent checker that can find this file, don't report
-            // a warning.
-            if (!findByParentCheckers) {
-              File parentPath = new File(path).getParentFile();
-              String parentPathDescription =
-                  (parentPath == null
-                      ? "current directory"
-                      : "directory " + parentPath.getAbsolutePath());
-              String testSrc = System.getProperty("test.src");
-              String msg =
-                  checker.getClass().getSimpleName()
-                      + " did not find annotation file or directory "
-                      + path
-                      + " on classpath or within "
-                      + parentPathDescription
-                      + ((testSrc == null || new File(path).isAbsolute())
-                          ? ""
-                          : (" or within directory " + testSrc));
-              StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
-              sj.add(msg);
-              sj.add("Classpath:");
-              for (URI uri : new ClassGraph().getClasspathURIs()) {
-                sj.add(uri.toString());
-              }
-              checker.message(Diagnostic.Kind.WARNING, sj.toString());
+          // When using a compound checker, the target file may be found by the
+          // current checker's parent checkers. Also check this to avoid a false
+          // warning. Currently, only the original checker will try to parse the
+          // target file, the parent checkers are only used to reduce false
+          // warnings.
+          SourceChecker currentChecker = checker;
+          boolean findByParentCheckers = false;
+          while (currentChecker != null) {
+            URL topLevelResource = currentChecker.getClass().getResource("/" + path);
+            if (topLevelResource != null) {
+              currentChecker.message(
+                  Diagnostic.Kind.WARNING,
+                  path
+                      + " should be in the same directory as "
+                      + currentChecker.getClass().getSimpleName()
+                      + ".class, but is at the top level of a jar file: "
+                      + topLevelResource);
+              findByParentCheckers = true;
+              break;
+            } else {
+              currentChecker = currentChecker.getParentChecker();
             }
           }
-        } catch (IOException e) {
-          checker.message(Diagnostic.Kind.NOTE, "Could not read annotation resource: " + path);
+          // If there exists one parent checker that can find this file, don't report
+          // a warning.
+          if (!findByParentCheckers) {
+            File parentPath = new File(path).getParentFile();
+            String parentPathDescription =
+                (parentPath == null
+                    ? "current directory"
+                    : "directory " + parentPath.getAbsolutePath());
+            String testSrc = System.getProperty("test.src");
+            String msg =
+                checker.getClass().getSimpleName()
+                    + " did not find annotation file or directory "
+                    + path
+                    + " on classpath or within "
+                    + parentPathDescription
+                    + ((testSrc == null || new File(path).isAbsolute())
+                        ? ""
+                        : (" or within directory " + testSrc));
+            StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+            sj.add(msg);
+            sj.add("Classpath:");
+            for (URI uri : new ClassGraph().getClasspathURIs()) {
+              sj.add(uri.toString());
+            }
+            checker.message(Diagnostic.Kind.WARNING, sj.toString());
+          }
         }
       }
     }
+  }
+
+  /**
+   * Returns an annotation file resource whose contents are read from the given URL.
+   *
+   * @param description a description of the resource, such as the path that was used to find it
+   * @param url a URL, such as the one that {@link Class#getResource} returns
+   * @return an annotation file resource whose contents are read from {@code url}
+   */
+  private static AnnotationFileResource urlResource(String description, URL url) {
+    return new AnnotationFileResource() {
+      @Override
+      public String getDescription() {
+        return description;
+      }
+
+      @Override
+      public InputStream getInputStream() throws IOException {
+        return url.openStream();
+      }
+    };
+  }
+
+  /**
+   * Parses the given annotation file as a stub file. Issues a warning if it cannot be read.
+   *
+   * @param resource an annotation file
+   * @param parseType the file type to parse {@code resource} as; a stub file type
+   */
+  private void parseAnnotationFileResource(
+      AnnotationFileResource resource, AnnotationFileType parseType) {
+    try (BufferedInputStream annotationFileStream =
+        new BufferedInputStream(resource.getInputStream())) {
+      // Is it necessary to also skip files that consist only of Java comments?
+      Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+      if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+        return;
+      }
+      AnnotationFileParser.parseStubFile(
+          resource.getDescription(),
+          annotationFileStream,
+          factory,
+          factory.getProcessingEnv(),
+          annotationFileAnnos,
+          parseType);
+    } catch (IOException e) {
+      factory
+          .getChecker()
+          .message(
+              Diagnostic.Kind.WARNING,
+              "Could not read annotation resource: " + resource.getDescription() + ": " + e);
+    }
+  }
+
+  /**
+   * Issues a warning that a file that the user named is being ignored, because its name does not
+   * suit its file type, as {@link AnnotationFileUtil#isUsableNamedFile} determines.
+   *
+   * @param path a file name, as the user supplied it
+   * @param fileType the type of annotation file that the user supplied {@code path} as
+   */
+  private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
+    String reason;
+    if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+      reason = ", which is an ajava file; supply it via -Aajava";
+    } else if (fileType.isStub()) {
+      reason = ": the name of a stub file must not end with .ajava";
+    } else if (path.endsWith(".astub")) {
+      reason = ", which is a stub file; supply it via -Astubs";
+    } else {
+      reason = ": the name of an ajava file must end with .ajava";
+    }
+    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**
