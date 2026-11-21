@@ -922,7 +922,11 @@ public class QualifierDefaults {
             }
           }
           case LOCAL_VARIABLE -> {
-            if (scope != null && scope.getKind() == ElementKind.LOCAL_VARIABLE && isTopLevelType) {
+            if (scope != null
+                && isTopLevelType
+                && (scope.getKind() == ElementKind.LOCAL_VARIABLE
+                    || (scope.getKind() == ElementKind.BINDING_VARIABLE
+                        && !atypeFactory.isNestedBindingVariable(scope)))) {
               // TODO: how do we determine that we are in a cast or instanceof type?
               addAnnotation(t, qual);
             }
