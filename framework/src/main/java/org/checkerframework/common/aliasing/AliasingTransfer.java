@@ -57,10 +57,10 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and is
-   * a method invocation or a new class instance. Otherwise, neither the LHS nor the RHS keeps a
-   * refinement, and neither does any expression that depends on the LHS or might alias it; see
-   * {@link #processCommonAssignment}.
+   * Case 1: For every assignment, the LHS is refined if the RHS has type {@code @Unique} and is a
+   * method or constructor invocation. Otherwise, neither the LHS nor the RHS keeps a refinement,
+   * nor does any expression that depends on the LHS or might alias it; see {@link
+   * #processCommonAssignment}.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitAssignment(
@@ -92,8 +92,8 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Returns true if {@code rhs} is a fresh {@code @Unique} expression: a method invocation or a new
-   * class instance whose type is {@code @Unique}.
+   * Returns true if {@code rhs} is a fresh {@code @Unique} expression: a method or constructor
+   * invocation whose type is {@code @Unique}.
    *
    * @param rhs the right-hand side of an assignment
    * @return true if {@code rhs} is a fresh {@code @Unique} expression
