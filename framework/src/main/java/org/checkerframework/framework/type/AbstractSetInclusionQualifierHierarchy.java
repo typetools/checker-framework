@@ -67,8 +67,9 @@ public abstract class AbstractSetInclusionQualifierHierarchy
     if (!kind.hasElements()) {
       return qualifier;
     }
-    // canonicalize is called on every annotation added to a type, so do not crash on a malformed
-    // annotation that lacks a value element.
+    // In this hierarchy, every well-formed qualifier that has elements has a `value` element.
+    // `canonicalize` is called on every annotation added to a type, so do not crash on a malformed
+    // annotation that lacks one.
     List<String> values =
         AnnotationUtils.getElementValueArrayOrNull(qualifier, "value", String.class, true);
     if (values == null || CollectionsP.isSortedNoDuplicates(values)) {
