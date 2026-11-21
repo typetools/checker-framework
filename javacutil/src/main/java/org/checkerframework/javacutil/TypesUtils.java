@@ -770,6 +770,12 @@ public final class TypesUtils {
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
    * is sometimes null; in that case, this method returns null.
    *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
+   *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
@@ -780,6 +786,12 @@ public final class TypesUtils {
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
    * is sometimes null; in that case, this method returns null.
+   *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -971,27 +983,29 @@ public final class TypesUtils {
    * evaluate to the same object, judging by the types: that is, true unless the types show that no
    * object has both of them.
    *
-   * <p>This compares the erasures of the types, because an object can have two parameterizations of
-   * a generic type. For example, a {@code Box<Integer>} is both a {@code Box<? extends Number>} and
-   * a {@code Box<? super Integer>}, and heap pollution can make a {@code Box<String>} also a {@code
-   * Box<Integer>}. Two erased types have no common object if a value of one cannot be cast to the
-   * other (JLS 5.5): for example, if both erased types are classes and neither is a subclass of the
-   * other, or if one is a final class that does not implement the other. One object can have two
-   * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
-   * and an unrelated interface type.
+   * <p>This method compares the erasures of the types, because an object can have two
+   * parameterizations of a generic type. For example, an object of type {@code Box<Integer>} is
+   * both a {@code Box<? extends Number>} and a {@code Box<? super Integer>}, so the method returns
+   * true for them, and heap pollution can make a {@code Box<String>} also a {@code Box<Integer>}.
+   * Two erased types have no common object if a value of one cannot be cast to the other (JLS 5.5):
+   * for example, if both erased types are classes and neither is a subclass of the other, or if one
+   * is a final class that does not implement the other. One object can have two unrelated interface
+   * types, such as {@code Runnable} and {@code Serializable}, or a class type and an unrelated
+   * interface type.
    *
-   * <p>It compares the type parameter that a wildcard is a type argument for, because a value of
-   * the wildcard has that type too, but the erasure of a wildcard that has an extends bound is the
-   * erasure of only its extends bound. For example, if {@code Box} is declared as {@code class
-   * Box<T extends Number>}, then the {@code ?} in {@code Box<? extends Comparable<?>>} cannot be
-   * the same object as a {@code String}, though a {@code Comparable} can be cast to a {@code
-   * String}.
+   * <p>This method compares the type parameter that a wildcard is a type argument for, because a
+   * value of the wildcard has that type too, but the erasure of a wildcard that has an extends
+   * bound is the erasure of only its extends bound. For example, if {@code Box} is declared as
+   * {@code class Box<T extends Number>}, then the {@code ?} in {@code Box<? extends Comparable<?>>}
+   * cannot be the same object as a {@code String}, though a {@code Comparable} can be cast to a
+   * {@code String}.
    *
-   * <p>It compares every alternative of a union type, because the erasure of a union type is the
-   * erasure of the first bound of the alternatives' least upper bound, which is less precise. For
-   * example, if {@code E1}, {@code E2}, and {@code E3} are subclasses of {@code Base}, then the
-   * exception parameter {@code e} of {@code catch (E1 | E2 e)} cannot be the same object as an
-   * expression of type {@code E3}, though the erasure of the type of {@code e} is {@code Base}.
+   * <p>This method compares every alternative of a union type, because the erasure of a union type
+   * is the erasure of the first bound of the alternatives' least upper bound, which is less
+   * precise. For example, if {@code E1}, {@code E2}, and {@code E3} are subclasses of {@code Base},
+   * then the exception parameter {@code e} of {@code catch (E1 | E2 e)} cannot be the same object
+   * as an expression of type {@code E3}, though the erasure of the type of {@code e} is {@code
+   * Base}.
    *
    * @param a the type of an expression
    * @param b the type of another expression

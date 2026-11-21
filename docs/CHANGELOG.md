@@ -23,8 +23,10 @@ false positive warnings.  The default implementation returns true; a subclass
 of `JavaExpression` that overrides it must adopt the new meaning.  A method call
 is treated as reading every field and array element.
 
-`CFAbstractStore.canAlias` is final.  To change the aliasing judgment, override
-the new method `CFAbstractAnalysis.canAlias` instead.
+`CFAbstractStore.canAlias()` is now final.  It calls the new method
+`CFAbstractAnalysis.canAlias()`, which calls the new method
+`TypesUtils.canAlias()`.  To change the aliasing judgment, override
+`CFAbstractAnalysis.canAlias()`.
 
 `canAlias(a, b)` returns true if a cast from the erasure of the type of `a` to
 the erasure of the type of `b`, or vice versa, is legal.  It previously
