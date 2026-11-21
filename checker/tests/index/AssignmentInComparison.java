@@ -12,6 +12,9 @@ public class AssignmentInComparison {
 
   int[] arr = new int[0];
 
+  // A field, so that the Less Than Checker does not refine an expression to be less than it.
+  @LTLengthOf("arr") int lessThanArrLength;
+
   int[] setArr(int[] c) {
     arr = c;
     return c;
@@ -86,8 +89,8 @@ public class AssignmentInComparison {
   static void nondeterministicOffset(int[] a, int x, int y) {
     if ((x = y) + choose() < a.length) {
       // Another call to `choose()` might return a different value than the one added to `x`.
-      // :: error: [assignment]
       @LTLengthOf(value = "a", offset = "choose()")
+      // :: error: [assignment]
       int w = x;
     }
   }
@@ -107,17 +110,17 @@ public class AssignmentInComparison {
     }
   }
 
-  void otherOperandReassignsArrayOfGreater(@LTLengthOf("arr") int x, int i, int[] c) {
-    if (x > (i = (arr = c).length)) {
-      // `x` is less than the length of the array that `arr` referred to before the right operand
-      // reassigned `arr`.  `i` is the length of the new array.
+  void otherOperandReassignsArrayOfGreater(int i, int[] c) {
+    if (lessThanArrLength > (i = (arr = c).length)) {
+      // `lessThanArrLength` is less than the length of the array that `arr` referred to before the
+      // right operand reassigned `arr`.  `i` is the length of the new array.
       // :: error: [assignment]
       @LTLengthOf("arr") int y = i;
     }
   }
 
-  void otherOperandReassignsArrayOfGreaterOrEqual(@LTLengthOf("arr") int x, int i, int[] c) {
-    if (x >= (i = (arr = c).length)) {
+  void otherOperandReassignsArrayOfGreaterOrEqual(int i, int[] c) {
+    if (lessThanArrLength >= (i = (arr = c).length)) {
       // :: error: [assignment]
       @LTLengthOf("arr") int y = i;
     }
