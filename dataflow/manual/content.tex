@@ -1221,6 +1221,18 @@ within \code{try} blocks will cause execution of the \code{finally} block before
 continuing at the target of the jump. The Dataflow Framework models this
 behavior by adding a jump to a duplicate of the finally block before the
 jump to the original target of the control flow statement.
+A \code{return}, \code{break}, or \code{continue} statement within the
+\code{finally} block itself jumps directly to its target, without executing
+the \code{finally} block again.
+
+Likewise, an exception that the \code{try} block or a \code{catch} block
+throws causes execution of the \code{finally} block, which then rethrows the
+exception.  The Dataflow Framework models this behavior with further
+duplicates of the \code{finally} block, each of which ends by rethrowing the
+exception.  Exception types that would be rethrown to the same places (the
+same \code{catch} blocks, or the exit of the method) share a duplicate.  Exception types that would be rethrown to different places get
+different duplicates, so that the analysis does not merge the stores of paths
+that never meet.
 
 
 \subsection{AST to CFG Translation}

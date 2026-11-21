@@ -67,7 +67,7 @@ import org.plumelib.util.ArraySet;
    * or the exit label. If the exception reaches a finally block, then the result contains the
    * labels to which the finally block rethrows it, rather than the entry of the finally block.
    *
-   * @param thrown an exception
+   * @param thrown a type of exception, such as {@code java.io.IOException}
    * @return where control might transfer when {@code thrown} is thrown, other than finally blocks
    */
   public Set<Label> possibleLabelsPastFinally(TypeMirror thrown) {
