@@ -211,7 +211,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     if (intLiteral == 0) {
       if (atypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-        List<Node> internals = splitAssignments(otherNode);
+        List<Node> internals = nodesWithValueOf(otherNode);
         for (Node internal : internals) {
           JavaExpression je = JavaExpression.fromNode(internal);
           store.insertValue(je, POS);
@@ -219,7 +219,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       }
     } else if (intLiteral == -1) {
       if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-        List<Node> internals = splitAssignments(otherNode);
+        List<Node> internals = nodesWithValueOf(otherNode);
         for (Node internal : internals) {
           JavaExpression je = JavaExpression.fromNode(internal);
           store.insertValue(je, NN);

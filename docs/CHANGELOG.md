@@ -9,6 +9,17 @@
 
 ### Changes for type system implementers
 
+Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
+result omits each node that might have a different value by the time the
+enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
+result can be empty.  A subclass that overrides `splitAssignments()` must
+override `nodesWithValueOf()` instead.
+
+`CFAbstractStore.canAlias()` is now final.  It calls the new method
+`CFAbstractAnalysis.canAlias()`, which calls the new method
+`TypesUtils.canAlias()`.  To change the aliasing judgment, override
+`CFAbstractAnalysis.canAlias()`.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
