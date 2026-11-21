@@ -908,13 +908,14 @@ public abstract class CFAbstractTransfer<
    * A method access merges the then-store and else-store of its input, as most nodes do; see {@link
    * #createTransferResult}.
    *
-   * <p>The exception is the target of an unboxing call, such as {@code isNonNull(x).booleanValue}.
-   * The then-store and else-store of its input describe its receiver, so the method access passes
-   * them along for the unboxing call to use; see {@link #visitUnboxingCall}.
+   * <p>The exception is the target of an unboxing or boxing call, such as {@code
+   * isNonNull(x).booleanValue} or {@code Boolean.valueOf}. The then-store and else-store of its
+   * input describe the value being unboxed or boxed, so the method access passes them along for the
+   * call to use; see {@link #visitUnboxingCall} and {@link #visitBoxingCall}.
    */
   @Override
   public TransferResult<V, S> visitMethodAccess(MethodAccessNode n, TransferInput<V, S> in) {
-    if (in.containsTwoStores() && isTargetOfUnboxingCall(n)) {
+    if (in.containsTwoStores() && (isTargetOfUnboxingCall(n) || isTargetOfBoxingCall(n))) {
       return createTransferResultKeepingStores(getValueFromFactory(n), in);
     }
     return super.visitMethodAccess(n, in);
@@ -933,12 +934,66 @@ public abstract class CFAbstractTransfer<
     if (!TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
       return false;
     }
-    Block block = n.getBlock();
-    if (block == null) {
+    return nextNode(n) instanceof MethodInvocationNode call
+        && call.isUnboxing()
+        && call.getTarget() == n;
+  }
+
+  /**
+   * Returns true if the given method access is the target of a boxing call that the CFG builder
+   * inserted, such as {@code Boolean.valueOf} in {@code Boolean.valueOf(isNonNull(x))}.
+   *
+   * @param n a method access
+   * @return true if the method access is the target of a boxing call
+   */
+  @SuppressWarnings("interning:not.interned") // CFG node identity
+  private static boolean isTargetOfBoxingCall(MethodAccessNode n) {
+    // Cheap filter: the receiver of a boxing call is the name of a boxed primitive type.  This
+    // avoids scanning the block for most method accesses.
+    if (!(n.getReceiver() instanceof ClassNameNode)
+        || !TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
       return false;
     }
-    // The call follows n in its block or, because a method access can throw an exception, begins
-    // the block that succeeds it.
+    return nextNode(n) instanceof MethodInvocationNode call
+        && call.isBoxing()
+        && call.getTarget() == n;
+  }
+
+  /**
+   * Returns true if the given class name is the receiver of the target of a boxing call that the
+   * CFG builder inserted, such as {@code Boolean} in {@code Boolean.valueOf(isNonNull(x))}.
+   *
+   * @param n a class name
+   * @return true if the class name is the receiver of the target of a boxing call
+   */
+  @SuppressWarnings("interning:not.interned") // CFG node identity
+  private static boolean isClassOfBoxingCall(ClassNameNode n) {
+    // Cheap filter: the class of a boxing call is a boxed primitive type.  This avoids scanning the
+    // block for most class names.
+    if (!TypesUtils.isBoxedPrimitive(n.getType())) {
+      return false;
+    }
+    return nextNode(n) instanceof MethodAccessNode access
+        && access.getReceiver() == n
+        && isTargetOfBoxingCall(access);
+  }
+
+  /**
+   * Returns the node that the given node passes its transfer result to: the next node in its block
+   * or, if the given node is the last node of its block, the first node of the block's successor.
+   * Returns null if there is no such node or if the block has more than one successor.
+   *
+   * @param n a node
+   * @return the node after {@code n}, or null if there is no single such node
+   */
+  @SuppressWarnings("interning:not.interned") // CFG node identity
+  private static @Nullable Node nextNode(Node n) {
+    Block block = n.getBlock();
+    if (block == null) {
+      return null;
+    }
+    // The next node follows n in its block or, if n can throw an exception, begins the block that
+    // succeeds it.
     List<Node> nodes = block.getNodes();
     int i = 0;
     while (i < nodes.size() && nodes.get(i) != n) {
@@ -947,18 +1002,16 @@ public abstract class CFAbstractTransfer<
     i++;
     if (i >= nodes.size()) {
       if (!(block instanceof SingleSuccessorBlock ssb)) {
-        return false;
+        return null;
       }
       block = ssb.getSuccessor();
       if (block == null || block.getNodes().isEmpty()) {
-        return false;
+        return null;
       }
       nodes = block.getNodes();
       i = 0;
     }
-    return nodes.get(i) instanceof MethodInvocationNode call
-        && call.isUnboxing()
-        && call.getTarget() == n;
+    return nodes.get(i);
   }
 
   @Override
@@ -978,6 +1031,11 @@ public abstract class CFAbstractTransfer<
       }
     }
 
+    if (in.containsTwoStores() && isClassOfBoxingCall(n)) {
+      // The then-store and else-store describe the value being boxed.  Pass them along for the
+      // boxing call to use; see visitBoxingCall.
+      return createTransferResultKeepingStores(value, in);
+    }
     return createTransferResult(value, in);
   }
 
@@ -1487,6 +1545,9 @@ public abstract class CFAbstractTransfer<
     if (n.isUnboxing()) {
       return visitUnboxingCall(n, in);
     }
+    if (n.isBoxing() && in.containsTwoStores()) {
+      return visitBoxingCall(n, in);
+    }
 
     S store = in.getRegularStore();
 
@@ -1583,6 +1644,31 @@ public abstract class CFAbstractTransfer<
 
     return new ConditionalTransferResult<>(
         finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+  }
+
+  /**
+   * The transfer function for a boxing call that the CFG builder inserted, such as {@code
+   * Boolean.valueOf(isNonNull(x))}, whose input has a then-store and an else-store. Such a call has
+   * no side effects, and its result equals its argument. Therefore, the call keeps the stores of
+   * its argument, including the separate then-store and else-store. For a {@code boolean} argument,
+   * those hold the facts that are true when the argument is true or false, respectively; for
+   * example, {@code return x != null;} in a method that returns {@code Boolean} can satisfy a
+   * conditional postcondition such as {@code @EnsuresNonNullIf}.
+   *
+   * <p>There is no whole-program inference, because the boxing method is a JDK method of a boxed
+   * primitive type.
+   *
+   * @param n a boxing call
+   * @param in the transfer input, which has a then-store and an else-store
+   * @return the transfer result for {@code n}
+   */
+  private TransferResult<V, S> visitBoxingCall(MethodInvocationNode n, TransferInput<V, S> in) {
+    ExpressionTree boxingTree = n.getTree();
+    V factoryValue = (boxingTree == null) ? null : getValueFromFactory(boxingTree, n);
+    // As in visitMethodInvocation, also use the qualifiers of the value being boxed.
+    V operandValue = in.getValueOfSubNode(n.getArgument(0));
+    V resValue = moreSpecificValue(getBoxedValue(n.getType(), operandValue), factoryValue);
+    return createTransferResultKeepingStores(resValue, in);
   }
 
   @Override

@@ -1,5 +1,8 @@
 // Assignment conversion converts a compile-time constant to the primitive type of a Byte, Short, or
-// Character variable before boxing it (JLS 5.2), even if the constant is not a literal.
+// Character variable before boxing it (JLS 5.2), even if the constant is not a literal.  Return
+// statements, lambda bodies, and switch expression results are assignment contexts.
+
+import java.util.function.Supplier;
 
 @SuppressWarnings("all") // Just check for crashes.
 public class ConstantNarrowingBoxing {
@@ -25,5 +28,42 @@ public class ConstantNarrowingBoxing {
     short s3 = (char) 1;
     char c5 = (short) 1;
     char c6 = (byte) 1;
+  }
+
+  Byte returnConstant() {
+    return 1;
+  }
+
+  Character returnByteConstant() {
+    return BYTE_CONSTANT;
+  }
+
+  short returnCharConstant() {
+    return 'a';
+  }
+
+  void lambdaBodies() {
+    Supplier<Byte> s1 = () -> 1;
+    Supplier<Short> s2 = () -> BYTE_CONSTANT;
+    Supplier<Character> s3 =
+        () -> {
+          return CONSTANT;
+        };
+  }
+
+  void switchResults(int x) {
+    Byte b =
+        switch (x) {
+          case 0 -> 1;
+          case 1 -> (char) 2;
+          default -> {
+            yield CONSTANT;
+          }
+        };
+    short s =
+        switch (x) {
+          case 0 -> 'a';
+          default -> BYTE_CONSTANT;
+        };
   }
 }

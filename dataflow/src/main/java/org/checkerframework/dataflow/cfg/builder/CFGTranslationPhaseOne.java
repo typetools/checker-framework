@@ -61,6 +61,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -484,6 +486,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
         LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
         if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+          TypeMirror returnType = getReturnType(lambdaTree);
+          if (returnType.getKind() != TypeKind.VOID) {
+            finalNode = assignConvert(finalNode, returnType);
+          }
           Node resultNode =
               new LambdaResultExpressionNode((ExpressionTree) lambdaTree.getBody(), finalNode);
           extendWithNode(resultNode);
@@ -3276,7 +3282,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // TODO: also have a return-node if nothing is returned
     ReturnNode result = null;
     if (ret != null) {
-      Node node = scan(ret, p);
+      Tree methodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+      if (methodOrLambda == null) {
+        throw new BugInCF("return statement outside a method or lambda: %s", tree);
+      }
+      Node node = assignConvert(scan(ret, p), getReturnType(methodOrLambda));
       result = new ReturnNode(tree, node, env.getTypeUtils());
       returnNodes.add(result);
       extendWithNode(result);
@@ -3285,6 +3295,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     extendWithExtendedNode(new UnconditionalJump(this.returnTargetLC.accessLabel()));
 
     return result;
+  }
+
+  /**
+   * Returns the return type of the given method or lambda expression. For a lambda expression, the
+   * return type is that of the function type of the lambda's target type; for example, it is {@code
+   * Byte} for {@code () -> 1} in {@code Supplier<Byte> s = () -> 1;}.
+   *
+   * @param methodOrLambda a method declaration or a lambda expression
+   * @return the return type of the method or lambda expression
+   */
+  private TypeMirror getReturnType(Tree methodOrLambda) {
+    if (methodOrLambda instanceof MethodTree methodTree) {
+      return TreeUtils.elementFromDeclaration(methodTree).getReturnType();
+    }
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(((JavacProcessingEnvironment) env).getContext());
+    return ((JCLambda) methodOrLambda).getDescriptorType(javacTypes).getReturnType();
   }
 
   @Override

@@ -89,6 +89,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.ReturnStatementStore;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.FormalParameter;
@@ -2425,6 +2426,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ReturnNode returnStmt = pair.returnNode();
 
       Node retValNode = returnStmt.getResult();
+      if (retValNode instanceof MethodInvocationNode boxing && boxing.isBoxing()) {
+        // In a method that returns Boolean, the returned value is boxed.
+        retValNode = boxing.getArgument(0);
+      }
       Boolean retVal = retValNode instanceof BooleanLiteralNode bln ? bln.getValue() : null;
 
       TransferResult<?, ?> transferResult = pair.transferResult();
