@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -43,6 +44,12 @@ public class JavaExpressionToStringTest {
   /** The method {@code Integer.intValue()}. */
   private final ExecutableElement intValueMethod;
 
+  /** The static field {@code Integer.MAX_VALUE}. */
+  private final VariableElement maxValueField;
+
+  /** The instance field {@code Integer.value}. */
+  private final VariableElement valueField;
+
   /** Creates a JavaExpressionToStringTest. */
   public JavaExpressionToStringTest() {
     Context context = new Context();
@@ -62,6 +69,8 @@ public class JavaExpressionToStringTest {
     intType = types.getPrimitiveType(TypeKind.INT);
     trimMethod = getMethod(stringElement, "trim");
     intValueMethod = getMethod(integerElement, "intValue");
+    maxValueField = getField(integerElement, "MAX_VALUE");
+    valueField = getField(integerElement, "value");
   }
 
   /**
@@ -78,6 +87,22 @@ public class JavaExpressionToStringTest {
       }
     }
     throw new Error("No method " + name + "() in " + type);
+  }
+
+  /**
+   * Returns the field with the given name, declared in the given type.
+   *
+   * @param type a type
+   * @param name the name of a field in the type
+   * @return the field with the given name, declared in the type
+   */
+  private static VariableElement getField(TypeElement type, String name) {
+    for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
+      if (field.getSimpleName().contentEquals(name)) {
+        return field;
+      }
+    }
+    throw new Error("No field " + name + " in " + type);
   }
 
   /**
@@ -146,6 +171,18 @@ public class JavaExpressionToStringTest {
         "((String) o).trim()", trim(new Unknown(stringType, "(String) o")).toString());
     Assert.assertEquals(
         "(b ? x : y).trim()", trim(new Unknown(stringType, "b ? x : y")).toString());
+  }
+
+  @Test
+  public void fieldAccessOnClassName() {
+    FieldAccess access = new FieldAccess(new ClassName(integerType), maxValueField);
+    Assert.assertEquals("java.lang.Integer.MAX_VALUE", access.toString());
+  }
+
+  @Test
+  public void fieldAccessOnUnknown() {
+    FieldAccess access = new FieldAccess(new Unknown(integerType, "(Integer) o"), valueField);
+    Assert.assertEquals("((Integer) o).value", access.toString());
   }
 
   @Test
