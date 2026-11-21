@@ -9,6 +9,11 @@
 
 ### Changes for type system implementers
 
+`CFAbstractStore.canAlias()` is now final.  It calls the new method
+`CFAbstractAnalysis.canAlias()`, which calls the new method
+`TypesUtils.canAlias()`.  To change the aliasing judgment, override
+`CFAbstractAnalysis.canAlias()`.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
