@@ -400,9 +400,8 @@ public class AssignmentInComparison {
     return o;
   }
 
-  @SuppressWarnings("unchecked") // cast to T
-  static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
-    if ((ts[0] = (T) ss[0][0]) != null) {
+  static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable T[][] ss) {
+    if ((ts[0] = ss[0][0]) != null) {
       ts[0].toString();
       // The assignment to `ts[0]` might change `ss[0]`, if `ts` and `ss` alias.
       // :: error: [dereference.of.nullable]
