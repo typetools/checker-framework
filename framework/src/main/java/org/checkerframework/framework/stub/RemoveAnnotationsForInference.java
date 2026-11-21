@@ -474,8 +474,8 @@ public final class RemoveAnnotationsForInference {
     Iterator<Node> itor = new Node.ParentsVisitor(arg);
     while (itor.hasNext()) {
       Node n = itor.next();
-      if (n instanceof NodeWithAnnotations) {
-        for (AnnotationExpr ae : ((NodeWithAnnotations<?>) n).getAnnotations()) {
+      if (n instanceof NodeWithAnnotations<?> nodeWithAnnotations) {
+        for (AnnotationExpr ae : nodeWithAnnotations.getAnnotations()) {
           if (suppresses(ae, names)) {
             return true;
           }

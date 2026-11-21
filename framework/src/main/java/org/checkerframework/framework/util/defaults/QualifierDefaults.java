@@ -350,7 +350,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Sets the default annotations for a certain Element.
+   * Sets the default annotation for the given element and location.
    *
    * <p>The default behaves like a {@code @DefaultQualifier} annotation written on {@code elem},
    * except that it takes precedence over a {@code @DefaultQualifier} annotation that is written on
@@ -617,9 +617,9 @@ public class QualifierDefaults {
     //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
     boolean defaultTypeVarLocals =
-        (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
-            && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                .getShouldDefaultTypeVarLocals();
+        (atypeFactory
+                instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAnnotatedTypeFactory)
+            && genericAnnotatedTypeFactory.getShouldDefaultTypeVarLocals();
     applyToTypeVar =
         defaultTypeVarLocals
             && elt != null
