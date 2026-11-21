@@ -507,12 +507,14 @@ public class AnnotationFileUtil {
    * entry's contents just before passing it, so an archive's entries need not all be in memory at
    * once.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
-   *     stub file or ajava file, pass it to {@code action}. If a jarfile, pass all annotation files
-   *     (of type {@code fileType}) contained in it. If a directory, recurse on all files contained
-   *     in it. If a jarfile that cannot be opened or a directory that cannot be listed, pass a
-   *     resource whose {@link AnnotationFileResource#getInputStream} throws an exception, so the
-   *     client reports the error rather than treating {@code location} as empty.
+   * <p>If {@code location} is a stub file or ajava file, passes it to {@code action}. If {@code
+   * location} is a jarfile, passes all annotation files (of type {@code fileType}) contained in it.
+   * If {@code location} is a directory, recurses on all files contained in it. If {@code location}
+   * is a jarfile that cannot be opened or a directory that cannot be listed, passes a resource
+   * whose {@link AnnotationFileResource#getInputStream} throws an exception, so the client reports
+   * the error rather than treating {@code location} as empty.
+   *
+   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory
    * @param fileType type of annotation files to pass to {@code action}
    * @param action the operation to perform on each annotation file
    */
