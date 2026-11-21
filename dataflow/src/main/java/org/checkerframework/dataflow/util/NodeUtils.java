@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
@@ -110,12 +111,29 @@ public final class NodeUtils {
    * @return true if the node is equivalent to a literal with value {@code value}
    */
   public static boolean isConstantBoolean(Node n, boolean value) {
+    Boolean constant = constantBooleanValue(n);
+    return constant != null && constant == value;
+  }
+
+  /**
+   * Returns the value of the given node if it statically evaluates to a boolean value and has no
+   * side effects, as {@code !(boolean) true} does. Otherwise, returns null.
+   *
+   * @param n a node
+   * @return the boolean value that the node is equivalent to, or null if the node is not equivalent
+   *     to a boolean literal
+   */
+  public static @Nullable Boolean constantBooleanValue(Node n) {
+    boolean negated = false;
+    n = removeCasts(n);
+    while (n instanceof ConditionalNotNode cnn) {
+      negated = !negated;
+      n = removeCasts(cnn.getOperand());
+    }
     if (n instanceof BooleanLiteralNode bln) {
-      return bln.getValue() == value;
-    } else if (n instanceof ConditionalNotNode cnn) {
-      return isConstantBoolean(cnn.getOperand(), !value);
+      return bln.getValue() != negated;
     } else {
-      return false;
+      return null;
     }
   }
 
