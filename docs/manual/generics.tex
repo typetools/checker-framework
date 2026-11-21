@@ -526,6 +526,65 @@ explicit method type arguments, for which the syntax is as follows:
 This uses Java's existing syntax for specifying a method call's type arguments.
 
 
+\subsectionAndLabel{Record patterns}{record-patterns}
+
+The Checker Framework infers the qualifiers of a record pattern's type from
+the type of the value that is matched against the pattern, in the same way
+that javac infers the record pattern's type arguments
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.5}{JLS
+  \S 18.5.5}).  You cannot write an annotation on a record pattern's type
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-14.html#jls-14.30.1}{JLS
+  \S 14.30.1}).  For example:
+
+\begin{Verbatim}
+  record Box<T>(T t) {}
+
+  void m(Box<@Untainted String> b) {
+    if (b instanceof Box(var s)) {
+      // The record pattern's type is Box<@Untainted String>, so s is @Untainted.
+    }
+  }
+\end{Verbatim}
+
+\noindent
+A pattern variable declared with \<var>, such as \<s>, has the type of the
+corresponding record component in the record pattern's inferred type (more
+precisely, the upward projection of that type; see JLS \S 14.30.1).
+Dataflow refines the primary qualifier of every pattern variable in a record
+pattern using the primary qualifier of the corresponding record component's
+type (Section~\ref{type-refinement}).  The refined qualifier can be more
+precise than the component's qualifier:  a qualifier that is not a subtype
+of the qualifier upper bound of the pattern variable's Java type
+(Section~\ref{upper-bound-for-use}) is replaced by that bound, and a checker may refine pattern variables further.
+
+When a type pattern nested in a record pattern has an explicit type, such as
+\<@Untainted String a> below, the checker checks the type pattern against the
+type of the record component that the type pattern is matched against.  If the
+type pattern is unconditional for the Java type of the record component
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-14.html#jls-14.30.3}{JLS
+  \S 14.30.3}), the checker checks the type pattern like an assignment of the
+record component to the pattern variable.  Otherwise, the checker checks the
+type pattern like a type pattern in an \<instanceof> expression: the checker
+issues a \<nested.pattern.unsafe> warning if the checker cannot verify
+statically that the record component's value has the qualifiers of the
+pattern variable's type.
+
+\begin{Verbatim}
+  record Pair(@Tainted String x, @Tainted Object y) {}
+
+  void m(Object o) {
+    // assignment error for a: String is unconditional for String
+    // nested.pattern.unsafe warning for b: String is not unconditional for Object
+    if (o instanceof Pair(@Untainted String a, @Untainted String b)) { ... }
+  }
+\end{Verbatim}
+
+If no qualifiers are consistent with both the type of the value that is
+matched against a record pattern and the bounds of the record class's type
+parameters, the checker issues a \<type.arguments.not.inferred> error and uses
+the record pattern's Java type with default qualifiers on its type arguments.
+
+
 \subsectionAndLabel{The bottom type}{bottom-type}
 
 Many type systems have a \<*Bottom> type that is used only for the \<null>
