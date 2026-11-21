@@ -136,6 +136,7 @@ import org.checkerframework.dataflow.cfg.node.LongLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode.BoxingConversion;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
@@ -163,7 +164,6 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.AssertMethod;
@@ -879,7 +879,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(valueOfCall);
       Node boxed =
           new MethodInvocationNode(
-              valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
+              valueOfCall,
+              valueOfAccess,
+              Collections.singletonList(node),
+              getCurrentPath(),
+              BoxingConversion.BOXING);
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
@@ -912,7 +916,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(primValueCall);
       Node unboxed =
           new MethodInvocationNode(
-              primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
+              primValueCall,
+              primValueAccess,
+              Collections.emptyList(),
+              getCurrentPath(),
+              BoxingConversion.UNBOXING);
       unboxed.setInSource(false);
 
       // Add Throwable to account for unchecked exceptions
@@ -1104,7 +1112,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // For narrowing conversion, see JLS 5.1.3
     assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
         : "narrowing must be applied to primitive types";
-    if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
+    // Test `!types.isSubtype(node.getType(), destType)` (that is, "not a widening conversion"),
+    // not `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a supertype
+    // of byte and short, but a constant char can be narrowed to byte or short (and a constant
+    // byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between distinct
+    // numeric primitive types that is not a widening conversion is a narrowing conversion (or,
+    // for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
+      // The conversion from the type of node to destType is a narrowing conversion (or, for byte
+      // to char, a widening and narrowing conversion).
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
@@ -1131,24 +1147,56 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if a conversion from the type of the node to varType requires narrowing.
+   * Returns true if the node is a compile-time constant and varType is byte, short, char, Byte,
+   * Short, or Character. Assignment conversion converts such a constant to the primitive type of
+   * varType, even by a narrowing conversion, before boxing it if varType is a boxed type (JLS 5.2),
+   * as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code Short s = (byte) 1;}.
    *
    * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return true if this conversion requires narrowing to succeed
+   * @return true if the node is a compile-time constant and varType is byte, short, char, Byte,
+   *     Short, or Character
    */
-  protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
-    // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
-        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+  protected boolean isConstantToByteShortOrChar(TypeMirror varType, Node node) {
+    return TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
+        && isCompileTimeConstant(node);
+  }
+
+  /**
+   * Converts the given compile-time constant to the given type, which is byte, short, char, Byte,
+   * Short, or Character, as assignment conversion does (JLS 5.2). The conversion widens or narrows
+   * the constant to the primitive type of varType, then boxes it if varType is a boxed type. For
+   * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
+   *
+   * @param node a node producing a compile-time constant of primitive type
+   * @param varType the type to convert the constant to
+   * @return a Node with the value converted to varType, which might be the input node
+   * @see #isConstantToByteShortOrChar
+   */
+  protected Node convertConstant(Node node, TypeMirror varType) {
+    boolean isBoxed = TypesUtils.isBoxedPrimitive(varType);
+    TypeMirror primitiveType = isBoxed ? types.unboxedType(varType) : varType;
+    Node converted =
+        types.isSubtype(node.getType(), primitiveType)
+            ? widen(node, primitiveType)
+            : narrow(node, primitiveType);
+    return isBoxed ? box(converted) : converted;
+  }
+
+  /**
+   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
+   * {@code 1 + 2}, or a use of a constant variable.
+   *
+   * @param node a node
+   * @return true if the node is a compile-time constant expression
+   */
+  private static boolean isCompileTimeConstant(Node node) {
+    Tree tree = node.getTree();
+    if (tree == null) {
+      return false;
+    }
+    Type type = (Type) TreeUtils.typeOf(tree);
+    return type != null && type.constValue() != null;
   }
 
   /**
@@ -1189,8 +1237,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrowAndBox(node, varType);
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+        node = convertConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1202,8 +1250,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrow(node, varType);
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+        node = convertConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.
@@ -2011,13 +2059,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that is initialized to the iterator
-   * of an enhanced for loop.
+   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
+   * enhanced for loop over an {@code Iterable}.
    *
-   * @param iteratorCall the call to {@code iterator()} on the iterable expression of an enhanced
-   *     for loop
-   * @param variableElement the element of the loop's variable; the new variable has the same
-   *     enclosing element
+   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new iterator variable
    */
   protected VariableTree createEnhancedForLoopIteratorVariable(
@@ -2060,12 +2107,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that is initialized to the array of
-   * an enhanced for loop.
+   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
+   * for loop over an array.
    *
-   * @param expression the array expression of an enhanced for loop
-   * @param variableElement the element of the loop's variable; the new variable has the same
-   *     enclosing element
+   * @param expression an array expression of an enhanced for loop, which initializes the new
+   *     variable
+   * @param variableElement the element of the loop variable of the enhanced for loop; the new
+   *     variable has the same enclosing element
    * @return the declaration of the new array variable
    */
   protected VariableTree createEnhancedForLoopArrayVariable(
@@ -2473,7 +2521,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = scan(resultExpression, null);
+      // Convert the result to the type of the switch expression, as by boxing `1` in
+      // `Object o = switch (x) { default -> 1; };`.
+      Node resultExprNode =
+          assignConvert(scan(resultExpression, null), switchExprVarUseNode.getType());
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
       handleArtificialTree(assign);
