@@ -1136,12 +1136,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // For narrowing conversion, see JLS 5.1.3
     assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
         : "narrowing must be applied to primitive types";
-    // Do not test `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a
-    // supertype of byte and short, but a constant char can be narrowed to byte or short (and a
-    // constant byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between
-    // distinct numeric primitive types that is not a widening conversion is a narrowing conversion
-    // (or, for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    // Test `!types.isSubtype(node.getType(), destType)` (that is, "not a widening conversion"),
+    // not `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a supertype
+    // of byte and short, but a constant char can be narrowed to byte or short (and a constant
+    // byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between distinct
+    // numeric primitive types that is not a widening conversion is a narrowing conversion (or,
+    // for byte to char, a widening and narrowing conversion, JLS 5.1.4).
     if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
+      // The conversion from the type of node to destType is a narrowing conversion (or, for byte
+      // to char, a widening and narrowing conversion).
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
