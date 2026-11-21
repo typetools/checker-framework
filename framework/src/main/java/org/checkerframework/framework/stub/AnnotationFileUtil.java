@@ -18,11 +18,16 @@ import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.Element;
@@ -393,8 +398,9 @@ public class AnnotationFileUtil {
   /**
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
-   * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-   *     for it as described in {@link #findFileSystemLocation}.
+   * @param location an annotation file (stub file or ajava file), a jar or zip archive, or a
+   *     directory. Look for it as described in {@link #findFileSystemLocation}. The annotation
+   *     files are those that {@link #forEachAnnotationFile} finds.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
    *     classpath). Returns null if the file system location does not exist; the caller might wish
@@ -407,35 +413,173 @@ public class AnnotationFileUtil {
       return null;
     }
     List<AnnotationFileResource> resources = new ArrayList<>();
-    addAnnotationFilesToList(file, resources, fileType);
+    forEachAnnotationFile(file, fileType, resources::add, archive -> {});
     return resources;
   }
 
   /**
-   * Returns true if the given file is an annotation file of the given type.
+   * Returns the entries in an archive whose names end with the given string, keyed by their
+   * normalized names (see {@link #normalizeEntryName}). As in a search of an archive for annotation
+   * files, an entry is omitted if any component of its name is hidden (starts with "."). An entry
+   * whose name refers to a location outside the archive's root, such as {@code ../p/Foo.ajava}, is
+   * also omitted.
    *
-   * @param f the file to check
-   * @param fileType the type of file to check against
-   * @return true if {@code f} is a file with file type matching {@code fileType}, false otherwise
+   * <p>Several entries may have the same normalized name, such as {@code p/Foo.ajava} and {@code
+   * ./p/Foo.ajava}. All of them are in the list for that name, so that the client can report the
+   * ambiguity rather than silently choosing one of them. Each entry's resource retains the entry's
+   * original name, for reading and for diagnostics.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param nameEnding the end of the name of each entry to return
+   * @return a map from each normalized name to the entries in {@code archive} that have that
+   *     normalized name and whose names end with {@code nameEnding}, in the order they appear in
+   *     the archive. Normalized names use "/" as the separator. An entry that cannot be read is in
+   *     the map; see {@link #archiveEntry}.
+   * @throws IOException if {@code archive} cannot be opened
    */
-  private static boolean isAnnotationFile(File f, AnnotationFileType fileType) {
-    return f.isFile() && isAnnotationFile(f.getName(), fileType);
+  public static Map<String, List<AnnotationFileResource>> archiveEntries(
+      File archive, String nameEnding) throws IOException {
+    Map<String, List<AnnotationFileResource>> result = new LinkedHashMap<>();
+    try (JarFile file = new JarFile(archive)) {
+      file.stream()
+          .filter(
+              entry -> !hasHiddenComponent(entry.getName()) && entry.getName().endsWith(nameEnding))
+          .forEach(
+              entry -> {
+                String normalizedName = normalizeEntryName(entry.getName());
+                if (normalizedName != null) {
+                  result
+                      .computeIfAbsent(normalizedName, k -> new ArrayList<>(1))
+                      .add(archiveEntry(archive, file, entry));
+                }
+              });
+    }
+    return result;
   }
 
   /**
-   * Returns true if the given file is an annotation file of the given kind.
+   * Returns the given archive entry name, normalized: empty and {@code .} components are removed,
+   * and each {@code ..} component is removed along with the component before it. For example, each
+   * of {@code ./p/Foo.ajava}, {@code p//Foo.ajava}, and {@code p/q/../Foo.ajava} normalizes to
+   * {@code p/Foo.ajava}. A name without such components is returned unchanged.
    *
-   * @param path a file
-   * @param fileType the type of file to check against
-   * @return true if {@code path} represents a file with file type matching {@code fileType}, false
-   *     otherwise
+   * @param entryName the name of an archive entry, which uses "/" as the separator
+   * @return the normalized name, or null if {@code entryName} refers to a location outside the
+   *     archive's root, such as {@code ../Foo.ajava}
    */
-  private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
-    return path.endsWith(fileType.isStub() ? ".astub" : ".ajava");
+  static @Nullable String normalizeEntryName(String entryName) {
+    ArrayDeque<String> components = new ArrayDeque<>();
+    for (String component : entryName.split("/", -1)) {
+      if (component.equals("..")) {
+        if (components.isEmpty()) {
+          return null;
+        }
+        components.removeLast();
+      } else if (!component.isEmpty() && !component.equals(".")) {
+        components.addLast(component);
+      }
+    }
+    return String.join("/", components);
   }
 
-  private static boolean isJar(File f) {
-    return f.isFile() && f.getName().endsWith(".jar");
+  /**
+   * Passes each annotation file of type {@code fileType} at the given file system location to
+   * {@code action}, in order. Passes an archive entry while its archive is open, and reads the
+   * entry's contents just before passing it, so an archive's entries need not all be in memory at
+   * once.
+   *
+   * <p>If {@code location} is a file, then it is used if it is an archive (see {@link #isArchive})
+   * or if its name ends with the extension of {@code fileType} ({@code .astub} for a stub file or
+   * {@code .ajava} for an ajava file). If {@code location} is a directory or archive, then a file
+   * or entry within it is used if its name ends with that extension and no component of its path
+   * within the directory or archive is hidden (see {@link #isHidden}). An example of a hidden file
+   * is the {@code ._Foo.astub} metadata file that macOS adds to archives and to non-Mac file
+   * systems. An archive within a directory is not opened; it is passed to {@code
+   * ignoredArchiveAction} instead. If an archive cannot be opened or a directory cannot be listed,
+   * then {@code action} is passed a resource whose {@link AnnotationFileResource#getInputStream}
+   * throws an exception, so the client reports the error rather than treating the archive or
+   * directory as empty.
+   *
+   * @param location a file or directory that the user named
+   * @param fileType type of annotation files to pass to {@code action}
+   * @param action the operation to perform on each annotation file
+   * @param ignoredArchiveAction the operation to perform on each archive within the directory
+   *     {@code location}, which is not opened
+   */
+  public static void forEachAnnotationFile(
+      File location,
+      AnnotationFileType fileType,
+      Consumer<AnnotationFileResource> action,
+      Consumer<File> ignoredArchiveAction) {
+    forEachAnnotationFile(location, fileType, true, action, ignoredArchiveAction);
+  }
+
+  /**
+   * Returns true if a file or archive entry whose name is {@code name} has the file name extension
+   * of the given type of annotation file: {@code .astub} for a stub file, or {@code .ajava} for an
+   * ajava file.
+   *
+   * @param name a file name or path, or the name of an archive entry
+   * @param fileType a type of annotation file
+   * @return true if {@code name} ends with the file name extension of {@code fileType}
+   */
+  static boolean hasAnnotationFileExtension(String name, AnnotationFileType fileType) {
+    return name.endsWith(fileType.isStub() ? ".astub" : ".ajava");
+  }
+
+  /**
+   * Returns true if {@code name} is the name of a hidden file or directory: one whose name starts
+   * with ".", such as {@code .git} or {@code ._Foo.astub}. The special names {@code .} and {@code
+   * ..}, which denote the current and parent directory, are not hidden.
+   *
+   * @param name the name of a file or directory, without any directory component
+   * @return true if {@code name} is the name of a hidden file or directory
+   */
+  private static boolean isHidden(String name) {
+    return name.startsWith(".") && !name.equals(".") && !name.equals("..");
+  }
+
+  /**
+   * Returns true if any component of the name of the given archive entry is hidden (starts with
+   * ".").
+   *
+   * @param entryName the name of an archive entry, such as {@code java/lang/String.astub}
+   * @return true if any component of {@code entryName} is hidden
+   */
+  private static boolean hasHiddenComponent(String entryName) {
+    // Archive entry names use "/" as the separator on every platform.
+    for (String component : entryName.split("/", -1)) {
+      if (isHidden(component)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the archive entry whose name is {@code entryName} is an annotation file of type
+   * {@code fileType}: no component of its name is hidden, and it has the file name extension of
+   * {@code fileType}.
+   *
+   * @param entryName the name of an archive entry, such as {@code java/lang/String.astub}
+   * @param fileType a type of annotation file
+   * @return true if the given archive entry is an annotation file of type {@code fileType}
+   */
+  private static boolean isArchiveEntryAnnotationFile(
+      String entryName, AnnotationFileType fileType) {
+    return !hasHiddenComponent(entryName) && hasAnnotationFileExtension(entryName, fileType);
+  }
+
+  /**
+   * Returns true if {@code name} is the name of a JAR or ZIP archive file: one whose name ends with
+   * {@code .jar} or {@code .zip}, ignoring case.
+   *
+   * @param name a file name
+   * @return true if {@code name} is the name of a JAR or ZIP archive file
+   */
+  public static boolean isArchive(String name) {
+    String lowercaseName = name.toLowerCase(Locale.ROOT);
+    return lowercaseName.endsWith(".jar") || lowercaseName.endsWith(".zip");
   }
 
   /**
@@ -456,61 +600,123 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Side-effects {@code resources} by adding annotation files of the given file type to it.
+   * Returns an annotation file resource for the given entry in the given archive.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
-   *     stub file or ajava file, add it to the {@code resources} list. If a jarfile, use all
-   *     annotation files (of type {@code fileType}) contained in it. If a directory, recurse on all
-   *     files contained in it.
-   * @param resources the list to add the found files to
-   * @param fileType type of annotation files to add
+   * @param archive a JAR or ZIP archive
+   * @param jarFile {@code archive}, open
+   * @param entry an entry in {@code archive}
+   * @return an annotation file resource for {@code entry}
    */
-  private static void addAnnotationFilesToList(
-      File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
-    if (isAnnotationFile(location, fileType)) {
-      resources.add(new FileAnnotationFileResource(location));
-    } else if (isJar(location)) {
-      try (JarFile file = new JarFile(location)) {
-        file.stream()
-            .filter(entry -> isAnnotationFile(entry.getName(), fileType))
-            .forEach(
-                entry -> {
-                  try {
-                    resources.add(
-                        new JarEntryAnnotationFileResource(
-                            location, entry.getName(), readEntry(file, entry)));
-                  } catch (IOException e) {
-                    // The client reports the error when it reads this entry, and it still
-                    // processes the archive's other entries.
-                    String description = location.getPath() + "!" + entry.getName();
-                    resources.add(
-                        new AnnotationFileResource() {
-                          @Override
-                          public String getDescription() {
-                            return description;
-                          }
+  private static AnnotationFileResource archiveEntry(
+      File archive, JarFile jarFile, JarEntry entry) {
+    try {
+      return new JarEntryAnnotationFileResource(
+          archive, entry.getName(), readEntry(jarFile, entry));
+    } catch (IOException e) {
+      return unreadableResource(archive.getPath() + "!" + entry.getName(), e);
+    }
+  }
 
-                          @Override
-                          public InputStream getInputStream() throws IOException {
-                            throw e;
-                          }
-                        });
-                  }
-                });
-      } catch (IOException e) {
-        System.err.println("AnnotationFileUtil: could not process archive " + location + ": " + e);
+  /**
+   * Returns an annotation file resource that could not be read. Its {@link
+   * AnnotationFileResource#getInputStream} throws {@code e}, so the client reports the error when
+   * it reads the resource.
+   *
+   * @param description a description of the resource
+   * @param e the exception that occurred when reading the resource
+   * @return an annotation file resource whose {@code getInputStream} method throws {@code e}
+   */
+  private static AnnotationFileResource unreadableResource(String description, IOException e) {
+    return new AnnotationFileResource() {
+      @Override
+      public String getDescription() {
+        return description;
       }
 
-    } else if (location.isDirectory()) {
+      @Override
+      public InputStream getInputStream() throws IOException {
+        throw e;
+      }
+    };
+  }
+
+  /**
+   * Passes each annotation file of type {@code fileType} at the given file system location to
+   * {@code action}, as described in {@link #forEachAnnotationFile(File, AnnotationFileType,
+   * Consumer, Consumer)}.
+   *
+   * @param location a file or directory that the user named, or that was found by searching a
+   *     directory
+   * @param fileType type of annotation files to pass to {@code action}
+   * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)
+   *     rather than being found by searching a directory. A hidden file or directory found by
+   *     searching is skipped, and an archive found by searching is passed to {@code
+   *     ignoredArchiveAction} rather than being opened.
+   * @param action the operation to perform on each annotation file
+   * @param ignoredArchiveAction the operation to perform on each archive found by searching a
+   *     directory
+   */
+  private static void forEachAnnotationFile(
+      File location,
+      AnnotationFileType fileType,
+      boolean isUserSupplied,
+      Consumer<AnnotationFileResource> action,
+      Consumer<File> ignoredArchiveAction) {
+    if (!isUserSupplied && isHidden(location.getName())) {
+      return;
+    }
+    if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       if (directoryContents == null) {
-        System.err.println("AnnotationFileUtil: could not list directory: " + location);
+        action.accept(
+            unreadableResource(location.getPath(), new IOException("could not list directory")));
         return;
       }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
-        addAnnotationFilesToList(enclosed, resources, fileType);
+        forEachAnnotationFile(enclosed, fileType, false, action, ignoredArchiveAction);
       }
+    } else if (location.isFile()) {
+      String name = location.getName();
+      if (isArchive(name)) {
+        if (isUserSupplied) {
+          forEachArchiveEntry(location, fileType, action);
+        } else {
+          ignoredArchiveAction.accept(location);
+        }
+      } else if (hasAnnotationFileExtension(name, fileType)) {
+        action.accept(new FileAnnotationFileResource(location));
+      }
+    }
+  }
+
+  /**
+   * Passes each annotation file of type {@code fileType} in the given archive to {@code action},
+   * while the archive is open.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param fileType type of annotation files to pass to {@code action}
+   * @param action the operation to perform on each annotation file in {@code archive}
+   */
+  private static void forEachArchiveEntry(
+      File archive, AnnotationFileType fileType, Consumer<AnnotationFileResource> action) {
+    JarFile jarFile;
+    try {
+      jarFile = new JarFile(archive);
+    } catch (IOException e) {
+      action.accept(unreadableResource(archive.getPath(), e));
+      return;
+    }
+    try (jarFile) {
+      Iterator<JarEntry> entries = jarFile.entries().asIterator();
+      while (entries.hasNext()) {
+        JarEntry entry = entries.next();
+        if (isArchiveEntryAnnotationFile(entry.getName(), fileType)) {
+          action.accept(archiveEntry(archive, jarFile, entry));
+        }
+      }
+    } catch (IOException e) {
+      // Closing an archive that was opened for reading does not lose any data.
     }
   }
 
