@@ -13,6 +13,12 @@ A checker can report a diagnostic whose message key only a subchecker's
 `messages.properties` file defines; the diagnostic uses the subchecker's message
 text.
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 

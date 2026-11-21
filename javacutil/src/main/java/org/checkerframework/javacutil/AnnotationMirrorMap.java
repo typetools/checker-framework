@@ -191,10 +191,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     if (o == this) {
       return true;
     }
-    if (!(o instanceof AnnotationMirrorMap)) {
+    if (!(o instanceof AnnotationMirrorMap<?> m)) {
       return false;
     }
-    AnnotationMirrorMap<?> m = (AnnotationMirrorMap) o;
     if (m.size() != size()) {
       return false;
     }
