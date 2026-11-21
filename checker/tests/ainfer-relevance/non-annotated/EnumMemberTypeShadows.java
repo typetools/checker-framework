@@ -7,8 +7,9 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // below therefore refers to `java.lang.Enum.EnumDesc`, which is irrelevant, rather than to
 // `EnumMemberTypeShadows.EnumDesc`, which is relevant because it is a subtype of `CharSequence`.
 //
-// Inference must discard the annotation on `field`, as the goal file shows.  If inference instead
-// resolves the name to `EnumMemberTypeShadows.EnumDesc`, then it writes the annotation.
+// Inference must discard both the annotation on `field` and the postcondition about `field` on
+// `assignField`, as the goal file shows.  If inference instead resolves the name to
+// `EnumMemberTypeShadows.EnumDesc`, then it writes both annotations.
 //
 // Writing `@AinferSibling1` on a `java.lang.Enum.EnumDesc` is itself a relevance violation, which
 // this test suppresses because the warning would appear in both passes of the test and the

@@ -2995,7 +2995,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param inferredType the type of the expression, on method entry or exit (depending on the value
    *     of {@code preOrPost})
    * @param declaredType the declared type of the expression, which is used to determine if the
-   *     inferred type supplies no additional information beyond the declared type
+   *     inferred type supplies no additional information beyond the declared type and if a
+   *     qualifier can be written on the expression's type at all
    * @param preOrPost what to return: preconditions or postconditions
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}

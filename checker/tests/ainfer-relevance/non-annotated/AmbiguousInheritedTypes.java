@@ -13,8 +13,9 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // of which hides the other, so it would have to be conservative and assume that the type might be
 // relevant.
 //
-// Inference must discard the annotation on `field`, as the goal file shows.  If inference instead
-// treats the name as ambiguous, or resolves it to `Relevant.Foo`, then it writes the annotation.
+// Inference must discard both the annotation on `field` and the postcondition about `field` on
+// `assignField`, as the goal file shows.  If inference instead treats the name as ambiguous, or
+// resolves it to `Relevant.Foo`, then it writes both annotations.
 //
 // Writing `@AinferSibling1` on an `Irrelevant.Foo` is itself a relevance violation, which this
 // test suppresses because the warning would appear in both passes of the test and the annotated

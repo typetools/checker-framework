@@ -6,9 +6,11 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // inference determines its member types from its supertypes, which must therefore include the
 // implicit `java.lang.Enum`.  Inference must resolve the name "EnumDesc" to
 // `java.lang.Enum.EnumDesc`, which is irrelevant, rather than to the top-level class `EnumDesc`,
-// which is relevant.  Inference infers `@AinferSibling1` for both fields, both as their types and
-// as postconditions of `assignFields`.  The goal file shows that inference discards both
-// annotations about `enumDescField`, but writes both annotations about `charSequenceField`.
+// which is relevant.  Inference infers `@AinferSibling1` for both fields, as their types, as
+// postconditions of `assignFields`, and as preconditions of `useFields`, which
+// `assignFieldsThenUseThem` calls after assigning both fields.  The goal file shows that inference
+// discards all three annotations about `enumDescField`, but writes all three annotations about
+// `charSequenceField`.
 //
 // Writing `@AinferSibling1` on a `java.lang.Enum.EnumDesc` is itself a relevance violation, which
 // this test suppresses because the warning would appear in both passes of the test and the
@@ -24,11 +26,22 @@ public class UnnameableEnumInheritsType {
 
         CharSequence charSequenceField;
 
-        @SuppressWarnings("anno.on.irrelevant")
-        void assignFields(@AinferSibling1 EnumDesc e, @AinferSibling1 CharSequence c) {
+        void assignFields(
+            @SuppressWarnings("anno.on.irrelevant") @AinferSibling1 EnumDesc e,
+            @AinferSibling1 CharSequence c) {
           enumDescField = e;
           charSequenceField = c;
         }
+
+        void assignFieldsThenUseThem(
+            @SuppressWarnings("anno.on.irrelevant") @AinferSibling1 EnumDesc e,
+            @AinferSibling1 CharSequence c) {
+          enumDescField = e;
+          charSequenceField = c;
+          useFields();
+        }
+
+        void useFields() {}
       }
     }
   }
