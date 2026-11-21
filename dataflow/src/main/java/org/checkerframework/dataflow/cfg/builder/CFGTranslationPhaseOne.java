@@ -3025,13 +3025,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Returns the types of the exceptions that reach the given frame, grouped by the nodes that throw
-   * them. A type that a method invocation throws to the frame is alone in its group. Two other
-   * types are in the same group if and only if the same nodes throw them to the frame.
+   * them. Each type that some method invocation throws to the frame is alone in its group, even if
+   * other nodes also throw it. Two other types are in the same group if and only if the set of
+   * nodes that throw one of them to the frame equals the set of nodes that throw the other.
    *
    * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
-   * @return the groups, in the order that their first types reach {@code frame}; each group maps
-   *     each of its types to the type's label in {@code frame}. Empty if no exception reaches
-   *     {@code frame}.
+   * @return the groups, in the order that the first type of each group reaches {@code frame} (see
+   *     {@link TryFinallyFrame#getExceptionLabels}); each group maps each of its types to the
+   *     type's label in {@code frame}. Empty if no exception reaches {@code frame}.
    */
   private List<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
     Map<TypeMirror, Label> exceptionLabels = frame.getExceptionLabels();

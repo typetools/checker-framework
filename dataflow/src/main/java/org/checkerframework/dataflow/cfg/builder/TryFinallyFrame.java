@@ -22,8 +22,10 @@ import org.plumelib.util.ArrayMap;
   protected final int firstNodeIndex;
 
   /**
-   * A label for each type of exception that reaches this frame, in the order that the types first
-   * reach it. No two keys are the same type.
+   * A label for each type of exception that reaches this frame, in the order that the CFG builder
+   * first creates a node that throws the type to this frame. No two keys are the same type
+   * according to {@link Types#isSameType}, even if {@link TypeMirror#equals} would distinguish
+   * them.
    */
   private final Map<TypeMirror, Label> exceptionLabels = new ArrayMap<>();
 
@@ -71,8 +73,8 @@ import org.plumelib.util.ArrayMap;
    * Returns a label for each type of exception that reaches this frame.
    *
    * @return a map from each type of exception that reaches this frame, such as {@code
-   *     java.io.IOException}, to its label, in the order that the types first reach this frame;
-   *     empty if no exception reaches this frame
+   *     java.io.IOException}, to its label, in the order that the types first reach this frame (see
+   *     {@link #exceptionLabels}); empty if no exception reaches this frame
    */
   public Map<TypeMirror, Label> getExceptionLabels() {
     return Collections.unmodifiableMap(exceptionLabels);
