@@ -12,6 +12,12 @@
 `CaseNode` has three new boolean fields, `labelsUntested`,
 `sideEffectSinceSelector`, and `labelsMightHaveSideEffects`.
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
