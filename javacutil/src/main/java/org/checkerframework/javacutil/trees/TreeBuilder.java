@@ -471,11 +471,12 @@ public class TreeBuilder {
    * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float, where
    * * is the corresponding primitive type (i.e. shortValue or floatValue).
    *
-   * @param expr an expression whose type is a boxed type
+   * @param expr an expression whose type is a boxed type, or a type variable or wildcard whose
+   *     upper bound is a boxed type
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
-    TypeMirror boxedType = TreeUtils.typeOf(expr);
+    TypeMirror boxedType = TypesUtils.upperBound(TreeUtils.typeOf(expr));
     TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
 
     assert TypesUtils.isBoxedPrimitive(boxedType);

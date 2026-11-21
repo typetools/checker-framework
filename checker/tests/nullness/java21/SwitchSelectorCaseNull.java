@@ -102,4 +102,15 @@ public class SwitchSelectorCaseNull {
     // :: error: [return]
     return t;
   }
+
+  // Without a `case null` label, the switch throws NullPointerException if its selector is null, so
+  // the selector is non-null after the switch.
+
+  <T extends @Nullable Integer> @NonNull T typeVarNoCaseNull(T t) {
+    // :: error: [switching.nullable]
+    switch (t) {
+      default -> {}
+    }
+    return t;
+  }
 }

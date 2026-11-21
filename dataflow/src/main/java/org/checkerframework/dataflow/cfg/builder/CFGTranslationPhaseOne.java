@@ -899,7 +899,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     node
    */
   protected Node unbox(Node node) {
-    if (TypesUtils.isBoxedPrimitive(node.getType())) {
+    return unbox(node, false);
+  }
+
+  /**
+   * If the input node is a boxed type, unboxes it; otherwise, leaves it alone.
+   *
+   * @param node an input node
+   * @param unboxTypeVariable true if a node whose type is a type variable or wildcard whose upper
+   *     bound is a boxed type should also be unboxed
+   * @return a Node representing the unboxed version of the input, which might simply be the input
+   *     node
+   */
+  protected Node unbox(Node node, boolean unboxTypeVariable) {
+    TypeMirror type = node.getType();
+    if (unboxTypeVariable) {
+      type = TypesUtils.upperBound(type);
+    }
+    if (TypesUtils.isBoxedPrimitive(type)) {
 
       MemberSelectTree primValueSelect = treeBuilder.buildPrimValueMethodAccess(node.getTree());
       handleArtificialTree(primValueSelect);
@@ -2294,10 +2311,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * #selectorExprAssignment}. It can later be used to refine the selector expression in case
      * bodies.
      *
-     * <p>A selector whose type is a primitive wrapper class, such as {@code Integer}, is unboxed,
-     * unless the switch has a {@code case null} label. Such a switch does not throw {@code
-     * NullPointerException} if its selector is null. A selector whose type is a type variable is
-     * never unboxed, even if the type variable's bound is a primitive wrapper class.
+     * <p>A selector whose type is a primitive wrapper class such as {@code Integer}, or a type
+     * variable whose upper bound is a primitive wrapper class, is unboxed, unless the switch has a
+     * {@code case null} label. Such a switch does not throw {@code NullPointerException} if its
+     * selector is null.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2323,7 +2340,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       Node selectorExprNode = scan(selectorExprTree, null);
       if (!TreeUtils.hasNullCaseLabel(switchTree)) {
-        selectorExprNode = unbox(selectorExprNode);
+        selectorExprNode = unbox(selectorExprNode, true);
       }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
