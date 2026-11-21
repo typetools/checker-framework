@@ -3340,10 +3340,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Infers the purity of the given functional interface method, and of each method that it
-   * overrides, from the purity of a lambda or a method reference that implements it. The lambda or
-   * method reference constrains the functional method's purity just as an overriding method does;
-   * see the treatment of overridden methods in {@link #checkPurityAnnotations}.
+   * Records in whole-program inference the purity of the given functional interface method, and of
+   * each method that it overrides, as constrained by a lambda or a method reference that implements
+   * it. Whole-program inference lubs the recorded purity with the purity that it already has for
+   * each method. The lambda or method reference constrains the functional method's purity just as
+   * an overriding method does; see the treatment of overridden methods in {@link
+   * #checkPurityAnnotations}.
    *
    * @param functionalMethod a functional interface method
    * @param implementationKinds the purity kinds of a lambda or a method reference that implements
@@ -3360,9 +3362,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       throw new BugInCF("No WPI while inferring purity of " + tree);
     }
     // Do not infer a kind that would newly constrain the arguments at call sites.
-    inferPurityAnno(kindsSafeToInfer(functionalMethod, implementationKinds), wpi, functionalMethod);
+    implementationKinds = kindsSafeToInfer(functionalMethod, implementationKinds);
+    inferPurityAnno(implementationKinds, wpi, functionalMethod);
     for (ExecutableElement overriddenElt :
         ElementUtils.getOverriddenMethods(functionalMethod, types)) {
+      // A call to the overridden method may pass an argument that a call to `functionalMethod`
+      // may not, so the kinds that are safe to infer depend on the method.
       inferPurityAnno(kindsSafeToInfer(overriddenElt, implementationKinds), wpi, overriddenElt);
     }
   }
@@ -3370,7 +3375,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitMemberReference(MemberReferenceTree tree, Void p) {
     this.checkMethodReferenceAsOverride(tree, p);
+    if (infer) {
+      inferMethodReferencePurity(tree);
+    }
     return super.visitMemberReference(tree, p);
+  }
+
+  /**
+   * Records in whole-program inference the purity of the functional interface method that the given
+   * method reference implements, as constrained by the purity annotations of the referenced method.
+   * This is the analogue, for a method reference, of the inference that {@link #checkLambdaPurity}
+   * performs for a lambda.
+   *
+   * <p>This method does not depend on {@link #checkMethodReferenceAsOverride}, which skips some
+   * method references. Inference must account for every method reference, or else it could infer
+   * that the functional interface method is purer than one of its implementations.
+   *
+   * @param tree a method reference
+   */
+  private void inferMethodReferencePurity(MemberReferenceTree tree) {
+    ExecutableElement functionalMethod =
+        TreeUtils.findFunction(tree, atypeFactory.getProcessingEnv());
+    ExecutableElement referencedMethod = TreeUtils.elementFromUse(tree);
+    // Like `purityForInference`, ignore the -Aassume* command-line options.
+    inferFunctionalMethodPurity(
+        functionalMethod, PurityUtils.getPurityKinds(atypeFactory, referencedMethod), tree);
   }
 
   /**
@@ -5349,19 +5378,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
      * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
      *
-     * <p>Under {@code -Ainfer}, also infers the purity of the functional interface method from the
-     * purity annotations of the referenced method, as {@link BaseTypeVisitor#checkLambdaPurity}
-     * does from the body of a lambda.
+     * <p>Under {@code -Ainfer}, reports no error. {@link
+     * BaseTypeVisitor#inferMethodReferencePurity} instead uses the method reference to infer the
+     * purity of the functional interface method.
      */
     private void checkMethodReferencePurity() {
-      if (infer) {
-        // Like `purityForInference`, ignore the -Aassume* command-line options.
-        inferFunctionalMethodPurity(
-            overridden.getElement(),
-            PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()),
-            overriderTree);
-      }
-      if (!checkPurityAnnotations) {
+      // Do not report errors while inferring.  The purity annotations on the functional interface
+      // method may have been written by inference, which has not yet taken this method reference
+      // into account.  The annotations are checked when the inference output is type-checked.
+      if (!checkPurityAnnotations || infer) {
         return;
       }
       EnumSet<PurityKind> superPurity =
