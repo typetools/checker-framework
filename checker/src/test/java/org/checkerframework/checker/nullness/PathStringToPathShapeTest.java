@@ -66,7 +66,9 @@ public class PathStringToPathShapeTest {
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
     } else if (File.separatorChar == '\\') {
       Assert.assertEquals(
-          "actual Windows Path " + s, expectedNativeWindowsPath(s, windowsPath), actualPathShape(s));
+          "actual Windows Path " + s,
+          expectedNativeWindowsPath(s, windowsPath),
+          actualPathShape(s));
       PathShape actualFile = actualFileShape(s);
       // A JDK either strips a long-path prefix (JDK 22 and later) or does not.
       PathShape beforeJdk22 = PathStringToPathShape.windowsFileBeforeJdk22(s);
