@@ -141,8 +141,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
   }
 
   /**
-   * Removes from {@code atm} each annotation that would be redundant (see {@link #isRedundant}):
-   * each primary annotation, and each annotation on an array component type at any depth.
+   * Removes from {@code atm} each primary annotation, and each annotation on an array component
+   * type at any depth, that would be redundant (see {@link #isRedundant}).
    *
    * @param atm the inferred type of a location, which this method side-effects; or null
    * @param defaulted the type that the location has when no annotation is written there, or null if

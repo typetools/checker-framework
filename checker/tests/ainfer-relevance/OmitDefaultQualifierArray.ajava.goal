@@ -5,9 +5,10 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // locations:  the types of `field` and `field2D`, the formal parameters of `setField`,
 // `setField2D`, and `setFieldVarargs`, and the return type of `getField`.  Writing
 // `@AinferDefaultType` there would be redundant, so the goal file omits it.  By contrast,
-// inference infers `@AinferSibling1` for the component type of `sibling1Field`, and the goal file
-// contains it.  (An array type is irrelevant to the checker, so no annotation is written on the
-// array type itself.)
+// inference infers `@AinferSibling1` for the innermost component type of `sibling1Field`,
+// `sibling1Field2D`, and the formal parameter of `setSibling1Varargs`, and the goal file contains
+// it.  (An array type is irrelevant to the checker, so no annotation is written on the array type
+// itself.)
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
 public class OmitDefaultQualifierArray {
 
@@ -16,6 +17,8 @@ public class OmitDefaultQualifierArray {
     CharSequence[][] field2D;
 
     @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence[] sibling1Field;
+
+    @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence[][] sibling1Field2D;
 
     @org.checkerframework.dataflow.qual.Impure
     void setField(OmitDefaultQualifierArray this, CharSequence[] cs) {
@@ -37,17 +40,27 @@ public class OmitDefaultQualifierArray {
         sibling1Field = cs;
     }
 
+    @org.checkerframework.dataflow.qual.Impure
+    void setSibling1Field2D(CharSequence[][] cs) {
+        sibling1Field2D = cs;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void setSibling1Varargs(OmitDefaultQualifierArray this, @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence... cs) {
+    }
+
     @org.checkerframework.dataflow.qual.Pure
     CharSequence[] getField(OmitDefaultQualifierArray this) {
         return field;
     }
 
     @org.checkerframework.dataflow.qual.Impure
-    static void client(CharSequence[] cs, CharSequence[][] cs2D, CharSequence c) {
+    static void client(CharSequence[] cs, CharSequence[][] cs2D, CharSequence c, CharSequence s1) {
         OmitDefaultQualifierArray o = new OmitDefaultQualifierArray();
         o.setField(cs);
         o.setField2D(cs2D);
         o.setFieldVarargs(c, c);
+        o.setSibling1Varargs(s1, s1);
         o.getField();
     }
 }
