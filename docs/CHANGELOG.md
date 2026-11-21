@@ -7,6 +7,20 @@
 
 ### User-visible changes
 
+An annotation file that cannot be read yields a warning rather than a note.
+
+An archive within a directory that is named in the `-Astubs` or `-Aajava`
+command-line option is ignored, with a note.  Within a directory or archive,
+hidden files and directories (whose names start with `.`), such as the
+`._Foo.astub` files that macOS creates, are ignored.
+
+A file named in `-Astubs` or `-Aajava` that is not an archive and does not have
+the expected extension (`.astub` or `.ajava`) yields a warning.
+
+The `-Astubs` and `-Aajava` command-line options accept a `.zip` archive as
+well as a `.jar` archive.  An ajava file within an archive is read as a stub
+file; it is never treated as corresponding to a source file.
+
 ### Changes for type system implementers
 
 A default that a type system registers for an element through
