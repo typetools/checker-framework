@@ -36,6 +36,17 @@ public class BooleanCaseGuard {
     }
   }
 
+  // The pattern matches every value of the selector, so the default case is reached only when the
+  // guard is false, which means that the guard was evaluated.
+  void nullableBooleanGuardPatternAlwaysMatches(String sel, @Nullable Boolean b) {
+    switch (sel) {
+      case String s when b -> {}
+      default -> {
+        b.hashCode();
+      }
+    }
+  }
+
   void nullableBooleanGuardNextCase(Object sel, @Nullable Boolean b) {
     switch (sel) {
       case String s when b -> {}
@@ -72,6 +83,16 @@ public class BooleanCaseGuard {
       case Circle c -> 1;
       case Square s -> 2;
       case Shape s when b -> b.hashCode();
+    };
+  }
+
+  // The label of the last case refines the nullable selector expression in the guard and the body.
+  String nullableSelectorLastCase(@Nullable Shape shape) {
+    return switch (shape) {
+      case null -> "";
+      case Circle c -> "";
+      case Square s -> "";
+      case Shape s when shape.hashCode() > 0 -> shape.toString();
     };
   }
 }

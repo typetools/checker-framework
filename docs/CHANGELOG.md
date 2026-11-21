@@ -9,11 +9,23 @@
 
 ### Changes for type system implementers
 
+`CaseNode` has three new boolean fields, `labelsUntested`,
+`sideEffectSinceSelector`, and `labelsMightHaveSideEffects`.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
 suppressed the `@DefaultQualifier` annotations on the element and on the
 element's enclosing elements.
+
+New method `CFAbstractStore.updateForUnknownSideEffect()` removes the
+information that code with arbitrary side effects might invalidate, for code
+that no CFG node represents.  `CFAbstractTransfer.visitCase()` calls it for a
+case whose record pattern invokes a record accessor that is not
+side-effect-free.  A subclass of `CFAbstractStore` that overrides
+`updateForMethodCall()` to remove or keep additional information should
+override `updateForUnknownSideEffect()` in the same way, as
+`InitializationStore` and `LockStore` do.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
