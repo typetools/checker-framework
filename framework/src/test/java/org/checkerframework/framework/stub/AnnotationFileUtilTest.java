@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -349,13 +348,13 @@ public class AnnotationFileUtilTest {
     Assert.assertNull(AnnotationFileUtil.normalizeEntryName("p/../../Foo.ajava"));
   }
 
-  /** Tests that an archive that cannot be read has no entries. */
+  /** Tests that an archive that cannot be opened yields an exception. */
   @Test
   public void archiveEntriesInUnreadableArchive() throws IOException {
     File notZip = write(new File(tmp.getRoot(), "not-an-archive.zip"), "package p;");
 
-    Assert.assertEquals(
-        Collections.emptyMap(), AnnotationFileUtil.archiveEntries(notZip, "-checker.ajava"));
+    Assert.assertThrows(
+        IOException.class, () -> AnnotationFileUtil.archiveEntries(notZip, "-checker.ajava"));
   }
 
   /**

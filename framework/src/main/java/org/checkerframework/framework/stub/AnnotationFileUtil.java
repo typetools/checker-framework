@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -434,11 +433,12 @@ public class AnnotationFileUtil {
    * @param nameEnding the end of the name of each entry to return
    * @return a map from each normalized name to the entries in {@code archive} that have that
    *     normalized name and whose names end with {@code nameEnding}, in the order they appear in
-   *     the archive. Normalized names use "/" as the separator. The map is empty if {@code archive}
-   *     cannot be read. An entry that cannot be read is in the map; see {@link #archiveEntry}.
+   *     the archive. Normalized names use "/" as the separator. An entry that cannot be read is in
+   *     the map; see {@link #archiveEntry}.
+   * @throws IOException if {@code archive} cannot be opened
    */
   public static Map<String, List<AnnotationFileResource>> archiveEntries(
-      File archive, String nameEnding) {
+      File archive, String nameEnding) throws IOException {
     Map<String, List<AnnotationFileResource>> result = new LinkedHashMap<>();
     try (JarFile file = new JarFile(archive)) {
       file.stream()
@@ -453,9 +453,6 @@ public class AnnotationFileUtil {
                       .add(archiveEntry(archive, file, entry));
                 }
               });
-    } catch (IOException e) {
-      System.err.println("AnnotationFileUtil: could not process archive " + archive + ": " + e);
-      return Collections.emptyMap();
     }
     return result;
   }

@@ -1,8 +1,10 @@
 package org.checkerframework.framework.stub;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,7 +27,7 @@ import org.junit.rules.TemporaryFolder;
 
 /**
  * Tests the diagnostics that {@link AnnotationFileElementTypes} issues about the annotation files
- * named by the {@code -Astubs} command-line option.
+ * named by the {@code -Astubs} and {@code -Aajava} command-line options.
  */
 public class AnnotationFileElementTypesTest {
 
@@ -59,13 +61,28 @@ public class AnnotationFileElementTypesTest {
    * @throws IOException if the source file cannot be written or the compiler cannot be run
    */
   private List<String> diagnostics(String stubs) throws IOException {
+    return diagnostics("stubs", stubs);
+  }
+
+  /**
+   * Compiles a trivial class with the Value Checker and the given command-line option, and returns
+   * the compiler's diagnostics.
+   *
+   * @param option the name of a command-line option that the Checker Framework reads, such as
+   *     "stubs" for {@code -Astubs}
+   * @param value the argument to the command-line option {@code option}
+   * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
+   *     "WARNING: Ignoring Foo.stub: ..."
+   * @throws IOException if the source file cannot be written or the compiler cannot be run
+   */
+  private List<String> diagnostics(String option, String value) throws IOException {
     File sourceFile = write(new File(tmp.getRoot(), "src/Test.java"), "class Test {}");
     File classes = tmp.newFolder();
     List<String> options =
         Arrays.asList(
             "-processor",
             "org.checkerframework.common.value.ValueChecker",
-            "-Astubs=" + stubs,
+            "-A" + option + "=" + value,
             "-ApermitMissingJdk",
             "-d",
             classes.getPath(),
@@ -150,5 +167,26 @@ public class AnnotationFileElementTypesTest {
     assertHasDiagnostic(
         "WARNING: Could not read annotation resource: " + jar.getPath(),
         diagnostics(jar.getPath()));
+  }
+
+  /**
+   * Tests that a named ajava archive that cannot be opened yields a warning, and that nothing is
+   * printed to standard error.
+   */
+  @Test
+  public void corruptAjavaArchive() throws IOException {
+    File zip = write(new File(tmp.getRoot(), "ajava.zip"), "not a zip file");
+    ByteArrayOutputStream err = new ByteArrayOutputStream();
+    PrintStream originalErr = System.err;
+    List<String> diagnostics;
+    System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
+    try {
+      diagnostics = diagnostics("ajava", zip.getPath());
+    } finally {
+      System.setErr(originalErr);
+    }
+    assertHasDiagnostic(
+        "WARNING: Could not read annotation resource: " + zip.getPath(), diagnostics);
+    Assert.assertEquals("", err.toString(StandardCharsets.UTF_8));
   }
 }
