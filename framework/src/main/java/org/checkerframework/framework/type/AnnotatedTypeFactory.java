@@ -1082,20 +1082,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // Entries are keyed by normalized name, so an entry such as "./p/Foo-Checker.ajava"
           // matches. If several entries have the same normalized name, all are candidates, so
           // the ambiguity is reported below rather than one being silently chosen.
-          File archive = ajavaLocationFile.getAbsoluteFile();
-          Map<String, List<AnnotationFileResource>> archiveEntries =
-              ajavaArchiveEntries.get(archive);
-          if (archiveEntries == null) {
-            try {
-              archiveEntries = AnnotationFileUtil.archiveEntries(archive, checkerAjavaEnding);
-            } catch (IOException e) {
-              // parseAjavaFiles() has already issued a warning that the archive cannot be read.
-              archiveEntries = Collections.emptyMap();
-            }
-            ajavaArchiveEntries.put(archive, archiveEntries);
-          }
           List<AnnotationFileResource> entries =
-              archiveEntries.getOrDefault(ajavaEnding, Collections.emptyList());
+              ajavaArchiveEntries
+                  .computeIfAbsent(
+                      ajavaLocationFile.getAbsoluteFile(),
+                      archive -> {
+                        try {
+                          return AnnotationFileUtil.archiveEntries(archive, checkerAjavaEnding);
+                        } catch (IOException e) {
+                          // parseAjavaFiles() has already issued a warning that the archive
+                          // cannot be read.
+                          return Collections.emptyMap();
+                        }
+                      })
+                  .getOrDefault(ajavaEnding, Collections.emptyList());
           for (AnnotationFileResource entry : entries) {
             candidateAjavaFiles.put(entry.getDescription(), entry);
           }
