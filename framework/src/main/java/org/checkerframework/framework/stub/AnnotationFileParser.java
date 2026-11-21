@@ -1209,8 +1209,8 @@ public final class AnnotationFileParser {
 
     List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
     List<TypeParameter> typeParameters;
-    if (decl instanceof NodeWithTypeParameters) {
-      typeParameters = ((NodeWithTypeParameters<?>) decl).getTypeParameters();
+    if (decl instanceof NodeWithTypeParameters<?> nodeWithTypeParameters) {
+      typeParameters = nodeWithTypeParameters.getTypeParameters();
     } else {
       typeParameters = Collections.emptyList();
     }
@@ -3441,10 +3441,9 @@ public final class AnnotationFileParser {
       // type rather than relative to javacTree's type.
       FqName outerTypeBeingParsed = typeBeingParsed;
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
-      if (javaParserNode instanceof TypeDeclaration<?>
+      if (javaParserNode instanceof TypeDeclaration<?> typeDeclaration
           && !(javaParserNode instanceof AnnotationDeclaration)) {
-        typeDeclTypeParameters =
-            processTypeDecl((TypeDeclaration<?>) javaParserNode, null, javacTree);
+        typeDeclTypeParameters = processTypeDecl(typeDeclaration, null, javacTree);
       }
 
       super.visitClass(javacTree, javaParserNode);
@@ -3492,10 +3491,8 @@ public final class AnnotationFileParser {
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> variablesToClear = null;
       Element elt = TreeUtils.elementFromDeclaration(javacTree);
-      if (elt != null && javaParserNode instanceof CallableDeclaration<?>) {
-        variablesToClear =
-            processCallableDeclaration(
-                (CallableDeclaration<?>) javaParserNode, (ExecutableElement) elt);
+      if (elt != null && javaParserNode instanceof CallableDeclaration<?> callableDeclaration) {
+        variablesToClear = processCallableDeclaration(callableDeclaration, (ExecutableElement) elt);
       }
 
       super.visitMethod(javacTree, javaParserNode);
