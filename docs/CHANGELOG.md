@@ -9,11 +9,19 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
 suppressed the `@DefaultQualifier` annotations on the element and on the
 element's enclosing elements.
+
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
