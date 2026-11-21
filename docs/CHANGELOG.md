@@ -14,8 +14,7 @@ for a boxed `boolean` or `byte`.  For example, it reports
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
-takes an additional first argument, the operator, because the conversions of a
-binary operation's operands depend on the operator.
+takes an additional first argument, the operator.
 
 Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
 `TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
