@@ -27,7 +27,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * {@code @HasName} path lose its name.
  *
  * @see HasParent
- * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -16,7 +16,6 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * replaced by {@link HasParent}, and one in which every instance has been replaced by {@link
  * PathShapeBottom}.
  *
- * @checker_framework.manual #path-shape-checker Path Shape Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented

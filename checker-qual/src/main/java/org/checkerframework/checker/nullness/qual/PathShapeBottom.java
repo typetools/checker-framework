@@ -16,7 +16,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * <p>The only value of this type is {@code null}.
  *
- * @checker_framework.manual #path-shape-checker Path Shape Checker
  * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
