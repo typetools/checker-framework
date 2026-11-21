@@ -24,6 +24,15 @@ public abstract class ThrowNullCaught {
     }
   }
 
+  void closeInHandlerConditionalNull(String host, int port, boolean b) throws IOException {
+    Socket s = new Socket(host, port);
+    try {
+      throw b ? null : null;
+    } catch (NullPointerException e) {
+      closeSocket(s);
+    }
+  }
+
   void noCloseInHandler(String host, int port) throws IOException {
     // :: error: [required.method.not.called]
     Socket s = new Socket(host, port);
