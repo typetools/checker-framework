@@ -1722,6 +1722,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             if (isInheritedClasspathMemberType(inheritedClass, declaration)) {
               return inheritedClass;
             }
+          } else if (inherited == null) {
+            // The stub file often omits a supertype that the classpath counterpart of
+            // `superTypeDecl` has.
+            Class<?> classpathMember =
+                classpathMemberClass(superTypeDecl, identifier, true, stubPackage(declaration));
+            if (classpathMember != null) {
+              return classpathMember;
+            }
           }
         } else if (superDecl instanceof Class<?> superClass) {
           Class<?> member =
@@ -1769,20 +1777,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns true if a type declaration of the stub file inherits a member type, on the classpath,
-   * that a supertype declares or inherits. As for {@link #isInheritedStubMemberType}, a member type
-   * is inherited only if it is accessible in the subtype (JLS 8.5).
+   * Returns true if the given type declaration of the stub file inherits the given member type,
+   * which is on the classpath and which a supertype declares or inherits. As for {@link
+   * #isInheritedStubMemberType}, a member type is inherited only if it is accessible in the subtype
+   * (JLS 8.5).
    *
    * @param member a member type on the classpath
-   * @param subtype a type declaration of the stub file whose direct supertype declares or inherits
-   *     {@code member}
+   * @param subtype the type declaration of the stub file whose direct supertype declares or
+   *     inherits {@code member}
    * @return true if {@code subtype} inherits {@code member}
    */
   private boolean isInheritedClasspathMemberType(Class<?> member, TypeDeclaration<?> subtype) {
-    Class<?> declaringClass = member.getDeclaringClass();
-    // A member type of an interface is implicitly public.
-    return declaringClass != null
-        && (declaringClass.isInterface() || isAccessible(member, stubPackage(subtype)));
+    return member.getDeclaringClass() != null && isAccessible(member, stubPackage(subtype));
   }
 
   /**
@@ -1936,8 +1942,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that the classpath counterpart of {@code
-   * declaration} itself declares, or null if there is none. The result may be private, because a
-   * class can refer to its own private member types.
+   * declaration} itself declares, or null if there is none. The result can be any member type that
+   * the counterpart declares, including a private or otherwise inaccessible one; each caller checks
+   * whether the result is accessible where the caller uses it.
    *
    * @param declaration a type declaration in a stub file
    * @param identifier the simple name of a member type
@@ -2048,10 +2055,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       @SuppressWarnings("signature") // a binary name is a valid argument to Class.forName
       @ClassGetName String counterpartName = qualifiedStubBinaryName(declaration);
       Class<?> counterpart = loadClass(counterpartName);
-      Class<?> result =
-          memberClass(counterpart, identifier, packageName, inherited, new HashSet<>());
-      if (result != null || declaredMemberClass(counterpart, identifier) != null) {
-        return result;
+      // When its `inherited` argument is false, memberClass returns a member type that
+      // `counterpart` declares even if it is inaccessible, because such a member type hides the
+      // member types of the same name in the supertypes of `counterpart`.  Every member type that
+      // memberClass finds in a supertype is accessible, so the check below can reject only a
+      // member type that `counterpart` declares.
+      Class<?> result = memberClass(counterpart, identifier, packageName, false, new HashSet<>());
+      if (result != null) {
+        return (!inherited || isAccessible(result, packageName)) ? result : null;
       }
       for (ClassOrInterfaceType supertype : supertypes(declaration)) {
         Object superDecl = resolveSupertype(supertype);
@@ -2102,11 +2113,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Class<?> member = declaredMemberClass(clazz, identifier);
     if (member != null) {
       // A member type that `clazz` declares hides every member type of the same name in the
-      // supertypes of `clazz`, even if it is not inherited.  A member type of an interface is
-      // implicitly public.
-      return (!inherited || clazz.isInterface() || isAccessible(member, packageName))
-          ? member
-          : null;
+      // supertypes of `clazz`, even if it is not inherited.
+      return (!inherited || isAccessible(member, packageName)) ? member : null;
     }
     // A supertype's member type is inherited by `clazz` only if it is accessible from `clazz`.
     String superPackageName = clazz.getPackageName().equals(packageName) ? packageName : null;
@@ -2134,6 +2142,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return true if {@code member} is accessible from {@code packageName}
    */
   private static boolean isAccessible(Class<?> member, @Nullable String packageName) {
+    Class<?> declaringClass = member.getDeclaringClass();
+    if (declaringClass != null && declaringClass.isInterface()) {
+      // A member type of an interface is implicitly public.
+      return true;
+    }
     int modifiers = member.getModifiers();
     if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
       return true;

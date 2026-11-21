@@ -969,6 +969,16 @@ public class ToIndexFileConverterTest {
             "class C extends Base implements I {}",
             "class Use { void m(C.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
+
+    // The stub file declares Derived but omits its superclass Base, which the classpath
+    // counterpart of Derived extends.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Derived {}",
+            "class C extends Derived implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
   }
 
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
