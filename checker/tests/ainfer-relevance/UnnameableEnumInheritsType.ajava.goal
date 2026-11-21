@@ -1,11 +1,18 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
 // Every enum inherits the member type `EnumDesc` from its implicit superclass `java.lang.Enum`,
 // and that inherited member type shadows the type of the same name that is declared in the same
 // package.  An enum that is declared in a local class has no name that inference can look up, so
 // inference determines its member types from its supertypes, which must therefore include the
 // implicit `java.lang.Enum`.  Inference must resolve the name "EnumDesc" to
 // `java.lang.Enum.EnumDesc`, which is irrelevant, rather than to the top-level class `EnumDesc`,
-// which is relevant.  The goal file shows that inference writes no annotation for
-// `enumDescField`, but does write one for `charSequenceField`.
+// which is relevant.  Inference infers `@AinferSibling1` for both fields, both as their types and
+// as postconditions of `assignFields`.  The goal file shows that inference discards both
+// annotations about `enumDescField`, but writes both annotations about `charSequenceField`.
+//
+// Writing `@AinferSibling1` on a `java.lang.Enum.EnumDesc` is itself a relevance violation, which
+// this test suppresses because the warning would appear in both passes of the test and the
+// annotated copy of this file contains no expected diagnostics.
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
 public class UnnameableEnumInheritsType {
 
@@ -19,8 +26,9 @@ public class UnnameableEnumInheritsType {
 
                 EnumDesc enumDescField;
 
-                CharSequence charSequenceField;
+                @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence charSequenceField;
 
+                @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
                 @org.checkerframework.dataflow.qual.Impure
                 void assignFields(EnumDesc e, CharSequence c) {
                     enumDescField = e;
