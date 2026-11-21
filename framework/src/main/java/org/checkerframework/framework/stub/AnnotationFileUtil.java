@@ -458,10 +458,7 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns an annotation file resource for the given entry in the given archive. If the entry
-   * cannot be read, the resource's {@link AnnotationFileResource#getInputStream} throws the
-   * exception, so the client reports the error when it reads this entry and still processes the
-   * archive's other entries.
+   * Returns an annotation file resource for the given entry in the given archive.
    *
    * @param archive a JAR or ZIP archive
    * @param jarFile {@code archive}, open
@@ -540,9 +537,7 @@ public class AnnotationFileUtil {
 
   /**
    * Passes each annotation file of type {@code fileType} in the given archive to {@code action},
-   * while the archive is open. If the archive cannot be opened, passes {@code action} a resource
-   * whose {@link AnnotationFileResource#getInputStream} throws the exception, so the client reports
-   * the error rather than treating the archive as empty.
+   * while the archive is open.
    *
    * @param archive a JAR or ZIP archive
    * @param fileType type of annotation files to pass to {@code action}
