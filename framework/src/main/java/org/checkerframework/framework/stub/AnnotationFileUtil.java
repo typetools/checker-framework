@@ -504,15 +504,15 @@ public class AnnotationFileUtil {
   /**
    * Returns the contents of an entry in an archive.
    *
-   * @param jarFile an open JAR or ZIP archive
-   * @param entry an entry in {@code jarFile}
+   * @param archive an open JAR or ZIP archive
+   * @param entry an entry in {@code archive}
    * @return the contents of {@code entry}
    * @throws IOException if the entry cannot be read
    */
-  private static byte[] readEntry(JarFile jarFile, JarEntry entry) throws IOException {
-    try (InputStream in = jarFile.getInputStream(entry)) {
+  private static byte[] readEntry(JarFile archive, JarEntry entry) throws IOException {
+    try (InputStream in = archive.getInputStream(entry)) {
       if (in == null) {
-        throw new IOException("no entry " + entry.getName() + " in " + jarFile.getName());
+        throw new IOException("no entry " + entry.getName() + " in " + archive.getName());
       }
       return in.readAllBytes();
     }
