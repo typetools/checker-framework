@@ -2189,6 +2189,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private @Nullable VariableTree switchExprVarTree;
 
     /**
+     * True if the CFG built so far contains code that might have side effects, such as a guard or a
+     * deconstruction pattern that calls a method that is not side-effect-free, after the evaluation
+     * of the selector expression. If so, the selector expression might no longer denote the value
+     * that the switch tests.
+     */
+    private boolean sideEffectSinceSelector = false;
+
+    /**
      * Constructs a SwitchBuilder.
      *
      * @param switchTree a {@link SwitchTree} or a {@code SwitchExpressionTree}
@@ -2366,16 +2374,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
-     * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch
-     *     statement, with no fallthrough to it. In other words, no test of the labels is necessary.
+     * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch statement
+     *     or switch expression that has no default case. The CFG omits the test of this case's
+     *     labels, but not of the labels of the switch's earlier cases.
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement from the
-      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the
-      // future, that can be performed, but it requires addition of InfeasibleExitBlock, a new
-      // SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
@@ -2388,10 +2392,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
+          if (SideEffectScanner.mightHaveSideEffects(exprTree, annotationProvider)) {
+            sideEffectSinceSelector = true;
+          }
         }
 
+        extendWithNode(
+            new CaseNode(
+                caseTree,
+                selectorExprAssignment,
+                exprs,
+                isLastCaseOfExhaustive,
+                sideEffectSinceSelector,
+                env.getTypeUtils()));
         if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
@@ -2401,6 +2415,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          if (SideEffectScanner.mightHaveSideEffects(guardTree, annotationProvider)) {
+            sideEffectSinceSelector = true;
+          }
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
