@@ -10,8 +10,7 @@
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
-takes an additional first argument, the operator, because the conversions of a
-binary operation's operands depend on the operator.
+takes an additional first argument, the operator.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
