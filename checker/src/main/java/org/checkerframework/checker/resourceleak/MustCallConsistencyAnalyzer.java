@@ -692,8 +692,8 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
-    // The `visited` map records the latest count keys for every analysis state that has been
-    // added to the worklist, including states that have not yet been analyzed.
+    // The `visited` map maps every analysis state that has been added to the worklist, including
+    // states that have not yet been analyzed, to its version with the latest count keys.
     Map<BlockWithObligations, BlockWithObligations> visited = new HashMap<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
@@ -1810,6 +1810,7 @@ public class MustCallConsistencyAnalyzer {
         RLCCalledMethodsVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, cmAtf);
 
     if (cmcfValues.isEmpty()) {
+      checker.countFailedObligation(lhsFan.getElement());
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",
@@ -1839,6 +1840,7 @@ public class MustCallConsistencyAnalyzer {
       }
       checked.add(targetStr);
     }
+    checker.countFailedObligation(lhsFan.getElement());
     checker.reportError(
         enclosingMethod,
         "incompatible.creates.mustcall.for",
@@ -2090,7 +2092,8 @@ public class MustCallConsistencyAnalyzer {
    * @param cfg the control flow graph
    * @param incomingObligations the Obligations for the current block
    * @param currentBlock the current block
-   * @param visited the latest count keys for states already encountered
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlocks(
@@ -2147,7 +2150,8 @@ public class MustCallConsistencyAnalyzer {
    * @param successor a successor of the current block
    * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
    *     null} for normal control flow, or a throwable type for exceptional control flow
-   * @param visited the latest count keys for states already encountered
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
@@ -2627,7 +2631,8 @@ public class MustCallConsistencyAnalyzer {
    * Add the given state to the worklist if the state is new or has additional count keys.
    *
    * @param state a state reaching the successor block
-   * @param visited the latest count keys for states already encountered
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist the states that will be analyzed
    */
   private void propagate(

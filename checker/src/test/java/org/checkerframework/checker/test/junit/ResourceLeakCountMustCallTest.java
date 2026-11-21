@@ -53,6 +53,24 @@ public class ResourceLeakCountMustCallTest {
     assertCounts("OverwrittenField.java", false, 3, 2);
   }
 
+  /**
+   * An owning field is not verified if a method that reassigns it lacks a {@code
+   * CreatesMustCallFor} annotation for the field's receiver.
+   */
+  @Test
+  public void fieldReassignedWithoutCreatesMustCallForIsNotVerified() {
+    assertCounts("MissingCreatesMustCallFor.java", false, 2, 1);
+  }
+
+  /**
+   * An owning field is not verified if a method that reassigns it has a {@code CreatesMustCallFor}
+   * annotation for a different target.
+   */
+  @Test
+  public void fieldReassignedWithIncompatibleCreatesMustCallForIsNotVerified() {
+    assertCounts("IncompatibleCreatesMustCallFor.java", false, 2, 1);
+  }
+
   /** An owning field is counted, and is not verified if the destructor does not close it. */
   @Test
   public void unclosedFieldIsNotVerified() {
@@ -63,6 +81,15 @@ public class ResourceLeakCountMustCallTest {
   @Test
   public void failedDestructorPostconditionIsNotVerified() {
     assertCounts("BadDestructor.java", false, 2, 1);
+  }
+
+  /**
+   * A field is not verified if its destructor relies on a helper method whose cleanup postcondition
+   * fails.
+   */
+  @Test
+  public void failedHelperPostconditionIsNotVerified() {
+    assertCounts("FailedHelperPostcondition.java", false, 2, 1);
   }
 
   /** Suppressing a failed cleanup postcondition does not verify the field. */

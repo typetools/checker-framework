@@ -435,7 +435,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     super.checkPostcondition(methodTree, annotation, expression);
     if (checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
       countFailedFieldPostcondition(
-          methodTree, expression, annotation, atypeFactory.getRegularExitStore(methodTree));
+          expression, annotation, atypeFactory.getRegularExitStore(methodTree));
     }
   }
 
@@ -454,23 +454,23 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       return;
     }
     countFailedFieldPostcondition(
-        tree,
         expression,
         rlTypeFactory.createCalledMethods(postcond.method()),
         atypeFactory.getExceptionalExitStore(tree));
   }
 
   /**
-   * Record the field obligation as failed if a destructor's postcondition promises required cleanup
-   * that the destructor does not perform.
+   * Record the obligation of the owning field in the given expression as failed if the given
+   * postcondition promises a must-call method of the field that the given exit store does not
+   * guarantee was called. The postcondition need not be a destructor's: a destructor can rely on
+   * the postcondition of a helper method.
    *
-   * @param tree a method declaration
-   * @param expression the expression in the postcondition
+   * @param expression the expression in a method's postcondition
    * @param annotation the postcondition's called-methods annotation
-   * @param exitStore the store at the corresponding exit, or null if that exit is unreachable
+   * @param exitStore the store at the method's exit to which the postcondition applies, or null if
+   *     that exit is unreachable
    */
   private void countFailedFieldPostcondition(
-      MethodTree tree,
       JavaExpression expression,
       AnnotationMirror annotation,
       @Nullable CFAbstractStore<?, ?> exitStore) {
@@ -478,12 +478,6 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
         || exitStore == null
         || !(expression instanceof FieldAccess fieldAccess)
         || !rlTypeFactory.hasOwning(fieldAccess.getField())) {
-      return;
-    }
-    ExecutableElement method = TreeUtils.elementFromDeclaration(tree);
-    if (!rlTypeFactory
-        .getMustCallValues(method.getEnclosingElement())
-        .contains(method.getSimpleName().toString())) {
       return;
     }
     CFAbstractValue<?> value = exitStore.getValue(expression);

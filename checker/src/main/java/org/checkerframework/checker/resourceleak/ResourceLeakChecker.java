@@ -51,10 +51,19 @@ public class ResourceLeakChecker extends AggregateChecker {
    * for a research paper. Not of interest to most users.
    *
    * <p>A must-call obligation is counted if its type is a JDK class. It is created by an invocation
-   * whose result has a must-call obligation, by an invocation of a {@code CreatesMustCallFor}
-   * method, by an owning or must-call-alias formal parameter, or by an owning field. An obligation
-   * that the checker fails to verify is not counted as verified, even if the checker does not
-   * report the failure (for example, because a warning is suppressed).
+   * whose result has a must-call obligation, by an owning or must-call-alias formal parameter, by
+   * an owning field, or by an invocation of a {@code CreatesMustCallFor} method whose target is a
+   * non-owning local variable or formal parameter that already has a tracked obligation. An
+   * invocation of a {@code CreatesMustCallFor} method whose target is an owning field, an owning
+   * formal parameter, or {@code this} creates no counted obligation. An obligation that the checker
+   * fails to verify is not counted as verified, even if the checker does not report the failure
+   * (for example, because a warning is suppressed).
+   *
+   * <p>A resource that is stored in an owning field is counted twice. It is counted once where it
+   * is created or passed as a formal parameter; storing it in the field verifies that obligation.
+   * It is counted again as the obligation of the owning field, which the destructor of the field's
+   * class verifies. For example, {@code C(@Owning Socket s) { this.s = s; }} has 2 obligations: one
+   * for the parameter and one for the field.
    */
   public static final String COUNT_MUST_CALL = "countMustCall";
 
