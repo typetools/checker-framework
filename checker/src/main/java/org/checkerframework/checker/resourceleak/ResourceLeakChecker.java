@@ -96,7 +96,7 @@ public class ResourceLeakChecker extends AggregateChecker {
   }
 
   /**
-   * Records that the checker found the must-call obligation that {@code key} identifies, if the
+   * Record that the checker found the must-call obligation that {@code key} identifies, if the
    * {@link #COUNT_MUST_CALL} command-line option was supplied and {@code type} is a JDK class.
    * Recording the same key again has no effect.
    *
@@ -120,7 +120,7 @@ public class ResourceLeakChecker extends AggregateChecker {
   }
 
   /**
-   * Records that the checker failed to verify the must-call obligation that {@code key} identifies.
+   * Record that the checker failed to verify the must-call obligation that {@code key} identifies.
    * The failure is counted only if {@link #countFoundObligation} records the same key, before or
    * after this call. Recording the same key again has no effect.
    *
@@ -134,11 +134,11 @@ public class ResourceLeakChecker extends AggregateChecker {
   }
 
   /**
-   * Returns true if the given class is a java* class. This is a heuristic for whether the class was
-   * defined in the JDK.
+   * True if the given class is a java* class. This is a heuristic for whether the class was defined
+   * in the JDK.
    *
    * @param qualifiedName a fully qualified name of a class
-   * @return true iff the type's fully-qualified name starts with "java", indicating that it is from
+   * @return True if the type's fully-qualified name starts with "java", indicating that it is from
    *     a java.* or javax.* package (probably)
    */
   private static boolean isJdkClass(String qualifiedName) {

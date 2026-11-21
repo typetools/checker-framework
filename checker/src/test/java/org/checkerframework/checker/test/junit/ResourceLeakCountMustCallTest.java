@@ -59,6 +59,36 @@ public class ResourceLeakCountMustCallTest {
     assertCounts("UnclosedField.java", false, 2, 1);
   }
 
+  /** A field is not verified if its destructor's declared cleanup postcondition fails. */
+  @Test
+  public void failedDestructorPostconditionIsNotVerified() {
+    assertCounts("BadDestructor.java", false, 2, 1);
+  }
+
+  /** Suppressing a failed cleanup postcondition does not verify the field. */
+  @Test
+  public void suppressedDestructorPostconditionIsNotVerified() {
+    assertCounts("SuppressedBadDestructor.java", true, 2, 1);
+  }
+
+  /** A field is not verified if its destructor fails to clean up on an exceptional exit. */
+  @Test
+  public void failedExceptionalDestructorPostconditionIsNotVerified() {
+    assertCounts("ExceptionalBadDestructor.java", false, 2, 1);
+  }
+
+  /** A failed promise to call an unrelated method does not invalidate verified cleanup. */
+  @Test
+  public void unrelatedPostconditionDoesNotFailFieldObligation() {
+    assertCounts("UnrelatedPostcondition.java", false, 2, 2);
+  }
+
+  /** Independent conditional resets combine count keys without enumerating all combinations. */
+  @Test(timeout = 60000)
+  public void independentResetsDoNotMultiplyAnalysisStates() {
+    assertCounts("IndependentResets.java", false, 32, 0);
+  }
+
   /** A wrapper stream and the stream that it wraps are counted as one obligation. */
   @Test
   public void wrapperIsOneObligation() {
@@ -93,11 +123,11 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
-   * Runs the Resource Leak Checker with {@code -AcountMustCall} on the given file and checks the
+   * Run the Resource Leak Checker with {@code -AcountMustCall} on the given file and check the
    * statistics that it prints.
    *
    * @param fileName a file in {@code tests/resourceleak-countmustcall}
-   * @param expectNoErrors true if the checker should report no errors for the file
+   * @param expectNoErrors True if the checker should report no errors for the file
    * @param expectedFound the expected number of found must-call obligations
    * @param expectedVerified the expected number of verified must-call obligations
    */

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -246,17 +247,14 @@ public class MustCallConsistencyAnalyzer {
     public final ImmutableSet<MethodExitKind> whenToEnforce;
 
     /**
-     * The key under which -AcountMustCall counted this Obligation as found, or null if
-     * -AcountMustCall did not count it. See {@link ResourceLeakChecker#countFoundObligation}. An
-     * Obligation that is derived from this one, such as by adding or removing a resource alias, has
-     * the same key.
+     * The keys under which -AcountMustCall counted this Obligation as found. Empty if the
+     * Obligation is not counted. See {@link ResourceLeakChecker#countFoundObligation}. Derived
+     * Obligations retain these keys, and equivalent analysis states combine their keys.
      *
-     * <p>The key is used only for statistics. It is not part of {@link #equals} or {@link
-     * #hashCode}, so it does not affect the analysis's results. However, {@link
-     * BlockWithObligations#equals} does consider it, so under -AcountMustCall the analysis might
-     * explore a block more than once with Obligations that differ only in their keys.
+     * <p>The keys are used only for statistics and are not part of {@link #equals} or {@link
+     * #hashCode}.
      */
-    public final @Nullable Object countKey;
+    public final ImmutableSet<Object> countKeys;
 
     /**
      * Create an Obligation from a set of resource aliases. -AcountMustCall does not count it.
@@ -265,7 +263,7 @@ public class MustCallConsistencyAnalyzer {
      * @param whenToEnforce when this Obligation should be enforced
      */
     public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
-      this(resourceAliases, whenToEnforce, null);
+      this(resourceAliases, whenToEnforce, ImmutableSet.of());
     }
 
     /**
@@ -273,16 +271,31 @@ public class MustCallConsistencyAnalyzer {
      *
      * @param resourceAliases a set of resource aliases
      * @param whenToEnforce when this Obligation should be enforced
-     * @param countKey the key under which -AcountMustCall counted the Obligation as found, or null
-     *     if -AcountMustCall did not count it
+     * @param countKeys the keys under which -AcountMustCall counted the Obligation as found
      */
     public Obligation(
         Set<ResourceAlias> resourceAliases,
         Set<MethodExitKind> whenToEnforce,
-        @Nullable Object countKey) {
+        ImmutableSet<Object> countKeys) {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
       this.whenToEnforce = ImmutableSet.copyOf(whenToEnforce);
-      this.countKey = countKey;
+      this.countKeys = countKeys;
+    }
+
+    /**
+     * Return the Obligation that combines this Obligation's count keys with the count keys of the
+     * given Obligation.
+     *
+     * @param other an Obligation with the same resource aliases and enforcement exit kinds
+     * @return an Obligation with the combined count keys
+     */
+    public Obligation combineCountKeys(Obligation other) {
+      if (this.countKeys.containsAll(other.countKeys)) {
+        return this;
+      }
+      ImmutableSet<Object> keys =
+          ImmutableSet.builder().addAll(this.countKeys).addAll(other.countKeys).build();
+      return new Obligation(this.resourceAliases, this.whenToEnforce, keys);
     }
 
     /**
@@ -679,19 +692,23 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
-    // The `visited` set contains everything that has been added to the worklist, even if it has
-    // not yet been removed and analyzed.
-    Set<BlockWithObligations> visited = new HashSet<>();
+    // The `visited` map records the latest count keys for every analysis state that has been
+    // added to the worklist, including states that have not yet been analyzed.
+    Map<BlockWithObligations, BlockWithObligations> visited = new HashMap<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
     // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
         new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
     worklist.add(entry);
-    visited.add(entry);
+    visited.put(entry, entry);
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
+      if (visited.get(current) != current) {
+        // A state with additional count keys supersedes this snapshot.
+        continue;
+      }
       propagateObligationsToSuccessorBlocks(
           cfg, current.obligations, current.block, visited, worklist);
     }
@@ -854,14 +871,14 @@ public class MustCallConsistencyAnalyzer {
             // @CreatesMustCallFor doesn't guarantee that a new resource is created: it just
             // means that a new resource might have been created.  If the invocation throws an
             // exception, then the replaced resource is still outstanding, so toAdd retains the
-            // replaced Obligation's key.
-            Object countKey =
+            // replaced Obligation's keys.
+            ImmutableSet<Object> countKeys =
                 exceptionType == null
-                    ? checker.countFoundObligation(
+                    ? countFoundObligation(
                         new CreatesMustCallForKey(invocationPath.getLeaf(), expression),
                         expression.getType())
-                    : obligation.countKey;
-            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce, countKey);
+                    : obligation.countKeys;
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce, countKeys);
           }
         }
 
@@ -964,12 +981,12 @@ public class MustCallConsistencyAnalyzer {
     if (mustCallAliases.isEmpty()) {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-      Object countKey =
+      ImmutableSet<Object> countKeys =
           cmAtf.declaredTypeHasMustCall(tree)
-              ? checker.countFoundObligation(tmpVar.getElement(), node.getType())
-              : null;
+              ? countFoundObligation(tmpVar.getElement(), node.getType())
+              : ImmutableSet.of();
       obligations.add(
-          new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL, countKey));
+          new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL, countKeys));
     } else {
       for (Node mustCallAlias : mustCallAliases) {
         if (mustCallAlias instanceof FieldAccessNode) {
@@ -997,7 +1014,7 @@ public class MustCallConsistencyAnalyzer {
                 new Obligation(
                     newResourceAliasSet,
                     obligationContainingMustCallAlias.whenToEnforce,
-                    obligationContainingMustCallAlias.countKey));
+                    obligationContainingMustCallAlias.countKeys));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
             // created in the first place.
@@ -1360,7 +1377,7 @@ public class MustCallConsistencyAnalyzer {
         newAliases.add(newAlias);
 
         newObligations.add(
-            new Obligation(newAliases, obligation.whenToEnforce, obligation.countKey));
+            new Obligation(newAliases, obligation.whenToEnforce, obligation.countKeys));
       }
     }
 
@@ -1432,7 +1449,7 @@ public class MustCallConsistencyAnalyzer {
 
         if (!whenToEnforce.isEmpty()) {
           newObligations.add(
-              new Obligation(obligation.resourceAliases, whenToEnforce, obligation.countKey));
+              new Obligation(obligation.resourceAliases, whenToEnforce, obligation.countKeys));
         }
       }
     }
@@ -1527,7 +1544,7 @@ public class MustCallConsistencyAnalyzer {
         replacements.put(
             obligation,
             new Obligation(
-                newResourceAliasesForObligation, obligation.whenToEnforce, obligation.countKey));
+                newResourceAliasesForObligation, obligation.whenToEnforce, obligation.countKeys));
       }
     }
 
@@ -2073,14 +2090,14 @@ public class MustCallConsistencyAnalyzer {
    * @param cfg the control flow graph
    * @param incomingObligations the Obligations for the current block
    * @param currentBlock the current block
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited the latest count keys for states already encountered
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlocks(
       ControlFlowGraph cfg,
       Set<Obligation> incomingObligations,
       Block currentBlock,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     // For each successor block that isn't caused by an ignored exception type, this loop
     // computes the set of Obligations that should be propagated to it and then adds it to the
@@ -2122,7 +2139,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
+   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Map,
    * Deque)} that propagates obligations along a single edge.
    *
    * @param obligations the Obligations for the current block
@@ -2130,7 +2147,7 @@ public class MustCallConsistencyAnalyzer {
    * @param successor a successor of the current block
    * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
    *     null} for normal control flow, or a throwable type for exceptional control flow
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited the latest count keys for states already encountered
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
@@ -2138,7 +2155,7 @@ public class MustCallConsistencyAnalyzer {
       Block currentBlock,
       Block successor,
       @Nullable TypeMirror exceptionType,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     List<Node> currentBlockNodes = currentBlock.getNodes();
     // successorObligations eventually contains the Obligations to propagate to successor.
@@ -2218,7 +2235,7 @@ public class MustCallConsistencyAnalyzer {
           // normal exit path.
           if (exceptionType == null
               && obligation.whenToEnforce.contains(MethodExitKind.NORMAL_RETURN)) {
-            checker.countFailedObligation(obligation.countKey);
+            obligation.countKeys.forEach(checker::countFailedObligation);
             checker.reportError(
                 obligation.resourceAliases.asList().get(0).tree,
                 "mustcallalias.out.of.scope",
@@ -2303,7 +2320,7 @@ public class MustCallConsistencyAnalyzer {
         copyOfResourceAliases.removeIf(
             alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
         successorObligations.add(
-            new Obligation(copyOfResourceAliases, obligation.whenToEnforce, obligation.countKey));
+            new Obligation(copyOfResourceAliases, obligation.whenToEnforce, obligation.countKeys));
       }
     }
 
@@ -2371,7 +2388,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds {@link Owning} formal parameters for the method corresponding to a CFG.
+   * Return the {@link Owning} formal parameters for the method corresponding to the given CFG.
    *
    * @param cfg the CFG
    * @return the owning formal parameters of the method that corresponds to the given cfg, or an
@@ -2385,17 +2402,22 @@ public class MustCallConsistencyAnalyzer {
       for (VariableTree param : method.getParameters()) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
         boolean hasMustCallAlias = cmAtf.hasMustCallAlias(paramElement);
+        boolean declaredTypeHasMustCall = cmAtf.declaredTypeHasMustCall(param);
         if (hasMustCallAlias
-            || (cmAtf.declaredTypeHasMustCall(param)
+            || (declaredTypeHasMustCall
                 && !noLightweightOwnership
                 && paramElement.getAnnotation(Owning.class) != null)) {
+          ImmutableSet<Object> countKeys =
+              declaredTypeHasMustCall
+                  ? countFoundObligation(paramElement, paramElement.asType())
+                  : ImmutableSet.of();
           result.add(
               new Obligation(
                   ImmutableSet.of(
                       new ResourceAlias(
                           new LocalVariable(paramElement), paramElement, param, hasMustCallAlias)),
                   Collections.singleton(MethodExitKind.NORMAL_RETURN),
-                  checker.countFoundObligation(paramElement, paramElement.asType())));
+                  countKeys));
         }
       }
       return result;
@@ -2460,7 +2482,7 @@ public class MustCallConsistencyAnalyzer {
     // satisfy the check). A null mustCallValue occurs when the type is top
     // (@MustCallUnknown).
     if (mustCallValues == null) {
-      checker.countFailedObligation(obligation.countKey);
+      obligation.countKeys.forEach(checker::countFailedObligation);
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
@@ -2523,7 +2545,7 @@ public class MustCallConsistencyAnalyzer {
     }
 
     if (!mustCallSatisfied) {
-      checker.countFailedObligation(obligation.countKey);
+      obligation.countKeys.forEach(checker::countFailedObligation);
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
@@ -2572,21 +2594,73 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * If the input {@code state} has not been visited yet, add it to {@code visited} and {@code
-   * worklist}.
+   * Return the given obligation's singleton count-key set after recording the obligation, or an
+   * empty set if the obligation is not counted.
    *
-   * @param state the current state
-   * @param visited the states that have been analyzed or are already on the worklist
+   * @param key an object identifying the obligation
+   * @param type the type of the object with the obligation
+   * @return the keys under which the obligation was counted
+   */
+  private ImmutableSet<Object> countFoundObligation(Object key, TypeMirror type) {
+    Object countKey = checker.countFoundObligation(key, type);
+    return countKey == null ? ImmutableSet.of() : ImmutableSet.of(countKey);
+  }
+
+  /**
+   * Return the Obligation in the given set equal to {@code target}, or null if none exists.
+   *
+   * @param obligations a set of Obligations
+   * @param target the Obligation to look for
+   * @return the Obligation in {@code obligations} equal to {@code target}, or null if none exists
+   */
+  private static @Nullable Obligation getMatchingObligation(
+      Set<Obligation> obligations, Obligation target) {
+    for (Obligation obligation : obligations) {
+      if (obligation.equals(target)) {
+        return obligation;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Add the given state to the worklist if the state is new or has additional count keys.
+   *
+   * @param state a state reaching the successor block
+   * @param visited the latest count keys for states already encountered
    * @param worklist the states that will be analyzed
    */
-  private static void propagate(
+  private void propagate(
       BlockWithObligations state,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
-
-    if (visited.add(state)) {
-      worklist.add(state);
+    BlockWithObligations previous = visited.get(state);
+    if (previous != null) {
+      if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+        return;
+      }
+      boolean hasNewKeys = false;
+      for (Obligation obligation : state.obligations) {
+        Obligation old =
+            Objects.requireNonNull(getMatchingObligation(previous.obligations, obligation));
+        if (!old.countKeys.containsAll(obligation.countKeys)) {
+          hasNewKeys = true;
+          break;
+        }
+      }
+      if (!hasNewKeys) {
+        return;
+      }
+      Set<Obligation> combined = new LinkedHashSet<>(state.obligations.size());
+      for (Obligation obligation : state.obligations) {
+        Obligation old =
+            Objects.requireNonNull(getMatchingObligation(previous.obligations, obligation));
+        combined.add(old.combineCountKeys(obligation));
+      }
+      state = new BlockWithObligations(state.block, combined);
     }
+    visited.put(state, state);
+    worklist.add(state);
   }
 
   /**
@@ -2621,26 +2695,6 @@ public class MustCallConsistencyAnalyzer {
     public final ImmutableSet<Obligation> obligations;
 
     /**
-     * The {@link Obligation#countKey}s of {@link #obligations}, each paired with its Obligation.
-     * Empty if no Obligation has a count key, as is always the case unless -AcountMustCall was
-     * passed.
-     *
-     * <p>{@link Obligation#equals} ignores count keys, but this class's {@link #equals} does not.
-     * Otherwise, when two states that differ only in their count keys reach the same block, the
-     * analysis would discard one of them, and -AcountMustCall would not count a failure for the
-     * discarded state's count keys.
-     */
-    private final ImmutableSet<ObligationAndCountKey> countKeys;
-
-    /**
-     * An Obligation and its count key.
-     *
-     * @param obligation an Obligation
-     * @param countKey the Obligation's {@link Obligation#countKey}
-     */
-    private record ObligationAndCountKey(Obligation obligation, @Nullable Object countKey) {}
-
-    /**
      * Create a new BlockWithObligations from a block and a set of dataflow facts.
      *
      * @param b the block
@@ -2650,18 +2704,6 @@ public class MustCallConsistencyAnalyzer {
     public BlockWithObligations(Block b, Set<Obligation> obligations) {
       this.block = b;
       this.obligations = ImmutableSet.copyOf(obligations);
-      ImmutableSet<ObligationAndCountKey> countKeys = ImmutableSet.of();
-      for (Obligation obligation : this.obligations) {
-        if (obligation.countKey != null) {
-          ImmutableSet.Builder<ObligationAndCountKey> builder = ImmutableSet.builder();
-          for (Obligation o : this.obligations) {
-            builder.add(new ObligationAndCountKey(o, o.countKey));
-          }
-          countKeys = builder.build();
-          break;
-        }
-      }
-      this.countKeys = countKeys;
     }
 
     @Override
@@ -2673,9 +2715,7 @@ public class MustCallConsistencyAnalyzer {
         return false;
       }
       BlockWithObligations that = (BlockWithObligations) o;
-      return block.equals(that.block)
-          && obligations.equals(that.obligations)
-          && countKeys.equals(that.countKeys);
+      return block.equals(that.block) && obligations.equals(that.obligations);
     }
 
     @Override

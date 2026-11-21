@@ -33,6 +33,8 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -426,6 +428,79 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * @param exitKind when the method must be called
    */
   /*package-private*/ record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {}
+
+  @Override
+  protected void checkPostcondition(
+      MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
+    super.checkPostcondition(methodTree, annotation, expression);
+    if (checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+      countFailedFieldPostcondition(
+          methodTree, expression, annotation, atypeFactory.getRegularExitStore(methodTree));
+    }
+  }
+
+  @Override
+  protected void checkExceptionalPostcondition(
+      EnsuresCalledMethodOnExceptionContract postcond, MethodTree tree) {
+    super.checkExceptionalPostcondition(postcond, tree);
+    if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+      return;
+    }
+    JavaExpression expression;
+    try {
+      expression = StringToJavaExpression.atMethodBody(postcond.expression(), tree, checker);
+    } catch (JavaExpressionParseException ex) {
+      // The superclass reports an invalid expression.
+      return;
+    }
+    countFailedFieldPostcondition(
+        tree,
+        expression,
+        rlTypeFactory.createCalledMethods(postcond.method()),
+        atypeFactory.getExceptionalExitStore(tree));
+  }
+
+  /**
+   * Record the field obligation as failed if a destructor's postcondition promises required cleanup
+   * that the destructor does not perform.
+   *
+   * @param tree a method declaration
+   * @param expression the expression in the postcondition
+   * @param annotation the postcondition's called-methods annotation
+   * @param exitStore the store at the corresponding exit, or null if that exit is unreachable
+   */
+  private void countFailedFieldPostcondition(
+      MethodTree tree,
+      JavaExpression expression,
+      AnnotationMirror annotation,
+      @Nullable CFAbstractStore<?, ?> exitStore) {
+    if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)
+        || exitStore == null
+        || !(expression instanceof FieldAccess fieldAccess)
+        || !rlTypeFactory.hasOwning(fieldAccess.getField())) {
+      return;
+    }
+    ExecutableElement method = TreeUtils.elementFromDeclaration(tree);
+    if (!rlTypeFactory
+        .getMustCallValues(method.getEnclosingElement())
+        .contains(method.getSimpleName().toString())) {
+      return;
+    }
+    CFAbstractValue<?> value = exitStore.getValue(expression);
+    AnnotationMirror inferred =
+        value == null
+            ? null
+            : qualHierarchy.findAnnotationInSameHierarchy(value.getAnnotations(), annotation);
+    for (String requiredMethod : rlTypeFactory.getMustCallValues(fieldAccess.getField())) {
+      AnnotationMirror required = rlTypeFactory.createCalledMethods(requiredMethod);
+      if (qualHierarchy.isSubtypeQualifiersOnly(annotation, required)
+          && !checkContract(expression, required, inferred, exitStore)) {
+        ResourceLeakUtils.getResourceLeakChecker(checker)
+            .countFailedObligation(fieldAccess.getField());
+        return;
+      }
+    }
+  }
 
   /**
    * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the
