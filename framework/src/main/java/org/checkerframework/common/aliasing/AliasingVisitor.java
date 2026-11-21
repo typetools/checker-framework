@@ -1,8 +1,10 @@
 package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -311,8 +313,37 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
     boolean isMethodInvocation = exp instanceof MethodInvocationTree;
     boolean isNewClass = exp instanceof NewClassTree;
-    boolean isUniqueType = isUniqueClass(type) || type.hasExplicitAnnotation(Unique.class);
+    boolean isUniqueType =
+        isUniqueClass(type)
+            || (type.hasExplicitAnnotation(Unique.class) && !isUseOfVariableWithInferredType(exp));
     return isUniqueType && !isMethodInvocation && !isNewClass;
+  }
+
+  /**
+   * Returns true if {@code exp} is a use of a variable whose type is not written in source code,
+   * such as {@code f} after {@code var f = create();}. The type of such a use can carry annotations
+   * that are not written in source code; see {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#isVariableTypeInferred}.
+   *
+   * <p>An assignment expression such as {@code sb = create()} is treated like a use of its
+   * left-hand side, because the type of an assignment expression is the type of its left-hand side.
+   *
+   * @param exp an expression
+   * @return true if {@code exp} is a use of a variable whose type is not written in source code
+   */
+  private boolean isUseOfVariableWithInferredType(Tree exp) {
+    if (!(exp instanceof ExpressionTree expTree)) {
+      return false;
+    }
+    expTree = TreeUtils.withoutParens(expTree);
+    while (expTree instanceof AssignmentTree assignTree) {
+      expTree = TreeUtils.withoutParens(assignTree.getVariable());
+    }
+    if (!(expTree instanceof IdentifierTree identTree)) {
+      return false;
+    }
+    Tree decl = atypeFactory.declarationFromElement(TreeUtils.elementFromUse(identTree));
+    return decl instanceof VariableTree varTree && atypeFactory.isVariableTypeInferred(varTree);
   }
 
   /**

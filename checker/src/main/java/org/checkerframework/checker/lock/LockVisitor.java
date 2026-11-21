@@ -101,7 +101,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     TypeMirror tm = TreeUtils.typeOf(tree);
 
-    if (TypesUtils.isBoxedPrimitive(tm) || TypesUtils.isPrimitive(tm) || TypesUtils.isString(tm)) {
+    if ((TypesUtils.isBoxedPrimitive(tm) || TypesUtils.isPrimitive(tm) || TypesUtils.isString(tm))
+        && !atypeFactory.isVariableTypeInferred(tree)) {
       AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(tree);
       if (atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDSATISFIED)
           || atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY)

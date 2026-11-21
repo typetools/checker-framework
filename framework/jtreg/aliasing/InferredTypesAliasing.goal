@@ -1,0 +1,2 @@
+InferredTypesAliasing.java:41:12: compiler.err.proc.messager: [unique.leaked] Reference annotated as @Unique is leaked
+1 error

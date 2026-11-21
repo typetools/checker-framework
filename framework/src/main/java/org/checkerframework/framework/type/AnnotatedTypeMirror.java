@@ -458,6 +458,13 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * <p>will not contain {@code @MyExplicitAnno}.
    *
+   * <p>This method returns the annotations on the underlying {@link TypeMirror}. On JDK 22 and
+   * later, javac attaches to a type that it reads from a class file the type annotations in that
+   * class file, so the result can contain annotations that are not written in source code. In
+   * particular, for a variable whose type is inferred, such as one declared using {@code var}, the
+   * result can be non-empty even though no annotation is written. See {@link
+   * AnnotatedTypeFactory#isVariableTypeInferred}.
+   *
    * @return the set of explicitly written annotations on this type that are supported by this
    *     checker
    */
