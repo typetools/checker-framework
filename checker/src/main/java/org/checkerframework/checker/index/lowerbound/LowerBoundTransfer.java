@@ -16,6 +16,7 @@ import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -236,8 +237,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       TransferResult<CFValue, CFStore> result,
       Node firstNode,
       Node secondNode,
-      CFValue firstValue,
-      CFValue secondValue,
+      @Nullable CFValue firstValue,
+      @Nullable CFValue secondValue,
       boolean notEqualTo) {
     result =
         super.strengthenAnnotationOfEqualTo(
