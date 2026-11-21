@@ -40,6 +40,51 @@ class MustCallAliasIterator {
 
   static void process(String s) throws IOException {}
 
+  void tryWithResources(String filename) throws IOException {
+    try (LineReader lr = new LineReader(filename)) {
+      for (String line : lr) {
+        process(line);
+      }
+    }
+  }
+
+  void closeInFinally(String filename) throws IOException {
+    LineReader lr = new LineReader(filename);
+    try {
+      for (String line : lr) {
+        process(line);
+      }
+    } finally {
+      lr.close();
+    }
+  }
+
+  void leakInCatch(String filename) throws IOException {
+    // :: error: (required.method.not.called)
+    LineReader lr = new LineReader(filename);
+    try {
+      for (String line : lr) {
+        process(line);
+      }
+    } catch (IOException e) {
+      return;
+    }
+    lr.close();
+  }
+
+  void leakInCatchException(String filename) throws IOException {
+    // :: error: (required.method.not.called)
+    LineReader lr = new LineReader(filename);
+    try {
+      for (String line : lr) {
+        process(line);
+      }
+    } catch (Exception e) {
+      return;
+    }
+    lr.close();
+  }
+
   // Test case for https://github.com/typetools/checker-framework/issues/8578 .
   void leakExplicitIterator(String filename) throws IOException {
     // :: error: (required.method.not.called)
