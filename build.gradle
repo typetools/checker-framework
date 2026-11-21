@@ -76,6 +76,38 @@ ext {
   // see https://projectlombok.org/changelog .
   skipDelombok = gradleRunsOnJava28orHigher
 
+  // True if the `errorProneFix` task was requested on the command line.  Then each compilation that
+  // runs Error Prone rewrites its source files in place, applying Error Prone's suggested fixes.
+  // This must be known when the build is configured, before Gradle builds its task graph, so it
+  // examines the task names on the command line.  Gradle accepts not only a task's full name, but
+  // also a case-insensitive variant (such as "errorpronefix") and a camel-case abbreviation (such
+  // as "ePF" or "errorPr"), so recognize all of those.  An abbreviation that matches another task
+  // as well is ambiguous, and Gradle rejects it.
+  errorProneFix = gradle.startParameter.taskNames.any { requested ->
+    String name = requested.replaceFirst(/^:/, "")
+    if (name.isEmpty() || name.startsWith("-") || name.contains(":")) {
+      return false
+    }
+    // This mimics Gradle's NameMatcher: each camel-case part of the requested name must be a
+    // prefix of the corresponding part of the task name.
+    StringBuilder regex = new StringBuilder()
+    def boundary = (name =~ /\b|\p{javaUpperCase}|\p{Digit}/)
+    int pos = 0
+    while (boundary.find()) {
+      if (boundary.start() > pos) {
+        regex.append(java.util.regex.Pattern.quote(name.substring(pos, boundary.start())))
+        regex.append("[\\p{javaLowerCase}\\p{Digit}]*")
+      }
+      pos = boundary.start()
+    }
+    if (pos < name.length()) {
+      regex.append(java.util.regex.Pattern.quote(name.substring(pos)))
+      regex.append("[\\p{javaLowerCase}\\p{Digit}]*")
+    }
+    java.util.regex.Pattern.compile(regex.toString(), java.util.regex.Pattern.CASE_INSENSITIVE)
+        .matcher("errorProneFix").lookingAt()
+  }
+
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities"
 
@@ -484,12 +516,32 @@ allprojects { currentProj ->
           // https://github.com/google/error-prone/issues/436
           "-Werror",
         ]
+        if (rootProject.ext.errorProneFix) {
+          options.errorprone.errorproneArgs.add("-XepPatchLocation:IN_PLACE")
+          // With -Werror, a warning stops javac before Error Prone applies its fixes.
+          options.compilerArgs -= "-Werror"
+          options.errorprone.errorproneArgs.set(options.errorprone.errorproneArgs.get() - "-Werror")
+          // Always run Error Prone, even if the compiled classes are up to date or cached.
+          outputs.upToDateWhen { false }
+          outputs.cacheIf { false }
+        }
       } else {
         options.errorprone.enabled = false
       }
     }
   } // end afterEvaluate
 } // end allProjects
+
+tasks.register("errorProneFix") {
+  description = "Applies Error Prone's suggested fixes to the source files"
+  group = "Verification"
+  dependsOn(subprojects.collect { "${it.path}:compileJava" })
+  // Error Prone's fixes are not formatted.
+  finalizedBy(subprojects.collect { "${it.path}:spotlessJavaApply" })
+  if (errorProneFix && !compilerRunsOnJava21orHigher) {
+    throw new GradleException("errorProneFix requires compiling with JDK 21 or higher, because Error Prone does")
+  }
+}
 
 tasks.register("version") {
   description = "Print Checker Framework version"
