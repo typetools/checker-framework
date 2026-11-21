@@ -473,14 +473,12 @@ public class AnnotationFileUtil {
   static @Nullable String normalizeEntryName(String entryName) {
     ArrayDeque<String> components = new ArrayDeque<>();
     for (String component : entryName.split("/", -1)) {
-      if (component.isEmpty() || component.equals(".")) {
-        continue;
-      } else if (component.equals("..")) {
+      if (component.equals("..")) {
         if (components.isEmpty()) {
           return null;
         }
         components.removeLast();
-      } else {
+      } else if (!component.isEmpty() && !component.equals(".")) {
         components.addLast(component);
       }
     }
