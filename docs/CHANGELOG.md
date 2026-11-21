@@ -11,7 +11,8 @@
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
-`@DefaultQualifier` annotation on that element.  Formerly, it
+`@DefaultQualifier` annotation on that element, except that it takes precedence
+over a `@DefaultQualifier` annotation on that same element.  Formerly, it
 suppressed the `@DefaultQualifier` annotations on the element and on the
 element's enclosing elements.
 

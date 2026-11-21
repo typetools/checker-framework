@@ -33,15 +33,24 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>{@code ElementDefaultLate}: {@code @SubQual} for {@link TypeUseLocation#RETURN}; then,
  *       after computing the type of its method {@code first}, {@code @SubQual} for {@link
  *       TypeUseLocation#PARAMETER}.
+ *   <li>{@code ElementDefaultPrecedence}: {@code @SubQual} for {@link TypeUseLocation#FIELD}.
+ *   <li>{@code ElementDefaultRegisteredOtherwise}: {@code @ElementDefaultQual} for {@link
+ *       TypeUseLocation#OTHERWISE}.
  * </ul>
  *
- * <p>The test files then check how such a default combines with the {@code @DefaultQualifier}
- * annotations that apply to the same element.
+ * <p>The test files then check that such a default composes with the {@code @DefaultQualifier}
+ * annotations on the same element and on the element's enclosing scopes, rather than suppressing
+ * them, and that it takes precedence over a {@code @DefaultQualifier} annotation on the same
+ * element or on an enclosing element, but not over one on a nested element nor, for an {@link
+ * TypeUseLocation#OTHERWISE} default, over one for a more concrete location.
  */
 public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @SubQual} annotation. */
   private final AnnotationMirror SUB_QUAL;
+
+  /** The {@code @ElementDefaultQual} annotation. */
+  private final AnnotationMirror ELEMENT_DEFAULT_QUAL;
 
   /** The {@code @Critical} annotation, which this type system treats as an alias for SubQual. */
   private final AnnotationMirror CRITICAL;
@@ -55,6 +64,7 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   public ElementDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     SUB_QUAL = AnnotationBuilder.fromClass(getElementUtils(), SubQual.class);
+    ELEMENT_DEFAULT_QUAL = AnnotationBuilder.fromClass(getElementUtils(), ElementDefaultQual.class);
     CRITICAL = AnnotationBuilder.fromClass(getElementUtils(), Critical.class);
     addAliasedTypeAnnotation(Critical.class, SUB_QUAL);
     this.postInit();
@@ -62,7 +72,8 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return Set.of(SuperQual.class, SubQual.class);
+    return Set.of(
+        SuperQual.class, SubQual.class, ElementDefaultQual.class, ElementDefaultBottom.class);
   }
 
   @Override
@@ -107,6 +118,10 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
             }
           }
           defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.PARAMETER);
+        } else if (className.contentEquals("ElementDefaultPrecedence")) {
+          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.FIELD);
+        } else if (className.contentEquals("ElementDefaultRegisteredOtherwise")) {
+          defaults.addElementDefault(classElt, ELEMENT_DEFAULT_QUAL, TypeUseLocation.OTHERWISE);
         }
       }
     }
