@@ -14,6 +14,12 @@ A checker can report a diagnostic whose message key only a subchecker's
 text.  A checker searches its subcheckers only for the full message key, and
 only after its own lookups of the full key and of the key's suffixes fail.
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
