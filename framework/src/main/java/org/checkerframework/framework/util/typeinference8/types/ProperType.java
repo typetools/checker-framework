@@ -381,6 +381,8 @@ public class ProperType extends AbstractType {
    */
   private static <K extends @NonNull Object, V> @Nullable V getOrCompute(
       Map<K, V> map, K key, Supplier<@Nullable V> compute) {
+    // This is `Map.computeIfAbsent`, but the Nullness Checker rejects a mapping function passed to
+    // `computeIfAbsent` that may return null.
     @Nullable V result = map.get(key);
     if (result == null) {
       result = compute.get();

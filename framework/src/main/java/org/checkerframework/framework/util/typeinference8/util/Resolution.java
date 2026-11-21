@@ -457,10 +457,10 @@ public final class Resolution {
     boolean changed = true;
     while (changed) {
       changed = false;
-      for (Variable ai : varsToResolve) {
-        Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+      for (Variable variable : varsToResolve) {
+        Set<ProperType> lowerBounds = variable.getBounds().findProperLowerBounds();
         if (!lowerBounds.isEmpty()) {
-          resolveWithLowerBounds(ai, lowerBounds, context);
+          resolveWithLowerBounds(variable, lowerBounds, context);
           changed = true;
         }
       }
@@ -468,11 +468,11 @@ public final class Resolution {
     }
 
     // Resolve with upper bounds.
-    for (Variable ai : varsToResolve) {
-      Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
+    for (Variable variable : varsToResolve) {
+      Set<ProperType> upperBounds = variable.getBounds().findProperUpperBounds();
       if (!upperBounds.isEmpty()) {
         // Object is always an upper bound so this branch is always executed.
-        resolveWithUpperBounds(ai, upperBounds);
+        resolveWithUpperBounds(variable, upperBounds);
       }
     }
     applyAndRemoveInstantiations(varsToResolve);
@@ -485,16 +485,17 @@ public final class Resolution {
   }
 
   /**
-   * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
+   * Resolves {@code variable} by instantiating it to the greatest lower bound of its proper upper
+   * bounds.
    *
-   * @param ai a variable to resolve
-   * @param upperBounds {@code ai}'s nonempty set of proper upper bounds
+   * @param variable a variable to resolve
+   * @param upperBounds {@code variable}'s nonempty set of proper upper bounds
    */
-  private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
+  private void resolveWithUpperBounds(Variable variable, Set<ProperType> upperBounds) {
     ProperType ti = null;
-    // Per JLS 18.4, use RuntimeException only if the bound set contains "throws ai" and *each*
-    // proper upper bound of ai is a supertype of RuntimeException.
-    boolean useRuntimeException = ai.getBounds().hasThrowsBound();
+    // Per JLS 18.4, use RuntimeException only if the bound set contains "throws `variable`" and
+    // *each* proper upper bound of `variable` is a supertype of RuntimeException.
+    boolean useRuntimeException = variable.getBounds().hasThrowsBound();
     for (ProperType liProperType : upperBounds) {
       TypeMirror li = liProperType.getJavaType();
       if (useRuntimeException) {
@@ -510,74 +511,76 @@ public final class Resolution {
       ti = context.inferenceTypeFactory.getRuntimeException();
     }
     assert ti != null : "@AssumeAssertion(nullness): upperBounds is nonempty";
-    ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
+    variable.getBounds().addBound(null, BoundKind.EQUAL, ti);
   }
 
   /**
-   * Resolves {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
+   * Resolves {@code variable} by instantiating it to the least upper bound of its proper lower
+   * bounds.
    *
-   * @param ai a variable to resolve
-   * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
+   * @param variable a variable to resolve
+   * @param lowerBounds {@code variable}'s nonempty set of proper lower bounds
    * @param context the context
    */
   private static void resolveWithLowerBounds(
-      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
-    ai.getBounds()
-        .addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, false, context));
+      Variable variable, Set<ProperType> lowerBounds, Java8InferenceContext context) {
+    variable
+        .getBounds()
+        .addBound(null, BoundKind.EQUAL, lubOfLowerBounds(variable, lowerBounds, false, context));
   }
 
   /**
    * Returns the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
-   * ai} applied.
+   * variable} applied.
    *
-   * <p>The qualifier lower bounds of {@code ai} are lubbed into the primary annotations of the
-   * least upper bound of {@code lowerBounds}, or replace them if {@code replaceIgnoredAnnotations}
-   * is true and that type ignores annotations and is not a type variable. In the latter case, the
-   * result ignores annotations only if the qualifier lower bounds do not cover every hierarchy (see
-   * {@link ProperType#withPrimaryAnnotationsReplaced}). If that type is a type variable, the
-   * primary annotations of its lower bound change instead, and its own primary annotations are
-   * unchanged.
+   * <p>The qualifier lower bounds of {@code variable} are lubbed into the primary annotations of
+   * the least upper bound of {@code lowerBounds}, or replace them if {@code
+   * replaceIgnoredAnnotations} is true and that type ignores annotations and is not a type
+   * variable. In the latter case, the result ignores annotations only if the qualifier lower bounds
+   * do not cover every hierarchy (see {@link ProperType#withPrimaryAnnotationsReplaced}). If that
+   * type is a type variable, the primary annotations of its lower bound change instead, and its own
+   * primary annotations are unchanged.
    *
    * <p>The result might share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
    * is stored in a hash set of bounds. Callers must not mutate the result.
    *
-   * @param ai a variable
-   * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
-   *     or has the Java type of {@code ai}
+   * @param variable a variable
+   * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code
+   *     variable} or has the Java type of {@code variable}
    * @param replaceIgnoredAnnotations if true, and the least upper bound ignores annotations (see
    *     {@link AbstractType#ignoreAnnotations}) and is not a type variable, then its primary
    *     annotations are replaced by the least upper bound of the qualifier lower bounds of {@code
-   *     ai}, rather than lubbed with them
+   *     variable}, rather than lubbed with them
    * @param context the context
    * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
-   *     ai} applied
+   *     variable} applied
    */
   private static ProperType lubOfLowerBounds(
-      Variable ai,
+      Variable variable,
       Set<ProperType> lowerBounds,
       boolean replaceIgnoredAnnotations,
       Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
     Set<AbstractQualifier> qualifierLowerBounds =
-        ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
+        variable.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
           && replaceIgnoredAnnotations
           && lubProperType.ignoreAnnotations) {
-        // The primary annotations of `lubProperType` say nothing about `ai`'s, so the qualifier
-        // lower bounds replace them rather than being lubbed with them.  Replacing them when only
-        // some hierarchies are ignored would discard the others, such as the H1 annotation of a
-        // lower bound from a use whose primary annotation is in H2 only.  A type variable's are
-        // lubbed into its lower bound, as below, because replacing its primary annotation would
-        // also fix its upper bound.
+        // The primary annotations of `lubProperType` say nothing about `variable`'s, so the
+        // qualifier lower bounds replace them rather than being lubbed with them.  Replacing them
+        // when only some hierarchies are ignored would discard the others, such as the H1
+        // annotation of a lower bound from a use whose primary annotation is in H2 only.  A type
+        // variable's are lubbed into its lower bound, as below, because replacing its primary
+        // annotation would also fix its upper bound.
         //
-        // The replacement annotations are derived from `ai`'s bounds, so they are not ignored:
-        // if they cover every hierarchy, then the result does not ignore annotations, and its
-        // annotations are checked against `ai`'s other bounds.  In hierarchies that they do not
-        // cover, the ignored annotations remain.
+        // The replacement annotations are derived from `variable`'s bounds, so they are not
+        // ignored: if they cover every hierarchy, then the result does not ignore annotations, and
+        // its annotations are checked against `variable`'s other bounds.  In hierarchies that they
+        // do not cover, the ignored annotations remain.
         return lubProperType.withPrimaryAnnotationsReplaced(lubAnnos, false);
       }
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
@@ -588,7 +591,7 @@ public final class Resolution {
       // rebuilds the type from its origin (see IgnoredAnnotations#copyPrimaryAnnotations).
       lubProperType = lubProperType.copy();
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
-        // A proper lower bound's primary annotations say nothing about `ai`'s only in the
+        // A proper lower bound's primary annotations say nothing about `variable`'s only in the
         // hierarchies of the use's explicit primary annotation, where UseOfVariable#addBound made
         // them bottom, so lubbing them is already correct.
         Set<? extends AnnotationMirror> newLubAnnos =
@@ -626,21 +629,21 @@ public final class Resolution {
     // contain.
     Set<Variable> instantiatedOutsideAs = new LinkedHashSet<>();
 
-    for (Variable ai : as) {
-      ai.getBounds().applyInstantiationsToBounds();
-      if (ai.getBounds().hasInstantiation()) {
-        // If ai is equal to a variable that was resolved previously,
-        // ai would now have an instantiation.
+    for (Variable variable : as) {
+      variable.getBounds().applyInstantiationsToBounds();
+      if (variable.getBounds().hasInstantiation()) {
+        // If `variable` is equal to a variable that was resolved previously, then `variable` now
+        // has an instantiation.
         continue;
       }
-      asList.add(ai);
-      Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
-      if (ai instanceof CaptureVariable captureVariable) {
+      asList.add(variable);
+      Set<ProperType> lowerBounds = variable.getBounds().findProperLowerBounds();
+      if (variable instanceof CaptureVariable captureVariable) {
         // See CaptureVariable#getWildcardLowerBound.
         AbstractType wildcardLowerBound = captureVariable.getWildcardLowerBound();
         if (wildcardLowerBound != null) {
           wildcardLowerBound = wildcardLowerBound.applyInstantiations();
-          // `ai` depends on every variable in the capture bound, including those in
+          // `variable` depends on every variable in the capture bound, including those in
           // `wildcardLowerBound` (see BoundSet#getDependencies), so any variable still in it is
           // being resolved in this same set.  Like any other lower bound that is not proper, it
           // is not used (JLS 18.4).
@@ -654,7 +657,7 @@ public final class Resolution {
       if (lowerBounds.isEmpty()) {
         lowerBound = null;
         Set<AbstractQualifier> qualifierLowerBounds =
-            ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
+            variable.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
         lowerBoundAnnos =
             qualifierLowerBounds.isEmpty()
                 ? Collections.emptySet()
@@ -662,14 +665,14 @@ public final class Resolution {
       } else {
         // `createFreshTypeVariable` mutates `lowerBound`.
         lowerBound =
-            (ProperType) copyForMutation(lubOfLowerBounds(ai, lowerBounds, false, context));
+            (ProperType) copyForMutation(lubOfLowerBounds(variable, lowerBounds, false, context));
         // `createFreshTypeVariable` uses `lowerBoundAnnos` only when `lowerBound` is null.
         lowerBoundAnnos = Collections.emptySet();
       }
 
-      Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
+      Set<AbstractType> upperBounds = variable.getBounds().upperBounds();
       // Omit bounds that contain uninstantiated variables outside `as`, such as `alpha` in
-      // `ai <: alpha`.  A bound can contain an instantiated variable outside `as` whose
+      // `variable <: alpha`.  A bound can contain an instantiated variable outside `as` whose
       // instantiation InferenceType#applyInstantiations did not apply, because that instantiation
       // ignores annotations and the result would not be proper.  Such a bound is kept, and
       // getSubsTypeArgs below applies the instantiation.  The annotations at the ignored positions
@@ -689,13 +692,13 @@ public final class Resolution {
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
         // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
-        // stored in `ai`'s set of upper bounds.  This method and `createFreshTypeVariable` mutate
-        // `upperBound`.
+        // stored in `variable`'s set of upper bounds.  This method and `createFreshTypeVariable`
+        // mutate `upperBound`.
         upperBound = copyForMutation(upperBound);
       }
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
-          ai.getBounds().getQualifierBoundsOfKind(BoundKind.UPPER);
+          variable.getBounds().getQualifierBoundsOfKind(BoundKind.UPPER);
       if (!qualifierUpperBounds.isEmpty()) {
         upperBoundAnnos = AbstractQualifier.glb(qualifierUpperBounds, context);
         if (upperBound != null) {
@@ -722,8 +725,8 @@ public final class Resolution {
 
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {
-      Variable ai = asList.get(i);
-      ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
+      Variable variable = asList.get(i);
+      variable.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
     }
 
     boundSet.reachFixedPoint();

@@ -42,17 +42,19 @@ import org.checkerframework.javacutil.BugInCF;
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
  *       including those of its bounds if it is a type variable or a wildcard, and
- *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} that
- *       {@link AbstractType#applyInstantiations} created, at which it replaced a use of an
- *       inference variable by the variable's instantiation, and either:
+ *   <li>the annotations at an <em>ignored position</em> of a {@link ProperType}. {@link
+ *       AbstractType#applyInstantiations} makes a proper type by replacing each use of an inference
+ *       variable with the variable's instantiation. A position in the result is ignored if either:
  *       <ul>
- *         <li>that instantiation ignores annotations, and the use does not have a non-polymorphic
- *             primary annotation in every qualifier hierarchy (if it does, then those annotations
- *             replace the instantiation's; see {@link UseOfVariable#applyInstantiations}), or
- *         <li>the corresponding position of that instantiation is an ignored position of it.
+ *         <li>a use was replaced there, the instantiation ignores annotations, and the use lacks a
+ *             non-polymorphic primary annotation in some qualifier hierarchy. (If the use has one
+ *             in every hierarchy, then those annotations replace the instantiation's; see {@link
+ *             UseOfVariable#applyInstantiations}.)
+ *         <li>it is within a replaced use, at an ignored position of the instantiation.
  *       </ul>
  *       The type's {@link ProperType#getOrigin() origin} is the type before instantiations were
- *       applied; it has a use of an inference variable at each ignored position.
+ *       applied. The origin has a use of an inference variable at or enclosing each ignored
+ *       position.
  * </ul>
  *
  * <p>The <em>current instantiation</em> of an inference variable is its instantiation at this
@@ -115,7 +117,7 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror subATM = subAsSuper.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror supATM = upToDateSup.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredPositions) {
-      replaceIgnoredPositions(
+      replaceIgnoredWithCorresponding(
           subATM,
           supATM,
           ignoredPositions(subAsSuper, subATM, qh),
@@ -131,8 +133,8 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
-   * with their ignored annotations replaced.
+   * Returns the annotated types of {@code type1} and {@code type2} with their ignored annotations
+   * replaced.
    *
    * <ul>
    *   <li>Each ignored annotation of {@code type1} is replaced by the annotation at the
@@ -165,7 +167,7 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror atm1 = upToDate1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = upToDate2.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredPositions) {
-      replaceIgnoredPositions(
+      replaceIgnoredWithCorresponding(
           atm1, atm2, ignoredPositions(upToDate1, atm1, qh), ignoredPositions(upToDate2, atm2, qh));
     }
     if (upToDate1.ignoreAnnotations) {
@@ -189,8 +191,8 @@ final class IgnoredAnnotations {
    *       annotated types.
    *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
    *       the annotations of the corresponding position of the other (see {@link
-   *       #replaceIgnoredPositions}), except that a type variable is returned itself, with no
-   *       annotations replaced.
+   *       #replaceIgnoredWithCorresponding}), except that a type variable is returned itself, with
+   *       no annotations replaced.
    * </ol>
    *
    * <p>This method does not replace primary annotations that are ignored because of {@link
@@ -229,7 +231,7 @@ final class IgnoredAnnotations {
     }
     AnnotatedTypeMirror atm1 = asSuper1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = asSuper2.getAnnotatedType().deepCopy();
-    replaceIgnoredPositions(
+    replaceIgnoredWithCorresponding(
         atm1, atm2, ignoredPositions(asSuper1, atm1, qh), ignoredPositions(asSuper2, atm2, qh));
     // A type variable is returned itself, because the least upper bound or greatest lower bound
     // needs it rather than its upper bound.  TODO: Replace the ignored positions within the upper
@@ -370,19 +372,22 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns {@code type} brought up to date. If {@code type} is a proper type with an origin (see
-   * {@link ProperType#getOrigin}), the result is its origin with the current instantiations applied
-   * and with the primary annotations of {@code type}; otherwise, it is {@code type} itself. The
-   * result is {@code type} itself if none of those instantiations has changed since {@code type}
-   * was made, or if a variable that its origin contains no longer has an instantiation. Otherwise,
-   * the result can differ from {@code type} at positions whose instantiation changed. The ignored
-   * positions of a type are found from the current instantiations, so its annotated type must be
-   * made from them too.
+   * Returns {@code type} brought up to date with the current instantiations.
+   *
+   * <ul>
+   *   <li>If {@code type} has no origin (see {@link ProperType#getOrigin}), returns {@code type}.
+   *   <li>Otherwise, returns its origin with the current instantiations applied and with the
+   *       primary annotations of {@code type}. That is {@code type} itself if no instantiation of a
+   *       variable that the origin contains has changed since {@code type} was made, or if one of
+   *       those variables no longer has an instantiation.
+   * </ul>
    *
    * @param type a type
    * @return {@code type} brought up to date
    */
   private static AbstractType upToDate(AbstractType type) {
+    // The ignored positions of a type are found from the current instantiations, so its annotated
+    // type must be made from them too.
     return type.getOrigin() != null ? type.applyInstantiations() : type;
   }
 
@@ -454,6 +459,7 @@ final class IgnoredAnnotations {
     if (origin == null) {
       return Collections.emptySet();
     }
+    // The JDK has no identity-set type, so the return type cannot say that the set uses identity.
     Set<AnnotatedTypeMirror> result = Collections.newSetFromMap(new IdentityHashMap<>());
     collectIgnoredPositions(
         origin.getAnnotatedType(),
@@ -588,9 +594,8 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Calls {@link #collectIgnoredPositions} on corresponding elements of the two lists, which have
-   * the same length because {@code appliedTypes} was made from {@code origins} by applying
-   * instantiations.
+   * Calls {@link #collectIgnoredPositions} on corresponding elements of the two lists. Throws
+   * {@link BugInCF} if the lists have different lengths.
    *
    * @param origins types that may contain uses of the inference variables in {@code map}
    * @param appliedTypes {@code origins} with the current instantiations of those variables applied
@@ -659,7 +664,7 @@ final class IgnoredAnnotations {
    * @param ignored1 the ignored positions of {@code atm1}
    * @param ignored2 the ignored positions of {@code atm2}
    */
-  private static void replaceIgnoredPositions(
+  private static void replaceIgnoredWithCorresponding(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       Set<AnnotatedTypeMirror> ignored1,
@@ -825,11 +830,11 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Adds the pair of {@code atm1} and {@code atm2} to {@code visited}, which maps a type to the
-   * types with which it has been paired. Types are compared by identity, because distinct positions
-   * can hold equal types.
+   * Adds the pair of {@code atm1} and {@code atm2} to {@code visited}. Types are compared by
+   * identity, because distinct positions can hold equal types.
    *
-   * @param visited the pairs visited so far; side-effected by this method
+   * @param visited the pairs visited so far, as a map from a type to the types with which it has
+   *     been paired; side-effected by this method
    * @param atm1 the first type of the pair
    * @param atm2 the second type of the pair
    * @return true if the pair was not already in {@code visited}
