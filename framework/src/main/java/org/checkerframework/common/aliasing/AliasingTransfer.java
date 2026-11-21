@@ -67,7 +67,10 @@ public class AliasingTransfer extends CFTransfer {
       AssignmentNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
     if (!isFreshUnique(n.getExpression())) {
-      // The value of the assignment expression is an alias of the RHS.
+      // The value of the assignment expression is an alias of the RHS. The store cannot represent
+      // the assignment expression (which has a side effect), so processCommonAssignment did not
+      // widen it. Discard the RHS's value, which super.visitAssignment computed before the
+      // assignment.
       result.setResultValue(null);
     }
     return result;
@@ -75,8 +78,10 @@ public class AliasingTransfer extends CFTransfer {
 
   /**
    * If the RHS is not a fresh {@code @Unique} expression, widens the LHS and the RHS, which are
-   * aliases of one another. Widening the LHS also removes the refinements of expressions that
-   * depend on the LHS or that might alias it, such as {@code x.f} after an assignment to {@code x}.
+   * aliases of one another, in the store. Widening the LHS also removes the refinements of
+   * expressions in the store that depend on the LHS or that might alias it, such as {@code x.f}
+   * after an assignment to {@code x}. The value of the assignment expression is also an alias, but
+   * the store cannot represent it; {@link #visitAssignment} discards that value.
    */
   @Override
   protected void processCommonAssignment(
@@ -92,8 +97,11 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Returns true if {@code rhs} is a fresh {@code @Unique} expression: a method or constructor
-   * invocation whose type is {@code @Unique}.
+   * Returns true if {@code rhs} is a method or constructor invocation whose type is
+   * {@code @Unique}.
+   *
+   * <p>If this method returns true, then each evaluation of {@code rhs} yields a new object that
+   * nothing else references. Thus, the store does not represent the expression.
    *
    * @param rhs the right-hand side of an assignment
    * @return true if {@code rhs} is a fresh {@code @Unique} expression
