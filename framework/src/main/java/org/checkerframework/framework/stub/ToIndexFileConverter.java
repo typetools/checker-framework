@@ -1229,8 +1229,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static final String MIXED_PACKAGES = "<mixed packages>";
 
   /**
-   * Returns the non-private member type named {@code identifier} that a class on the classpath
-   * declares or inherits.
+   * Returns the member type named {@code identifier} that a class on the classpath declares or
+   * inherits. The result can be a private member type that the class declares.
    *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
@@ -1251,14 +1251,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * type that a class declares hides every member type of the same name in the class's supertypes,
    * even if the declared member type is not inherited.
    *
+   * <p>If {@code subclassPackage} is null, then the result can be a member type, even a private
+   * one, that {@code clazz} declares, because no subclass needs to inherit it.
+   *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
    * @param subclassPackage the package of every subclass along the inheritance path that inherits
    *     the member types of {@code clazz}, {@link #MIXED_PACKAGES} if they are not all in one
    *     package, or null if {@code clazz} is the type whose member is sought; the unnamed package
    *     is {@code ""}
-   * @return the member type named {@code identifier}, or null if there is none or it cannot be
-   *     determined
+   * @return the member type named {@code identifier}, or null if there is none, if it cannot be
+   *     determined, or if {@code clazz} or one of its supertypes on the inheritance path declares a
+   *     member type of that name that is not inherited along the path (because that member type
+   *     hides the member types of the same name in the supertypes of the class that declares it)
    */
   private static @Nullable Class<?> classMemberType(
       Class<?> clazz, String identifier, @Nullable String subclassPackage) {
@@ -1283,13 +1288,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         boolean packagePrivateInherited = pathPackage == null || pathPackage.equals(cPackage);
         Class<?> member = declaredMemberType(c, identifier);
         if (member != null) {
-          if (isInheritedMemberType(c, member, packagePrivateInherited)) {
+          if (pathPackage == null || isInheritedMemberType(c, member, packagePrivateInherited)) {
             return member;
           }
           // A member type that `c` declares hides every member type of the same name in the
-          // supertypes of `c`, even if it is not inherited (JLS 8.5).  A private member type that
-          // `clazz` itself declares is not returned, but the caller's fallback yields the same
-          // binary name.
+          // supertypes of `c`, even if it is not inherited (JLS 8.5).
           continue;
         }
         String nextPathPackage = packagePrivateInherited ? cPackage : MIXED_PACKAGES;
