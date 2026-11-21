@@ -15,6 +15,12 @@ variable's type is not written in source code.  On JDK 22 and later,
 not written in source code for such a variable, so a check of the annotations
 written on a variable declaration should skip such a variable.
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
