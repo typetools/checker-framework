@@ -114,6 +114,9 @@ public class TypesUtilsCanAliasTest {
     assertCanAlias(true, integerOrLong, type("java.lang.Integer"));
     assertCanAlias(true, integerOrLong, type("java.lang.Number"));
     assertCanAlias(true, integerOrLong, type("java.lang.Object"));
+    // The erasure of the union type is Number, which is unrelated to Comparable, but Integer and
+    // Long are both Comparable.
+    assertCanAlias(true, integerOrLong, type("java.lang.Comparable"));
     // The least upper bound of Integer and Long is Number & Comparable<...> & ..., whose erasure
     // is Number, which is a supertype of Double.
     assertCanAlias(false, integerOrLong, type("java.lang.Double"));
