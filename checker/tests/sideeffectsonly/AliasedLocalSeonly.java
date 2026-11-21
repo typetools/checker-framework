@@ -90,6 +90,74 @@ public class AliasedLocalSeonly {
     }
   }
 
+  static class Node {
+    int val;
+    Node next;
+  }
+
+  Node head = new Node();
+
+  static Node uncoveredHead = new Node();
+
+  @SideEffectsOnly("this")
+  void traversal() {
+    // `cur` is assigned a value that mentions `cur` itself.
+    Node cur = this.head;
+    while (cur != null) {
+      cur.val = 0;
+      cur = cur.next;
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void traversalUncovered() {
+    Node cur = uncoveredHead;
+    while (cur != null) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      cur.val = 0;
+      cur = cur.next;
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void mutuallyDependentAliases(boolean b) {
+    List<Integer> a = this.covered;
+    List<Integer> c = a;
+    if (b) {
+      a = c;
+    }
+    a.add(1);
+    c.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void mutuallyDependentAliasesUncovered(boolean b) {
+    List<Integer> a = uncovered;
+    List<Integer> c = a;
+    if (b) {
+      a = c;
+    }
+    // :: error: (purity.incorrect.sideeffectsonly)
+    a.add(1);
+    // :: error: (purity.incorrect.sideeffectsonly)
+    c.add(1);
+  }
+
+  List<Integer> covered2 = new ArrayList<>();
+
+  @SideEffectsOnly("this")
+  void aliasOfConditional(boolean b) {
+    List<Integer> alias = b ? this.covered : (this.covered2);
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfConditionalUncovered(boolean b) {
+    List<Integer> alias = b ? this.covered : uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
   @SideEffectsOnly("this")
   void fieldReassignedAfterAliasing() {
     // The alias holds the list that `this.covered` referred to on entry to the method.  That list

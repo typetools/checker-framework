@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +87,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * annotation lists {@code this}. Modifying such a variable's value is covered by the annotation.
    * Assignments are the only aliasing that checking of {@code @SideEffectsOnly} considers.
    */
-  protected final Set<VariableElement> coveredLocals;
+  protected final List<LocalVariable> coveredLocals;
 
   /** The checker to use. */
   protected final BaseTypeChecker checker;
@@ -923,21 +925,21 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
    * @param coveredLocals local variables that hold the value of an expression that {@code
    *     seOnlyExpressions} covers
-   * @param atypeFactory the type factory, for determining which methods are pure
+   * @param atypeFactory the type factory, for determining which methods are side-effect-free
    * @return true if the given expression is covered by the given expressions or local variables
    */
   private static boolean isCovered(
       JavaExpression expr,
       List<JavaExpression> seOnlyExpressions,
-      Set<VariableElement> coveredLocals,
+      List<LocalVariable> coveredLocals,
       AnnotatedTypeFactory atypeFactory) {
     for (JavaExpression seOnlyExpression : seOnlyExpressions) {
       if (expr.containsAsReceiver(atypeFactory, seOnlyExpression)) {
         return true;
       }
     }
-    for (VariableElement coveredLocal : coveredLocals) {
-      if (expr.containsAsReceiver(atypeFactory, new LocalVariable(coveredLocal))) {
+    for (LocalVariable coveredLocal : coveredLocals) {
+      if (expr.containsAsReceiver(atypeFactory, coveredLocal)) {
         return true;
       }
     }
@@ -946,47 +948,76 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   /**
    * Returns the local variables all of whose assigned values are covered by the given {@link
-   * SideEffectsOnly} expressions. A value may itself be such a local variable, so this iterates to
-   * a fixed point.
+   * SideEffectsOnly} expressions or by the returned local variables.
+   *
+   * <p>A value can mention a local variable, including the one it is assigned to, as in {@code cur
+   * = cur.next}. Therefore, this computes the largest set of local variables that satisfies the
+   * condition: it starts with every candidate and repeatedly removes any local variable that has a
+   * value that the current set does not cover. The result is sound because Java's definite
+   * assignment rules ensure that every local variable that a value mentions has already been
+   * assigned, so by induction over the execution it holds a covered value.
+   *
+   * <p>A value that is a conditional expression is covered if both of its branches are covered.
    *
    * @param localAssignments the assignments to local variables in the code being checked
    * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
-   * @param atypeFactory the type factory, for determining which methods are pure
+   * @param atypeFactory the type factory, for determining which methods are side-effect-free
    * @return the local variables that always hold the value of an expression that {@code
    *     seOnlyExpressions} covers
    */
-  private static Set<VariableElement> coveredLocals(
+  private static List<LocalVariable> coveredLocals(
       LocalAssignmentScanner localAssignments,
       List<JavaExpression> seOnlyExpressions,
       AnnotatedTypeFactory atypeFactory) {
-    Set<VariableElement> result = new HashSet<>(2);
+    // Maps each candidate local variable to the values that are assigned to it.
+    Map<LocalVariable, List<JavaExpression>> candidates = new HashMap<>(2);
+    for (Map.Entry<VariableElement, List<ExpressionTree>> entry :
+        localAssignments.assignedValues.entrySet()) {
+      VariableElement local = entry.getKey();
+      if (localAssignments.otherwiseAssigned.contains(local)) {
+        continue;
+      }
+      List<JavaExpression> values = new ArrayList<>(entry.getValue().size());
+      for (ExpressionTree value : entry.getValue()) {
+        addPossibleValues(value, values);
+      }
+      candidates.put(new LocalVariable(local), values);
+    }
+
     boolean changed = true;
     while (changed) {
       changed = false;
-      for (Map.Entry<VariableElement, List<ExpressionTree>> entry :
-          localAssignments.assignedValues.entrySet()) {
-        VariableElement local = entry.getKey();
-        if (result.contains(local) || localAssignments.otherwiseAssigned.contains(local)) {
-          continue;
-        }
-        boolean allCovered = true;
-        for (ExpressionTree value : entry.getValue()) {
-          if (!isCovered(
-              expressionFromTree(withoutParensOrReferenceCasts(value)),
-              seOnlyExpressions,
-              result,
-              atypeFactory)) {
-            allCovered = false;
+      List<LocalVariable> covered = new ArrayList<>(candidates.keySet());
+      Iterator<List<JavaExpression>> itor = candidates.values().iterator();
+      while (itor.hasNext()) {
+        for (JavaExpression value : itor.next()) {
+          if (!isCovered(value, seOnlyExpressions, covered, atypeFactory)) {
+            itor.remove();
+            changed = true;
             break;
           }
         }
-        if (allCovered) {
-          result.add(local);
-          changed = true;
-        }
       }
     }
-    return result;
+    return new ArrayList<>(candidates.keySet());
+  }
+
+  /**
+   * Adds to {@code values} the expressions that the given tree might evaluate to: for a conditional
+   * expression, those of both branches, and otherwise the tree itself, without enclosing
+   * parentheses and reference casts.
+   *
+   * @param tree an expression tree
+   * @param values the list to which to add the expressions
+   */
+  private static void addPossibleValues(ExpressionTree tree, List<JavaExpression> values) {
+    ExpressionTree stripped = withoutParensOrReferenceCasts(tree);
+    if (stripped instanceof ConditionalExpressionTree conditional) {
+      addPossibleValues(conditional.getTrueExpression(), values);
+      addPossibleValues(conditional.getFalseExpression(), values);
+    } else {
+      values.add(expressionFromTree(stripped));
+    }
   }
 
   /**
