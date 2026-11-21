@@ -62,10 +62,12 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2641,7 +2643,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (finallyBlock != null) {
       finallyLabel = new Label();
 
-      exceptionalFinallyFrame = new TryFinallyFrame(types, nodeList.size());
+      exceptionalFinallyFrame = new TryFinallyFrame(types);
       tryStack.pushFrame(exceptionalFinallyFrame);
 
       returnTargetLC = new LabelCell();
@@ -2757,7 +2759,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label doneLabel = new Label();
     Label finallyLabel = new Label();
 
-    TryFinallyFrame exceptionalFinallyFrame = new TryFinallyFrame(types, nodeList.size());
+    TryFinallyFrame exceptionalFinallyFrame = new TryFinallyFrame(types);
     tryStack.pushFrame(exceptionalFinallyFrame);
 
     returnTargetLC = new LabelCell();
@@ -2994,18 +2996,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    // For each exception that reaches the finally block, there is a copy of the finally block that
-    // rethrows that exception after the finally block completes normally.  If two exceptions
-    // shared a copy, the analysis would merge the stores of the paths that throw them, and the end
-    // of the copy would rethrow each exception with the merged store.  For example, an exception
-    // thrown while a resource is open would make the Resource Leak Checker report a leak on the
-    // path of another exception that is thrown after the resource is closed.  So exceptions that
-    // different nodes throw get different copies.  A transfer function can give a method
-    // invocation a different exceptional store for each type that it throws, as for a method
-    // annotated with @EnsuresCalledMethodsOnException, so each type that a method invocation
-    // throws gets its own copy.  Other exceptions that the same nodes throw share a copy:  a copy
-    // for each type would make the size of the CFG exponential, with a large base, in the depth of
-    // the nesting of finally blocks.
+    // For each type of exception that reaches the finally block, a copy of the finally block
+    // rethrows that type after the finally block completes normally.  Two types share a copy if
+    // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
+    // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
+    // copy.  Types that go to different places get different copies, so that the analysis does
+    // not merge stores of paths that never meet.  For example, the Resource Leak Checker would
+    // otherwise report a leak when an exception thrown while a resource is open is caught by a
+    // catch block that closes the resource, and another exception, thrown after the resource is
+    // closed, propagates out of the method.  Types that go to the same places share a copy, because
+    // the analysis merges their stores there anyway.  The number of copies grows exponentially with
+    // the depth of the nesting of finally blocks in finally blocks, with a base that grows with the
+    // number of copies per finally block.  A copy for each type would make the base much larger.
     for (Map<TypeMirror, Label> group : exceptionGroups(exceptionalFinallyFrame)) {
       for (Label label : group.values()) {
         addLabelForNextNode(label);
@@ -3157,60 +3159,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the types of the exceptions that reach the given frame, grouped by the nodes that throw
-   * them. A type that a method invocation throws to the frame is alone in its group. Two other
-   * types are in the same group if and only if the same nodes throw them to the frame.
+   * Returns the types of the exceptions that reach the given frame, grouped by where a copy of the
+   * finally block rethrows them. Two types are in the same group if and only if {@link
+   * TryStack#possibleLabelsPastFinally} returns the same set of labels for each of them.
    *
    * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
-   * @return the groups, in the order that their first types reach {@code frame}; each group maps
-   *     each of its types to the type's label in {@code frame}. Empty if no exception reaches
-   *     {@code frame}.
+   * @return the groups, in the order that the first type of each group reaches {@code frame} (see
+   *     {@link TryFinallyFrame#getExceptionLabels}); each group maps each of its types to the
+   *     type's label in {@code frame}. Empty if no exception reaches {@code frame}.
    */
-  private List<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
-    Map<TypeMirror, Label> exceptionLabels = frame.getExceptionLabels();
-    if (exceptionLabels.isEmpty()) {
-      return Collections.emptyList();
-    }
-    Set<Label> frameLabels = new HashSet<>(exceptionLabels.values());
-    // The nodes that throw an exception to each label of the frame.
-    Map<Label, Set<ExtendedNode>> throwers = new HashMap<>();
-    // The labels of the frame to which a method invocation throws an exception.
-    Set<Label> invocationLabels = new HashSet<>();
-    for (ExtendedNode node : nodeList.subList(frame.firstNodeIndex, nodeList.size())) {
-      if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
-        boolean isInvocation = exceptionalNode.getNode() instanceof MethodInvocationNode;
-        for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
-          for (Label label : labels) {
-            if (frameLabels.contains(label)) {
-              throwers.computeIfAbsent(label, l -> new HashSet<>()).add(node);
-              if (isInvocation) {
-                invocationLabels.add(label);
-              }
-            }
-          }
-        }
-      }
-    }
-    List<Map<TypeMirror, Label>> result = new ArrayList<>();
-    // The groups of the types that no method invocation throws, keyed by the nodes that throw them.
-    Map<Set<ExtendedNode>, Map<TypeMirror, Label>> groupsByThrowers = new HashMap<>();
-    for (Map.Entry<TypeMirror, Label> entry : exceptionLabels.entrySet()) {
+  private Collection<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
+    Map<Set<Label>, Map<TypeMirror, Label>> groups = new LinkedHashMap<>();
+    for (Map.Entry<TypeMirror, Label> entry : frame.getExceptionLabels().entrySet()) {
       TypeMirror type = entry.getKey();
-      Label label = entry.getValue();
-      if (invocationLabels.contains(label)) {
-        result.add(Collections.singletonMap(type, label));
-        continue;
-      }
-      Set<ExtendedNode> nodes = throwers.getOrDefault(label, Collections.emptySet());
-      Map<TypeMirror, Label> group = groupsByThrowers.get(nodes);
-      if (group == null) {
-        group = new ArrayMap<>();
-        groupsByThrowers.put(nodes, group);
-        result.add(group);
-      }
-      group.put(type, label);
+      groups
+          .computeIfAbsent(tryStack.possibleLabelsPastFinally(type), labels -> new ArrayMap<>())
+          .put(type, entry.getValue());
     }
-    return result;
+    return groups.values();
   }
 
   @Override
