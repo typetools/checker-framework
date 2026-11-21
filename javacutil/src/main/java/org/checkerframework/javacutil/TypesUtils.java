@@ -981,39 +981,30 @@ public final class TypesUtils {
   /**
    * Returns true if an expression of type {@code a} and an expression of type {@code b} might
    * evaluate to the same object, judging by the types: that is, true if some erased bound of {@code
-   * a} is a subtype or a supertype of some erased bound of {@code b}. The erased bounds of a type
-   * variable are those of its upper bound; of a wildcard, those of its extends bound and those of
-   * the type parameter that it is a type argument for (or {@code Object}, if neither is known); of
-   * an intersection type, those of each of its bounds; of a union type, those of each of its
-   * alternatives; of an array type, an array of each erased bound of its component type; and of any
-   * other type, its erasure.
+   * a} is a subtype or a supertype of some erased bound of {@code b}.
    *
-   * <p>The answer is not conservative when an interface type is involved. One object can have two
-   * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
-   * and an unrelated interface type, but this method returns false for such types. The same holds
-   * for arrays whose component types are such types: one {@code Integer[]} can be both a {@code
-   * Number[]} and a {@code Comparable[]}. See
-   * https://github.com/typetools/checker-framework/issues/8558.
+   * <p>This method compares the erasures of the types, because two parameterizations of a generic
+   * type, such as {@code List<? extends Number>} and {@code List<? super Integer>}, can denote the
+   * same object even if neither is a subtype of the other. For example, an object of type {@code
+   * List<Integer>} has both of those types, so the method returns true for them. Their erasures are
+   * both {@code List}.
    *
-   * <p>This compares the erasures of the types, because two parameterizations of a generic type can
-   * denote the same object even if neither is a subtype of the other. For example, a {@code
-   * Box<Integer>} is both a {@code Box<? extends Number>} and a {@code Box<? super Integer>}.
+   * <p>See {@link #erasedBounds} for the definition of erased bounds.
    *
-   * <p>It compares every bound of a type variable, wildcard, or intersection type, because the
-   * erasure of such a type is the erasure of only its first bound. For example, a {@code T[]} where
-   * {@code T extends Number & Comparable<T>} can be the same array as a {@code Comparable<T>[]},
-   * though {@code Number[]} and {@code Comparable[]} are unrelated.
+   * <p>The answer is not conservative when an interface type is involved. This method returns false
+   * for two types if no erased bound of one is related by subtyping to an erased bound of the
+   * other, but one object can have two such types if at least one of them is an interface type. For
+   * example, this method returns false for {@code Number} and {@code Comparable}, but an object of
+   * type {@code Integer} is both a {@code Number} and a {@code Comparable}. Likewise, it returns
+   * false for {@code Runnable} and {@code Serializable}, but an object of a class that implements
+   * both interfaces has both types. The same holds for arrays whose component types are such types:
+   * it returns false for {@code Number[]} and {@code Comparable[]}, but one {@code Integer[]} is
+   * both. See https://github.com/typetools/checker-framework/issues/8558.
    *
-   * <p>It compares the bounds of the type parameter that a wildcard is a type argument for, because
-   * a value of the wildcard has those types too. For example, if {@code Box} is declared as {@code
-   * class Box<T extends Number & Runnable>}, then the {@code ?} in {@code Box<?>} or in {@code
-   * Box<? super Integer>} can be the same object as a {@code Runnable}.
-   *
-   * <p>It compares every alternative of a union type, because the erasure of a union type is the
-   * erasure of the first bound of the alternatives' least upper bound, which is less precise. For
-   * example, if {@code E1}, {@code E2}, and {@code E3} are subclasses of {@code Base}, then the
-   * exception parameter {@code e} of {@code catch (E1 | E2 e)} cannot be the same object as an
-   * expression of type {@code E3}, though the erasure of the type of {@code e} is {@code Base}.
+   * <p>This method compares the bounds of the type parameter that a wildcard is a type argument
+   * for, because a value of the wildcard has those types too. For example, if {@code Box} is
+   * declared as {@code class Box<T extends Number & Runnable>}, then the {@code ?} in {@code
+   * Box<?>} or in {@code Box<? super Integer>} can be the same object as a {@code Runnable}.
    *
    * @param a the type of an expression
    * @param b the type of another expression
@@ -1028,6 +1019,24 @@ public final class TypesUtils {
       TypeMirror erasureB = types.erasure(b);
       return types.isSubtype(erasureA, erasureB) || types.isSubtype(erasureB, erasureA);
     }
+
+    // Use `erasedBounds()` rather than `erasure()`, because the `erasure()` of a type is the
+    // erasure of only its first bound (for a type variable, wildcard, or intersection type, or an
+    // array of such a type), or of the alternatives' least upper bound (for a union type).
+    //
+    // For a type variable, wildcard, or intersection type, using `erasure()` would make this
+    // method unsound: it would return false for some types that can denote the same object. For
+    // example, a `T[]` where `T extends Number & Comparable<T>` can be the same array as a
+    // `Comparable<T>[]`, though `Number[]` and `Comparable[]` are unrelated.
+    //
+    // For a union type, using `erasure()` would make this method imprecise: it would return true
+    // for some types that cannot denote the same object. For example, if `E1`, `E2`, and `E3` are
+    // unrelated subclasses of `Base`, then the exception parameter `e` of `catch (E1 | E2 e)`
+    // cannot be the same object as an expression of type `E3`, though the erasure of the type of
+    // `e` is `Base`. When the alternatives' least upper bound is an intersection type, using
+    // `erasure()` would also make this method unsound, as for an intersection type. For example,
+    // the erasure of `Integer | Long` is `Number`, which is unrelated to `Comparable`, but a value
+    // of type `Integer | Long` is a `Comparable`.
     List<TypeMirror> boundsA = erasedBounds(a, types);
     List<TypeMirror> boundsB = erasedBounds(b, types);
     for (TypeMirror boundA : boundsA) {
@@ -1041,9 +1050,17 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the erased bounds of the given type, as defined in {@link #canAlias}. For example, the
-   * erased bounds of {@code Number & Comparable<T>} are {@code Number} and {@code Comparable}, and
-   * those of {@code IOException | SQLException} are {@code IOException} and {@code SQLException}.
+   * Returns the erased bounds of the given type. The erased bounds of a type variable are those of
+   * its upper bound; of a wildcard, those of its extends bound and those of the type parameter that
+   * it is a type argument for (or {@code Object}, if neither is known); of an intersection type,
+   * those of each of its bounds; of a union type, those of each of its alternatives; of an array
+   * type, an array of each erased bound of its component type; and of any other type, its erasure.
+   * For example, the erased bounds of {@code Number & Comparable<T>} are {@code Number} and {@code
+   * Comparable}, and those of {@code IOException | SQLException} are {@code IOException} and {@code
+   * SQLException}.
+   *
+   * <p>{@link #canAlias} uses the erased bounds to judge whether two expressions might evaluate to
+   * the same object.
    *
    * <p>If the given type is a union type, every value of the type has at least one of the returned
    * types. Otherwise, every value of the type has each of the returned types.
@@ -1107,8 +1124,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@link #erasedBounds} returns only the erasure of the given type. A false
-   * result means that it might return something else.
+   * Returns true if {@link #erasedBounds} returns a singleton list containing only the erasure of
+   * the given type. A false result means that it might return something else.
    *
    * @param type a type
    * @return true if {@link #erasedBounds} returns only the erasure of {@code type}
