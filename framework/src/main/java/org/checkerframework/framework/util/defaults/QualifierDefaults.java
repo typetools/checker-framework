@@ -554,9 +554,9 @@ public class QualifierDefaults {
     //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
     boolean defaultTypeVarLocals =
-        (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
-            && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                .getShouldDefaultTypeVarLocals();
+        (atypeFactory
+                instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAnnotatedTypeFactory)
+            && genericAnnotatedTypeFactory.getShouldDefaultTypeVarLocals();
     applyToTypeVar =
         defaultTypeVarLocals
             && elt != null
