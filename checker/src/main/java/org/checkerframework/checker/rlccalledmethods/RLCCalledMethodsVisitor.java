@@ -27,6 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -457,6 +458,9 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       return;
     }
 
+    ResourceLeakChecker rlc = ResourceLeakUtils.getResourceLeakChecker(checker);
+    rlc.countFoundObligation(field, field.asType());
+
     // This value is side-effected.
     Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField = new LinkedHashSet<>();
     for (String mustCallMethod : mustCallObligationsOfOwningField) {
@@ -549,6 +553,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
         missingMethods.add(obligation.mustCallMethod);
       }
 
+      rlc.countFailedObligation(field);
       checker.reportError(
           field,
           "required.method.not.called",

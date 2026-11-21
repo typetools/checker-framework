@@ -39,6 +39,51 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
+   * A leaked object whose class is not in the JDK is not counted, even if its variable's type is in
+   * the JDK.
+   */
+  @Test
+  public void userClassIsNotCounted() {
+    assertCounts("UserClassAsJdkType.java", false, 0, 0);
+  }
+
+  /** An owning field is counted, and is not verified if it is overwritten. */
+  @Test
+  public void overwrittenFieldIsNotVerified() {
+    assertCounts("OverwrittenField.java", false, 3, 2);
+  }
+
+  /** An owning field is counted, and is not verified if the destructor does not close it. */
+  @Test
+  public void unclosedFieldIsNotVerified() {
+    assertCounts("UnclosedField.java", false, 2, 1);
+  }
+
+  /** A wrapper stream and the stream that it wraps are counted as one obligation. */
+  @Test
+  public void wrapperIsOneObligation() {
+    assertCounts("Wrapper.java", false, 1, 0);
+  }
+
+  /**
+   * If a {@code CreatesMustCallFor} method throws an exception, the obligation that it would have
+   * replaced is not verified.
+   */
+  @Test
+  public void resetThatThrowsDoesNotVerifyReplacedObligation() {
+    assertCounts("ResetThrows.java", false, 2, 0);
+  }
+
+  /**
+   * When a path on which a {@code CreatesMustCallFor} method replaces an obligation merges with a
+   * path on which it does not, neither obligation is verified.
+   */
+  @Test
+  public void resetOnOneBranchVerifiesNeitherObligation() {
+    assertCounts("ResetOnOneBranch.java", false, 2, 0);
+  }
+
+  /**
    * A leaked resource whose type is a type variable is counted as found but not as verified, using
    * the erasure of the type variable for both counts.
    */
