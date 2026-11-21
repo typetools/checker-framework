@@ -2844,6 +2844,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     tryStack.popFrame();
 
+    // The return, break, and continue statements of the try block and of the catch blocks jump
+    // to these targets.  Each target that such a statement jumps to is the entry of a copy of the
+    // finally block.
+    LabelCell tryReturnTargetLC = returnTargetLC;
+    LabelCell tryBreakTargetLC = breakTargetLC;
+    TryFinallyScopeMap tryBreakLabels = (TryFinallyScopeMap) breakLabels;
+    LabelCell tryContinueTargetLC = continueTargetLC;
+    TryFinallyScopeMap tryContinueLabels = (TryFinallyScopeMap) continueLabels;
+
+    // Every copy of the finally block uses the targets of the code that encloses the try
+    // statement.  A return, break, or continue statement in the finally block leaves the try
+    // statement directly.  If it jumped to a copy of the finally block instead, the finally block
+    // would run again.
+    returnTargetLC = oldReturnTargetLC;
+    breakTargetLC = oldBreakTargetLC;
+    breakLabels = oldBreakLabels;
+    continueTargetLC = oldContinueTargetLC;
+    continueLabels = oldContinueLabels;
+
     { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
       addLabelForNextNode(finallyLabel);
       extendWithNode(
@@ -2885,10 +2904,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       throwing.setTerminatesExecution(true);
     }
 
-    if (returnTargetLC.wasAccessed()) {
-      addLabelForNextNode(returnTargetLC.peekLabel());
-      returnTargetLC = oldReturnTargetLC;
-
+    if (tryReturnTargetLC.wasAccessed()) {
+      addLabelForNextNode(tryReturnTargetLC.peekLabel());
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -2901,14 +2918,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "end of finally block for return #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
       extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
-    } else {
-      returnTargetLC = oldReturnTargetLC;
     }
 
-    if (breakTargetLC.wasAccessed()) {
-      addLabelForNextNode(breakTargetLC.peekLabel());
-      breakTargetLC = oldBreakTargetLC;
-
+    if (tryBreakTargetLC.wasAccessed()) {
+      addLabelForNextNode(tryBreakTargetLC.peekLabel());
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -2921,43 +2934,32 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "end of finally block for break #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
       extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
-    } else {
-      breakTargetLC = oldBreakTargetLC;
     }
 
-    Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
-    if (!accessedBreakLabels.isEmpty()) {
-      breakLabels = oldBreakLabels;
-
-      for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
-        addLabelForNextNode(access.getValue());
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "start of finally block for break label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "end of finally block for break label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
-      }
-    } else {
-      breakLabels = oldBreakLabels;
+    for (Map.Entry<Name, Label> access : tryBreakLabels.getAccessedNames().entrySet()) {
+      addLabelForNextNode(access.getValue());
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block for break label "
+                  + access.getKey()
+                  + " #"
+                  + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "end of finally block for break label "
+                  + access.getKey()
+                  + " #"
+                  + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
     }
 
-    if (continueTargetLC.wasAccessed()) {
-      addLabelForNextNode(continueTargetLC.peekLabel());
-      continueTargetLC = oldContinueTargetLC;
-
+    if (tryContinueTargetLC.wasAccessed()) {
+      addLabelForNextNode(tryContinueTargetLC.peekLabel());
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -2970,38 +2972,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "end of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
       extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
-    } else {
-      continueTargetLC = oldContinueTargetLC;
     }
 
-    Map<Name, Label> accessedContinueLabels =
-        ((TryFinallyScopeMap) continueLabels).getAccessedNames();
-    if (!accessedContinueLabels.isEmpty()) {
-      continueLabels = oldContinueLabels;
-
-      for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
-        addLabelForNextNode(access.getValue());
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "start of finally block for continue label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "end of finally block for continue label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
-      }
-    } else {
-      continueLabels = oldContinueLabels;
+    for (Map.Entry<Name, Label> access : tryContinueLabels.getAccessedNames().entrySet()) {
+      addLabelForNextNode(access.getValue());
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block for continue label "
+                  + access.getKey()
+                  + " #"
+                  + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "end of finally block for continue label "
+                  + access.getKey()
+                  + " #"
+                  + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
     }
   }
 
