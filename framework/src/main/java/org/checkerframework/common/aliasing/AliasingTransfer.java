@@ -58,8 +58,8 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and is
-   * a method invocation or a new class instance.
+   * Case 1: For every assignment, the LHS is refined if the RHS has type {@code @Unique} and is a
+   * method invocation or a new class instance.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitAssignment(
