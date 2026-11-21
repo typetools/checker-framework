@@ -1638,6 +1638,7 @@ public class MustCallConsistencyAnalyzer {
           return;
         }
         VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+        checker.countFailedObligation(lhsElement);
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -1782,6 +1783,7 @@ public class MustCallConsistencyAnalyzer {
     }
     if (!calledMethodsSatisfyMustCall(mcValues, cmAnno)) {
       VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+      checker.countFailedObligation(lhsElement);
       if (!checker.shouldSkipUses(lhsElement)) {
         checker.reportError(
             node.getTree(),
@@ -1824,6 +1826,7 @@ public class MustCallConsistencyAnalyzer {
         RLCCalledMethodsVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, cmAtf);
 
     if (cmcfValues.isEmpty()) {
+      checker.countFailedObligation(lhsFan.getElement());
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",
@@ -1853,6 +1856,7 @@ public class MustCallConsistencyAnalyzer {
       }
       checked.add(targetStr);
     }
+    checker.countFailedObligation(lhsFan.getElement());
     checker.reportError(
         enclosingMethod,
         "incompatible.creates.mustcall.for",
