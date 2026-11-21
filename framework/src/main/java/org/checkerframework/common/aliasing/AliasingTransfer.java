@@ -74,7 +74,7 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * If the RHS is not a fresh {@literal @}Unique expression, widens the LHS and the RHS, which are
+   * If the RHS is not a fresh {@code @Unique} expression, widens the LHS and the RHS, which are
    * aliases of one another. Widening the LHS also removes the refinements of expressions that
    * depend on the LHS or that might alias it, such as {@code x.f} after an assignment to {@code x}.
    */
@@ -92,11 +92,11 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Returns true if {@code rhs} is a fresh {@literal @}Unique expression: a method invocation or a
-   * new class instance whose type is {@literal @}Unique.
+   * Returns true if {@code rhs} is a fresh {@code @Unique} expression: a method invocation or a new
+   * class instance whose type is {@code @Unique}.
    *
    * @param rhs the right-hand side of an assignment
-   * @return true if {@code rhs} is a fresh {@literal @}Unique expression
+   * @return true if {@code rhs} is a fresh {@code @Unique} expression
    */
   private boolean isFreshUnique(Node rhs) {
     if (!(rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
