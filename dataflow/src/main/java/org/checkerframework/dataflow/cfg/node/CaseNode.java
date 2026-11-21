@@ -30,27 +30,19 @@ public class CaseNode extends Node {
   protected final AssignmentNode selectorExprAssignment;
 
   /**
-   * The case expressions to match the switch expression against: the operands of (possibly
-   * multiple) case labels.
+   * The nodes for this case's labels, which the switch matches the selector expression against; see
+   * {@link #getCaseOperands()}.
    */
   protected final List<Node> caseExprs;
 
-  /**
-   * True if the CFG does not test the case expressions. This is so if they match every value of the
-   * switch selector expression that is tested against them, or if this is the last case of an
-   * exhaustive switch. The last case of an exhaustive switch does not necessarily match every
-   * value: for example, an enum constant that was added after the switch was compiled matches no
-   * case, and the switch throws a MatchException.
-   */
+  /** True if the CFG omits the test of this case's labels; see {@link #labelsUntested()}. */
   protected final boolean labelsUntested;
 
   /**
-   * True if code that might have side effects, such as the guard of an earlier case or a
-   * deconstruction pattern, can run between the evaluation of the switch selector expression and
-   * this node. If so, the selector expression might no longer denote the value that the switch
-   * tests. See {@link #codeRanSinceSelector()}.
+   * True if code that might have side effects can run between the evaluation of the switch selector
+   * expression and this node; see {@link #sideEffectSinceSelector()}.
    */
-  protected final boolean codeRanSinceSelector;
+  protected final boolean sideEffectSinceSelector;
 
   /**
    * True if testing this case's labels might have a side effect: that is, if a record accessor that
@@ -65,14 +57,15 @@ public class CaseNode extends Node {
    * @param tree the tree for this node
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
-   * @param caseExprs the case expression(s) to match the switch expression against
-   * @param labelsUntested true if the CFG does not test the case expressions; see {@link
+   * @param caseExprs the nodes for this case's labels, which the switch matches the selector
+   *     expression against
+   * @param labelsUntested true if the CFG omits the test of this case's labels; see {@link
    *     #labelsUntested()}
-   * @param codeRanSinceSelector true if code that might have side effects can run between the
+   * @param sideEffectSinceSelector true if code that might have side effects can run between the
    *     evaluation of the switch selector expression and this node; see {@link
-   *     #codeRanSinceSelector()}
-   * @param labelsMightHaveSideEffects true if testing the case expressions might have a side
-   *     effect; see {@link #labelsMightHaveSideEffects()}
+   *     #sideEffectSinceSelector()}
+   * @param labelsMightHaveSideEffects true if testing this case's labels might have a side effect;
+   *     see {@link #labelsMightHaveSideEffects()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -80,7 +73,7 @@ public class CaseNode extends Node {
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
       boolean labelsUntested,
-      boolean codeRanSinceSelector,
+      boolean sideEffectSinceSelector,
       boolean labelsMightHaveSideEffects,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
@@ -88,7 +81,7 @@ public class CaseNode extends Node {
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
     this.labelsUntested = labelsUntested;
-    this.codeRanSinceSelector = codeRanSinceSelector;
+    this.sideEffectSinceSelector = sideEffectSinceSelector;
     this.labelsMightHaveSideEffects = labelsMightHaveSideEffects;
   }
 
@@ -103,23 +96,31 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Returns the nodes corresponding to the case expressions. There can be multiple expressions
-   * since Java 12.
+   * Returns the nodes for this case's labels. A label is a constant or pattern after {@code case},
+   * such as {@code RED} or {@code GREEN} in {@code case RED, GREEN ->}. Since Java 12, a case can
+   * have multiple labels.
    *
-   * @return the nodes corresponding to the (potentially multiple) case expressions
+   * @return the nodes for this case's labels
    */
   public List<Node> getCaseOperands() {
     return caseExprs;
   }
 
   /**
-   * Returns true if the CFG does not test the case expressions. This is so if they match every
-   * value of the switch selector expression that is tested against them, or if this is the last
-   * case of an exhaustive switch. The last case of an exhaustive switch does not necessarily match
-   * every value: for example, an enum constant that was added after the switch was compiled matches
-   * no case, and the switch throws a MatchException.
+   * Returns true if the CFG omits the test of this case's labels (see {@link #getCaseOperands()}).
+   * This concerns only the labels of this one case, not the labels of the switch's other cases. If
+   * this is true, the CFG has no branch from this node to the next case: control always proceeds to
+   * the guard or the case body, as if one of this case's labels matched.
    *
-   * @return true if the CFG does not test the case expressions
+   * <p>This is true for the last case of an exhaustive switch that has no default case. Java
+   * requires a switch expression or an enhanced switch statement (JLS 14.11.2) to be exhaustive:
+   * the labels of all its cases, together, must cover every value of the selector expression's
+   * type. Control reaches the last case only if no earlier case matched, so the last case's labels
+   * match every value that reaches it. An exception is an enum constant that was added after the
+   * switch was compiled: it matches no label of any case, and the switch throws a MatchException,
+   * which the CFG does not represent.
+   *
+   * @return true if the CFG omits the test of this case's labels
    */
   public boolean labelsUntested() {
     return labelsUntested;
@@ -142,8 +143,8 @@ public class CaseNode extends Node {
    * @return true if code that might have side effects can run between the evaluation of the switch
    *     selector expression and this node
    */
-  public boolean codeRanSinceSelector() {
-    return codeRanSinceSelector;
+  public boolean sideEffectSinceSelector() {
+    return sideEffectSinceSelector;
   }
 
   /**
@@ -152,7 +153,7 @@ public class CaseNode extends Node {
    * pattern, is not side-effect-free. The record pattern invokes the accessors even if the match
    * fails. The CFG does not represent the accessor calls, so a transfer function must account for
    * their effect at this node. If this method returns true, so does {@link
-   * #codeRanSinceSelector()}.
+   * #sideEffectSinceSelector()}.
    *
    * @return true if testing this case's labels might have a side effect
    */
@@ -186,7 +187,7 @@ public class CaseNode extends Node {
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
         && labelsUntested == other.labelsUntested
-        && codeRanSinceSelector == other.codeRanSinceSelector
+        && sideEffectSinceSelector == other.sideEffectSinceSelector
         && labelsMightHaveSideEffects == other.labelsMightHaveSideEffects;
   }
 
@@ -196,7 +197,7 @@ public class CaseNode extends Node {
         getSwitchOperand(),
         getCaseOperands(),
         labelsUntested,
-        codeRanSinceSelector,
+        sideEffectSinceSelector,
         labelsMightHaveSideEffects);
   }
 

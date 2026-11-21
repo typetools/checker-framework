@@ -9,26 +9,8 @@
 
 ### Changes for type system implementers
 
-The `CaseNode` constructor takes three new boolean arguments,
-`labelsUntested`, `codeRanSinceSelector`, and `labelsMightHaveSideEffects`,
-which the new methods `CaseNode.labelsUntested()`,
-`CaseNode.codeRanSinceSelector()`, and `CaseNode.labelsMightHaveSideEffects()`
-return.
-
-* `labelsUntested` is true for the last case of an exhaustive switch.  For such
-  a `CaseNode`, the CFG does not test the labels, and
-  `CFAbstractTransfer.visitCase()` returns a regular store.
-* `codeRanSinceSelector` is true if a guard or a deconstruction pattern that
-  might have side effects can run between the evaluation of the switch's
-  selector expression and the `CaseNode`.  The new method
-  `CFAbstractTransfer.selectorExpressionDenotesSwitchValue()` returns false if
-  an earlier guard or a record accessor might have changed the selector
-  expression; then, `visitCase()` refines only the synthetic variable that
-  holds the selector's value.
-* `labelsMightHaveSideEffects` is true if a record pattern among the case's
-  labels invokes a record accessor that is not side-effect-free.  Then,
-  `visitCase()` discards an earlier refinement of a selector expression that
-  the accessor might have changed.
+`CaseNode` has three new boolean fields, `labelsUntested`,
+`sideEffectSinceSelector`, and `labelsMightHaveSideEffects`.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
