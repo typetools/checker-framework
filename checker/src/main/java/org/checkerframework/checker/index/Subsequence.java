@@ -37,9 +37,9 @@ public final class Subsequence {
 
   /**
    * Returns a Subsequence representing the {@link HasSubsequence} annotation on the declaration of
-   * {@code varTree} or null if there is not such annotation.
+   * {@code varTree} or null if there is no such annotation.
    *
-   * <p>Note that this method does not standardize or viewpoint adapt the arguments to the
+   * <p>Note that this method does not standardize or viewpoint-adapt the arguments to the
    * annotation, unlike getSubsequenceFromReceiver.
    *
    * @param varTree some tree
@@ -81,11 +81,11 @@ public final class Subsequence {
 
   /**
    * Returns a Subsequence representing the {@link HasSubsequence} annotation on the declaration of
-   * {@code rec} or null if there is not such annotation.
+   * {@code expr} or null if there is no such annotation.
    *
-   * @param expr some tree
+   * @param expr a Java expression
    * @param factory an AnnotatedTypeFactory
-   * @return null or a new Subsequence from the declaration of {@code varTree}
+   * @return null or a new Subsequence from the declaration of {@code expr}
    */
   public static @Nullable Subsequence getSubsequenceFromReceiver(
       JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
@@ -138,7 +138,7 @@ public final class Subsequence {
    * Returns the additive inverse of the given String. That is, if the result of this method is some
    * String s', then s + s' == 0 will evaluate to true. Note that this relies on the fact that the
    * JavaExpression parser cannot parse multiplication, so it naively just changes '-' to '+' and
-   * vice-versa.
+   * vice versa.
    *
    * @param s a Java expression string
    * @return the negated string
