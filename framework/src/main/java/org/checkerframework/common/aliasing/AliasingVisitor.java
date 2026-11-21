@@ -33,8 +33,8 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This visitor ensures that every constructor whose result is annotated as {@literal @}Unique does
- * not leak aliases.
+ * This visitor ensures that every constructor whose result is annotated as {@code @Unique} does not
+ * leak aliases.
  *
  * <p>TODO: Implement {@literal @}NonLeaked and {@literal @}LeakedToResult verifications:
  *
@@ -55,8 +55,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
   /**
    * Checks that if a method call is being invoked inside a constructor with result type
-   * {@literal @}Unique, it must not leak the "this" reference. There are 3 ways to make sure that
-   * this is not happening:
+   * {@code @Unique}, it must not leak the "this" reference. There are 3 ways to make sure that this
+   * is not happening:
    *
    * <ol>
    *   <li>{@code this} is not an argument of the method call.
