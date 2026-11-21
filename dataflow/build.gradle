@@ -171,11 +171,6 @@ if (rootProject.ext.testJdkVersion >= 22) {
   testDataflowAnalysis("unnamedPatternTest", "java22/unnamed-pattern", "reachingdef.ReachingDefinition", true)
 }
 
-test {
-  // The dataflow analysis tests are run by allDataflowTests.  This task runs only the JUnit tests.
-  include("org/checkerframework/**")
-}
-
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
