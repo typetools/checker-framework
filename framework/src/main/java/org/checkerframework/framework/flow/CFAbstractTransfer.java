@@ -1265,7 +1265,9 @@ public abstract class CFAbstractTransfer<
    * expressions that no store can hold a value for, such as {@code i - 1}.
    *
    * <p>A client that refines one operand of a comparison with a fact that mentions the other
-   * operand can use this method to check that the fact holds after the comparison.
+   * operand can use this method to check that the fact holds after the comparison. To check the
+   * expressions that an annotation of {@code node} contains, rather than {@code node} itself, use
+   * {@link #containsExpressionChangedBeforeComparisonCompletes}.
    *
    * @param node an operand of a comparison
    * @return true if the code that is evaluated after {@code node} and before the comparison
@@ -1287,7 +1289,8 @@ public abstract class CFAbstractTransfer<
    * that might no longer hold when the comparison completes. For example, in {@code x > (i = (b =
    * c).length)}, the type {@code @IndexFor("b")} of {@code x} is about the array that {@code b}
    * referred to before the right operand reassigned {@code b}, so it does not imply that {@code i}
-   * is an index for {@code b} afterward.
+   * is an index for {@code b} afterward. To check {@code node} itself, use {@link
+   * #mayBeChangedByLaterOperand}.
    *
    * @param anno an annotation of {@code node}
    * @param node a node in an operand of a comparison
