@@ -676,7 +676,7 @@ public abstract class CFAbstractTransfer<
    * @return the abstract value of the node according to the type factory, or null
    */
   private @Nullable V getValueFromFactory(Node n) {
-    // TODO: handle implicit/explicit this and go to correct factory method
+    // TODO: Handle implicit/explicit this and go to correct factory method.
     Tree tree = n.getTree();
     if (tree != null && TreeUtils.canHaveTypeAnnotation(tree)) {
       return getValueFromFactory(tree, n);
@@ -844,7 +844,6 @@ public abstract class CFAbstractTransfer<
    * @param tree a tree
    * @return true if the tree is the right operand of a boolean operator
    */
-  @SuppressWarnings("interning:not.interned") // reference equality of trees
   private boolean isRightOperandOfBooleanOperator(Tree tree) {
     TreePath path = analysis.atypeFactory.getPath(tree);
     if (path == null) {
@@ -862,8 +861,12 @@ public abstract class CFAbstractTransfer<
           // effects and equals its receiver.  Skip over both the method access and the call.
           TreePath invocationPath = parentPath.getParentPath();
           if (invocationPath == null
-              || !(invocationPath.getLeaf() instanceof MethodInvocationTree invocation)
-              || invocation.getMethodSelect() != parent
+              || !(invocationPath.getLeaf() instanceof MethodInvocationTree invocation)) {
+            return false;
+          }
+          @SuppressWarnings("interning:not.interned") // reference equality of trees
+          boolean isMethodSelect = invocation.getMethodSelect() == parent;
+          if (!isMethodSelect
               || !isBooleanValueMethod(TreeUtils.elementFromUse((MemberSelectTree) parent))) {
             return false;
           }
@@ -871,7 +874,9 @@ public abstract class CFAbstractTransfer<
           parentPath = invocationPath;
         }
         case EQUAL_TO, NOT_EQUAL_TO, AND, OR, XOR -> {
-          return ((BinaryTree) parent).getRightOperand() == operand;
+          @SuppressWarnings("interning:not.interned") // reference equality of trees
+          boolean isRightOperand = ((BinaryTree) parent).getRightOperand() == operand;
+          return isRightOperand;
         }
         default -> {
           return false;
@@ -1067,7 +1072,7 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> in) {
     TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), in);
-    if (!result.containsTwoStores() || NodeUtils.isConstantBoolean(n.getOperand())) {
+    if (!result.containsTwoStores() || NodeUtils.constantBooleanValue(n.getOperand()) != null) {
       return result;
     }
     return new ConditionalTransferResult<>(
@@ -1154,11 +1159,6 @@ public abstract class CFAbstractTransfer<
    * for when the operator is false. For example, the then-store of {@code a & b} is the then-store
    * of {@code b}, and the then-store of {@code a == false} is the else-store of {@code a}.
    *
-   * <p>If the operator cannot be true, as for {@code a & false}, then neither store is included,
-   * and the result's then-store is the described operand's then-store. Any store is sound there,
-   * because the operator is never true. Likewise, if the operator cannot be false, the result's
-   * else-store is the described operand's else-store.
-   *
    * @param operatorNode a node for a binary operator
    * @param in the input to the transfer function for {@code operatorNode}
    * @param truthTable the truth table of the operator
@@ -1182,12 +1182,13 @@ public abstract class CFAbstractTransfer<
     if (!in.containsTwoStores()) {
       return createTransferResult(value, in);
     }
-    boolean describedIsLeft = NodeUtils.isConstantBoolean(rightN);
-    Node otherOperand = describedIsLeft ? rightN : leftN;
+    Boolean rightConstant = NodeUtils.constantBooleanValue(rightN);
+    boolean describedIsLeft = rightConstant != null;
+    // The value of the other operand, or null if it is not a constant.
+    Boolean otherConstant =
+        rightConstant != null ? rightConstant : NodeUtils.constantBooleanValue(leftN);
     boolean[] otherValues =
-        NodeUtils.isConstantBoolean(otherOperand)
-            ? new boolean[] {NodeUtils.isConstantBoolean(otherOperand, true)}
-            : new boolean[] {true, false};
+        otherConstant != null ? new boolean[] {otherConstant} : new boolean[] {true, false};
     // Which of the described operand's stores the result's then-store and else-store include.
     boolean thenIncludesThen = false;
     boolean thenIncludesElse = false;
@@ -1209,8 +1210,9 @@ public abstract class CFAbstractTransfer<
         elseIncludesElse = true;
       }
     }
-    // If the operator is never true, any then-store is sound, so use the described operand's
-    // then-store, which is the most precise one at hand; likewise if the operator is never false.
+    // If the operator is never true, as for {@code a & false}, any then-store is sound, so use the
+    // described operand's then-store, which is the most precise one at hand; likewise if the
+    // operator is never false.
     S thenStore = lubOfIncludedStores(thenIncludesThen, thenIncludesElse, in, in.getThenStore());
     S elseStore =
         (thenIncludesThen && thenIncludesElse && elseIncludesThen && elseIncludesElse)
