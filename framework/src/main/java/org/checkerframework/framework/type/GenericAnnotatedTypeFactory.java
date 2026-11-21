@@ -2984,9 +2984,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
    * expression. Returns an empty list if none can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
-   * support. Also returns an empty list if the declared type of the expression is not {@linkplain
-   * #isRelevant relevant}, because a contract about the expression would state a qualifier that
-   * cannot be written on its type.
+   * support.
    *
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
    * subclasses can do so.
@@ -3015,10 +3013,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // TODO: should this only check the top-level annotations?
     if (declaredType.equals(inferredType)) {
-      return Collections.emptyList();
-    }
-
-    if (!isRelevant(declaredType)) {
       return Collections.emptyList();
     }
 

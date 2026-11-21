@@ -47,6 +47,7 @@ public class AmbiguousInheritedTypes {
 
         Foo field;
 
+        @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.field" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
         @org.checkerframework.dataflow.qual.Impure
         void assignField() {
             field = getSibling1();
