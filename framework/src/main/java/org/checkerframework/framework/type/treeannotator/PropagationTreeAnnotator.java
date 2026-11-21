@@ -29,6 +29,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.MapsP;
 
 /**
@@ -94,12 +95,29 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getAnnotations();
+        // The type that `annos` describes.
+        TypeMirror annosTM = initType.getUnderlyingType();
+        boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
+        if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
+          // The initializer is boxed or unboxed (JLS 5.2).  A primitive initializer is boxed to the
+          // component type if that is a boxed primitive, as in `new Byte[] {1}`.  A boxed
+          // initializer is unboxed to its own primitive type, which may then be widened to the
+          // component type, as in `new long[] {anInteger}`.
+          annos =
+              initIsPrimitive
+                  ? atypeFactory.getBoxedAnnotations(
+                      annos,
+                      TypesUtils.isBoxedPrimitive(componentTM)
+                          ? atypeFactory.types.unboxedType(componentTM).getKind()
+                          : annosTM.getKind())
+                  : atypeFactory.getUnboxedAnnotations(annos, unboxedKind(annosTM, componentTM));
+          annosTM = componentTM;
+        }
 
         prev =
             (prev == null)
                 ? annos
-                : qualHierarchy.leastUpperBoundsShallow(
-                    prev, componentTM, annos, initType.getUnderlyingType());
+                : qualHierarchy.leastUpperBoundsShallow(prev, componentTM, annos, annosTM);
       }
     } else {
       prev = componentType.getPrimaryAnnotations();
@@ -196,6 +214,24 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     addAnnoOrBound(componentType, post);
 
     return null;
+  }
+
+  /**
+   * Returns the kind of the primitive type that {@code type} unboxes to. If {@code type} cannot be
+   * unboxed (which should not happen for a legal array initializer), returns the kind of {@code
+   * primitiveComponentType}.
+   *
+   * @param type a non-primitive type, such as {@code Integer} or a type variable whose bound is a
+   *     boxed primitive
+   * @param primitiveComponentType the primitive component type of the array being created
+   * @return the kind of the primitive type that {@code type} unboxes to
+   */
+  private TypeKind unboxedKind(TypeMirror type, TypeMirror primitiveComponentType) {
+    try {
+      return atypeFactory.types.unboxedType(type).getKind();
+    } catch (IllegalArgumentException e) {
+      return primitiveComponentType.getKind();
+    }
   }
 
   @Override

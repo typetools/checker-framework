@@ -1,0 +1,239 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 5 EACH_TO_EACH
+4 -> 1 ClassCastException
+5 -> 6 EACH_TO_EACH
+6 -> 7 EACH_TO_EACH
+6 -> 1 RuntimeException
+6 -> 1 Error
+7 -> 8 EACH_TO_EACH
+8 -> 9 EACH_TO_EACH
+8 -> 1 ClassCircularityError
+8 -> 1 ClassFormatError
+8 -> 1 NoClassDefFoundError
+8 -> 1 OutOfMemoryError
+9 -> 10 EACH_TO_EACH
+10 -> 11 EACH_TO_EACH
+10 -> 1 RuntimeException
+10 -> 1 Error
+11 -> 12 EACH_TO_EACH
+12 -> 13 EACH_TO_EACH
+12 -> 1 ClassCastException
+13 -> 14 EACH_TO_EACH
+14 -> 15 EACH_TO_EACH
+14 -> 1 RuntimeException
+14 -> 1 Error
+15 -> 16 EACH_TO_EACH
+16 -> 17 EACH_TO_EACH
+16 -> 1 ClassCastException
+17 -> 18 EACH_TO_EACH
+18 -> 19 EACH_TO_EACH
+18 -> 1 RuntimeException
+18 -> 1 Error
+19 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+TransferInput#0
+Before:   reaching definitions = none
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+TransferInput#1
+Before:   reaching definitions = none
+~~~~~~~~~
+s1   [ VariableDeclaration ]
+1   [ IntegerLiteral ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = none
+
+4:
+Process order: 3
+TransferInput#5
+Before:   reaching definitions = none
+~~~~~~~~~
+(byte)1   [ TypeCast ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = none
+
+5:
+Process order: 4
+TransferInput#8
+Before:   reaching definitions = none
+~~~~~~~~~
+WideningConversion((byte)1, short)   [ WideningConversion ]
+Short   [ ClassName ]
+Short.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = none
+
+1:
+Process order: 20
+TransferInput#73
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+~~~~~~~~~
+<exceptional-exit>
+
+6:
+Process order: 5
+TransferInput#15
+Before:   reaching definitions = none
+~~~~~~~~~
+Short.valueOf(WideningConversion((byte)1, short))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = none
+
+7:
+Process order: 6
+TransferInput#18
+Before:   reaching definitions = none
+~~~~~~~~~
+s1 = Short.valueOf(WideningConversion((byte)1, short))   [ Assignment ]
+s2   [ VariableDeclaration ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+
+8:
+Process order: 7
+TransferInput#24
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+~~~~~~~~~
+Test   [ ClassName ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+
+9:
+Process order: 8
+TransferInput#27
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+~~~~~~~~~
+Test.BYTE_CONSTANT   [ FieldAccess ]
+WideningConversion(Test.BYTE_CONSTANT, short)   [ WideningConversion ]
+Short   [ ClassName ]
+Short.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+
+10:
+Process order: 9
+TransferInput#38
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+~~~~~~~~~
+Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+
+11:
+Process order: 10
+TransferInput#41
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)) }
+~~~~~~~~~
+s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short))   [ Assignment ]
+b   [ VariableDeclaration ]
+1   [ IntegerLiteral ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+
+12:
+Process order: 11
+TransferInput#48
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+~~~~~~~~~
+(char)1   [ TypeCast ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+
+13:
+Process order: 12
+TransferInput#51
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+~~~~~~~~~
+NarrowingConversion((char)1, byte)   [ NarrowingConversion ]
+Byte   [ ClassName ]
+Byte.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+
+14:
+Process order: 13
+TransferInput#58
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+~~~~~~~~~
+Byte.valueOf(NarrowingConversion((char)1, byte))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+
+15:
+Process order: 14
+TransferInput#61
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)) }
+~~~~~~~~~
+b = Byte.valueOf(NarrowingConversion((char)1, byte))   [ Assignment ]
+c   [ VariableDeclaration ]
+1   [ IntegerLiteral ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+
+16:
+Process order: 15
+TransferInput#68
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+~~~~~~~~~
+(byte)1   [ TypeCast ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+
+17:
+Process order: 16
+TransferInput#71
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+~~~~~~~~~
+NarrowingConversion((byte)1, char)   [ NarrowingConversion ]
+Character   [ ClassName ]
+Character.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+
+18:
+Process order: 17
+TransferInput#78
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+~~~~~~~~~
+Character.valueOf(NarrowingConversion((byte)1, char))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+
+19:
+Process order: 18
+TransferInput#81
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)) }
+~~~~~~~~~
+c = Character.valueOf(NarrowingConversion((byte)1, char))   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)) }
+
+0:
+Process order: 19
+TransferInput#86
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)) }
+~~~~~~~~~
+<exit>

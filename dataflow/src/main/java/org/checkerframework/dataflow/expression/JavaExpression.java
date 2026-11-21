@@ -523,11 +523,14 @@ public abstract class JavaExpression {
       result = new ArrayCreation(an.getType(), dimensions, initializers);
     } else if (receiverNode instanceof MethodInvocationNode mn) {
       MethodInvocationTree t = mn.getTree();
+      ExecutableElement invokedMethod;
       if (t == null) {
-        throw new BugInCF("Unexpected null tree for node: " + mn);
+        // A custom CFG might create a method invocation node without a tree.
+        invokedMethod = mn.getTarget().getMethod();
+      } else {
+        assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
+        invokedMethod = TreeUtils.elementFromUse(t);
       }
-      assert TreeUtils.isUseOfElement(t) : "@AssumeAssertion(nullness): tree kind";
-      ExecutableElement invokedMethod = TreeUtils.elementFromUse(t);
 
       // Note that the method might be nondeterministic.
       List<JavaExpression> parameters =
