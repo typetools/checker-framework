@@ -26,6 +26,18 @@ public class NullableCaseGuard {
     }
   }
 
+  @Nullable Boolean nullableBooleanMethod() {
+    return null;
+  }
+
+  void nullableBooleanMethodGuard(Object sel) {
+    switch (sel) {
+      // :: error: [condition.nullable]
+      case String s when nullableBooleanMethod() -> {}
+      default -> {}
+    }
+  }
+
   void nullableBooleanGuardColon(Object sel, @Nullable Boolean b) {
     switch (sel) {
       case String s
@@ -108,7 +120,8 @@ public class NullableCaseGuard {
     }
   }
 
-  // The guard is evaluated only if the pattern matches, so it is not non-null after the switch.
+  // The guard is evaluated only if the pattern matches, so `b` might still be null after the
+  // switch.
   void nullableBooleanGuardAfterSwitch(Object sel, @Nullable Boolean b) {
     switch (sel) {
       // :: error: [condition.nullable]

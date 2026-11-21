@@ -419,6 +419,15 @@ public class NullnessVisitor
   }
 
   @Override
+  public Void visitCase(CaseTree tree, Void p) {
+    ExpressionTree guard = CaseUtils.getGuard(tree);
+    if (guard != null) {
+      checkForNullability(guard, CONDITION_NULLABLE);
+    }
+    return super.visitCase(tree, p);
+  }
+
+  @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
@@ -709,15 +718,6 @@ public class NullnessVisitor
    */
   private static boolean isPrimitive(ExpressionTree tree) {
     return TreeUtils.typeOf(tree).getKind().isPrimitive();
-  }
-
-  @Override
-  public Void visitCase(CaseTree tree, Void p) {
-    ExpressionTree guard = CaseUtils.getGuard(tree);
-    if (guard != null) {
-      checkForNullability(guard, CONDITION_NULLABLE);
-    }
-    return super.visitCase(tree, p);
   }
 
   @Override
