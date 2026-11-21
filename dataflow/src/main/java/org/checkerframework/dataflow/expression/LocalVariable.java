@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
@@ -120,6 +121,12 @@ public class LocalVariable extends JavaExpression {
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other);
+  }
+
+  @Override
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    // Only an assignment to this local variable changes its value.
+    return this.equals(other);
   }
 
   /**

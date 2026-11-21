@@ -508,4 +508,21 @@ public abstract class CFAbstractAnalysis<
   public ProcessingEnvironment getEnv() {
     return env;
   }
+
+  /**
+   * Returns true if the given expressions might evaluate to the same object, judging by their
+   * types. See {@link TypesUtils#canAlias} for details, including the cases in which the answer is
+   * not conservative.
+   *
+   * <p>{@link CFAbstractStore#canAlias} calls this method, and so does code that has no store. A
+   * checker that changes the aliasing judgment overrides this method, not {@link
+   * CFAbstractStore#canAlias}.
+   *
+   * @param a an expression
+   * @param b another expression
+   * @return true if {@code a} and {@code b} might evaluate to the same object
+   */
+  public boolean canAlias(JavaExpression a, JavaExpression b) {
+    return TypesUtils.canAlias(a.getType(), b.getType(), types);
+  }
 }

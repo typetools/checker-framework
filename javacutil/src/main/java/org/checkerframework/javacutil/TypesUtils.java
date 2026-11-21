@@ -979,6 +979,179 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if an expression of type {@code a} and an expression of type {@code b} might
+   * evaluate to the same object, judging by the types: that is, true if some erased bound of {@code
+   * a} is a subtype or a supertype of some erased bound of {@code b}.
+   *
+   * <p>This method compares the erasures of the types, because two parameterizations of a generic
+   * type, such as {@code List<? extends Number>} and {@code List<? super Integer>}, can denote the
+   * same object even if neither is a subtype of the other. For example, an object of type {@code
+   * List<Integer>} has both of those types, so the method returns true for them. Their erasures are
+   * both {@code List}.
+   *
+   * <p>See {@link #erasedBounds} for the definition of erased bounds.
+   *
+   * <p>The answer is not conservative when an interface type is involved. This method returns false
+   * for two types if no erased bound of one is related by subtyping to an erased bound of the
+   * other, but one object can have two such types if at least one of them is an interface type. For
+   * example, this method returns false for {@code Number} and {@code Comparable}, but an object of
+   * type {@code Integer} is both a {@code Number} and a {@code Comparable}. Likewise, it returns
+   * false for {@code Runnable} and {@code Serializable}, but an object of a class that implements
+   * both interfaces has both types. The same holds for arrays whose component types are such types:
+   * it returns false for {@code Number[]} and {@code Comparable[]}, but one {@code Integer[]} is
+   * both. See https://github.com/typetools/checker-framework/issues/8558.
+   *
+   * <p>This method compares the bounds of the type parameter that a wildcard is a type argument
+   * for, because a value of the wildcard has those types too. For example, if {@code Box} is
+   * declared as {@code class Box<T extends Number & Runnable>}, then the {@code ?} in {@code
+   * Box<?>} or in {@code Box<? super Integer>} can be the same object as a {@code Runnable}.
+   *
+   * @param a the type of an expression
+   * @param b the type of another expression
+   * @param types the type utilities
+   * @return true if an expression of type {@code a} and an expression of type {@code b} might
+   *     evaluate to the same object
+   */
+  public static boolean canAlias(TypeMirror a, TypeMirror b, Types types) {
+    if (hasOneErasedBound(a) && hasOneErasedBound(b)) {
+      // This is the common case. It is equivalent to the general case below, but faster.
+      TypeMirror erasureA = types.erasure(a);
+      TypeMirror erasureB = types.erasure(b);
+      return types.isSubtype(erasureA, erasureB) || types.isSubtype(erasureB, erasureA);
+    }
+
+    // Use `erasedBounds()` rather than `erasure()`, because the `erasure()` of a type is the
+    // erasure of only its first bound (for a type variable, wildcard, or intersection type, or an
+    // array of such a type), or of the alternatives' least upper bound (for a union type).
+    //
+    // For a type variable, wildcard, or intersection type, using `erasure()` would make this
+    // method unsound: it would return false for some types that can denote the same object. For
+    // example, a `T[]` where `T extends Number & Comparable<T>` can be the same array as a
+    // `Comparable<T>[]`, though `Number[]` and `Comparable[]` are unrelated.
+    //
+    // For a union type, using `erasure()` would make this method imprecise: it would return true
+    // for some types that cannot denote the same object. For example, if `E1`, `E2`, and `E3` are
+    // unrelated subclasses of `Base`, then the exception parameter `e` of `catch (E1 | E2 e)`
+    // cannot be the same object as an expression of type `E3`, though the erasure of the type of
+    // `e` is `Base`. When the alternatives' least upper bound is an intersection type, using
+    // `erasure()` would also make this method unsound, as for an intersection type. For example,
+    // the erasure of `Integer | Long` is `Number`, which is unrelated to `Comparable`, but a value
+    // of type `Integer | Long` is a `Comparable`.
+    List<TypeMirror> boundsA = erasedBounds(a, types);
+    List<TypeMirror> boundsB = erasedBounds(b, types);
+    for (TypeMirror boundA : boundsA) {
+      for (TypeMirror boundB : boundsB) {
+        if (types.isSubtype(boundA, boundB) || types.isSubtype(boundB, boundA)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the erased bounds of the given type. The erased bounds of a type variable are those of
+   * its upper bound; of a wildcard, those of its extends bound and those of the type parameter that
+   * it is a type argument for (or {@code Object}, if neither is known); of an intersection type,
+   * those of each of its bounds; of a union type, those of each of its alternatives; of an array
+   * type, an array of each erased bound of its component type; and of any other type, its erasure.
+   * For example, the erased bounds of {@code Number & Comparable<T>} are {@code Number} and {@code
+   * Comparable}, and those of {@code IOException | SQLException} are {@code IOException} and {@code
+   * SQLException}.
+   *
+   * <p>{@link #canAlias} uses the erased bounds to judge whether two expressions might evaluate to
+   * the same object.
+   *
+   * <p>If the given type is a union type, every value of the type has at least one of the returned
+   * types. Otherwise, every value of the type has each of the returned types.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return the erased bounds of {@code type}
+   */
+  private static List<TypeMirror> erasedBounds(TypeMirror type, Types types) {
+    switch (type.getKind()) {
+      case TYPEVAR -> {
+        TypeMirror upperBound = ((TypeVariable) type).getUpperBound();
+        if (upperBound == null) {
+          return List.of(types.erasure(type));
+        }
+        return erasedBounds(upperBound, types);
+      }
+      case WILDCARD -> {
+        List<TypeMirror> result = new ArrayList<>();
+        TypeMirror extendsBound = ((WildcardType) type).getExtendsBound();
+        if (extendsBound != null) {
+          result.addAll(erasedBounds(extendsBound, types));
+        }
+        // The type parameter is null if the wildcard is from bytecode.
+        TypeVariable typeParameter = ((Type.WildcardType) type).bound;
+        if (typeParameter != null) {
+          result.addAll(erasedBounds(typeParameter, types));
+        }
+        if (result.isEmpty()) {
+          result.add(types.erasure(type));
+        }
+        return result;
+      }
+      case INTERSECTION -> {
+        List<TypeMirror> result = new ArrayList<>();
+        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
+          result.addAll(erasedBounds(bound, types));
+        }
+        return result;
+      }
+      case UNION -> {
+        List<TypeMirror> result = new ArrayList<>();
+        for (TypeMirror alternative : ((UnionType) type).getAlternatives()) {
+          result.addAll(erasedBounds(alternative, types));
+        }
+        return result;
+      }
+      case ARRAY -> {
+        List<TypeMirror> componentBounds =
+            erasedBounds(((ArrayType) type).getComponentType(), types);
+        List<TypeMirror> result = new ArrayList<>(componentBounds.size());
+        for (TypeMirror componentBound : componentBounds) {
+          result.add(types.getArrayType(componentBound));
+        }
+        return result;
+      }
+      default -> {
+        return List.of(types.erasure(type));
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@link #erasedBounds} returns a singleton list containing only the erasure of
+   * the given type. A false result means that it might return something else.
+   *
+   * @param type a type
+   * @return true if {@link #erasedBounds} returns only the erasure of {@code type}
+   */
+  private static boolean hasOneErasedBound(TypeMirror type) {
+    while (true) {
+      switch (type.getKind()) {
+        case TYPEVAR -> {
+          TypeMirror upperBound = ((TypeVariable) type).getUpperBound();
+          if (upperBound == null) {
+            return true;
+          }
+          type = upperBound;
+        }
+        case ARRAY -> type = ((ArrayType) type).getComponentType();
+        case WILDCARD, INTERSECTION, UNION -> {
+          return false;
+        }
+        default -> {
+          return true;
+        }
+      }
+    }
+  }
+
+  /**
    * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
    * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
    *
