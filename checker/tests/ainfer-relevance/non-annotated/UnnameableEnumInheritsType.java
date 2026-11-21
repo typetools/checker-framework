@@ -10,7 +10,9 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // postconditions of `assignFields`, and as preconditions of `useFields`, which
 // `assignFieldsThenUseThem` calls after assigning both fields.  The goal file shows that inference
 // discards all three annotations about `enumDescField`, but writes all three annotations about
-// `charSequenceField`.
+// `charSequenceField`.  Only the decision about the annotation on the field depends on how
+// inference resolves the name "EnumDesc"; the decisions about the contracts use javac's resolution
+// of the name.
 //
 // Writing `@AinferSibling1` on a `java.lang.Enum.EnumDesc` is itself a relevance violation, which
 // this test suppresses because the warning would appear in both passes of the test and the

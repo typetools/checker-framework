@@ -2935,6 +2935,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code @RequiresQualifier} does not support. Subclasses can remove this restriction by
    * overriding {@link #createRequiresOrEnsuresQualifier}.
    *
+   * <p>The list is empty if the declared type of the expression is not {@linkplain #isRelevant
+   * relevant}. Overriding {@link #createRequiresOrEnsuresQualifier} does not change that.
+   *
    * <p>Each annotation in the list is of the form
    * {@code @RequiresQualifier(expression="expression", qualifier=MyQual.class)}. {@code expression}
    * must be a valid Java Expression string, in the same format used by {@link RequiresQualifier}.
@@ -2956,6 +2959,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
    * redundant postconditions. Subclasses can remove these restrictions by overriding {@link
    * #createRequiresOrEnsuresQualifier}.
+   *
+   * <p>The list is empty if the declared type of the expression is not {@linkplain #isRelevant
+   * relevant}. Overriding {@link #createRequiresOrEnsuresQualifier} does not change that.
    *
    * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
    * qualifier=MyQual.class)}. {@code expression} must be a valid Java Expression string, in the
