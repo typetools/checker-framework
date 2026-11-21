@@ -153,4 +153,19 @@ abstract class FinallyRethrowsException {
     }
     r.close();
   }
+
+  void closedBeforeOtherExceptionToSameDestination() throws IOException, MyChecked {
+    // A MyChecked exception reaches the finally block before r is allocated, and an IOException
+    // reaches it after r is closed.  Both propagate out of the method, so one copy of the finally
+    // block serves both.  r is closed on every path on which it is allocated.
+    QuietCloseable r = null;
+    try {
+      mightThrowMyChecked();
+      r = allocQuietCloseable();
+      r.close();
+      mightThrow();
+    } finally {
+      log();
+    }
+  }
 }

@@ -9,17 +9,12 @@ import org.plumelib.util.ArrayMap;
 
 /**
  * A TryFinallyFrame applies to exceptions of any type. It sends each type of exception to its own
- * label, which is the entry of a copy of the finally block that rethrows that type.
+ * label. The label is the entry of a copy of the finally block that rethrows that type, and
+ * possibly other types, after the finally block completes normally.
  */
 /*package-private*/ class TryFinallyFrame implements TryFrame {
   /** The type utilities, used to give each type a single label. */
   protected final Types types;
-
-  /**
-   * The index, in the node list of the CFG builder, of the first node that this frame applies to.
-   * No earlier node throws an exception to this frame.
-   */
-  protected final int firstNodeIndex;
 
   /**
    * A label for each type of exception that reaches this frame, in the order that the CFG builder
@@ -32,13 +27,10 @@ import org.plumelib.util.ArrayMap;
   /**
    * Constructs a TryFinallyFrame.
    *
-   * @param types the type utilities
-   * @param firstNodeIndex the index, in the node list of the CFG builder, of the first node that
-   *     this frame applies to
+   * @param types a {@link Types}, used to give each type of exception a single label
    */
-  public TryFinallyFrame(Types types, int firstNodeIndex) {
+  public TryFinallyFrame(Types types) {
     this.types = types;
-    this.firstNodeIndex = firstNodeIndex;
   }
 
   @Override
