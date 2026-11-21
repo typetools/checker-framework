@@ -105,10 +105,12 @@ public class ArrayAccess extends JavaExpression {
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    if (array.containsModifiableAliasOf(store, other)) {
-      return true;
-    }
-    return index.containsModifiableAliasOf(store, other);
+    // `other` might denote the same location as this array access if it accesses an element of an
+    // array that might be the same array.
+    return (other instanceof ArrayAccess otherArrayAccess
+            && store.canAlias(array, otherArrayAccess.array))
+        || array.containsModifiableAliasOf(store, other)
+        || index.containsModifiableAliasOf(store, other);
   }
 
   @Override
