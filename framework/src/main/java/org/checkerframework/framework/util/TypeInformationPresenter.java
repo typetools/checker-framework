@@ -67,8 +67,8 @@ public class TypeInformationPresenter {
    */
   public TypeInformationPresenter(AnnotatedTypeFactory factory) {
     this.factory = factory;
-    if (factory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-      this.genFactory = (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
+    if (factory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAnnotatedTypeFactory) {
+      this.genFactory = genericAnnotatedTypeFactory;
     } else {
       this.genFactory = null;
     }
