@@ -29,6 +29,9 @@ import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Met
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.ReturnStatementStore;
+import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
@@ -440,6 +443,38 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   }
 
   @Override
+  protected void checkConditionalPostcondition(
+      MethodTree methodTree,
+      AnnotationMirror annotation,
+      JavaExpression expression,
+      boolean result) {
+    super.checkConditionalPostcondition(methodTree, annotation, expression, result);
+    if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)
+        || !TypesUtils.isBooleanType(TreeUtils.typeOf(methodTree.getReturnType()))) {
+      return;
+    }
+    for (ReturnStatementStore<?, ?> returnStore :
+        atypeFactory.getReturnStatementStores(methodTree)) {
+      TransferResult<?, ?> transferResult = returnStore.transferResult();
+      if (transferResult == null) {
+        // The return statement is unreachable.
+        continue;
+      }
+      // A return statement whose result is a boolean literal other than `result` need not satisfy
+      // the postcondition.
+      if (returnStore.returnNode().getResult() instanceof BooleanLiteralNode literal
+          && literal.getValue() != result) {
+        continue;
+      }
+      countFailedFieldPostcondition(
+          expression,
+          annotation,
+          (CFAbstractStore<?, ?>)
+              (result ? transferResult.getThenStore() : transferResult.getElseStore()));
+    }
+  }
+
+  @Override
   protected void checkExceptionalPostcondition(
       EnsuresCalledMethodOnExceptionContract postcond, MethodTree tree) {
     super.checkExceptionalPostcondition(postcond, tree);
@@ -465,10 +500,10 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * guarantee was called. The postcondition need not be a destructor's: a destructor can rely on
    * the postcondition of a helper method.
    *
-   * @param expression the expression in a method's postcondition
+   * @param expression an expression in a method's postcondition
    * @param annotation the postcondition's called-methods annotation
-   * @param exitStore the store at the method's exit to which the postcondition applies, or null if
-   *     that exit is unreachable
+   * @param exitStore a store at an exit of the method to which the postcondition applies, or null
+   *     if that exit is unreachable
    */
   private void countFailedFieldPostcondition(
       JavaExpression expression,

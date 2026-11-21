@@ -705,8 +705,10 @@ public class MustCallConsistencyAnalyzer {
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
-      if (visited.get(current) != current) {
-        // A state with additional count keys supersedes this snapshot.
+      @SuppressWarnings(
+          "interning:not.interned") // a newer object for the same state has more count keys
+      boolean superseded = visited.get(current) != current;
+      if (superseded) {
         continue;
       }
       propagateObligationsToSuccessorBlocks(
@@ -743,9 +745,9 @@ public class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath, TypeMirror)} is true for
-   * each expression in the argument to the CreatesMustCallFor annotation. As a special case, the
-   * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, Tree, TreePath, TypeMirror)} is true
+   * for each expression in the argument to the CreatesMustCallFor annotation. As a special case,
+   * the invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
    * constructor of the relevant class (invoking a constructor already creates an obligation). If
    * none of these conditions are true for any of the expressions, this method issues a
    * reset.not.owning error.
@@ -767,18 +769,18 @@ public class MustCallConsistencyAnalyzer {
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node, @Nullable TypeMirror exceptionType) {
 
-    @SuppressWarnings({
-      "nullness:argument", // an invocation node has a tree
-      "nullness:assignment" // the invocation is in the current compilation unit
-    })
-    @NonNull TreePath currentPath = cmAtf.getPath(node.getTree());
+    @SuppressWarnings("nullness:assignment") // an invocation node has a tree
+    @NonNull MethodInvocationTree invocation = node.getTree();
+    // The path is null for an artificial tree, such as the invocation of iterator() that an
+    // enhanced for loop desugars to.
+    TreePath currentPath = cmAtf.getPath(invocation);
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             node, cmAtf, cmAtf);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
       if (!isValidCreatesMustCallForExpression(
-          obligations, expression, currentPath, exceptionType)) {
+          obligations, expression, invocation, currentPath, exceptionType)) {
         missing.add(expression);
       }
     }
@@ -791,7 +793,8 @@ public class MustCallConsistencyAnalyzer {
     // Special case for invocations of CreatesMustCallFor("this") methods in the constructor.
     if (missing.size() == 1) {
       JavaExpression expression = missing.get(0);
-      if (expression instanceof ThisReference && TreePathUtil.inConstructor(currentPath)) {
+      if (expression instanceof ThisReference
+          && (currentPath == null || TreePathUtil.inConstructor(currentPath))) {
         return;
       }
     }
@@ -826,8 +829,10 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
-   *     annotation {@code expression} came
+   * @param invocation the invocation of the method from whose @CreatesMustCallFor annotation {@code
+   *     expression} came
+   * @param invocationPath the path to {@code invocation}, or null if {@code invocation} is an
+   *     artificial tree that the CFG builder created
    * @param exceptionType a description of the outgoing CFG edge from the invocation: {@code null}
    *     to indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
    *     throwable class was thrown
@@ -836,7 +841,8 @@ public class MustCallConsistencyAnalyzer {
   private boolean isValidCreatesMustCallForExpression(
       Set<Obligation> obligations,
       JavaExpression expression,
-      TreePath invocationPath,
+      Tree invocation,
+      @Nullable TreePath invocationPath,
       @Nullable TypeMirror exceptionType) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
@@ -866,17 +872,16 @@ public class MustCallConsistencyAnalyzer {
             }
             toRemove = obligation;
             // -AcountMustCall treats the invocation as creating a new resource, which toAdd
-            // tracks.  The @CreatesMustCallFor method is responsible for the resource that the
-            // replaced Obligation tracked.  Doing so could over-count, because
+            // tracks.  Treating the invocation as creating a resource could over-count, because
             // @CreatesMustCallFor doesn't guarantee that a new resource is created: it just
-            // means that a new resource might have been created.  If the invocation throws an
-            // exception, then the replaced resource is still outstanding, so toAdd retains the
-            // replaced Obligation's keys.
+            // means that a new resource might have been created.  The @CreatesMustCallFor
+            // method is responsible for the resource that the replaced Obligation tracked.  If
+            // the invocation throws an exception, then the replaced resource is still
+            // outstanding, so toAdd retains the replaced Obligation's keys.
             ImmutableSet<Object> countKeys =
                 exceptionType == null
                     ? countFoundObligation(
-                        new CreatesMustCallForKey(invocationPath.getLeaf(), expression),
-                        expression.getType())
+                        new CreatesMustCallForKey(invocation, expression), expression.getType())
                     : obligation.countKeys;
             toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce, countKeys);
           }
@@ -893,7 +898,8 @@ public class MustCallConsistencyAnalyzer {
 
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
     // annotations, but that should be rare.
-    MethodTree callerMethodTree = TreePathUtil.enclosingMethod(invocationPath);
+    MethodTree callerMethodTree =
+        invocationPath == null ? null : TreePathUtil.enclosingMethod(invocationPath);
     if (callerMethodTree == null) {
       return false;
     }
@@ -973,9 +979,12 @@ public class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode min2
-        && cmAtf.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(min2.getTarget().getReceiver()));
+    boolean returnsThis =
+        node instanceof MethodInvocationNode && cmAtf.returnsThis((MethodInvocationTree) tree);
+    if (returnsThis) {
+      mustCallAliases.add(
+          removeCastsAndGetTmpVarIfPresent(
+              ((MethodInvocationNode) node).getTarget().getReceiver()));
     }
 
     if (mustCallAliases.isEmpty()) {
@@ -1009,12 +1018,19 @@ public class MustCallConsistencyAnalyzer {
                 FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
                     .append(tmpVarAsResourceAlias)
                     .toSet();
+            // A wrapper, such as a JDK stream that wraps a stream of a user-defined class, is
+            // counted if the Obligation of the object that it wraps is not counted.  A method
+            // that returns its receiver creates no object, so it is never counted.
+            ImmutableSet<Object> countKeys = obligationContainingMustCallAlias.countKeys;
+            if (countKeys.isEmpty() && !returnsThis && cmAtf.declaredTypeHasMustCall(tree)) {
+              countKeys = countFoundObligation(tmpVar.getElement(), node.getType());
+            }
             obligations.remove(obligationContainingMustCallAlias);
             obligations.add(
                 new Obligation(
                     newResourceAliasSet,
                     obligationContainingMustCallAlias.whenToEnforce,
-                    obligationContainingMustCallAlias.countKeys));
+                    countKeys));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
             // created in the first place.
@@ -2598,11 +2614,11 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Return the given obligation's singleton count-key set after recording the obligation, or an
-   * empty set if the obligation is not counted.
+   * Return a set containing the given key if -AcountMustCall recorded it, or an empty set
+   * otherwise. See {@link ResourceLeakChecker#countFoundObligation}.
    *
-   * @param key an object identifying the obligation
-   * @param type the type of the object with the obligation
+   * @param key an object that identifies a must-call obligation
+   * @param type the static type of the expression that holds the obligation when it is created
    * @return the keys under which the obligation was counted
    */
   private ImmutableSet<Object> countFoundObligation(Object key, TypeMirror type) {

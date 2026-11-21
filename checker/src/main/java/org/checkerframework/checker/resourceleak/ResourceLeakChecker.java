@@ -50,14 +50,28 @@ public class ResourceLeakChecker extends AggregateChecker {
    * Leak Checker, and emitting the number after processing all files. Used for generating tables
    * for a research paper. Not of interest to most users.
    *
-   * <p>A must-call obligation is counted if its type is a JDK class. It is created by an invocation
-   * whose result has a must-call obligation, by an owning or must-call-alias formal parameter, by
-   * an owning field, or by an invocation of a {@code CreatesMustCallFor} method whose target is a
-   * non-owning local variable or formal parameter that already has a tracked obligation. An
-   * invocation of a {@code CreatesMustCallFor} method whose target is an owning field, an owning
-   * formal parameter, or {@code this} creates no counted obligation. An obligation that the checker
-   * fails to verify is not counted as verified, even if the checker does not report the failure
-   * (for example, because a warning is suppressed).
+   * <p>A must-call obligation is counted if the static type of the expression that holds the
+   * obligation when it is created is a JDK class. That expression is one of the following:
+   *
+   * <ul>
+   *   <li>an invocation whose result has a must-call obligation,
+   *   <li>an owning or must-call-alias formal parameter,
+   *   <li>an owning field, or
+   *   <li>the target of an invocation of a {@code CreatesMustCallFor} method, if the target is a
+   *       non-owning local variable or formal parameter that already has a tracked obligation.
+   * </ul>
+   *
+   * <p>The class of the run-time object is not considered. For example, {@code Closeable c = new
+   * MyCloseable();} creates no counted obligation, because the type of {@code new MyCloseable()} is
+   * not a JDK class. By contrast, the formal parameter of {@code void m(@Owning Closeable c)} has a
+   * counted obligation, even if every caller passes a {@code MyCloseable}.
+   *
+   * <p>A wrapper, such as {@code new BufferedInputStream(in)}, shares the obligation of the object
+   * that it wraps. The wrapper is counted only if the obligation of the wrapped object is not
+   * counted. An invocation of a {@code CreatesMustCallFor} method whose target is an owning field,
+   * an owning formal parameter, or {@code this} creates no counted obligation. An obligation that
+   * the checker fails to verify is not counted as verified, even if the checker does not report the
+   * failure (for example, because a warning is suppressed).
    *
    * <p>A resource that is stored in an owning field is counted twice. It is counted once where it
    * is created or passed as a formal parameter; storing it in the field verifies that obligation.
@@ -111,7 +125,7 @@ public class ResourceLeakChecker extends AggregateChecker {
    *
    * @param key an object that identifies a must-call obligation, such as the element of an owning
    *     field or of an owning formal parameter. Keys are compared with {@code equals}.
-   * @param type the type of the object that has the obligation
+   * @param type the static type of the expression that holds the obligation when it is created
    * @return {@code key} if this method recorded it, or null otherwise
    */
   public @Nullable Object countFoundObligation(Object key, TypeMirror type) {
@@ -143,11 +157,11 @@ public class ResourceLeakChecker extends AggregateChecker {
   }
 
   /**
-   * True if the given class is a java* class. This is a heuristic for whether the class was defined
-   * in the JDK.
+   * Return true if the given class is a java* class. This is a heuristic for whether the class was
+   * defined in the JDK.
    *
    * @param qualifiedName a fully qualified name of a class
-   * @return True if the type's fully-qualified name starts with "java", indicating that it is from
+   * @return true if the class's fully-qualified name starts with "java", indicating that it is from
    *     a java.* or javax.* package (probably)
    */
   private static boolean isJdkClass(String qualifiedName) {

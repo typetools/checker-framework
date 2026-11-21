@@ -9,8 +9,8 @@ class UserClassAsJdkType implements Closeable {
   public void close() {}
 
   static void leak() {
-    // The object's class is not in the JDK, so it is not counted, even though the variable's type
-    // is in the JDK.
+    // Not counted, because the type of `new UserClassAsJdkType()` is not in the JDK.  The type of
+    // the variable `c`, which is in the JDK, is not considered.
     Closeable c = new UserClassAsJdkType();
   }
 }

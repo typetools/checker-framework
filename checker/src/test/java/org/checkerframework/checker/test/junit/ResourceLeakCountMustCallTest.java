@@ -39,8 +39,8 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
-   * A leaked object whose class is not in the JDK is not counted, even if its variable's type is in
-   * the JDK.
+   * A leaked object that is created by an expression whose type is not in the JDK is not counted,
+   * even if it is assigned to a variable whose type is in the JDK.
    */
   @Test
   public void userClassIsNotCounted() {
@@ -120,6 +120,21 @@ public class ResourceLeakCountMustCallTest {
   @Test
   public void wrapperIsOneObligation() {
     assertCounts("Wrapper.java", false, 1, 0);
+  }
+
+  /** A wrapper is counted if the object that it wraps is not counted. */
+  @Test
+  public void wrapperOfUserClassIsCounted() {
+    assertCounts("WrappedUserStream.java", false, 1, 0);
+  }
+
+  /**
+   * A field is not verified if its destructor relies on a helper method whose conditional cleanup
+   * postcondition fails.
+   */
+  @Test
+  public void failedConditionalHelperPostconditionIsNotVerified() {
+    assertCounts("FailedConditionalHelperPostcondition.java", false, 2, 1);
   }
 
   /**
