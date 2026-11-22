@@ -894,6 +894,34 @@ public class ToIndexFileConverterTest {
             "    implements org.checkerframework.framework.stub.hiding.I {}",
             "class Use { void m(C.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
+    // A private member type hides even in the class that declares it.
+    jaif =
+        convert(
+            "package p;",
+            "class C implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N.Q.M n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N$Q$M;)V");
+
+    // A package-private member type in another package is not inherited, but it hides too.
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+  }
+
+  /** A name can go through a private member type to the member types that it inherits. */
+  @Test
+  public void testMemberTypeOfPrivateMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class C implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N.P.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
   }
 
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
@@ -1022,6 +1050,49 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
     assertMethod(jaif, "C", "n(Lp/Outer$Integer;)V");
+  }
+
+  /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * another package, so the top-level type does not shadow a type in {@code java.lang}.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Pub x) {}",
+            "}",
+            "package p;",
+            "class String {}",
+            "public class Pub {}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    assertMethod(jaif, "C", "n(Lp/Pub;)V");
+  }
+
+  /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * the package that is on the classpath, so the type does not shadow a type that a later import on
+   * demand makes available. {@code java.util.RegularEnumSet} is package-private.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleClasspathTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "import p.*;",
+            "class C {",
+            "  void m(RegularEnumSet s) {}",
+            "  void n(List x) {}",
+            "}",
+            "package p;",
+            "public class RegularEnumSet {}");
+    assertMethod(jaif, "C", "m(Lp/RegularEnumSet;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/List;)V");
   }
 
   /**

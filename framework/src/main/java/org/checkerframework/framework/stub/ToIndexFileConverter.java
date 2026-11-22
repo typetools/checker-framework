@@ -1524,9 +1524,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     String qualifiedName = prefix + "." + className;
     String binaryName = loadClassBinaryName(qualifiedName);
     // No `.` follows the part of `binaryName` that comes from the import.
-    return (binaryName != null && binaryName.lastIndexOf('.') <= prefix.length())
-        ? binaryName
-        : null;
+    if (binaryName == null || binaryName.lastIndexOf('.') > prefix.length()) {
+      return null;
+    }
+    // An import on demand makes available only the accessible top-level or member types (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.  The first identifier of `className` names the type that the import makes
+    // available; the binary name of that type is a prefix of `binaryName`.
+    int firstLength = className.indexOf('.');
+    if (firstLength < 0) {
+      firstLength = className.length();
+    }
+    @SuppressWarnings("signature") // a prefix of a binary name, ending at the end of an identifier
+    @BinaryName String firstBinaryName = binaryName.substring(0, prefix.length() + 1 + firstLength);
+    Class<?> firstClass = loadClass(firstBinaryName);
+    // A type that cannot be loaded is an annotation interface that the input JAIF file defines,
+    // which is accessible.
+    if (firstClass == null ? !classExists(firstBinaryName) : !isImportAccessible(firstClass, cu)) {
+      return null;
+    }
+    return binaryName;
   }
 
   /**
@@ -1542,9 +1559,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable String onDemandImportStubBinaryName(
       String prefix, String className, CompilationUnit cu) {
-    String declared = declaredInPackage(cu, prefix, className);
-    if (declared != null) {
-      return declared;
+    String[] identifiers = className.split("\\.", -1);
+    // An import on demand makes available only the accessible top-level types of a package (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.
+    TypeDeclaration<?> topLevel = stubTopLevelType(cu, prefix, identifiers[0]);
+    if (topLevel != null && isImportAccessible(topLevel, cu)) {
+      return memberBinaryName(topLevel, identifiers, 1);
     }
     String prefixBinaryName = declaredInStubFile(cu, prefix);
     TypeDeclaration<?> prefixDecl =
@@ -1552,7 +1573,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (prefixDecl == null) {
       return null;
     }
-    String[] identifiers = className.split("\\.", -1);
     Object first = firstDeclarationAt(prefixDecl, identifiers, false, true);
     // An import on demand makes available only the accessible member types (JLS 7.5.2).  An
     // inaccessible one does not shadow a type that a later import on demand makes available.
@@ -1563,8 +1583,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the binary name of the type that {@code identifiers} names via a static import from
-   * the type {@code owner}: a single-static-import {@code owner.identifiers[0]} or a
+   * Returns the binary name of the type that {@code identifiers} names via a static import from the
+   * type {@code owner}: a single-static-import {@code owner.identifiers[0]} or a
    * static-import-on-demand {@code owner.*}. A static import makes available only the accessible
    * static member types, declared or inherited, of {@code owner} (JLS 7.5.3, 7.5.4).
    *
@@ -1668,15 +1688,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns true if a member type is accessible to an import on demand in the given compilation
-   * unit, as javac determines it: a public member type, or a member type of an interface or
+   * Returns true if a top-level or member type is accessible to an import on demand in the given
+   * compilation unit, as javac determines it: a public type, or a member type of an interface or
    * annotation interface, is accessible; a private member type is not; a protected or
-   * package-private member type is accessible only in its own package.
+   * package-private type is accessible only in its own package.
    *
-   * @param member a member type: a {@link TypeDeclaration} of the stub file, a {@link Class} on the
-   *     classpath, or null
+   * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
+   *     Class} on the classpath, or null
    * @param cu the stub file's compilation unit in which the import is written, or null for a name
-   *     that is not in any compilation unit
+   *     that is not in any compilation unit, which uses the converter's import context
    * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
   private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
@@ -1798,8 +1818,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static final String MIXED_PACKAGES = "<mixed packages>";
 
   /**
-   * Returns the non-private member type named {@code identifier} that a class on the classpath
-   * declares or inherits.
+   * Returns the member type named {@code identifier} that a class on the classpath declares or
+   * inherits. The result can be a private member type that the class declares.
    *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
@@ -1820,14 +1840,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * type that a class declares hides every member type of the same name in the class's supertypes,
    * even if the declared member type is not inherited.
    *
+   * <p>If {@code subclassPackage} is null, then the result can be a member type, even a private
+   * one, that {@code clazz} declares, because no subclass needs to inherit it.
+   *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
    * @param subclassPackage the package of every subclass along the inheritance path that inherits
    *     the member types of {@code clazz}, {@link #MIXED_PACKAGES} if they are not all in one
    *     package, or null if {@code clazz} is the type whose member is sought; the unnamed package
    *     is {@code ""}
-   * @return the member type named {@code identifier}, or null if there is none or it cannot be
-   *     determined
+   * @return the member type named {@code identifier}, or null if there is none, if it cannot be
+   *     determined, or if {@code clazz} or one of its supertypes on the inheritance path declares a
+   *     member type of that name that is not inherited along the path (because that member type
+   *     hides the member types of the same name in the supertypes of the class that declares it)
    */
   private static @Nullable Class<?> classMemberType(
       Class<?> clazz, String identifier, @Nullable String subclassPackage) {
@@ -1852,13 +1877,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         boolean packagePrivateInherited = pathPackage == null || pathPackage.equals(cPackage);
         Class<?> member = declaredMemberType(c, identifier);
         if (member != null) {
-          if (isInheritedMemberType(c, member, packagePrivateInherited)) {
+          if (pathPackage == null || isInheritedMemberType(c, member, packagePrivateInherited)) {
             return member;
           }
           // A member type that `c` declares hides every member type of the same name in the
-          // supertypes of `c`, even if it is not inherited (JLS 8.5).  A private member type that
-          // `clazz` itself declares is not returned, but the caller's fallback yields the same
-          // binary name.
+          // supertypes of `c`, even if it is not inherited (JLS 8.5).
           continue;
         }
         String nextPathPackage = packagePrivateInherited ? cPackage : MIXED_PACKAGES;
