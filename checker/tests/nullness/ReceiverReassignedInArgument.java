@@ -2,10 +2,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.DoesNotUnrefineReceiver;
 
 // A call's receiver is evaluated before its arguments.  If an argument reassigns the receiver
 // expression, then normal completion of the call does not show that the receiver expression is
-// non-null afterward.  ReceiverRefinementInCatch.java contains more such tests.
+// non-null afterward.  Likewise for an argument that a later argument reassigns.
+// ReceiverRefinementInCatch.java contains more such tests.
 public class ReceiverReassignedInArgument {
 
   @Nullable ReceiverReassignedInArgument f;
@@ -20,6 +22,14 @@ public class ReceiverReassignedInArgument {
     r.take(String.valueOf(r = null));
     // :: error: (dereference.of.nullable)
     r.toString();
+  }
+
+  // The receiver is not refined while the arguments are evaluated.
+  void dereferenceInArgument(@Nullable ReceiverReassignedInArgument r) {
+    // :: error: (dereference.of.nullable)
+    r.equals(
+        // :: error: (dereference.of.nullable)
+        r.hashCode());
   }
 
   // The argument assigns a non-null value to the receiver expression.
@@ -77,5 +87,36 @@ public class ReceiverReassignedInArgument {
   void annotationInArgument(Object r, @Nullable Object other) {
     r.equals((@TypeUseAnno(value = 1) Object) other);
     r.toString();
+  }
+
+  void sideEffect() {}
+
+  @DoesNotUnrefineReceiver("allcheckers")
+  void doesNotUnrefineReceiver() {}
+
+  @DoesNotUnrefineReceiver("allcheckers")
+  void doesNotUnrefineReceiver(@Nullable Object o) {}
+
+  // The method does not unrefine its receiver, so normal completion shows that f is non-null.
+  void doesNotUnrefineReceiverField() {
+    // :: error: (dereference.of.nullable)
+    f.doesNotUnrefineReceiver();
+    f.toString();
+  }
+
+  void sideEffectField() {
+    // :: error: (dereference.of.nullable)
+    f.sideEffect();
+    // :: error: (dereference.of.nullable)
+    f.toString();
+  }
+
+  // An argument that reassigns the receiver blocks the refinement, even if the method does not
+  // unrefine its receiver.
+  void doesNotUnrefineReceiverArgumentReassigns() {
+    // :: error: (dereference.of.nullable)
+    f.doesNotUnrefineReceiver(f = null);
+    // :: error: (dereference.of.nullable)
+    f.toString();
   }
 }
