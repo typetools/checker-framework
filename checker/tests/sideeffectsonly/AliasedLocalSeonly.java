@@ -93,6 +93,18 @@ public class AliasedLocalSeonly {
   static class Node {
     int val;
     Node next;
+    static Node global = new Node();
+  }
+
+  @SideEffectsOnly("this")
+  void staticFieldThroughAlias() {
+    // A static field is not reached through the expression that qualifies it.
+    Node alias = this.head;
+    alias.val = 0;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.global.val = 0;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    this.head.global.val = 0;
   }
 
   Node head = new Node();

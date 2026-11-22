@@ -142,7 +142,12 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
-    return syntacticEquals(other) || receiver.containsAsReceiver(provider, other);
+    if (syntacticEquals(other)) {
+      return true;
+    }
+    // A static field is not reached through its receiver, even if the receiver is written as an
+    // expression such as `a` in `a.staticField`: its value does not depend on the receiver.
+    return !isStatic() && receiver.containsAsReceiver(provider, other);
   }
 
   @Override
