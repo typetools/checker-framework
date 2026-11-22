@@ -2,7 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +10,7 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -323,12 +324,6 @@ public class AnnotationFileElementTypes {
     for (String path : annotationFiles) {
       File location = AnnotationFileUtil.findFileSystemLocation(path);
       if (location != null) {
-        if (location.isFile()
-            && !AnnotationFileUtil.isArchive(location.getName())
-            && !AnnotationFileUtil.hasAnnotationFileExtension(location.getName(), fileType)) {
-          warnUnusableNamedFile(path, fileType);
-          continue;
-        }
         AnnotationFileUtil.forEachAnnotationFile(
             location,
             fileType,
@@ -437,48 +432,30 @@ public class AnnotationFileElementTypes {
    */
   private void parseAnnotationFileResource(
       AnnotationFileResource resource, AnnotationFileType parseType) {
-    try (BufferedInputStream annotationFileStream =
-        new BufferedInputStream(resource.getInputStream())) {
-      // Is it necessary to also skip files that consist only of Java comments?
-      Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-      if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-        return;
-      }
-      AnnotationFileParser.parseStubFile(
-          resource.getDescription(),
-          annotationFileStream,
-          factory,
-          factory.getProcessingEnv(),
-          annotationFileAnnos,
-          parseType);
+    // Read the entire file, so that a read failure is reported below as an IOException and so
+    // that the whole file can be checked for being whitespace-only.
+    byte[] contents;
+    try (InputStream in = resource.getInputStream()) {
+      contents = in.readAllBytes();
     } catch (IOException e) {
       factory
           .getChecker()
           .message(
               Diagnostic.Kind.WARNING,
               "Could not read annotation resource: " + resource.getDescription() + ": " + e);
+      return;
     }
-  }
-
-  /**
-   * Issues a warning that a file that the user named is being ignored, because it is not an archive
-   * and its name does not end with the file name extension of its file type.
-   *
-   * @param path a file name, as the user supplied it
-   * @param fileType the type of annotation file that the user supplied {@code path} as
-   */
-  private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
-    String reason;
-    if (fileType.isStub() && path.endsWith(".ajava")) {
-      reason = ", which is an ajava file; supply it via -Aajava";
-    } else if (!fileType.isStub() && path.endsWith(".astub")) {
-      reason = ", which is a stub file; supply it via -Astubs";
-    } else if (fileType.isStub()) {
-      reason = ": the name of a stub file must end with .astub";
-    } else {
-      reason = ": the name of an ajava file must end with .ajava";
+    // Is it necessary to also skip files that consist only of Java comments?
+    if (new String(contents, StandardCharsets.UTF_8).isBlank()) {
+      return;
     }
-    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
+    AnnotationFileParser.parseStubFile(
+        resource.getDescription(),
+        new ByteArrayInputStream(contents),
+        factory,
+        factory.getProcessingEnv(),
+        annotationFileAnnos,
+        parseType);
   }
 
   /**
