@@ -1216,7 +1216,8 @@ public class InferenceFactory {
         IgnoredAnnotations.replaceIgnoredForEquality(
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
-            typeFactory.getQualifierHierarchy());
+            typeFactory.getQualifierHierarchy(),
+            context.modelTypes);
     return context.areMutualSubtypes(compared.type1(), compared.type2());
   }
 
