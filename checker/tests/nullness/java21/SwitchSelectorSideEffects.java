@@ -40,6 +40,20 @@ public class SwitchSelectorSideEffects {
     return false;
   }
 
+  @Pure
+  static boolean isEmpty(String s) {
+    return s.isEmpty();
+  }
+
+  // A class whose toString() reassigns the selector expression.
+  static class Mutator {
+    @Override
+    public String toString() {
+      selector = null;
+      return "";
+    }
+  }
+
   // Without a guard or a deconstruction pattern, a case label refines the selector field.
   void noGuard() {
     // :: error: (switching.nullable)
@@ -68,6 +82,30 @@ public class SwitchSelectorSideEffects {
       case Square s ->
           // :: error: (dereference.of.nullable)
           selector.toString();
+    }
+  }
+
+  // String concatenation implicitly calls the toString() method of a non-String reference operand.
+  void concatenationGuard(Mutator m) {
+    // :: error: (switching.nullable)
+    switch (selector) {
+      case Circle c when isEmpty("" + m) -> {}
+      case Circle c ->
+          // :: error: (dereference.of.nullable)
+          selector.toString();
+      case Square s ->
+          // :: error: (dereference.of.nullable)
+          selector.toString();
+    }
+  }
+
+  // String concatenation of a primitive or String operand calls no toString() method.
+  void concatenationGuardPrimitive(int i, String s) {
+    // :: error: (switching.nullable)
+    switch (selector) {
+      case Circle c when isEmpty(s + i) -> {}
+      case Circle c -> selector.toString();
+      case Square s2 -> selector.toString();
     }
   }
 
