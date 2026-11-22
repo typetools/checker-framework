@@ -12,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.List;
@@ -1143,6 +1144,11 @@ public final class ElementUtils {
     Type capturedSite = javacTypes.capture(site);
     List<MethodSymbol> inOrder = new ArrayList<>(ambiguous);
     Collections.reverse(inOrder);
+    // JLS 15.12.2.5 permits choosing any of the methods that have the most specific return type.
+    // Prefer one that is not generic:  the desugared call that uses the result has no type
+    // arguments, and inferring them would require a path to the call, which does not exist.
+    // The sort is stable, so it otherwise keeps javac's order.
+    inOrder.sort(Comparator.comparing((MethodSymbol m) -> !m.getTypeParameters().isEmpty()));
     List<Type> returnTypes = new ArrayList<>(inOrder.size());
     for (MethodSymbol method : inOrder) {
       returnTypes.add(javacTypes.memberType(capturedSite, method).getReturnType());
