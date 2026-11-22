@@ -1143,7 +1143,8 @@ public class InferenceFactory {
    */
   private boolean differsOnlyInPrimaryAnnotations(ProperType properType, AnnotatedTypeMirror atm) {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyPrimaryAnnotations(atm, samePrimaryAnnotations);
+    IgnoredAnnotations.copyPrimaryAnnotations(
+        atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
     return context.areMutualSubtypes(samePrimaryAnnotations, atm);
   }
 
@@ -1221,7 +1222,8 @@ public class InferenceFactory {
   private boolean differsOnlyInPrimaryOrIgnoredAnnotations(
       ProperType properType, AnnotatedTypeMirror atm) {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyPrimaryAnnotations(atm, samePrimaryAnnotations);
+    IgnoredAnnotations.copyPrimaryAnnotations(
+        atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
     ReplacedTypes compared =
         IgnoredAnnotations.replaceIgnoredForEquality(
             properType.withAnnotatedType(samePrimaryAnnotations, false),

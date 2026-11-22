@@ -3,10 +3,12 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -139,6 +141,13 @@ public class ProperType extends AbstractType {
   private @Nullable PartCache partCache = null;
 
   /**
+   * True while {@link #applyInstantiations} is bringing this type up to date. A call of {@link
+   * #applyInstantiations} on this type during that time returns this type, so that a type whose
+   * origin depends on its own instantiation does not recurse forever.
+   */
+  private boolean refreshing = false;
+
+  /**
    * Creates a proper type.
    *
    * @param type the annotated type
@@ -268,18 +277,41 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns the total number of times the instantiations of {@code variables} (see {@link
-   * Variable#getInstantiation}) have changed, by being set to a different type or cleared. Because
-   * each variable's count only increases, the result changes whenever the instantiation of one of
-   * {@code variables} changes.
+   * Returns a number that changes whenever the instantiation (see {@link
+   * Variable#getInstantiation}) of a variable that {@code variables} depend on changes. The
+   * variables that {@code variables} depend on are {@code variables} themselves and, transitively,
+   * the variables in the origins of their current instantiations (see {@link #originVariables}),
+   * because applying instantiations to a type that contains a variable uses the variable's
+   * instantiation, which is itself made from its origin.
+   *
+   * <p>The result is the largest stamp of those variables (see {@link
+   * VariableBounds#getLastInstantiationChange}). It changes whenever one of their instantiations
+   * changes, even if that change removes variables from those that {@code variables} depend on: a
+   * change gets a stamp larger than every earlier one, and if no variable that {@code variables}
+   * now depend on has such a stamp, then none of their instantiations has changed, so they are the
+   * same variables as before.
    *
    * @param variables inference variables
-   * @return the total number of times the instantiations of {@code variables} have changed
+   * @return a number that changes whenever the instantiation of a variable that {@code variables}
+   *     depend on changes
    */
   private static long instantiationVersion(Collection<Variable> variables) {
+    if (variables.isEmpty()) {
+      return 0;
+    }
     long version = 0;
-    for (Variable variable : variables) {
-      version += variable.getBounds().getInstantiationChanges();
+    Set<Variable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+    ArrayDeque<Variable> worklist = new ArrayDeque<>(variables);
+    while (!worklist.isEmpty()) {
+      Variable variable = worklist.pop();
+      if (!visited.add(variable)) {
+        continue;
+      }
+      version = Math.max(version, variable.getBounds().getLastInstantiationChange());
+      ProperType instantiation = variable.getInstantiation();
+      if (instantiation != null) {
+        worklist.addAll(instantiation.originVariables);
+      }
     }
     return version;
   }
@@ -294,7 +326,8 @@ public class ProperType extends AbstractType {
    * {@link #withPrimaryAnnotationsOf}.
    *
    * <p>If this type has an origin, a non-null part is cached in {@link PartCache#parts} until the
-   * current instantiation of a variable in {@link #originVariables} is set, replaced, or cleared.
+   * current instantiation of a variable that {@link #originVariables} depend on (see {@link
+   * #instantiationVersion}) is set, replaced, or cleared.
    *
    * @param key the kind of part
    * @param part computes the part of a type
@@ -411,7 +444,8 @@ public class ProperType extends AbstractType {
     // type was made, for example by UseOfVariable#applyInstantiations or #withAnnotatedType.
     // `fromOrigin` may be an instantiation that is stored as a bound, so copy before mutating.
     AnnotatedTypeMirror atm = fromOrigin.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyPrimaryAnnotations(fromType.getAnnotatedType(), atm);
+    IgnoredAnnotations.copyPrimaryAnnotations(
+        fromType.getAnnotatedType(), atm, typeFactory.getQualifierHierarchy());
     return fromOrigin.withAnnotatedType(atm, fromType.ignoreAnnotations);
   }
 
@@ -791,7 +825,7 @@ public class ProperType extends AbstractType {
     // the underlying type of its annotated type.
     //
     // The remaining fields are not compared: originVariables is determined by origin, and
-    // upToDateVersion and partCache only record work already done.
+    // upToDateVersion, partCache, and refreshing only record work already done or in progress.
     return type.equals(that.type);
   }
 
@@ -832,20 +866,36 @@ public class ProperType extends AbstractType {
    * {@inheritDoc}
    *
    * <p>A proper type has no inference variables, so this method returns this type. An exception is
-   * when this type has an {@link #origin} and the instantiation of a variable in {@link
-   * #originVariables} has changed since this type was made. Then it returns the origin with the
-   * current instantiations applied and with this type's primary annotations, or this type if that
-   * result is the same as this type.
+   * when this type has an {@link #origin} and the instantiation of a variable that {@link
+   * #originVariables} depend on (see {@link #instantiationVersion}) has changed since this type was
+   * made. Then it returns the origin with the current instantiations applied and with this type's
+   * primary annotations, or this type if that result is the same as this type.
    */
   @Override
-  public AbstractType applyInstantiations() {
-    // TODO: The version covers only the variables that `origin` contains, not the variables in
-    // the origins of their instantiations.  If such a variable's instantiation changes, this type
-    // stays out of date until incorporation refreshes the instantiation that contains it, and an
-    // ignored position found in the meantime may hold an annotation from the old instantiation.
-    if (origin == null || instantiationVersion(originVariables) == upToDateVersion) {
+  public ProperType applyInstantiations() {
+    InferenceType origin = this.origin;
+    if (origin == null || refreshing || instantiationVersion(originVariables) == upToDateVersion) {
       return this;
     }
+    // An F-bounded variable's instantiation can contain the variable itself, so applying
+    // instantiations to `origin` can call this method on this type again.
+    refreshing = true;
+    try {
+      return refresh(origin);
+    } finally {
+      refreshing = false;
+    }
+  }
+
+  /**
+   * Returns {@code origin} with the current instantiations applied and with this type's primary
+   * annotations, or this type if that result is the same as this type. See {@link
+   * #applyInstantiations}.
+   *
+   * @param origin the origin of this type
+   * @return {@code origin} with the current instantiations applied, or this type
+   */
+  private ProperType refresh(InferenceType origin) {
     AbstractType result = origin.applyInstantiations();
     if (!result.isProper()) {
       return this;
@@ -855,11 +905,14 @@ public class ProperType extends AbstractType {
     // still right, and they may differ from those of `origin` if resolution set them; see
     // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
     AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
-    IgnoredAnnotations.copyPrimaryAnnotations(type, resultATM);
+    IgnoredAnnotations.copyPrimaryAnnotations(type, resultATM, typeFactory.getQualifierHierarchy());
     if (properResult.origin != null && isSameAnnotatedType(resultATM, type)) {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations contain
-      // each other would make each other change forever.
+      // each other would make each other change forever.  isSameAnnotatedType compares every
+      // position, including those in enclosing types, so a stale annotation is not kept.  That
+      // stricter comparison still converges: once the instantiations stop changing, applying them
+      // to `origin` gives the same annotations each time, so the comparison succeeds.
       upToDateVersion = instantiationVersion(originVariables);
       return this;
     }
@@ -884,20 +937,24 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns true if {@code a} and {@code b} have the same Java type and each is a subtype of the
-   * other. Unlike {@link AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not
-   * require the underlying Java types to be the same object, so it can compare types made by
-   * separate applications of instantiations. It compares only annotated types, not the other fields
-   * that {@link #equals} compares, such as {@link #origin}.
+   * Returns true if {@code a} and {@code b} have the same Java type, each is a subtype of the
+   * other, and they have the same primary annotations at every position, including the positions in
+   * enclosing types, which the type hierarchy does not compare. Unlike {@link
+   * AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not require the underlying
+   * Java types to be the same object, so it can compare types made by separate applications of
+   * instantiations. It compares only annotated types, not the other fields that {@link #equals}
+   * compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type
-   * @return true if {@code a} and {@code b} have the same Java type and each is a subtype of the
-   *     other
+   * @return true if {@code a} and {@code b} have the same Java type, each is a subtype of the
+   *     other, and they have the same primary annotations at every position
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
-        && context.areMutualSubtypes(a, b);
+        && context.areMutualSubtypes(a, b)
+        && IgnoredAnnotations.samePrimaryAnnotationsAtEveryPosition(
+            a, b, typeFactory.getQualifierHierarchy(), context.modelTypes);
   }
 
   /**
@@ -910,8 +967,9 @@ public class ProperType extends AbstractType {
    *   <li>the same {@link #ignoreAnnotations}.
    * </ul>
    *
-   * <p>Only the primary annotations of the copy's annotated type may be mutated; see {@link
-   * #partFromOrigin}.
+   * <p>Only the primary annotations of the copy's annotated type, or of its bounds if it is a type
+   * variable, may be mutated; see {@link #partFromOrigin} and {@link
+   * IgnoredAnnotations#copyPrimaryAnnotations}.
    *
    * @return a copy of this type
    */
@@ -930,10 +988,11 @@ public class ProperType extends AbstractType {
    * </ul>
    *
    * <p>{@code atm} must be this type's annotated type, or a copy of it, with only its primary
-   * annotations changed; see {@link #partFromOrigin}.
+   * annotations changed, or those of its bounds if it is a type variable; see {@link
+   * #partFromOrigin} and {@link IgnoredAnnotations#copyPrimaryAnnotations}.
    *
-   * @param atm this type's annotated type, or a copy of it, with only its primary annotations
-   *     changed
+   * @param atm this type's annotated type, or a copy of it, with only its primary annotations (or
+   *     those of its bounds, if it is a type variable) changed
    * @param ignoreAnnotations true if the primary annotations of {@code atm} should be ignored
    * @return a copy of this type whose annotated type is {@code atm}
    */

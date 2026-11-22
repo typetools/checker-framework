@@ -193,9 +193,9 @@ final class IgnoredAnnotations {
           types);
     }
     if (upToDate1.ignoreAnnotations) {
-      copyPrimaryAnnotations(atm2, atm1);
+      copyPrimaryAnnotations(atm2, atm1, qh);
     } else if (upToDate2.ignoreAnnotations) {
-      copyPrimaryAnnotations(atm1, atm2);
+      copyPrimaryAnnotations(atm1, atm2, qh);
     }
     return new ReplacedTypes(atm1, atm2);
   }
@@ -351,23 +351,53 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
-   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
-   * and its bounds get the primary annotations of {@code source}'s bounds.
+   * Gives {@code target} the primary annotations of {@code source}.
+   *
+   * <p>If both are type variables, then each qualifier hierarchy is handled separately, because a
+   * type variable can have a primary annotation in one hierarchy and get its qualifiers in another
+   * from its bounds. In a hierarchy in which {@code source} has a primary annotation, {@code
+   * target} gets it, and so do its bounds. In a hierarchy in which {@code source} has none, {@code
+   * target}'s primary annotation is removed, and its bounds get the annotations of {@code source}'s
+   * bounds in the same way. For example, resolution can change the lower bound of a type variable
+   * that has no primary annotation (see {@code Resolution#lubOfLowerBounds}), and {@link
+   * ProperType#applyInstantiations} keeps that change.
    *
    * @param source a type whose primary annotations to copy
    * @param target the type whose primary annotations to replace; side-effected by this method
+   * @param qh the qualifier hierarchy
    */
-  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
-    if (source.getPrimaryAnnotations().isEmpty()
-        && source instanceof AnnotatedTypeVariable sourceTV
-        && target instanceof AnnotatedTypeVariable targetTV) {
-      targetTV.clearPrimaryAnnotations();
-      targetTV.getUpperBound().replaceAnnotations(sourceTV.getUpperBound().getPrimaryAnnotations());
-      targetTV.getLowerBound().replaceAnnotations(sourceTV.getLowerBound().getPrimaryAnnotations());
-    } else {
-      target.replaceAnnotations(source.getAnnotations());
-    }
+  static void copyPrimaryAnnotations(
+      AnnotatedTypeMirror source, AnnotatedTypeMirror target, QualifierHierarchy qh) {
+    copyPrimaryAnnotationsInHierarchies(source, target, qh.getTopAnnotations());
+  }
+
+  /**
+   * Returns true if, at each pair of corresponding positions of {@code atm1} and {@code atm2}, the
+   * primary annotations are each a subtype of the other.
+   *
+   * <p>Unlike a comparison by the type hierarchy, this compares the positions in enclosing types,
+   * such as the type argument {@code A} of {@code Outer<A>.Inner<B>}.
+   *
+   * @param atm1 a type
+   * @param atm2 a type with the same Java type as {@code atm1}
+   * @param qh the qualifier hierarchy
+   * @param types the type utilities
+   * @return true if the corresponding positions of {@code atm1} and {@code atm2} have the same
+   *     primary annotations, according to {@code qh}
+   */
+  static boolean samePrimaryAnnotationsAtEveryPosition(
+      AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, QualifierHierarchy qh, Types types) {
+    return allCorrespondingPositionsMatch(
+        atm1,
+        atm2,
+        (a1, a2) -> {
+          Set<AnnotationMirror> annos1 = a1.getPrimaryAnnotations();
+          Set<AnnotationMirror> annos2 = a2.getPrimaryAnnotations();
+          return annos1.size() == annos2.size()
+              && qh.isSubtypeQualifiersOnly(annos1, annos2)
+              && qh.isSubtypeQualifiersOnly(annos2, annos1);
+        },
+        types);
   }
 
   // //////////////////////////////////////////////////////////////////////////
@@ -425,9 +455,11 @@ final class IgnoredAnnotations {
   /**
    * Returns the supertype of {@code type} whose class is that of {@code superType} (see {@link
    * AbstractType#asSuper}); for example, the supertype of {@code ArrayList<String>} whose class is
-   * {@code List} is {@code List<String>}. Returns {@code type} itself if either is not a declared
-   * type, if both are of the same class, or if {@code type} has no such supertype that is a proper
-   * type.
+   * {@code List} is {@code List<String>}. If both are array types, the same is done for their
+   * component types; for example, the supertype of {@code ArrayList<String>[]} whose class is
+   * {@code List[]} is {@code List<String>[]}. Returns {@code type} itself if they are not both
+   * declared types or both array types, if their erasures are the same, or if {@code type} has no
+   * such supertype that is a proper type.
    *
    * @param type a type
    * @param superType a type; need not be a supertype of {@code type}
@@ -435,8 +467,9 @@ final class IgnoredAnnotations {
    * @return the supertype of {@code type} whose class is that of {@code superType}, or {@code type}
    */
   private static AbstractType asSuper(AbstractType type, TypeMirror superType, Types types) {
-    if (type.getTypeKind() != TypeKind.DECLARED
-        || superType.getKind() != TypeKind.DECLARED
+    TypeKind kind = type.getTypeKind();
+    if ((kind != TypeKind.DECLARED && kind != TypeKind.ARRAY)
+        || superType.getKind() != kind
         || types.isSameType(types.erasure(type.getJavaType()), types.erasure(superType))) {
       return type;
     }
@@ -729,57 +762,51 @@ final class IgnoredAnnotations {
 
   /**
    * Gives {@code target} the primary annotations of {@code source} in the hierarchies of {@code
-   * hierarchies}; its annotations in other hierarchies are unchanged. If {@code hierarchies}
-   * contains every hierarchy, this is the same as {@link
-   * #copyPrimaryAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
+   * hierarchies}, as {@link #copyPrimaryAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror,
+   * QualifierHierarchy)} does in every hierarchy; its annotations in other hierarchies are
+   * unchanged.
    *
    * @param source a type whose primary annotations to copy
    * @param target the type whose primary annotations to replace; side-effected by this method
    * @param hierarchies the top annotations of the hierarchies in which to copy annotations
-   * @param qh the qualifier hierarchy
    */
-  private static void copyPrimaryAnnotations(
+  private static void copyPrimaryAnnotationsInHierarchies(
       AnnotatedTypeMirror source,
       AnnotatedTypeMirror target,
-      AnnotationMirrorSet hierarchies,
-      QualifierHierarchy qh) {
-    if (hierarchies.size() == qh.getTopAnnotations().size()) {
-      copyPrimaryAnnotations(source, target);
-      return;
-    }
+      Set<? extends AnnotationMirror> hierarchies) {
     for (AnnotationMirror top : hierarchies) {
-      AnnotationMirror anno = qh.findAnnotationInHierarchy(source.getPrimaryAnnotations(), top);
-      if (anno == null
-          && source instanceof AnnotatedTypeVariable sourceTV
-          && target instanceof AnnotatedTypeVariable targetTV) {
-        // As in copyPrimaryAnnotations(source, target), give the bounds the annotations of the
-        // bounds of `source`.
-        targetTV.removePrimaryAnnotationInHierarchy(top);
-        copyAnnotationInHierarchy(sourceTV.getUpperBound(), targetTV.getUpperBound(), top, qh);
-        copyAnnotationInHierarchy(sourceTV.getLowerBound(), targetTV.getLowerBound(), top, qh);
-      } else {
-        copyAnnotationInHierarchy(source, target, top, qh);
-      }
+      copyPrimaryAnnotationInHierarchy(source, target, top);
     }
   }
 
   /**
-   * Gives {@code target} the effective annotation of {@code source} in the hierarchy of {@code
-   * top}, if {@code source} has one.
+   * Gives {@code target} the primary annotation of {@code source} in the hierarchy of {@code top},
+   * as {@link #copyPrimaryAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror,
+   * QualifierHierarchy)} does. If they are not both type variables, then {@code target} gets the
+   * effective annotation of {@code source}, if {@code source} has one.
    *
-   * @param source a type whose annotation to copy
-   * @param target the type whose annotation to replace; side-effected by this method
-   * @param top the top annotation of the hierarchy in which to copy the annotation
-   * @param qh the qualifier hierarchy
+   * @param source a type whose primary annotation to copy
+   * @param target the type whose primary annotation to replace; side-effected by this method
+   * @param top the top annotation of the hierarchy
    */
-  private static void copyAnnotationInHierarchy(
-      AnnotatedTypeMirror source,
-      AnnotatedTypeMirror target,
-      AnnotationMirror top,
-      QualifierHierarchy qh) {
-    AnnotationMirror anno = qh.findAnnotationInHierarchy(source.getAnnotations(), top);
-    if (anno != null) {
-      target.replaceAnnotation(anno);
+  private static void copyPrimaryAnnotationInHierarchy(
+      AnnotatedTypeMirror source, AnnotatedTypeMirror target, AnnotationMirror top) {
+    if (source instanceof AnnotatedTypeVariable sourceTV
+        && target instanceof AnnotatedTypeVariable targetTV) {
+      AnnotationMirror anno = sourceTV.getPrimaryAnnotationInHierarchy(top);
+      if (anno != null) {
+        // Adding a primary annotation to a type variable also gives it to the bounds.
+        targetTV.replaceAnnotation(anno);
+      } else {
+        targetTV.removePrimaryAnnotationInHierarchy(top);
+        copyPrimaryAnnotationInHierarchy(sourceTV.getUpperBound(), targetTV.getUpperBound(), top);
+        copyPrimaryAnnotationInHierarchy(sourceTV.getLowerBound(), targetTV.getLowerBound(), top);
+      }
+    } else {
+      AnnotationMirror anno = source.getAnnotationInHierarchy(top);
+      if (anno != null) {
+        target.replaceAnnotation(anno);
+      }
     }
   }
 
@@ -880,9 +907,9 @@ final class IgnoredAnnotations {
    * The result does not depend on the order of {@code copies}.
    *
    * <p>In a hierarchy in which every copy is from the same type, {@code target} gets its primary
-   * annotation as by {@link #copyPrimaryAnnotations(AnnotatedTypeMirror, AnnotatedTypeMirror,
-   * AnnotationMirrorSet, QualifierHierarchy)}. Otherwise, the annotations that are copied are
-   * combined so that {@code target} satisfies every position it is copied from, if possible:
+   * annotation as by {@link #copyPrimaryAnnotationInHierarchy}. Otherwise, the annotations that are
+   * copied are combined so that {@code target} satisfies every position it is copied from, if
+   * possible:
    *
    * <ul>
    *   <li>a wildcard with a lower bound requires the annotation to be above that of its bound;
@@ -903,7 +930,7 @@ final class IgnoredAnnotations {
       AnnotatedTypeMirror target, List<Copy> copies, QualifierHierarchy qh) {
     if (copies.size() == 1) {
       Copy copy = copies.get(0);
-      copyPrimaryAnnotations(boundOf(copy.from()), target, copy.hierarchies(), qh);
+      copyPrimaryAnnotationsInHierarchies(boundOf(copy.from()), target, copy.hierarchies());
       return;
     }
     for (AnnotationMirror top : qh.getTopAnnotations()) {
@@ -932,8 +959,7 @@ final class IgnoredAnnotations {
         }
       }
       if (sources.size() == 1) {
-        copyPrimaryAnnotations(
-            sources.iterator().next(), target, AnnotationMirrorSet.singleton(top), qh);
+        copyPrimaryAnnotationInHierarchy(sources.iterator().next(), target, top);
       } else if (lower != null) {
         target.replaceAnnotation(lower);
       } else if (upper != null) {
