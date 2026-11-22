@@ -487,8 +487,6 @@ is not read; the Checker Framework issues a note about it.  Second, a
 hidden file or directory (one whose name starts with ``\<.>'') within a
 directory or archive is not read; an example is the \<.\_Foo.astub>
 metadata file that macOS adds to archives and to non-Mac file systems.
-The Checker Framework issues a warning about, and does not read, a stub
-path entry that is a file but is neither a stub file nor an archive.
 The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
