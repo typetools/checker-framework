@@ -43,6 +43,16 @@ class InfiniteLoopGrowingCollection {
    * The method never returns normally, but the obligation reaches the exceptional exit, where it is
    * checked.  The loop disposes of every element first, so there is no error.
    */
+  void disposeThenThrow() throws IOException {
+    List<LoopResource> resources = new ArrayList<>();
+    resources.add(new LoopResource());
+    for (LoopResource resource : resources) {
+      resource.close();
+    }
+    throw new IOException();
+  }
+
+  // Like disposeThenThrow, but a `while` loop drains the collection.
   void drainThenThrow() throws IOException {
     Queue<LoopResource> queue = new ArrayDeque<>();
     queue.add(new LoopResource());

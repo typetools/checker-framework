@@ -79,6 +79,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -736,8 +737,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     // If the inserted element is a parameter, and it has no explicit @Owning annotation, then it's
-    // definitely not owning.
-    if (insertedElement != null && insertedElement.getKind() == ElementKind.PARAMETER) {
+    // definitely not owning.  This holds only if the parameter still holds the argument; a
+    // reassigned parameter is classified by the checks below.
+    if (insertedElement != null
+        && insertedElement.getKind() == ElementKind.PARAMETER
+        && ElementUtils.isEffectivelyFinal(insertedElement)) {
       return !rlAtf.hasOwning(insertedElement)
           ? CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING
           : CollectionMutatorArgumentKind.MAY_BE_OWNING;
@@ -925,7 +929,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given expression {@code e} refers to {@code this.field}.
+   * Returns true if the given expression {@code e} refers to {@code this.field}, such as {@code
+   * "field"} or {@code "this.field"}, but not {@code "other.field"}.
    *
    * @param e the expression
    * @param field the field
@@ -934,7 +939,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
   public boolean expressionIsFieldAccess(String e, VariableElement field) {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
-      return je instanceof FieldAccess fieldAccess && fieldAccess.getField().equals(field);
+      return je instanceof FieldAccess fieldAccess
+          && fieldAccess.getField().equals(field)
+          && (fieldAccess.getReceiver() instanceof ThisReference || fieldAccess.isStatic());
     } catch (JavaExpressionParseException ex) {
       // The parsing error will be reported elsewhere, assuming e was derived from an
       // annotation.
@@ -981,7 +988,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
         super.replace(type, replacements);
         return;
       }
-      AnnotationMirrorMap<AnnotationMirror> notOwning = new AnnotationMirrorMap<>(replacements);
+      AnnotationMirrorMap<AnnotationMirror> notOwning = new AnnotationMirrorMap<>();
+      notOwning.putAll(replacements);
       notOwning.put(POLY, NOTOWNINGCOLLECTION);
       super.replace(type, notOwning);
     }

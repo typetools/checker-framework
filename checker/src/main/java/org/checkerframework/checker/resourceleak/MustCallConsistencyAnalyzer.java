@@ -857,8 +857,7 @@ public class MustCallConsistencyAnalyzer {
    * block that can reach neither exit is never checked.
    *
    * <p>Reachability is computed with the same filtered exceptional successors used by the main
-   * obligation traversal, so ignored exceptional edges do not make a block count as
-   * exit-reachable.
+   * obligation traversal, so ignored exceptional edges do not make a block count as exit-reachable.
    *
    * @param block the block to query
    * @return true if {@code block} can reach a method exit along allowed successor edges
@@ -1614,20 +1613,33 @@ public class MustCallConsistencyAnalyzer {
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
           if (cmAtf.hasOwning(parameter)) {
-            Obligation localObligation = getObligationForVar(obligations, local);
-            // Passing to an owning parameter is not sufficient to resolve the
-            // obligation created from a MustCallAlias parameter, because the
-            // enclosing method must actually return the value.
-            if (!localObligation.derivedFromMustCallAlias()) {
-              // Transfer ownership!
-              obligations.remove(localObligation);
+            // An @Owning parameter takes ownership of the value itself, so transfer all of the
+            // local's ordinary (non-collection) obligations. A local may have more than one
+            // obligation, e.g. a CollectionObligation and an ordinary obligation, and their
+            // order in `obligations` is not significant.
+            for (Obligation localObligation : getObligationsForVar(obligations, local)) {
+              if (localObligation instanceof CollectionObligation) {
+                // Element obligations are transferred only to an @OwningCollection parameter.
+                continue;
+              }
+              // Passing to an owning parameter is not sufficient to resolve the
+              // obligation created from a MustCallAlias parameter, because the
+              // enclosing method must actually return the value.
+              if (!localObligation.derivedFromMustCallAlias()) {
+                // Transfer ownership!
+                obligations.remove(localObligation);
+              }
             }
           }
 
           if (coAtf.isOwningCollectionParameter(parameter)) {
+            // An @OwningCollection parameter takes ownership of the elements, not of the
+            // collection itself, whose obligations are transferred only to an @Owning parameter.
             Set<Obligation> obligationsForVar = getObligationsForVar(obligations, local);
             for (Obligation obligation : obligationsForVar) {
-              obligations.remove(obligation);
+              if (obligation instanceof CollectionObligation) {
+                obligations.remove(obligation);
+              }
             }
           }
         }
@@ -1652,13 +1664,45 @@ public class MustCallConsistencyAnalyzer {
       @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
       if (returnExpr instanceof LocalVariableNode lvn) {
+        // A @NotOwningCollection return does not transfer the obligations of the elements of the
+        // returned collection, but it transfers the obligations of the collection itself.
+        Set<Obligation> retained = new LinkedHashSet<>();
+        if (!noLightweightOwnership && isNotOwningCollectionReturn(cfg)) {
+          for (Obligation obligation : obligations) {
+            if (obligation instanceof CollectionObligation
+                && obligation.canBeSatisfiedThrough(lvn)) {
+              retained.add(obligation);
+            }
+          }
+          obligations.removeAll(retained);
+        }
         removeObligationsContainingVar(
             obligations,
             lvn,
             MustCallAliasHandling.NO_SPECIAL_HANDLING,
             MethodExitKind.ONLY_NORMAL_RETURN);
+        obligations.addAll(retained);
       }
     }
+  }
+
+  /**
+   * Returns true if the given CFG is for a method whose return type is
+   * {@code @NotOwningCollection}.
+   *
+   * @param cfg a CFG
+   * @return true if {@code cfg} is for a method whose return type is {@code @NotOwningCollection}
+   */
+  private boolean isNotOwningCollectionReturn(ControlFlowGraph cfg) {
+    if (!(cfg.getUnderlyingAST() instanceof UnderlyingAST.CFGMethod cfgMethod)) {
+      return false;
+    }
+    ExecutableElement executableElement = TreeUtils.elementFromDeclaration(cfgMethod.getMethod());
+    assert executableElement != null
+        : "@AssumeAssertion(nullness): a method has an element as the CFG is already built";
+    return coAtf.getCoType(
+            coAtf.getAnnotatedType(executableElement).getReturnType().getAnnotations())
+        == CollectionOwnershipType.NotOwningCollection;
   }
 
   /**
@@ -1699,14 +1743,9 @@ public class MustCallConsistencyAnalyzer {
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       assert executableElement != null
           : "@AssumeAssertion(nullness): a method has an element as the CFG is already built";
-      boolean returnTypeHasNocAnno =
-          coAtf.getCoType(
-                  coAtf.getAnnotatedType(executableElement).getReturnType().getAnnotations())
-              == CollectionOwnershipType.NotOwningCollection;
-      if (returnTypeHasNocAnno) {
-        // return is @NotOwningCollection. No ownership transfer to call-site.
-        return false;
-      } else {
+      // A @NotOwningCollection return does not transfer the obligations of the collection's
+      // elements; updateObligationsForOwningReturn retains them.
+      if (!isNotOwningCollectionReturn(cfg)) {
         // return is @OwningCollection. Report error if @OwningCollection field.
         Node returnResult = node.getResult();
         if (returnResult != null
@@ -2183,10 +2222,26 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    // Remove the Obligations of the rhs, now that the owning collection field is responsible.
+    // Remove the CollectionObligations of the rhs, now that the owning collection field is
+    // responsible for the elements. The rhs's ordinary obligations (such as a `clear` obligation
+    // of the collection itself) are transferred only if the field is also @Owning; that is done
+    // by the caller. Otherwise, they remain with the rhs and are checked as usual.
     if (rhsTmpVarOrNode instanceof LocalVariableNode rhsVar) {
-      removeObligationsContainingVar(
-          obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+      List<Obligation> replacements = new ArrayList<>();
+      Iterator<Obligation> it = obligations.iterator();
+      while (it.hasNext()) {
+        Obligation obligation = it.next();
+        if (obligation instanceof CollectionObligation
+            && obligation.canBeSatisfiedThrough(rhsVar)) {
+          it.remove();
+          Set<MethodExitKind> whenToEnforce = new HashSet<>(obligation.whenToEnforce);
+          whenToEnforce.removeAll(toClear);
+          if (!whenToEnforce.isEmpty()) {
+            replacements.add(obligation.getReplacement(obligation.resourceAliases, whenToEnforce));
+          }
+        }
+      }
+      obligations.addAll(replacements);
     }
   }
 
@@ -3814,7 +3869,9 @@ public class MustCallConsistencyAnalyzer {
       }
       store = cmAtf.getStoreAfter(lastNode);
     }
-    // The loop body analysis tracks only the collection element's Obligation.
+    // The loop body analysis tracks only the collection element's Obligation.  If the loop body
+    // overwrote the loop variable, other aliases such as `saved` in
+    // `Resource saved = r; r = other;` might still hold it.
     if (obligations.size() > 1) {
       throw new BugInCF("Loop body analysis tracks more than one Obligation: " + obligations);
     }
@@ -3824,15 +3881,21 @@ public class MustCallConsistencyAnalyzer {
       return cmAtf.top;
     }
     Obligation collectionElementObligation = obligations.iterator().next();
+    // True if the iterated element itself, such as the loop variable, still refers to the element.
+    boolean iteratedElementIsAlias =
+        collectionElementObligation.canBeSatisfiedThrough(disposalLoopInfo.iteratedElementTree());
 
     // The references to the collection element: the iterated collection element and its resource
     // aliases.
     List<JavaExpression> references = new ArrayList<>();
-    IteratedCollectionElement ice =
-        store.getIteratedCollectionElement(
-            disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
-    if (ice != null) {
-      references.add(ice);
+    if (iteratedElementIsAlias) {
+      // After the loop variable is overwritten, calls on it are not calls on the element.
+      IteratedCollectionElement ice =
+          store.getIteratedCollectionElement(
+              disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
+      if (ice != null) {
+        references.add(ice);
+      }
     }
     for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
       references.add(alias.reference);
