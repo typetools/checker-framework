@@ -81,4 +81,46 @@ public class PurityMethodRef {
   void unconstrained() {
     PlainFunc f = PurityMethodRef::myMethod;
   }
+
+  /**
+   * Inherits two functional methods, {@code SefFunc.doNothing} and {@code PlainFunc.doNothing},
+   * neither of which overrides the other.
+   */
+  @FunctionalInterface
+  interface SefFirstFunc extends SefFunc, PlainFunc {}
+
+  /** Like {@link SefFirstFunc}, but with its superinterfaces in the other order. */
+  @FunctionalInterface
+  interface PlainFirstFunc extends PlainFunc, SefFunc {}
+
+  void inheritedFunctionalMethods() {
+    // A call through SefFunc.doNothing can run the reference.
+    // :: error: [purity.methodref]
+    SefFirstFunc f1 = PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    PlainFirstFunc f2 = PurityMethodRef::myMethod;
+    SefFirstFunc f3 = PurityMethodRef::mySideEffectFreeMethod;
+    PlainFirstFunc f4 = PurityMethodRef::mySideEffectFreeMethod;
+  }
+
+  @FunctionalInterface
+  interface PureRunnable {
+    @Pure
+    // :: warning: [purity.deterministic.void.method]
+    void run();
+  }
+
+  @SideEffectFree
+  static void mySideEffectFreeVoidMethod() {}
+
+  @Deterministic
+  // :: warning: [purity.deterministic.void.method]
+  static void myDeterministicVoidMethod() {}
+
+  /** A side-effect-free method that returns void is deterministic. */
+  void voidMethods() {
+    PureRunnable r1 = PurityMethodRef::mySideEffectFreeVoidMethod;
+    // :: error: [purity.methodref]
+    PureRunnable r2 = PurityMethodRef::myDeterministicVoidMethod;
+  }
 }

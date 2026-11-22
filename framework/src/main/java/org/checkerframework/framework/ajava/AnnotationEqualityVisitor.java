@@ -63,7 +63,8 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
 
   @Override
   public <T extends Node> void defaultAction(T node1, T node2) {
-    if (!(node1 instanceof NodeWithAnnotations<?>) || !(node2 instanceof NodeWithAnnotations<?>)) {
+    if (!(node1 instanceof NodeWithAnnotations<?> node1WithAnnotations)
+        || !(node2 instanceof NodeWithAnnotations<?> node2WithAnnotations)) {
       return;
     }
 
@@ -87,8 +88,8 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
 
     if (!node1annos.equals(node2annos)) {
       annotationsMatch = false;
-      mismatchedNode1 = (NodeWithAnnotations<?>) node1;
-      mismatchedNode2 = (NodeWithAnnotations<?>) node2;
+      mismatchedNode1 = node1WithAnnotations;
+      mismatchedNode2 = node2WithAnnotations;
     }
   }
 }

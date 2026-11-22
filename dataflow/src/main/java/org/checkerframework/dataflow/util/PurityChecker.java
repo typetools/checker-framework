@@ -267,8 +267,10 @@ public final class PurityChecker {
    * overrides, and each call checks its arguments against the declaration that it invokes. The
    * result is therefore the purity that {@code method} promises, less whatever any overridden
    * declaration does not guarantee; see {@link #guaranteedFunctionalArgumentPurity}. An overridden
-   * declaration with no purity annotation guarantees nothing, nor does one whose parameter at
-   * {@code index} is not a functional interface, such as a type variable.
+   * declaration with no purity annotation guarantees only what the functional method of its
+   * parameter promises. One whose parameter at {@code index} is not a functional interface, such as
+   * a type variable, guarantees only what its parameter type's implementation of the functional
+   * method promises.
    *
    * <p>A class can also implement an interface method with a method that it inherits, and a method
    * reference implements a functional method; neither is an override. {@code BaseTypeVisitor}
@@ -339,16 +341,17 @@ public final class PurityChecker {
    * superinterface type. The argument's implementation of {@code parameterFunction} is then its
    * implementation of the overriding method, which the call checked.
    *
-   * <p>If neither {@code parameterFunction} nor the functional method of {@code declaration}'s
-   * parameter overrides the other, then the call checks nothing about the code that {@code
-   * parameterFunction} runs. The parameter's type might nonetheless implement {@code
-   * parameterFunction}, typically with a default method of a functional subinterface that declares
-   * an unrelated abstract method as its functional method. Every argument's implementation of
-   * {@code parameterFunction} is that method or an override of it, so it has the purity that that
-   * method's annotations promise, which is the result.
-   *
-   * <p>The result is empty if {@code declaration}'s parameter at {@code index} is not a functional
-   * interface.
+   * <p>If {@code declaration}'s parameter is not a functional interface (see {@link
+   * #functionalMethodOfType}), or if neither {@code parameterFunction} nor the functional method of
+   * {@code declaration}'s parameter overrides the other, then the call checks nothing about the
+   * code that {@code parameterFunction} runs. The parameter's type might nonetheless implement
+   * {@code parameterFunction}: for example, with a default method of a functional subinterface that
+   * declares an unrelated abstract method as its functional method, or with a method of a class
+   * that implements the functional interface. Every argument's implementation of {@code
+   * parameterFunction} is that method or an override of it, so it has the purity that that method's
+   * annotations promise, which is the result. The result is empty if the parameter's type has no
+   * implementation of {@code parameterFunction}, as for a type variable whose upper bound is {@code
+   * Object}.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method that a call might invoke
@@ -365,14 +368,16 @@ public final class PurityChecker {
       int index,
       ExecutableElement parameterFunction,
       ProcessingEnvironment env) {
-    ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
-    if (declarationFunction == null) {
+    List<? extends VariableElement> parameters = declaration.getParameters();
+    if (index < 0 || index >= parameters.size()) {
       return EnumSet.noneOf(PurityKind.class);
     }
-    if (!(isSameOrOverrides(parameterFunction, declarationFunction, env)
-        || isSameOrOverrides(declarationFunction, parameterFunction, env))) {
-      TypeMirror parameterType = declaration.getParameters().get(index).asType();
-      ExecutableElement implementation = functionalMethodOf(parameterType, parameterFunction, env);
+    ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
+    if (declarationFunction == null
+        || !(isSameOrOverrides(parameterFunction, declarationFunction, env)
+            || isSameOrOverrides(declarationFunction, parameterFunction, env))) {
+      TypeMirror parameterType = parameters.get(index).asType();
+      ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
       if (implementation == null) {
         return EnumSet.noneOf(PurityKind.class);
       }
@@ -442,18 +447,19 @@ public final class PurityChecker {
    * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
    * or null if it has none.
    *
-   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
-   * argument can also be of a class type, including an anonymous class, that implements the
-   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
-   * functional subinterface can implement {@code paramFunction} with a default method and declare
-   * an unrelated abstract method as its own functional method; the default method is what runs.
+   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but
+   * {@code type} can also be a class type, including the type of an anonymous class, that
+   * implements the interface. The implementation is what will run, so its annotations are what
+   * matter. Likewise, a functional subinterface can implement {@code paramFunction} with a default
+   * method and declare an unrelated abstract method as its own functional method; the default
+   * method is what runs.
    *
-   * @param type the type of an argument
-   * @param paramFunction the functional method of the parameter's type
+   * @param type a type, such as the type of an argument or of a formal parameter
+   * @param paramFunction a functional interface's functional method, such as {@code Function.apply}
    * @param env the processing environment
    * @return the method of {@code type} that implements {@code paramFunction}, or null
    */
-  public static @Nullable ExecutableElement functionalMethodOf(
+  public static @Nullable ExecutableElement implementationOf(
       TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
     Elements elements = env.getElementUtils();
     TypeMirror functionalType = functionalInterfaceType(type, env);

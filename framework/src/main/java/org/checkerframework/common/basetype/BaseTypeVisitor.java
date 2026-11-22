@@ -77,6 +77,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -1962,7 +1963,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     } else {
       ExecutableElement argFunction =
-          PurityChecker.functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+          PurityChecker.implementationOf(TreeUtils.typeOf(argument), paramFunction, env);
       if (argFunction == null) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
@@ -1987,10 +1988,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
    * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
-   * operand of a binary operator such as {@code ==}, as the value of an assignment, of a variable
-   * initializer, or of a return statement, or as the receiver of a call to a method other than
-   * {@code parameterFunction} and its overrides, such as {@code hashCode}. An override of {@code
-   * method} can rely on the purity that {@code method} promises of its arguments.
+   * operand of a binary operator such as {@code ==}, as the destination or the value of an
+   * assignment, as the value of a variable initializer or of a return statement, or as the receiver
+   * of a call to a method other than {@code parameterFunction} and its overrides, such as {@code
+   * hashCode}. An override of {@code method} can rely on the purity that {@code method} promises of
+   * its arguments.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter} is treated as a use that might rely on the purity.
@@ -2102,9 +2104,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Overwriting {@link #parameter} does not read the argument, so the destination is not a use
+     * if it is {@link #parameter} itself. A compound destination, such as an array access, is
+     * scanned, because its subexpressions are evaluated.
+     */
     @Override
     public Void visitAssignment(AssignmentTree tree, Void p) {
-      scan(tree.getVariable(), p);
+      scanUnlessParameter(tree.getVariable());
       scanUnlessParameter(tree.getExpression());
       return null;
     }
@@ -2125,6 +2134,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitBinary(BinaryTree tree, Void p) {
+      // A reference is an operand only of == or !=, or of a string concatenation, which calls
+      // toString rather than the functional method.
       scanUnlessParameter(tree.getLeftOperand());
       scanUnlessParameter(tree.getRightOperand());
       return null;
@@ -2145,7 +2156,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Checks that every call that can run {@code implementation} through {@code functionalMethod}
+   * Checks that every call that can run {@code implementation} through one of {@code declarations}
    * guarantees, of the code that it passes to each functional-interface parameter of {@code
    * implementation}, the purity that {@code implementation}'s body assumes of it. That is the
    * purity that {@link PurityChecker#functionalParameterPurity} computes, less the purity that
@@ -2154,18 +2165,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * -AassumeSideEffectFree}.
    *
    * <p>{@link PurityChecker#functionalParameterPurity} accounts for each declaration that {@code
-   * implementation} overrides. This method is for the other ways that a call through {@code
-   * functionalMethod} can run {@code implementation}: as a method reference, or as a method that a
-   * class inherits and that implements {@code functionalMethod} only in that class.
+   * implementation} overrides. This method is for the other ways that a call through a functional
+   * method can run {@code implementation}: as a method reference, or as a method that a class
+   * inherits and that implements the functional method only in that class.
    *
-   * <p>A call through {@code functionalMethod}, or through any method that {@code functionalMethod}
-   * overrides, can run {@code implementation}. Each call checks its arguments against the
-   * declaration that it invokes.
+   * <p>Each call checks its arguments against the declaration that it invokes.
    *
    * @param reportTree the tree at which to report an error
-   * @param implementation the method that a call through {@code functionalMethod} runs
-   * @param functionalMethod the method that {@code implementation} implements
-   * @param offset the index of {@code functionalMethod}'s parameter that corresponds to {@code
+   * @param implementation the method that a call through any of {@code declarations} runs
+   * @param declarations the methods through which a call can run {@code implementation}, starting
+   *     with the functional method that {@code implementation} implements
+   * @param offset the index of the functional method's parameter that corresponds to {@code
    *     implementation}'s first parameter: 1 for an unbound method reference such as {@code C::m},
    *     whose functional method's first parameter is the receiver, and 0 otherwise
    * @param messageKey the key of the error message to report
@@ -2173,7 +2183,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private void checkImplementationFunctionalParameters(
       Tree reportTree,
       ExecutableElement implementation,
-      ExecutableElement functionalMethod,
+      List<ExecutableElement> declarations,
       int offset,
       @CompilerMessageKey String messageKey) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
@@ -2181,10 +2191,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // The implementation assumes nothing of its functional-interface arguments.
       return;
     }
-    // The methods through which a call can run the implementation.
-    List<ExecutableElement> declarations = new ArrayList<>();
-    declarations.add(functionalMethod);
-    declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
     List<? extends VariableElement> params = implementation.getParameters();
     for (int i = 0; i < params.size(); i++) {
       ExecutableElement parameterFunction =
@@ -2272,8 +2278,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // matches.
           if (!checker.shouldSkipUses(interfaceMethod)
               && elements.overrides(inherited, interfaceMethod, classElt)) {
+            // The methods through which a call can run the inherited method.
+            List<ExecutableElement> declarations = new ArrayList<>();
+            declarations.add(interfaceMethod);
+            declarations.addAll(ElementUtils.getOverriddenMethods(interfaceMethod, types));
             checkImplementationFunctionalParameters(
-                classTree, inherited, interfaceMethod, 0, "purity.inherited.functional.parameter");
+                classTree, inherited, declarations, 0, "purity.inherited.functional.parameter");
           }
         }
       }
@@ -5582,8 +5592,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that the referenced method is at least as pure as the functional interface method that
-     * the method reference implements.
+     * Checks that the referenced method is at least as pure as each method through which a call can
+     * run it: the functional interface method that the method reference implements, and the other
+     * methods that {@link #methodsThatRunReference} returns.
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
      * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
@@ -5592,20 +5603,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!checkPurityAnnotations) {
         return;
       }
-      EnumSet<PurityKind> superPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
-      EnumSet<PurityKind> subPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
-      if (!subPurity.containsAll(superPurity)) {
-        checker.reportError(
-            overriderTree,
-            "purity.methodref",
-            overriderType,
-            purityKindsToString(subPurity),
-            overrider,
-            overriddenType,
-            purityKindsToString(superPurity),
-            overridden);
+      // Apply the command-line assumptions to the referenced method, so that a method reference is
+      // treated like a lambda whose body calls the referenced method.  Like such a call, a
+      // side-effect-free referenced method that returns void is deterministic.
+      EnumSet<PurityKind> subPurity = implementationPurityKinds(overrider.getElement());
+      for (ExecutableElement declaration :
+          methodsThatRunReference(atypeFactory.getProcessingEnv())) {
+        EnumSet<PurityKind> superPurity = PurityUtils.getPurityKinds(atypeFactory, declaration);
+        if (!subPurity.containsAll(superPurity)) {
+          AnnotatedExecutableType declarationType =
+              declaration.equals(overridden.getElement())
+                  ? overridden
+                  : AnnotatedTypes.asMemberOf(types, atypeFactory, overriddenType, declaration);
+          checker.reportError(
+              overriderTree,
+              "purity.methodref",
+              overriderType,
+              purityKindsToString(subPurity),
+              overrider,
+              overriddenType,
+              purityKindsToString(superPurity),
+              declarationType);
+          // The error message names the first declaration whose purity the referenced method lacks.
+          break;
+        }
       }
       if (!infer) {
         checkMethodReferenceFunctionalParameters();
@@ -5617,14 +5638,58 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * guarantees, of the code that it passes to each functional-interface parameter of the
      * referenced method, the purity that the referenced method's body assumes of it; see {@link
      * BaseTypeVisitor#checkImplementationFunctionalParameters}.
+     *
+     * <p>A call through any method that {@link #methodsThatRunReference} returns can run the
+     * referenced method.
      */
     private void checkMethodReferenceFunctionalParameters() {
       checkImplementationFunctionalParameters(
           overriderTree,
           overrider.getElement(),
-          overridden.getElement(),
+          methodsThatRunReference(atypeFactory.getProcessingEnv()),
           methodRefParameterOffset(),
           "purity.methodref.functional.parameter");
+    }
+
+    /**
+     * Returns the methods through which a call can run the referenced method: the functional
+     * interface method that the method reference implements, and every other method of the
+     * functional interface or of its supertypes that is override-equivalent to it in the functional
+     * interface (JLS 8.4.2). The latter include each method that the functional interface method
+     * overrides, and each abstract method that the functional interface inherits from another
+     * superinterface, as {@code A.run} and {@code B.run} in {@code interface C extends A, B}.
+     *
+     * @param env the processing environment
+     * @return the methods through which a call can run the referenced method, starting with the
+     *     functional interface method
+     */
+    private List<ExecutableElement> methodsThatRunReference(ProcessingEnvironment env) {
+      ExecutableElement functionalMethod = overridden.getElement();
+      List<ExecutableElement> result = new ArrayList<>();
+      result.add(functionalMethod);
+      TypeElement functionalInterface =
+          (TypeElement) overriddenType.getUnderlyingType().asElement();
+      // Use the functional interface's declared type, whose type arguments are its own type
+      // variables, so that a wildcard in the type of the method reference does not matter.
+      DeclaredType interfaceType = (DeclaredType) functionalInterface.asType();
+      ExecutableType functionalMethodType =
+          (ExecutableType) types.asMemberOf(interfaceType, functionalMethod);
+      for (TypeElement supertype : ElementUtils.getAllSupertypes(functionalInterface, env)) {
+        for (ExecutableElement method : ElementFilter.methodsIn(supertype.getEnclosedElements())) {
+          if (method.equals(functionalMethod)
+              || !method.getSimpleName().contentEquals(functionalMethod.getSimpleName())
+              || method.getModifiers().contains(Modifier.STATIC)
+              || method.getModifiers().contains(Modifier.PRIVATE)) {
+            continue;
+          }
+          ExecutableType methodType = (ExecutableType) types.asMemberOf(interfaceType, method);
+          if (types.isSubsignature(functionalMethodType, methodType)
+              || types.isSubsignature(methodType, functionalMethodType)) {
+            result.add(method);
+          }
+        }
+      }
+      return result;
     }
 
     /**
