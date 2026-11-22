@@ -211,6 +211,46 @@ public class AssignmentInComparison {
     }
   }
 
+  static void otherOperandReassignsLocalArrayOfGreater(
+      @LTEqLengthOf("#2") int limit, int[] a, int[] c) {
+    int i;
+    if (limit > (i = (a = c).length)) {
+      // `limit` is at most the length of the array that `a` referred to before the right operand
+      // reassigned `a`.  `i` is the length of the new array.
+      // :: error: [array.access.unsafe.high]
+      a[i] = 0;
+    }
+  }
+
+  static void otherOperandReassignsLocalArrayOfGreaterOrEqual(
+      @LTLengthOf("#2") int limit, int[] a, int[] c) {
+    int i;
+    if (limit >= (i = (a = c).length)) {
+      // :: error: [array.access.unsafe.high]
+      a[i] = 0;
+    }
+  }
+
+  // The right operand reassigns `b`, which the type of the left operand `a` names.
+  static void otherOperandReassignsSameLenOfLeft(int[] a, int[] c, int[] d) {
+    int[] b = a;
+    if (a.length == (c = (b = new int[0]) == null ? d : d).length) {
+      // `b` is the new array, not the one that has the length of `a`.
+      // :: error: [assignment]
+      int @SameLen("a") [] x = b;
+      int @SameLen("a") [] y = c;
+    }
+  }
+
+  // The right operand reassigns `b`, but `e` still has the length of `a`.
+  static void otherOperandReassignsSameLenOfLeftKeepsOthers(int[] a, int[] c, int[] d) {
+    int[] b = a;
+    int[] e = a;
+    if (a.length == (c = (b = new int[0]) == null ? d : d).length) {
+      int @SameLen("e") [] y = c;
+    }
+  }
+
   void otherOperandCallReassignsArray(@LTLengthOf("arr") int x, @NonNegative int i, int[] c) {
     if (x > i + resetArr(c)) {
       // `resetArr` reassigns `arr`, so `i` might not be less than the length of the new array.

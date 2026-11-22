@@ -226,16 +226,51 @@ public class SameLenTransfer extends CFTransfer {
     List<AnnotationMirror> annos = new ArrayList<>(2);
     for (Node internal : nodesWithValueOf(left)) {
       exprs.add(JavaExpression.fromNode(internal));
-      annos.add(getAnno(internal));
+      annos.add(annoWhenComparisonCompletes(internal));
     }
     for (Node internal : nodesWithValueOf(right)) {
       exprs.add(JavaExpression.fromNode(internal));
-      annos.add(getAnno(internal));
+      annos.add(annoWhenComparisonCompletes(internal));
     }
 
     AnnotationMirror combinedSameLen = atypeFactory.createCombinedSameLen(exprs, annos);
 
     propagateCombinedSameLen(combinedSameLen, left, store);
+  }
+
+  /**
+   * Returns {@code n}'s annotation from the SameLen hierarchy (see {@link #getAnno}), without the
+   * expressions whose values might change after {@code n} is evaluated and before the comparison
+   * that contains {@code n} completes.
+   *
+   * <p>The annotation of {@code n} relates {@code n} to the values that the expressions in the
+   * annotation had when {@code n} was evaluated. For example, in {@code a.length == ((b = new
+   * int[0]) == null ? c : c).length}, the type {@code @SameLen("b")} of {@code a} is about the array
+   * that {@code b} referred to before the right operand reassigned {@code b}, so the comparison
+   * does not imply that {@code b} has the same length as {@code c}.
+   *
+   * @param n a node in an operand of a comparison
+   * @return {@code n}'s annotation from the SameLen hierarchy, without the expressions that might
+   *     change before the comparison completes
+   */
+  private AnnotationMirror annoWhenComparisonCompletes(Node n) {
+    AnnotationMirror anno = getAnno(n);
+    if (anno == null
+        || !atypeFactory.areSameByClass(anno, SameLen.class)
+        || !containsExpressionChangedBeforeComparisonCompletes(anno, n)) {
+      return anno;
+    }
+    List<String> kept = new ArrayList<>();
+    for (String expr :
+        AnnotationUtils.getElementValueArray(
+            anno, atypeFactory.sameLenValueElement, String.class)) {
+      if (!containsExpressionChangedBeforeComparisonCompletes(
+          atypeFactory.createSameLen(Collections.singletonList(expr)), n)) {
+        kept.add(expr);
+      }
+    }
+    // Removing elements preserves the alphabetical order that createSameLen requires.
+    return kept.isEmpty() ? UNKNOWN : atypeFactory.createSameLen(kept);
   }
 
   /**
