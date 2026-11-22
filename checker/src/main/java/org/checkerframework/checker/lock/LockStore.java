@@ -116,6 +116,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
    * Makes a new CFValue with the same annotations as currentValue except that the annotation in the
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
    * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown.
+   *
+   * @param je the expression whose value is currentValue
+   * @param currentValue a value, or null if the store has no value for {@code je}
+   * @return a value whose annotation in the LockPossiblyHeld hierarchy is LockPossiblyHeld, or null
+   *     if {@code currentValue} is non-null and has no annotation in the GuardedBy hierarchy
    */
   private @Nullable CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {
@@ -128,11 +133,13 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   /**
-   * Makes a new CFValue with the same annotations as currentValue except that the annotation in the
-   * LockPossiblyHeld hierarchy is set to LockPossiblyHeld.
+   * Returns a new CFValue with the same annotations as currentValue except that the annotation in
+   * the LockPossiblyHeld hierarchy is set to LockPossiblyHeld.
    *
-   * @param currentValue the value to modify
-   * @return a copy of {@code currentValue} whose LockPossiblyHeld annotation is LockPossiblyHeld
+   * @param currentValue a value
+   * @return a copy of {@code currentValue} whose annotation in the LockPossiblyHeld hierarchy is
+   *     LockPossiblyHeld, or null if {@code currentValue} has no annotation in the GuardedBy
+   *     hierarchy
    */
   private @Nullable CFValue changeLockAnnoToTop(CFValue currentValue) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -231,13 +238,14 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       }
     }
 
-    // The superclass retains a method call that is not modifiable by other code, such as a
-    // deterministic static method with no arguments.  The lock that it returns might have been
-    // locked or unlocked.
-    for (MethodCall call : new ArrayList<>(methodCallExpressions.keySet())) {
-      CFValue newValue = changeLockAnnoToTop(call, methodCallExpressions.get(call));
+    // The superclass keeps the stored values of some method calls, such as a call whose receiver
+    // and arguments no other code can modify (for example, a static @Pure method with no
+    // arguments).  The lock that such a call returns might have been locked or unlocked by the
+    // side effect, so set it to @LockPossiblyHeld without changing its GuardedBy annotation.
+    for (MethodCall mc : new ArrayList<>(methodCallExpressions.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(mc, methodCallExpressions.get(mc));
       if (newValue != null) {
-        methodCallExpressions.put(call, newValue);
+        methodCallExpressions.put(mc, newValue);
       }
     }
 
