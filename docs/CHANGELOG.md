@@ -35,6 +35,10 @@ Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
 `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
 conversion does.
 
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -64,10 +68,6 @@ A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 
 New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
 entirely, including dataflow analysis.
-
-In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
-`createIteratorVariableForEnhancedForLoop()` and
-`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is

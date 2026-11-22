@@ -352,6 +352,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The ClassCastException type. */
   protected final TypeMirror classCastExceptionType;
 
+  /** The IllegalArgumentException type. */
+  protected final TypeMirror illegalArgumentExceptionType;
+
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
@@ -448,6 +451,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
+    illegalArgumentExceptionType = getTypeMirror(IllegalArgumentException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
@@ -3014,7 +3018,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the path on which an exception (the primary exception) reached the synthetic finally block of a
    * try-with-resources statement. On that path, the statement suppresses any exception that {@code
    * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
-   * successor of the added nodes is the node that follows them.
+   * successor of the {@code close} call leads to the node that follows the added nodes.
    *
    * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
    * addition to the types of the exceptions that {@code close} might throw. So an analysis that
@@ -3029,6 +3033,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * throwing an exception. (If {@code close} terminates execution by exiting the JVM, the primary
    * exception does not propagate, but the CFG conservatively permits it to.)
    *
+   * <p>The statement suppresses an exception that {@code close} throws by calling {@code
+   * addSuppressed} on the primary exception. If {@code close} throws the primary exception itself,
+   * {@code addSuppressed} throws an {@code IllegalArgumentException}, which propagates instead of
+   * the primary exception. So the path on which {@code close} throws an exception has an
+   * exceptional edge for {@code IllegalArgumentException}, outside the synthetic catch of the
+   * exception that {@code close} throws.
+   *
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param primaryExceptionTypes the types of the primary exception
@@ -3037,6 +3048,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private void addSuppressingCloseCallForResource(
       Tree resourceDeclarationTree, Set<TypeMirror> primaryExceptionTypes, Void p) {
     Label suppressedLabel = new Label();
+    Label afterSuppressionLabel = new Label();
     tryStack.pushFrame(
         new TryCatchFrame(
             types,
@@ -3044,7 +3056,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
     addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
     tryStack.popFrame();
+    extendWithExtendedNode(new UnconditionalJump(afterSuppressionLabel));
+
+    // The exception that close() threw reaches here.  Suppressing it fails if it is the primary
+    // exception itself.
     addLabelForNextNode(suppressedLabel);
+    extendWithNodeWithException(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "suppress exception from close of resource #"
+                + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()),
+        illegalArgumentExceptionType);
+
+    addLabelForNextNode(afterSuppressionLabel);
   }
 
   /**
