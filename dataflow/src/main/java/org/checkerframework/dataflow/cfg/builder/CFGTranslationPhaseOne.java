@@ -923,7 +923,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     node
    */
   protected Node unbox(Node node) {
-    if (TypesUtils.isBoxedPrimitive(node.getType())) {
+    return unbox(node, false);
+  }
+
+  /**
+   * If the input node is a boxed type, unboxes it; otherwise, leaves it alone.
+   *
+   * @param node an input node
+   * @param unboxTypeVariable true if a node whose type is a type variable or wildcard whose upper
+   *     bound is a boxed type should also be unboxed
+   * @return a Node representing the unboxed version of the input, which might simply be the input
+   *     node
+   */
+  protected Node unbox(Node node, boolean unboxTypeVariable) {
+    TypeMirror type = node.getType();
+    if (unboxTypeVariable) {
+      type = TypesUtils.upperBound(type);
+    }
+    if (TypesUtils.isBoxedPrimitive(type)) {
 
       MemberSelectTree primValueSelect = treeBuilder.buildPrimValueMethodAccess(node.getTree());
       handleArtificialTree(primValueSelect);
@@ -2380,11 +2397,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * bodies.
      *
      * <p>If the switch has no {@code case null} label, a null selector throws {@code
-     * NullPointerException}. For a selector whose type is a primitive wrapper class, such as {@code
-     * Integer}, the unboxing throws it. For any other reference selector that might be null, the
-     * assigned expression is a {@link NullChkNode} of the selector expression. That includes a
-     * selector whose type is a type variable, which is never unboxed, even if the type variable's
-     * bound is a primitive wrapper class.
+     * NullPointerException}. For a selector whose type is a primitive wrapper class such as {@code
+     * Integer}, or a type variable whose upper bound is a primitive wrapper class, the unboxing
+     * throws it. For any other reference selector that might be null, the assigned expression is a
+     * {@link NullChkNode} of the selector expression.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2411,9 +2427,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node selectorExprNode = scan(selectorExprTree, null);
       // A switch without a null label throws NullPointerException when its selector is null.
       if (!selectorExprType.getKind().isPrimitive() && !TreeUtils.hasNullCaseLabel(switchTree)) {
-        if (TypesUtils.isBoxedPrimitive(selectorExprType)) {
+        if (TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(selectorExprType))) {
           // Unboxing throws the NullPointerException.
-          selectorExprNode = unbox(selectorExprNode);
+          selectorExprNode = unbox(selectorExprNode, true);
         } else if (mayBeNull(selectorExprNode)) {
           UnaryTree nullCheckTree = treeBuilder.buildNullCheck(selectorExprTree);
           handleArtificialTree(nullCheckTree);

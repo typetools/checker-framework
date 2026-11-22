@@ -15,16 +15,17 @@ public class InterningTransfer extends CFTransfer {
   /**
    * Creates a new InterningTransfer.
    *
-   * @param analysis the analysis
+   * @param analysis an analysis for the Interning Checker
    */
   public InterningTransfer(CFAnalysis analysis) {
     super(analysis);
   }
 
   /**
-   * Does not refine the switch selector. A switch compares its selector to a case constant by value
-   * (for a boxed primitive) or by {@code equals()} (for a {@code String}), not by reference
-   * equality. So, the selector need not be the same object as an interned case constant.
+   * Returns a transfer result whose store is the input store, without refining the switch selector.
+   * A switch compares its selector to a case constant by value (for a boxed primitive) or by {@code
+   * equals()} (for a {@code String}), not by reference equality. So, the selector need not be the
+   * same object as an interned case constant.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitCase(
