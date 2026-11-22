@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -12,6 +13,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchExpressionTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -115,6 +117,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -2262,16 +2265,22 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    AssignmentNode assign = n.getSwitchOperand();
+    // The selector expression is refined only if it still has the value that the synthetic
+    // variable saved. Guards and record patterns of earlier cases might have changed it.
+    boolean refineSelector =
+        !n.getCaseOperands().isEmpty() && !selectorMayChangeBeforeCase(assign.getExpression(), n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
               finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (refineSelector) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -2289,6 +2298,58 @@ public abstract class CFAbstractTransfer<
       }
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if code that is evaluated after the selector expression of a switch and before
+   * the given case is tested might change the value of an expression that has the value of the
+   * selector (see {@link #nodesWithValueOf}). That code is the guards and the record patterns of
+   * the earlier cases. For example, in {@code switch (f) { case String s when clearF() -> ...; case
+   * "match" -> ...; }}, the guard {@code clearF()} might change {@code f}, so matching {@code
+   * "match"} says nothing about the current value of {@code f}.
+   *
+   * @param selector the selector expression of the switch
+   * @param caseNode a case of the switch
+   * @return true if the code that is evaluated before {@code caseNode} is tested might change an
+   *     expression that has the value of {@code selector}
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private boolean selectorMayChangeBeforeCase(Node selector, CaseNode caseNode) {
+    CaseTree caseTree = caseNode.getTree();
+    TreePath casePath = caseTree == null ? null : analysis.atypeFactory.getPath(caseTree);
+    // As in #locationsWrittenUntilComparison, a tree that is not in the compilation unit has no
+    // earlier code to scan.
+    if (casePath == null || casePath.getParentPath() == null) {
+      return false;
+    }
+    Tree switchTree = casePath.getParentPath().getLeaf();
+    List<? extends CaseTree> cases;
+    if (switchTree instanceof SwitchTree switchStatement) {
+      cases = switchStatement.getCases();
+    } else if (switchTree instanceof SwitchExpressionTree switchExpression) {
+      cases = switchExpression.getCases();
+    } else {
+      return false;
+    }
+    WrittenLocations written = new WrittenLocations();
+    for (CaseTree earlierCase : cases) {
+      if (earlierCase == caseTree) {
+        break;
+      }
+      for (Tree label : CaseUtils.getLabels(earlierCase)) {
+        written.scan(label, null);
+      }
+      written.scan(CaseUtils.getGuard(earlierCase), null);
+    }
+    if (written.isEmpty()) {
+      return false;
+    }
+    for (Node node : nodesWithValueOf(selector)) {
+      if (written.mayChange(JavaExpression.fromNode(node), false)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // /**

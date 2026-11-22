@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
@@ -13,6 +14,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * This class provides methods shared by the Index Checker's internal checkers in their transfer
@@ -38,7 +40,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
     // Refine the else branch, which is the inverse of the then branch.
-    refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    if (!isFloatingPointComparison(rfi)) {
+      refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    }
 
     return rfi.newResult;
   }
@@ -57,7 +61,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
     // Refine the else branch.
-    refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    if (!isFloatingPointComparison(rfi)) {
+      refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    }
 
     return rfi.newResult;
   }
@@ -76,7 +82,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
     // Refine the else branch.
-    refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    if (!isFloatingPointComparison(rfi)) {
+      refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    }
     return rfi.newResult;
   }
 
@@ -94,8 +102,34 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
     // Refine the else branch.
-    refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    if (!isFloatingPointComparison(rfi)) {
+      refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    }
     return rfi.newResult;
+  }
+
+  /**
+   * Returns true if the given comparison compares floating-point values. The else branch of such a
+   * comparison is not refined: if an operand is NaN, then both the comparison and its inverse are
+   * false. For example, if {@code j >= d} is false, then {@code j < d} might also be false.
+   *
+   * @param rfi the refinement information for a comparison
+   * @return true if an operand of the comparison has a floating-point type
+   */
+  private static boolean isFloatingPointComparison(IndexRefinementInfo rfi) {
+    return isFloatingPoint(rfi.left) || isFloatingPoint(rfi.right);
+  }
+
+  /**
+   * Returns true if the given node has a floating-point type, either primitive or boxed.
+   *
+   * @param node a node
+   * @return true if {@code node} has type {@code float}, {@code double}, {@code Float}, or {@code
+   *     Double}
+   */
+  private static boolean isFloatingPoint(Node node) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(node.getType());
+    return kind == TypeKind.FLOAT || kind == TypeKind.DOUBLE;
   }
 
   /**

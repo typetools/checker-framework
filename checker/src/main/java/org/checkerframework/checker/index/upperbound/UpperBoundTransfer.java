@@ -234,7 +234,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       if (minValue != null && minValue > 1) {
         typeOfMultiplication = (LessThanLengthOf) typeOfMultiplication.plusOffset(1);
       }
-      UBQualifier qual = getUBQualifier(node, in);
+      UBQualifier qual = qualifierWhenComparisonCompletes(getUBQualifier(node, in), node);
       UBQualifier newQual = qual.glb(typeOfMultiplication);
       insertValueForComparedNode(store, node, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
@@ -265,7 +265,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     if (mayBeChangedByLaterOperand(node.getRightOperand())) {
       return;
     }
-    UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
+    UBQualifier left =
+        qualifierWhenComparisonCompletes(
+            getUBQualifier(node.getLeftOperand(), in), node.getLeftOperand());
     UBQualifier newInfo = offsetByComparedNode(typeOfSubtraction, node.getRightOperand(), '-');
 
     UBQualifier newLeft = left.glb(newInfo);
@@ -291,7 +293,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       Node other,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    UBQualifier newQual = getUBQualifier(operand, in);
+    // The qualifier of `operand` might mention a location that later code changes, as `arr` in
+    // `(i = n) + shrink() <= arr.length` if `shrink()` reassigns `arr`.
+    UBQualifier newQual = qualifierWhenComparisonCompletes(getUBQualifier(operand, in), operand);
     // `typeOfAddition.plusOffset(other, ...)` mentions `other`. If later code might change the
     // value of `other`, as in `j + k < (k = a.length)`, then that qualifier does not hold after the
     // comparison. The lower bound of `other` below is a fact about the value that was added, so it
@@ -375,8 +379,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             larger);
     // larger + 1 >= smaller
     UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
+    // `smaller` might be the left operand, as in `(i = n) < shrinkAndGetLength()`, so its own
+    // qualifier might not hold when the comparison completes either.
     UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(smallerAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(
+                smallerAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            smaller);
     UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
     if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -411,8 +420,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         qualifierWhenComparisonCompletes(
             UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
             left);
+    // `right` might be the left operand of the comparison, so its own qualifier might not hold when
+    // the comparison completes either.
     UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            right);
     UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
     if (leftQualifier.isLessThanLengthQualifier()) {
@@ -456,7 +469,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       UBQualifier minuendQual =
           qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend);
       Node subtrahend = subtractionNode.getRightOperand();
-      UBQualifier subtrahendQual = getUBQualifier(subtrahend, in);
+      UBQualifier subtrahendQual =
+          qualifierWhenComparisonCompletes(getUBQualifier(subtrahend, in), subtrahend);
 
       UBQualifier newQual =
           subtrahendQual.glb(
@@ -470,8 +484,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * Returns the given qualifier of the given node, or UNKNOWN if the qualifier might not hold when
    * the comparison that contains the node completes, because it contains an expression whose value
    * might change after the node is evaluated (see {@link
-   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of one
-   * node that is used to refine a different node.
+   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of a
+   * node that is used to refine any node, including the node itself (or an expression that has its
+   * value), after the comparison.
    *
    * @param qualifier a qualifier of {@code node}
    * @param node a node in an operand of a comparison
