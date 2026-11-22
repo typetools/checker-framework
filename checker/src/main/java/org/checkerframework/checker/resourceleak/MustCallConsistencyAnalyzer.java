@@ -294,7 +294,7 @@ public class MustCallConsistencyAnalyzer {
         return this;
       }
       ImmutableSet<Object> keys =
-          ImmutableSet.builder().addAll(this.countKeys).addAll(other.countKeys).build();
+          ImmutableSet.<Object>builder().addAll(this.countKeys).addAll(other.countKeys).build();
       return new Obligation(this.resourceAliases, this.whenToEnforce, keys);
     }
 
@@ -2627,20 +2627,20 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Return the Obligation in the given set equal to {@code target}, or null if none exists.
+   * Return the Obligation in the given set equal to {@code target}. Such an Obligation must exist.
    *
    * @param obligations a set of Obligations
    * @param target the Obligation to look for
-   * @return the Obligation in {@code obligations} equal to {@code target}, or null if none exists
+   * @return the Obligation in {@code obligations} equal to {@code target}
+   * @throws BugInCF if {@code obligations} contains no Obligation equal to {@code target}
    */
-  private static @Nullable Obligation getMatchingObligation(
-      Set<Obligation> obligations, Obligation target) {
+  private static Obligation getMatchingObligation(Set<Obligation> obligations, Obligation target) {
     for (Obligation obligation : obligations) {
       if (obligation.equals(target)) {
         return obligation;
       }
     }
-    return null;
+    throw new BugInCF("No obligation equal to %s in %s", target, obligations);
   }
 
   /**
@@ -2662,8 +2662,7 @@ public class MustCallConsistencyAnalyzer {
       }
       boolean hasNewKeys = false;
       for (Obligation obligation : state.obligations) {
-        Obligation old =
-            Objects.requireNonNull(getMatchingObligation(previous.obligations, obligation));
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
         if (!old.countKeys.containsAll(obligation.countKeys)) {
           hasNewKeys = true;
           break;
@@ -2674,8 +2673,7 @@ public class MustCallConsistencyAnalyzer {
       }
       Set<Obligation> combined = new LinkedHashSet<>(state.obligations.size());
       for (Obligation obligation : state.obligations) {
-        Obligation old =
-            Objects.requireNonNull(getMatchingObligation(previous.obligations, obligation));
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
         combined.add(old.combineCountKeys(obligation));
       }
       state = new BlockWithObligations(state.block, combined);

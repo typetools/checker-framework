@@ -515,7 +515,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
         || !rlTypeFactory.hasOwning(fieldAccess.getField())) {
       return;
     }
-    CFAbstractValue<?> value = exitStore.getValue(expression);
+    @Nullable CFAbstractValue<? extends @Nullable Object> value = exitStore.getValue(expression);
     AnnotationMirror inferred =
         value == null
             ? null
@@ -523,7 +523,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     for (String requiredMethod : rlTypeFactory.getMustCallValues(fieldAccess.getField())) {
       AnnotationMirror required = rlTypeFactory.createCalledMethods(requiredMethod);
       if (qualHierarchy.isSubtypeQualifiersOnly(annotation, required)
-          && !checkContract(expression, required, inferred, exitStore)) {
+          && (inferred == null || !checkContract(expression, required, inferred, exitStore))) {
         ResourceLeakUtils.getResourceLeakChecker(checker)
             .countFailedObligation(fieldAccess.getField());
         return;
