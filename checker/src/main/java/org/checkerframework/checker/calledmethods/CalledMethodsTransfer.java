@@ -261,7 +261,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   /**
    * Update the given {@code exceptionalStores} for the {@link
    * org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException} annotations
-   * written on the given {@code method}.
+   * written on the given {@code method}. Does not update the store for an exception type in {@link
+   * MethodInvocationNode#getAnyExceptionTypes()}.
    *
    * @param node a method invocation
    * @param method the method being invoked
@@ -302,7 +303,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       AnnotationMirror calledMethod = atypeFactory.createAccumulatorAnnotation(postcond.method());
       for (Map.Entry<TypeMirror, AccumulationStore> successor : exceptionalStores.entrySet()) {
         TypeMirror caughtException = successor.getKey();
-        if (types.isSubtype(caughtException, javaLangExceptionType)) {
+        // The invocation follows an edge labeled by one of node.getAnyExceptionTypes() whenever it
+        // throws an exception, even one that is not an Exception, so the postcondition might not
+        // hold on that edge.
+        if (types.isSubtype(caughtException, javaLangExceptionType)
+            && node.getAnyExceptionTypes().stream()
+                .noneMatch(t -> types.isSameType(t, caughtException))) {
           AccumulationStore resultStore = successor.getValue();
           resultStore.insertOrRefine(e, calledMethod);
         }

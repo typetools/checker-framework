@@ -2761,7 +2761,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param extraExceptionTypes types that label exceptional edges of the {@code close} call, in
-   *     addition to the types of the exceptions that the call might throw
+   *     addition to the types of the exceptions that the call might throw; the call follows those
+   *     edges whenever it throws an exception (see {@link
+   *     MethodInvocationNode#getAnyExceptionTypes()})
    * @param p the value to pass to calls to {@code scan}
    */
   private void addCloseCallForResource(
@@ -2824,6 +2826,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MethodInvocationNode(
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
+    closeCallNode.setAnyExceptionTypes(extraExceptionTypes);
     extendWithInvocationNode(
         closeCallNode, closeCallNode.getTarget().getMethod(), extraExceptionTypes);
 
@@ -2849,6 +2852,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * that {@code close} might throw. Otherwise, if {@code close} terminates execution and might
    * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
    * unreachable.
+   *
+   * <p>The call follows those edges whenever {@code close} throws an exception, whatever its type,
+   * so the call records their types (see {@link MethodInvocationNode#getAnyExceptionTypes()}). An
+   * analysis must not apply, on those edges, a fact that holds only when {@code close} throws an
+   * exception of a particular type, such as an exceptional postcondition of {@code close}. The
+   * normal successor of the call, if any, is unaffected.
    *
    * <p>If {@code close} terminates execution, the call has no normal successor, but its exceptional
    * successors still reach the rethrow of the primary exception. That models termination by
