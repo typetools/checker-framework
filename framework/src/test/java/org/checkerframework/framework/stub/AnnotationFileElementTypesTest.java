@@ -3,12 +3,16 @@ package org.checkerframework.framework.stub;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.processing.Processor;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -16,6 +20,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +34,9 @@ public class AnnotationFileElementTypesTest {
 
   /** A temporary directory, deleted after each test. */
   @Rule public TemporaryFolder tmp = new TemporaryFolder();
+
+  /** The fully-qualified name of the checker that the tests run. */
+  private static final String CHECKER = "org.checkerframework.common.value.ValueChecker";
 
   /**
    * Creates a file with the given contents.
@@ -65,42 +73,74 @@ public class AnnotationFileElementTypesTest {
    * option, and returns the compiler's diagnostics.
    *
    * @param stubs the argument to the {@code -Astubs} command-line option
-   * @param extraClasspath a directory to prepend to the classpath, or null
+   * @param extraClasspath a directory to prepend to the classpath from which the checker is loaded,
+   *     so that the checker finds the annotation files in it, or null
    * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
    *     "WARNING: Ignoring Foo.stub: ..."
    * @throws IOException if the source file cannot be written or the compiler cannot be run
    */
-  private List<String> diagnostics(String stubs, @Nullable File extraClasspath)
-      throws IOException {
-    String classpath = System.getProperty("java.class.path");
-    if (extraClasspath != null) {
-      classpath = extraClasspath.getPath() + File.pathSeparator + classpath;
-    }
+  private List<String> diagnostics(String stubs, @Nullable File extraClasspath) throws IOException {
     File sourceFile = write(new File(tmp.getRoot(), "src/Test.java"), "class Test {}");
     File classes = tmp.newFolder();
-    List<String> options =
+    List<String> options = new ArrayList<>();
+    if (extraClasspath == null) {
+      options.add("-processor");
+      options.add(CHECKER);
+    }
+    options.addAll(
         Arrays.asList(
-            "-processor",
-            "org.checkerframework.common.value.ValueChecker",
             "-Astubs=" + stubs,
             "-ApermitMissingJdk",
             "-d",
             classes.getPath(),
             "-classpath",
-            classpath);
+            System.getProperty("java.class.path")));
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
-    try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
+    try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        URLClassLoader checkerLoader =
+            extraClasspath == null ? null : checkerClassLoader(extraClasspath)) {
       Iterable<? extends JavaFileObject> javaFiles = fileManager.getJavaFileObjects(sourceFile);
-      compiler.getTask(null, fileManager, collector, options, null, javaFiles).call();
+      JavaCompiler.CompilationTask task =
+          compiler.getTask(null, fileManager, collector, options, null, javaFiles);
+      if (checkerLoader != null) {
+        // The checker looks up a classpath annotation file with its own class loader, which
+        // javac's -classpath command-line option does not affect.
+        Processor checker =
+            (Processor) checkerLoader.loadClass(CHECKER).getDeclaredConstructor().newInstance();
+        task.setProcessors(Collections.singletonList(checker));
+      }
+      task.call();
     } catch (UncheckedIOException e) {
       throw e.getCause();
+    } catch (ReflectiveOperationException e) {
+      throw new Error("Cannot instantiate " + CHECKER, e);
     }
     List<String> result = new ArrayList<>();
     for (Diagnostic<? extends JavaFileObject> diagnostic : collector.getDiagnostics()) {
       result.add(diagnostic.getKind() + ": " + diagnostic.getMessage(Locale.ROOT));
     }
     return result;
+  }
+
+  /**
+   * Returns a class loader that loads classes from the given directory and then from this JVM's
+   * classpath. It does not delegate to the application class loader, so the classes that it loads
+   * find resources in {@code extraClasspath}.
+   *
+   * @param extraClasspath a directory
+   * @return a class loader whose classpath is {@code extraClasspath} followed by this JVM's
+   *     classpath
+   * @throws IOException if a classpath entry cannot be converted to a URL
+   */
+  private static URLClassLoader checkerClassLoader(File extraClasspath) throws IOException {
+    List<URL> urls = new ArrayList<>();
+    urls.add(extraClasspath.toURI().toURL());
+    for (String entry :
+        SystemUtil.pathSeparatorSplitter.split(System.getProperty("java.class.path"))) {
+      urls.add(new File(entry).toURI().toURL());
+    }
+    return new URLClassLoader(urls.toArray(new URL[0]), ClassLoader.getPlatformClassLoader());
   }
 
   /**
@@ -134,7 +174,9 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void leadingWhitespaceOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    write(new File(classpathDir, "Padded.astub"), " ".repeat(150) + "this is not a stub file");
+    write(
+        new File(classpathDir, "Padded.astub"),
+        " ".repeat(150) + "package p; class NoSuchClass {}");
     assertHasDiagnostic(
         "WARNING: /Padded.astub:", diagnostics("checker.jar/Padded.astub", classpathDir));
   }
