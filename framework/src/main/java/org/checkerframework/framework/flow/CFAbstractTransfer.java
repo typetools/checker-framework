@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -1067,9 +1068,7 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (CFAbstractStore.canInsertJavaExpression(expr)
-          || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
-              && !expr.containsUnknown())) {
+      if (isCheckedCandidate(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1083,6 +1082,46 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns true if {@link #nodesWithValueOf} omits a candidate whose expression is {@code expr}
+   * when a write might change the candidate's value: that is, if a store can hold a value for
+   * {@code expr} (see {@link CFAbstractStore#canInsertJavaExpression}), or if {@code expr} is a
+   * unary or binary operation that does not contain {@link Unknown}.
+   *
+   * @param expr the expression for a candidate of {@link #nodesWithValueOf}
+   * @return true if a candidate whose expression is {@code expr} is omitted when a write might
+   *     change its value
+   */
+  private static boolean isCheckedCandidate(JavaExpression expr) {
+    return CFAbstractStore.canInsertJavaExpression(expr)
+        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+            && !expr.containsUnknown());
+  }
+
+  /**
+   * Returns a predicate that is true of each expression whose value, when the comparison that
+   * contains {@code node} completes, might differ from its value before {@code node} was evaluated.
+   * The value can differ if {@code node} itself, or the code that is evaluated after {@code node}
+   * and before the comparison completes, writes a variable, field, or array element that the
+   * expression reads. See {@link #nodesWithValueOf} for details.
+   *
+   * <p>A client can use this to discard information, computed when {@code node} was evaluated,
+   * that mentions other expressions. For example, the SameLen Checker uses it to discard the names
+   * in the {@code @SameLen} type of an operand that are not valid when the comparison completes.
+   *
+   * @param node a node in an operand of a comparison, possibly an assignment
+   * @return a predicate that is true of each expression that evaluating {@code node} and the rest
+   *     of the comparison might change
+   */
+  protected Predicate<JavaExpression> mayBeChangedByOrAfter(Node node) {
+    WrittenLocations written = locationsWrittenUntilComparison(node);
+    TreePath path = sourcePath(node);
+    if (path != null) {
+      written.scan(path.getLeaf(), null);
+    }
+    return expr -> written.mayChange(expr, false);
+  }
+
+  /**
    * Returns the sides of the given assignment that have the value of the assignment when the
    * assignment completes.
    *
@@ -1091,8 +1130,9 @@ public abstract class CFAbstractTransfer<
    * assignment, and so on. For example, {@code a = b = c} is parsed as {@code a = (b = c)}, and its
    * chain is {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in
    * the chain, such as {@code a} and {@code b}, and the rhs of the last assignment in the chain,
-   * such as {@code c}. The result omits each side that a store can hold a value for and whose value
-   * the rest of the chain might change.
+   * such as {@code c}. The result omits each side that a store can hold a value for, or that is a
+   * unary or binary operation (see {@link #isCheckedCandidate}), and whose value the rest of the
+   * chain might change. For example, the result for {@code s = s + "x"} omits {@code s + "x"}.
    *
    * @param assignment an assignment node
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1148,8 +1188,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, and
-   * writing the given locations might change the side's value.
+   * Returns true if the given side of a chain of assignments is a candidate that {@link
+   * #nodesWithValueOf} checks (see {@link #isCheckedCandidate}), and writing the given locations
+   * might change the side's value.
    *
    * @param side a side of a chain of assignments (see {@link #sidesOfAssignment}): an entire
    *     target, such as {@code a[i]} (not {@code a} or {@code i}), or the entire rhs of the last
@@ -1160,12 +1201,12 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} and writing {@code written} might
-   *     change its value
+   * @return true if {@code side} is a checked candidate and writing {@code written} might change
+   *     its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
+    return isCheckedCandidate(expr) && written.mayChange(expr, true);
   }
 
   /**
