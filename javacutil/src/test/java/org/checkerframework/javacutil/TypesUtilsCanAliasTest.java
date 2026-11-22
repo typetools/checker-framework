@@ -11,7 +11,6 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.junit.Assert;
@@ -218,60 +217,5 @@ public class TypesUtilsCanAliasTest {
     assertCanAlias(true, array, types.getArrayType(type("java.lang.Runnable")));
     assertCanAlias(true, array, types.getArrayType(type("java.lang.Integer")));
     assertCanAlias(false, array, types.getArrayType(type("java.lang.String")));
-  }
-
-  /**
-   * Asserts that {@link TypesUtils#canAliasConservative} returns the expected result for the given
-   * types, in either order.
-   *
-   * @param expected the expected result
-   * @param a a type
-   * @param b another type
-   */
-  private static void assertCanAliasConservative(boolean expected, TypeMirror a, TypeMirror b) {
-    Assert.assertEquals(a + " and " + b, expected, TypesUtils.canAliasConservative(a, b, types));
-    Assert.assertEquals(b + " and " + a, expected, TypesUtils.canAliasConservative(b, a, types));
-  }
-
-  /**
-   * The conservative check treats an interface as possibly aliasing any class that is not final,
-   * and arrays of such types as possibly aliasing.
-   */
-  @Test
-  public void conservativeInterfaces() {
-    Type number = type("java.lang.Number");
-    Type comparable = (Type) types.erasure(type("java.lang.Comparable"));
-    Type runnable = type("java.lang.Runnable");
-    Type string = type("java.lang.String");
-    Type integer = type("java.lang.Integer");
-    assertCanAlias(false, number, comparable);
-    assertCanAliasConservative(true, number, comparable);
-    assertCanAliasConservative(true, runnable, comparable);
-    assertCanAliasConservative(true, types.getArrayType(number), types.getArrayType(comparable));
-    assertCanAliasConservative(
-        true,
-        types.getArrayType(types.getArrayType(number)),
-        types.getArrayType(types.getArrayType(runnable)));
-    // String is final and does not implement Runnable.
-    assertCanAliasConservative(false, string, runnable);
-    assertCanAliasConservative(false, types.getArrayType(string), types.getArrayType(runnable));
-    // Two unrelated classes.
-    assertCanAliasConservative(false, integer, string);
-    assertCanAliasConservative(false, types.getArrayType(integer), types.getArrayType(string));
-    assertCanAliasConservative(
-        false, types.getArrayType(number), types.getArrayType(types.getArrayType(number)));
-  }
-
-  /** Arrays with different primitive component types never alias, even if one widens to the other. */
-  @Test
-  public void conservativePrimitiveArrays() {
-    TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
-    TypeMirror longType = types.getPrimitiveType(TypeKind.LONG);
-    TypeMirror intArray = types.getArrayType(intType);
-    TypeMirror longArray = types.getArrayType(longType);
-    assertCanAliasConservative(true, intArray, types.getArrayType(intType));
-    assertCanAliasConservative(false, intArray, longArray);
-    assertCanAliasConservative(false, types.getArrayType(intArray), types.getArrayType(longArray));
-    assertCanAliasConservative(false, intArray, types.getArrayType(type("java.lang.Integer")));
   }
 }

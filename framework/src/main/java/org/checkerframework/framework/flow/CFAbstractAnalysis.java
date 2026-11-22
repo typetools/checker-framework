@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -107,7 +108,7 @@ public abstract class CFAbstractAnalysis<
    * null stands for the null result, so test membership with {@link Map#containsKey} rather than
    * comparing the result of {@link Map#get} to null.
    *
-   * <p>The keys are nodes of a single control flow graph, so {@link #performAnalysis} clears this.
+   * <p>The keys are nodes of a single control flow graph, so {@link #initFields} clears this.
    *
    * <p>This is an {@link IdentityHashMap} because the cached values are viewpoint-adapted to a
    * particular call site, but {@link MethodInvocationNode#equals} compares only the target and the
@@ -123,8 +124,8 @@ public abstract class CFAbstractAnalysis<
    * argument and on the trees around the argument's tree, but which would otherwise be recomputed
    * once per dataflow iteration per comparison.
    *
-   * <p>The keys are nodes of a single control flow graph, so {@link #performAnalysis} clears this.
-   * This is an {@link IdentityHashMap} because the result depends on the trees around the node, but
+   * <p>The keys are nodes of a single control flow graph, so {@link #initFields} clears this. This
+   * is an {@link IdentityHashMap} because the result depends on the trees around the node, but
    * {@link Node#equals} can be true for nodes that represent different trees.
    */
   final IdentityHashMap<Node, List<Node>> nodesWithValueOfCache = new IdentityHashMap<>();
@@ -206,10 +207,18 @@ public abstract class CFAbstractAnalysis<
     }
     this.fieldValues.clear();
     this.fieldValues.addAll(fieldValues);
-    // The cache's keys are nodes of the control flow graph that was analyzed previously.
+    super.performAnalysis(cfg);
+  }
+
+  @Override
+  @EnsuresNonNull("this.cfg")
+  protected void initFields(ControlFlowGraph cfg) {
+    // The caches' keys are nodes of the control flow graph that was analyzed previously.  Clear
+    // them here rather than in `performAnalysis(cfg, fieldValues)`, so that the inherited
+    // `performAnalysis(cfg)` clears them too.
     sideEffectsOnlyExpressionsCache.clear();
     nodesWithValueOfCache.clear();
-    super.performAnalysis(cfg);
+    super.initFields(cfg);
   }
 
   /**

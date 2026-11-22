@@ -154,6 +154,12 @@ public abstract class CFAbstractTransfer<
   private final ExecutableElement objectToString;
 
   /**
+   * The method {@code String.length()}, whose result depends only on its receiver, because a {@code
+   * String} is immutable.
+   */
+  private final ExecutableElement stringLength;
+
+  /**
    * Creates a CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
@@ -178,6 +184,7 @@ public abstract class CFAbstractTransfer<
         !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
     this.infer = analysis.checker.hasOption("infer");
     this.objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
+    this.stringLength = TreeUtils.getMethod("java.lang.String", "length", 0, analysis.getEnv());
   }
 
   /**
@@ -1104,7 +1111,7 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (isCheckedForChanges(expr)) {
+      if (isCheckedCandidate(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1115,6 +1122,22 @@ public abstract class CFAbstractTransfer<
       result.add(candidate);
     }
     return result;
+  }
+
+  /**
+   * Returns true if {@link #nodesWithValueOf} omits a candidate whose expression is {@code expr}
+   * when a write might change the candidate's value: that is, if a store can hold a value for
+   * {@code expr} (see {@link CFAbstractStore#canInsertJavaExpression}), or if {@code expr} is a
+   * unary or binary operation that does not contain {@link Unknown}.
+   *
+   * @param expr the expression for a candidate of {@link #nodesWithValueOf}
+   * @return true if a candidate whose expression is {@code expr} is omitted when a write might
+   *     change its value
+   */
+  private static boolean isCheckedCandidate(JavaExpression expr) {
+    return CFAbstractStore.canInsertJavaExpression(expr)
+        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+            && !expr.containsUnknown());
   }
 
   /**
@@ -1129,9 +1152,9 @@ public abstract class CFAbstractTransfer<
    * {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in the
    * chain, such as {@code a} and {@code b}; each value-preserving cast in the chain; and the
    * operand of the last assignment or cast in the chain, such as {@code c}. The result omits each
-   * side whose value the rest of the chain might change and that a store can hold a value for or
-   * that is a unary or binary operation (see {@link #mayBeChanged}). For example, the result for
-   * {@code s = "x" + s} is just {@code s}.
+   * side that a store can hold a value for, or that is a unary or binary operation (see {@link
+   * #isCheckedCandidate}), and whose value the rest of the chain might change. For example, the
+   * result for {@code s = s + "x"} omits {@code s + "x"}.
    *
    * @param assignment an assignment node or a value-preserving cast
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1195,8 +1218,8 @@ public abstract class CFAbstractTransfer<
     // looks through value-preserving widening conversions). JavaExpression.fromNode ignores the
     // conversion, so omit `rhs`: its expression does not have the value of the chain.
     // Omitting a narrowing conversion is defensive.  Its operand is a constant, whose value it
-    // keeps, or a binary operation such as `b + i` in `b += i`, for which no store holds a value;
-    // the omission keeps this code sound if a store ever holds one.
+    // keeps, or a binary operation such as `b + i` in `b += i`, which reads the target that the
+    // chain writes, so mayBeChanged also omits it; the omission keeps this code sound regardless.
     boolean rhsIsValueChangingConversion =
         rhs instanceof WideningConversionNode || rhs instanceof NarrowingConversionNode;
     if (!rhsIsValueChangingConversion && !mayBeChanged(rhs, written)) {
@@ -1281,11 +1304,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, or the
-   * side is a unary or binary operation that does not contain {@link Unknown}, and writing the
-   * given locations might change the side's value. As in {@link #computeNodesWithValueOf}, an
-   * operation is checked because a client such as the SameLen Checker can relate it to other
-   * expressions.
+   * Returns true if the given side of a chain of assignments is a candidate that {@link
+   * #nodesWithValueOf} checks (see {@link #isCheckedCandidate}), and writing the given locations
+   * might change the side's value.
    *
    * @param side a side of a chain of assignments and casts (see {@link #sidesOfAssignment}): an
    *     entire target, such as {@code a[i]} (not {@code a} or {@code i}), a cast in the chain, or
@@ -1296,26 +1317,12 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} or it is an operation that does not
-   *     contain {@link Unknown}, and writing {@code written} might change its value
+   * @return true if {@code side} is a checked candidate and writing {@code written} might change
+   *     its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return isCheckedForChanges(expr) && written.mayChange(expr, true);
-  }
-
-  /**
-   * Returns true if {@link #nodesWithValueOf} omits the given expression when its value might
-   * change: that is, if a store can hold a value for it, or it is a unary or binary operation that
-   * does not contain {@link Unknown}.
-   *
-   * @param expr an expression
-   * @return true if {@link #nodesWithValueOf} omits {@code expr} when its value might change
-   */
-  private static boolean isCheckedForChanges(JavaExpression expr) {
-    return CFAbstractStore.canInsertJavaExpression(expr)
-        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
-            && !expr.containsUnknown());
+    return isCheckedCandidate(expr) && written.mayChange(expr, true);
   }
 
   /**
@@ -1479,8 +1486,8 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns true if the given node, after looking through value-preserving widening conversions, is
-   * a conversion that might change the value of its operand, such as the conversion of {@code i}
-   * to {@code float} in {@code i < 16_777_216f}. {@link JavaExpression#fromNode} ignores the
+   * a conversion that might change the value of its operand, such as the conversion of {@code i} to
+   * {@code float} in {@code i < 16_777_216f}. {@link JavaExpression#fromNode} ignores the
    * conversion, so the expression for such a node does not have the node's value.
    *
    * @param node a node
@@ -1762,7 +1769,8 @@ public abstract class CFAbstractTransfer<
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
      * element changes only accesses of arrays that might alias the written array, and method calls.
-     * If side effects unrefine aliases (see {@link
+     * A call to {@code String.length()} changes only if its receiver changes, because a {@code
+     * String} is immutable. If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes every expression whose abstract value other code can modify (see {@link
      * JavaExpression#isModifiableByOtherCode}).
@@ -1795,6 +1803,9 @@ public abstract class CFAbstractTransfer<
             || mayChange(aa.getArray(), false)
             || mayChange(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
+        if (mc.getElement().equals(stringLength)) {
+          return mayChange(mc.getReceiver(), false);
+        }
         if (anyHeapLocation
             || !fields.isEmpty()
             || !arrayElements.isEmpty()
@@ -1854,14 +1865,7 @@ public abstract class CFAbstractTransfer<
         return true;
       }
       for (ArrayAccess arrayElement : arrayElements) {
-        JavaExpression written = arrayElement.getArray();
-        JavaExpression read = aa.getArray();
-        // A false result is used to retain a refinement, so it must be sound.  CFAbstractAnalysis
-        // #canAlias is not conservative for interface component types:  one `Integer[]` can be
-        // both a `Number[]` and a `Comparable<?>[]`.
-        if (analysis.canAlias(written, read)
-            || TypesUtils.canAliasConservative(
-                written.getType(), read.getType(), analysis.getTypes())) {
+        if (analysis.canAlias(arrayElement.getArray(), aa.getArray())) {
           return true;
         }
       }

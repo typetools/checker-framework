@@ -165,7 +165,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
     List<String> result = new ArrayList<>(expressions.size());
     for (String expression : expressions) {
-      AnnotationMirror anno = factory.createLessThanQualifier(Collections.singletonList(expression));
+      AnnotationMirror anno =
+          factory.createLessThanQualifier(Collections.singletonList(expression));
       if (!containsExpressionChangedBeforeComparisonCompletes(anno, node)) {
         result.add(expression);
       }

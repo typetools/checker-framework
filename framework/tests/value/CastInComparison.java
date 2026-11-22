@@ -122,4 +122,11 @@ public class CastInComparison {
       @IntVal(1) int wrong = Left.f;
     }
   }
+
+  void wideningOfAssignment(int i, int j) {
+    if ((i = j) == 3L) {
+      @IntVal(3) int x = i;
+      @IntVal(3) int y = j;
+    }
+  }
 }
