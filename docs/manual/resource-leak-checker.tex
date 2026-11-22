@@ -154,7 +154,7 @@ The following annotations express ownership of resource collections.
   express ownership of resource collections. Resource collection formal parameters default to \<@NotOwningCollection>, whereas resource collection fields and return types default to \<@OwningCollection>.
   For more details, see Section~\ref{resource-leak-collections}.
 \item[\refqualclass{checker/collectionownership/qual}{PolyOwningCollection}]
-  is the polymorphic qualifier for collection ownership. For example, \<Iterable.iterator()> returns an iterator with the same ownership as the collection.
+  is the polymorphic qualifier for collection ownership. For example, \<Iterable.iterator()> returns an iterator that never owns the collection's elements.
 \end{description}
 
 The following annotations are written on methods.
@@ -163,8 +163,9 @@ The following annotations are written on methods.
 \item[\refqualclasswithparams{checker/collectionownership/qual}{CollectionFieldDestructor}{String[] value}]
   expresses that the annotated method fulfills the obligations of the given resource collection fields.
   For more details, see Section~\ref{resource-leak-collections-fields}.
-\item[\refqualclass{checker/collectionownership/qual}{CreatesCollectionObligation}]
+\item[\refqualclasswithparams{checker/collectionownership/qual}{CreatesCollectionObligation}{String element}]
   expresses that the annotated method might insert an element into its receiver collection, as \<Collection.add> does.
+  The inserted element is the method's last parameter, or the parameter that the optional \<element> names.
   For more details, see Section~\ref{resource-leak-collections-defaults}.
 \end{description}
 \fi
@@ -695,12 +696,24 @@ collection's obligation.
 A Java expression is a \textit{resource collection} if:
 
 \begin{enumerate}
-  \item its type is \<java.lang.Iterable> or a subtype of it (which includes every \<java.util.Collection>) with exactly one type argument, and
-  \item the upper bound of that type argument has a non-empty or unknown (\<@MustCallUnknown>) \<MustCall> type.
+  \item its type is \<java.lang.Iterable> or a subtype of it (which includes every \<java.util.Collection>), and
+  \item the upper bound of its element type has a non-empty or unknown (\<@MustCallUnknown>) \<MustCall> type.
 \end{enumerate}
 
 For example, expressions of type \code{List<Socket>} or \code{Iterable<?\ extends @MustCallUnknown Object>} are resource collections, but expressions of type \code{Set<String>} or \code{Map<String, Socket>} are not.
 It is a limitation of the Resource Leak Checker that a map, such as a \code{Map<String, Socket>}, cannot own resources.
+
+The element type of a collection is the type argument of its \<Iterable>
+supertype.  A user-defined collection class that fixes its element type, such
+as \code{class SocketList extends ArrayList<Socket>}, is a resource collection
+because its element type, \<Socket>, has a must-call method.  A generic
+user-defined collection class, whose element type is one of its type
+parameters, can contain resources only if the upper bound of that type
+parameter is \<@MustCallUnknown>:
+
+\begin{verbatim}
+class ResourceList<E extends @MustCallUnknown Object> extends ArrayList<E> { ... }
+\end{verbatim}
 
 \subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 
@@ -741,10 +754,10 @@ The type hierarchy of the ownership type system is:
 A \<@NotOwningCollection> reference can perform only certain ``safe''
 operations on the collection. It can insert only elements that are definitely
 not owning, such as the result of a method whose return type is
-\<@NotOwning>. It cannot clear the collection or discard or overwrite
-elements, for example with \<clear()>, \<remove(Object)>, or \<set()>. Some
-methods that remove and return an element, such as \<Queue.poll()>, are
-permitted; the caller then owns the returned element and must dispose of it.
+\<@NotOwning>. It cannot clear the collection or discard elements, for example
+with \<clear()> or \<remove(Object)>. Methods that remove or replace an element
+and return it, such as \<Queue.poll()> and \<List.set()>, are permitted; the
+caller then owns the returned element and must dispose of it.
 In exchange for these restrictions, a \<@NotOwningCollection> reference has no
 obligation for the elements of the collection.
 
@@ -776,12 +789,15 @@ Such a loop removes the obligations for the methods that it calls on every eleme
 To determine which methods such a loop calls, the checker does the following:
 
 \begin{itemize}
-  \item It checks that the loop does not terminate early.
+  \item It checks that the loop runs to completion. If the loop exits early, such as via \<break>, \<return>, or an exception, the collection still has its obligation.
   \item It uses the Called Methods analysis to determine the methods that are definitely called on the loop variable. Therefore, the checker supports anything that changes the \<@CalledMethods> type of the loop variable, such as passing it as an argument to a method annotated with \<@EnsuresCalledMethods(value = "\#1", methods = "m")>.
   \item It permits the loop to skip null elements:  it suffices to fulfill the obligation for every non-null element of the collection. The checker recognizes a null check syntactically rather than by performing a full nullness analysis, so it might fail to verify a loop that checks for null in an unusual way.
 \end{itemize}
 
 An enhanced \<for> loop must not assign to the variable that holds the collection.
+Its body must not insert into or replace elements of the collection.  If the
+collection is a field of \<this>, the body also must not call a method
+annotated with \<@CreatesMustCallFor("this")>, which might insert into the field.
 
 
 \subsectionAndLabel{Defaults and flow-sensitive refinement}{resource-leak-collections-defaults}
@@ -793,13 +809,15 @@ List<Socket> sockets = new ArrayList<>();
 // `sockets` is now @OwningCollectionWithoutObligation
 \end{Verbatim}
 
-When code adds an element to the collection, the type of the collection becomes \<@OwningCollection>.
+When code adds an element other than \<null> to the collection, the type of the collection becomes \<@OwningCollection>.
+(Adding \<null>, as in \<sockets.add(null)>, does not change its type.)
+In this example, \<connect(i)> returns a new \<Socket> and does not throw a checked exception:
 
 \begin{Verbatim}
 List<Socket> sockets = new ArrayList<>();
 // `sockets` is @OwningCollectionWithoutObligation
 for (int i = 0; i < n; i++) {
-  sockets.add(new Socket(myHost, myPort + i));
+  sockets.add(connect(i));
   // `sockets` is @OwningCollection
 }
 // `sockets` is @OwningCollection
@@ -807,9 +825,19 @@ for (int i = 0; i < n; i++) {
 
 More generally, a method that might add an element with an obligation to its
 receiver collection, such as \<Collection.add>, is annotated with
-\<@CreatesCollectionObligation>.  At a call to such a method, the Resource Leak
-Checker changes the type of the receiver collection to \<@OwningCollection> and
-creates a tracked obligation for the collection in the dataflow analysis.
+\<@CreatesCollectionObligation>.  At a call to such a method on an owning
+receiver (\<@OwningCollection> or \<@OwningCollectionWithoutObligation>), the
+Resource Leak Checker changes the type of the receiver collection to
+\<@OwningCollection> and creates a tracked obligation for the collection in the
+dataflow analysis.  A \<@NotOwningCollection> receiver remains
+\<@NotOwningCollection> and gains no obligation, because it can insert only
+non-owning elements
+(Section~\ref{resource-leak-collections-ownership-types}).
+By default, the inserted element is the method's last parameter, as in
+\<add(E)> and \<add(int, E)>.  A method whose inserted element is not its last
+parameter names it with \<element>.  For example,
+\<BlockingQueue.offer(E, long, TimeUnit)> is annotated with
+\<@CreatesCollectionObligation(element = "\#1")>.
 
 The default type of a resource collection parameter is
 \<@NotOwningCollection>.
@@ -855,7 +883,11 @@ transferred from the call-site argument to the method parameter. The Resource
 Leak Checker changes the type of the argument at the call site to
 \<@NotOwningCollection>, in order to maintain the invariant that there is at
 most one owning reference for each resource collection.  The parameter takes on
-the responsibility of disposing of the collection.
+the responsibility of disposing of the collection, but only if the method
+returns normally.  If the method throws an exception, the caller keeps the
+obligation, so the caller must dispose of the collection on that exceptional
+path (as for an \<@Owning> parameter;
+see Section~\ref{resource-leak-owning-parameters-and-exceptions}).
 
 Resource collection return types default to \<@OwningCollection>. Returning a
 resource collection from a method with that return type discharges the method's
@@ -863,7 +895,7 @@ responsibility for the collection's obligation:  the obligation and ownership
 are both transferred to the method invocation expression at the call site.
 
 \begin{verbatim}
-List<Socket> returnSocketList() {
+List<Socket> returnSocketList() throws IOException {
   List<Socket> socketList = new ArrayList<>();
   // `socketList` is @OwningCollectionWithoutObligation
   socketList.add(new Socket(myHost, myPort));
@@ -921,8 +953,8 @@ class Aggregator implements Closeable {
 To verify a resource collection field \<field>, the checker requires the following:
 \begin{enumerate}
   \item The enclosing class has a \<@MustCall> type. In the example, the class has type \<@MustCall("close")> because it implements \<Closeable>.
-  \item One of the methods in the \<@MustCall> type of the enclosing class (usually there's just one) is annotated with \<@CollectionFieldDestructor("field")>. This postcondition annotation asserts that \<field> has type \<@OwningCollectionWithoutObligation> when the method exits, and the checker verifies that assertion.
-  \item Every method that calls a method that creates an obligation for the resource collection field, such as \<socketList.add(Socket)> in the example, is annotated with \<@CreatesMustCallFor("this")>.
+  \item One of the methods in the \<@MustCall> type of the enclosing class (usually there's just one) is annotated with \<@CollectionFieldDestructor("field")>. This postcondition annotation asserts that \<field> has type \<@OwningCollectionWithoutObligation> when the method exits, even by throwing an exception, and the checker verifies that assertion.
+  \item Every method that calls a method that creates an obligation for the resource collection field, such as \<socketList.add(Socket)> in the example, is annotated with \<@CreatesMustCallFor("this")>.  A constructor that adds to a field of the object it constructs needs no such annotation, because constructing an object already creates its obligation.
 \end{enumerate}
 
 As a result, each client of the \<Aggregator> class is responsible for calling \<close()> on each instance before the instance goes out of scope.
@@ -960,15 +992,12 @@ If the enclosing class should not take responsibility for the resource collectio
 
 \subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
 
-An iterator has the same collection ownership type as the collection it iterates
-over.  (This is implemented by annotating \<Iterable.iterator()> as
-\<@PolyOwningCollection>.) An iterator never has an obligation of its own: the
-collection keeps the obligation.
+An iterator over a resource collection is \<@NotOwningCollection>: it never owns
+the collection's elements, so the collection keeps the obligation.
 
-\<Iterator.next()> returns a \<@NotOwning> element. \<Iterator.remove()> is
-permitted only if the collection has no obligation
-(\<@OwningCollectionWithoutObligation>), because the checker does not track
-whether the removed element was disposed of.
+\<Iterator.next()> returns a \<@NotOwning> element.  \<Iterator.remove()> is not
+permitted on such an iterator, because the checker does not track whether the
+removed element was disposed of.
 
 An implementation of \<Iterator> whose elements are resources must annotate the
 return type of its \<next()> method with \<@NotOwning>, to match
