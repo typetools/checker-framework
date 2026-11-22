@@ -3179,12 +3179,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns annotations applicable to the boxed primitive type of {@code primitiveKind} that are
-   * copied or adapted from {@code annos}, for a boxing conversion (JLS 5.1.7). For example, the
-   * Interning Checker returns {@code @UnknownInterned}, because a boxed value need not be interned.
+   * copied or adapted from {@code annos}, for a boxing conversion (JLS 5.1.7). For example, for
+   * boxing an {@code int}, the Interning Checker returns {@code @UnknownInterned}, because a boxed
+   * {@code Integer} need not be interned.
    *
    * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
    *
-   * @param annos annotations to box, from a primitive
+   * <p>An override must not side-effect {@code annos}, which might be unmodifiable or might be
+   * owned by an abstract value. To return different annotations, copy {@code annos} first.
+   *
+   * @param annos annotations to box, from a primitive; must not be side-effected
    * @param primitiveKind the primitive type to box, such as {@code int}
    * @return result of converting {@code annos} from {@code primitiveKind} to its boxed primitive,
    *     such as {@code Integer}
@@ -3243,7 +3247,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
    *
-   * @param annos annotations to unbox, from a boxed primitive such as {@code Integer}
+   * <p>An override must not side-effect {@code annos}, which might be unmodifiable or might be
+   * owned by an abstract value. To return different annotations, copy {@code annos} first.
+   *
+   * @param annos annotations to unbox, from a boxed primitive such as {@code Integer}; must not be
+   *     side-effected
    * @param primitiveKind the primitive type that the boxed primitive unboxes to, such as {@code
    *     int}
    * @return result of converting {@code annos} from the boxed primitive to {@code primitiveKind}

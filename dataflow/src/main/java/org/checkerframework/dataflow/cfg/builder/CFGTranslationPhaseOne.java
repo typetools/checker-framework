@@ -4058,10 +4058,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           boolean isPostfix =
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.POSTFIX_DECREMENT;
 
-          result = null; // for definite assignment; it is assigned in isPostfix and in !isPostfix
+          // For a postfix operator, the temporary variable that holds the old value.
+          VariableTree tempVarDecl = null;
           if (isPostfix) {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
-            VariableTree tempVarDecl =
+            tempVarDecl =
                 treeBuilder.buildVariableDecl(
                     exprType,
                     uniqueName("tempPostfix"),
@@ -4081,18 +4082,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             AssignmentNode tempAssignNode = new AssignmentNode(tree, tempVarNode, expr);
             tempAssignNode.setInSource(false);
             extendWithNode(tempAssignNode);
-
-            Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
-            handleArtificialTree(resultExpr);
-            result = new LocalVariableNode(resultExpr);
-            result.setInSource(false);
-            extendWithNode(result);
           }
           AssignmentNode unaryAssign =
               createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
-          if (!isPostfix) {
-            result = unaryAssign;
+          if (tempVarDecl == null) {
+            return unaryAssign;
           }
+          // The result of a postfix operator is the old value.  Its use follows the increment or
+          // decrement, so that any conversion of the result, such as boxing for a `return`
+          // statement, occurs after the variable is updated (JLS 15.14.2, 15.14.3).
+          Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
+          handleArtificialTree(resultExpr);
+          result = new LocalVariableNode(resultExpr);
+          result.setInSource(false);
+          extendWithNode(result);
           return result;
         }
 

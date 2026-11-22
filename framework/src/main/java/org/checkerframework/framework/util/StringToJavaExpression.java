@@ -210,7 +210,8 @@ public interface StringToJavaExpression {
   static JavaExpression atMethodInvocation(
       String expression, MethodInvocationNode methodInvocationNode, SourceChecker checker)
       throws JavaExpressionParseException {
-    ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationNode.getTree());
+    // Use the target rather than the tree, which a custom CFG might not supply.
+    ExecutableElement ee = methodInvocationNode.getTarget().getMethod();
     JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
     return javaExpr.atMethodInvocation(methodInvocationNode);
   }
