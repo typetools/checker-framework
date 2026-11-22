@@ -3,7 +3,6 @@
 // Test that a case label does not refine a selector expression that a guard might have reassigned.
 
 import org.checkerframework.common.value.qual.EnumVal;
-import org.checkerframework.dataflow.qual.Pure;
 
 public class EnumSwitchGuardReassignsSelector {
 
@@ -43,28 +42,13 @@ public class EnumSwitchGuardReassignsSelector {
     }
   }
 
-  static E staticField;
-
-  @Pure
-  static E getStaticField() {
-    return staticField;
-  }
-
-  static boolean resetStatic() {
-    staticField = E.A;
-    return false;
-  }
-
-  // A guard might change the result of a method call that is the selector expression.
-  void methodCallSelector(E input) {
-    staticField = input;
-    switch (getStaticField()) {
-      case E ignored when resetStatic() -> {}
-      case B -> {
-        // :: error: (assignment)
-        @EnumVal("B") E x = getStaticField();
-      }
+  void noGuard(E input) {
+    field = input;
+    switch (field) {
       case A -> {}
+      case B -> {
+        @EnumVal("B") E x = field;
+      }
     }
   }
 
@@ -101,16 +85,6 @@ public class EnumSwitchGuardReassignsSelector {
     }
   }
 
-  void noGuard(E input) {
-    field = input;
-    switch (field) {
-      case A -> {}
-      case B -> {
-        @EnumVal("B") E x = field;
-      }
-    }
-  }
-
   void stringConcatenationGuardLastCase(E input, Mutator mutator) {
     field = input;
     switch (field) {
@@ -124,9 +98,16 @@ public class EnumSwitchGuardReassignsSelector {
     }
   }
 
+  static E staticField;
+
   @org.checkerframework.dataflow.qual.Pure
   static E current() {
     return staticField;
+  }
+
+  static boolean resetStatic() {
+    staticField = E.A;
+    return false;
   }
 
   void staticGetterSelector() {

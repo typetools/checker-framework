@@ -179,7 +179,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   @Override
   public void updateForMethodCall(MethodInvocationNode n, @Nullable CFValue val) {
     ExecutableElement method = n.getTarget().getMethod();
-    @Nullable CFValue newVal = val;
+    CFValue newVal = val;
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
     // LockAnnotatedTypeFactory, but it affects only the LockPossiblyHeld type hierarchy (not
     // the @GuardedBy hierarchy), so it cannot use that logic.
@@ -187,7 +187,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     // superclass only removes other values, so the order does not otherwise matter.
     if (!atypeFactory.isSideEffectFree(method)) {
       changeLockAnnosToTopAfterSideEffect();
-      // `val` may come from the store before the call.  A @LockHeld fact in it might be stale,
+      // `val` might come from the store before the call.  A @LockHeld fact in it might be stale,
       // because the call might have released the lock.  A postcondition such as @EnsuresLockHeld
       // is applied after this method, so it can restore the fact if appropriate.
       if (val != null && hasLockHeld(val)) {
@@ -206,7 +206,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   /**
    * Changes the LockPossiblyHeld annotation of each stored value to top, because code that is not
    * side-effect-free might lock or unlock any lock. The annotation in the GuardedBy hierarchy is
-   * not changed. The superclass removes the values that such code might change; this method may be
+   * not changed. The superclass removes the values that such code might change; this method can be
    * called before or after that removal.
    */
   private void changeLockAnnosToTopAfterSideEffect() {

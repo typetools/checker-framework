@@ -82,10 +82,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -2463,13 +2465,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // Avoid treating a primitive widening conversion, such as int to float, as a subtype.
           return types.isSameType(type, patternType);
         }
-        return TypesUtils.isErasedSubtype(type, patternType, types);
+        return coversType(type, patternType);
       }
       if (!TreeUtils.isDeconstructionPatternTree(pattern)) {
         return false;
       }
       if (!(TreeUtils.typeOf(pattern) instanceof DeclaredType recordType)
-          || !TypesUtils.isErasedSubtype(type, recordType, types)) {
+          || !coversType(type, recordType)) {
         return false;
       }
       List<? extends RecordComponentElement> components =
@@ -2492,6 +2494,38 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
       return true;
+    }
+
+    /**
+     * Returns true if every value of type {@code type} is an instance of the erasure of {@code
+     * patternType}. That is the case if the erasure of {@code type} is a subtype of the erasure of
+     * {@code patternType}. Erasure considers only the leftmost bound of a type variable or an
+     * intersection type, so this method also examines the bounds: a type variable is covered if its
+     * upper bound is covered, and an intersection type is covered if any of its bounds is covered
+     * (JLS 14.11.1.1).
+     *
+     * @param type the type of the values that are tested against a pattern
+     * @param patternType the type of a type pattern or a record pattern
+     * @return true if every value of type {@code type} is an instance of the erasure of {@code
+     *     patternType}
+     */
+    private boolean coversType(TypeMirror type, TypeMirror patternType) {
+      if (TypesUtils.isErasedSubtype(type, patternType, types)) {
+        return true;
+      }
+      switch (type.getKind()) {
+        case TYPEVAR:
+          return coversType(((TypeVariable) type).getUpperBound(), patternType);
+        case INTERSECTION:
+          for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
+            if (coversType(bound, patternType)) {
+              return true;
+            }
+          }
+          return false;
+        default:
+          return false;
+      }
     }
 
     /**
