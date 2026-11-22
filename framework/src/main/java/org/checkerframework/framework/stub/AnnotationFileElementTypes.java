@@ -440,8 +440,7 @@ public class AnnotationFileElementTypes {
     try (BufferedInputStream annotationFileStream =
         new BufferedInputStream(resource.getInputStream())) {
       // Is it necessary to also skip files that consist only of Java comments?
-      Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-      if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+      if (isWhitespaceOnly(annotationFileStream, 100)) {
         return;
       }
       AnnotationFileParser.parseStubFile(
@@ -457,6 +456,39 @@ public class AnnotationFileElementTypes {
           .message(
               Diagnostic.Kind.WARNING,
               "Could not read annotation resource: " + resource.getDescription() + ": " + e);
+    }
+  }
+
+  /**
+   * Returns true if the stream contains nothing but whitespace, through end of file, within its
+   * first {@code readLimit} bytes. Returns false if the stream contains a non-whitespace byte or if
+   * end of file is not reached within {@code readLimit} bytes. Resets the stream to its original
+   * position before returning.
+   *
+   * <p>Only ASCII whitespace is recognized; any non-ASCII byte causes this method to return false.
+   *
+   * @param in an input stream
+   * @param readLimit how many bytes to look ahead in the input stream
+   * @return true if the stream is known to contain only whitespace
+   * @throws IOException if reading the stream fails
+   */
+  private static boolean isWhitespaceOnly(BufferedInputStream in, int readLimit)
+      throws IOException {
+    in.mark(readLimit);
+    try {
+      for (int i = 0; i < readLimit; i++) {
+        int b = in.read();
+        if (b == -1) {
+          return true;
+        }
+        if (b >= 0x80 || !Character.isWhitespace(b)) {
+          return false;
+        }
+      }
+      // End of file was not reached, so the stream might contain non-whitespace.
+      return false;
+    } finally {
+      in.reset();
     }
   }
 
