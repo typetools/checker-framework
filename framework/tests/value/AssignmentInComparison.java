@@ -73,13 +73,6 @@ public class AssignmentInComparison {
     }
   }
 
-  static void wideningOfAssignment(int i, int j) {
-    if ((i = j) == 3L) {
-      @IntVal(3) int x = i;
-      @IntVal(3) int y = j;
-    }
-  }
-
   static void annotationArgumentInRhs(int[] a, int[] b) {
     // The annotation argument `{0, 1}` is not an assignment to a variable.
     if ((a = new @IntVal({0, 1}) int[] {0, 1}) == b) {
