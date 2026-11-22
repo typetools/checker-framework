@@ -691,7 +691,7 @@ public final class Resolution {
 
       Set<AbstractType> upperBounds = variable.getBounds().upperBounds();
       // Omit bounds that contain uninstantiated variables outside `as`, such as `alpha` in
-      // `variable <: alpha`.  A bound can contain an instantiated variable outside `as` whose
+      // `variable <: alpha`.  A bound can contain an instantiated variable, in `as` or not, whose
       // instantiation InferenceType#applyInstantiations did not apply, because that instantiation
       // ignores annotations and the result would not be proper.  Such a bound is kept, and
       // getSubsTypeArgs below applies the instantiation.  The annotations at the ignored positions
