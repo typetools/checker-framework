@@ -34,6 +34,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -329,8 +330,10 @@ public final class PurityChecker {
           parameterTypeAsMemberOf(
               (DeclaredType) method.getEnclosingElement().asType(), overridden, index, types);
       result.retainAll(
-          guaranteedFunctionalArgumentPurity(
-              annoProvider, overridden, index, parameterType, parameterFunction, env));
+          parameterType == null
+              ? EnumSet.noneOf(PurityKind.class)
+              : guaranteedFunctionalArgumentPurity(
+                  annoProvider, overridden, index, parameterType, parameterFunction, env));
     }
     return result;
   }
@@ -339,9 +342,9 @@ public final class PurityChecker {
    * Returns the type of {@code declaration}'s formal parameter at {@code index}, as a member of
    * {@code type}, or null if there is no such parameter.
    *
-   * <p>For example, if {@code declaration} is {@code int apply(T t)} in {@code interface I<T>},
-   * and {@code type} is {@code I<Runnable>} or a class that implements it, the result for index 0
-   * is {@code Runnable}.
+   * <p>For example, if {@code declaration} is {@code int apply(T t)} in {@code interface I<T>}, and
+   * {@code type} is {@code I<Runnable>} or a class that implements it, the result for index 0 is
+   * {@code Runnable}.
    *
    * @param type a type of which {@code declaration} is a member
    * @param declaration a method
@@ -378,26 +381,18 @@ public final class PurityChecker {
    * <p>If {@code declaration}'s parameter is not a functional interface (see {@link
    * #functionalMethodOfType}), or if its functional method and {@code parameterFunction} are
    * different methods of its type, then the call checks nothing about the code that {@code
-   * parameterFunction} runs. The argument's type might nonetheless implement {@code
+   * parameterFunction} runs. The parameter's type might nonetheless implement {@code
    * parameterFunction}: for example, with a default method of a functional subinterface that
    * declares an unrelated abstract method as its functional method, or with a method of a class
    * that implements the functional interface. Every argument's implementation of {@code
    * parameterFunction} is that method or an override of it, so it has the purity that that method's
-   * annotations promise, which is the result. The result is empty if the argument's type has no
+   * annotations promise, which is the result. The result is empty if the parameter's type has no
    * implementation of {@code parameterFunction}, as for a type variable whose upper bound is {@code
    * Object}.
-   *
-   * <p>The argument's type is {@code parameterType}, which can be more specific than the type of
-   * {@code declaration}'s parameter. For example, a call through {@code I<PureImpl>.apply}, where
-   * {@code I<T>} declares {@code int apply(T t)}, checks nothing about its argument, but the
-   * argument is a {@code PureImpl}, whose implementation of {@code parameterFunction} is what runs.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method that a call might invoke
    * @param index the 0-based index of a formal parameter of {@code declaration}
-   * @param parameterType the type of {@code declaration}'s parameter at {@code index}, as a member
-   *     of the type through which the call invokes {@code declaration}; see {@link
-   *     #parameterTypeAsMemberOf}. If null, the declared type of the parameter is used.
    * @param parameterFunction a functional method that might be called on the argument: the
    *     functional method of the type of the parameter at {@code index} in an overrider of {@code
    *     declaration} or in a method that a method reference refers to
@@ -408,32 +403,69 @@ public final class PurityChecker {
       AnnotationProvider annoProvider,
       ExecutableElement declaration,
       int index,
-      @Nullable TypeMirror parameterType,
       ExecutableElement parameterFunction,
       ProcessingEnvironment env) {
     List<? extends VariableElement> parameters = declaration.getParameters();
     if (index < 0 || index >= parameters.size()) {
       return EnumSet.noneOf(PurityKind.class);
     }
-    TypeMirror declaredParameterType = parameters.get(index).asType();
+    return guaranteedFunctionalArgumentPurity(
+        annoProvider, declaration, index, parameters.get(index).asType(), parameterFunction, env);
+  }
+
+  /**
+   * Returns the purity that a call through {@code declaration} guarantees of {@code
+   * parameterFunction}, as implemented by the argument that the call passes to the parameter at
+   * {@code index}, whose type at the call is {@code parameterType}. See {@link
+   * #guaranteedFunctionalArgumentPurity(AnnotationProvider, ExecutableElement, int,
+   * ExecutableElement, ProcessingEnvironment)}.
+   *
+   * <p>{@code parameterType} can be more specific than the declared type of the parameter: for
+   * example, when {@code declaration} is a member of a generic type and the parameter's declared
+   * type is one of the type's type variables, {@code parameterType} is the type argument that the
+   * receiver type supplies. Every argument has that type, so its implementation of {@code
+   * parameterFunction} has the purity that the type's implementation promises. A call checks its
+   * arguments against {@code declaration}'s purity annotation only if the declared type of the
+   * parameter is a functional interface, however.
+   *
+   * @param annoProvider the annotation provider
+   * @param declaration a method that a call might invoke
+   * @param index the 0-based index of a formal parameter of {@code declaration}
+   * @param parameterType the type of the parameter at {@code index}, as a member of the receiver
+   *     type of the call; its declared type if the receiver type is not known
+   * @param parameterFunction a functional method that might be called on the argument
+   * @param env the processing environment
+   * @return the purity that a call through {@code declaration} guarantees of the argument
+   */
+  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
+      AnnotationProvider annoProvider,
+      ExecutableElement declaration,
+      int index,
+      TypeMirror parameterType,
+      ExecutableElement parameterFunction,
+      ProcessingEnvironment env) {
+    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
     ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
-    if (declarationFunction == null
-        || !isSameImplementation(
-            declarationFunction, parameterFunction, declaredParameterType, env)) {
-      if (parameterType == null) {
-        parameterType = declaredParameterType;
-      }
-      ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
-      if (implementation == null) {
-        return EnumSet.noneOf(PurityKind.class);
-      }
-      EnumSet<PurityKind> result = PurityUtils.getPurityKinds(annoProvider, implementation);
-      PurityUtils.addDeterminismOfVoidCall(result, implementation.getReturnType());
-      return result;
+    if (declarationFunction != null
+        && isSameImplementation(
+            declarationFunction,
+            parameterFunction,
+            declaration.getParameters().get(index).asType(),
+            env)) {
+      result.addAll(functionalParameterKinds(annoProvider, declaration, env));
+      result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
+      PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
     }
-    EnumSet<PurityKind> result = functionalParameterKinds(annoProvider, declaration, env);
-    result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
-    PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
+    if (parameterType.getKind() == TypeKind.WILDCARD) {
+      TypeMirror extendsBound = ((WildcardType) parameterType).getExtendsBound();
+      parameterType =
+          extendsBound != null ? extendsBound : declaration.getParameters().get(index).asType();
+    }
+    ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
+    if (implementation != null) {
+      result.addAll(PurityUtils.getPurityKinds(annoProvider, implementation));
+      PurityUtils.addDeterminismOfVoidCall(result, implementation.getReturnType());
+    }
     return result;
   }
 
@@ -559,8 +591,8 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns true if every object of type {@code type} implements {@code function} and {@code
-   * other} with the same method. That is so if one of them overrides the other, or if they are
+   * Returns true if every object of type {@code type} implements {@code function} and {@code other}
+   * with the same method. That is so if one of them overrides the other, or if they are
    * override-equivalent as members of {@code type} (JLS 8.4.2), as {@code A.get} and {@code B.get}
    * are in {@code interface Both extends A, B}, though neither overrides the other.
    *

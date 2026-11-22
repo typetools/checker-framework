@@ -70,6 +70,14 @@ public class PurityFunctionalMethodRef {
     runsAnnotated(PurityFunctionalMethodRef::applyStatic);
   }
 
+  void genericReferences() {
+    // Every argument of a call through GenericApplier<PureFunction> is a PureFunction, whose apply
+    // method is side-effect-free.
+    GenericApplier<PureFunction> f = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    GenericApplier<Function<String, Integer>> g = PurityFunctionalMethodRef::applyStatic;
+  }
+
   /** A subinterface that redeclares {@code Function.apply}, with a stronger guarantee. */
   @FunctionalInterface
   interface PureFunction extends Function<String, Integer> {
@@ -246,7 +254,9 @@ public class PurityFunctionalMethodRef {
     Object get();
   }
 
-  /** Inherits {@code StringGetter.get} and {@code ObjectGetter.get}; neither overrides the other. */
+  /**
+   * Inherits {@code StringGetter.get} and {@code ObjectGetter.get}; neither overrides the other.
+   */
   @FunctionalInterface
   interface BothGetter extends StringGetter, ObjectGetter {}
 

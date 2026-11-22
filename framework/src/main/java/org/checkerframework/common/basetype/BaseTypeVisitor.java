@@ -32,6 +32,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.ThrowTree;
@@ -2110,8 +2111,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@inheritDoc}
      *
      * <p>Overwriting a variable does not read it, so a destination that is a bare identifier is not
-     * a use. That is so whether or not the body has been attributed, so the identifier's element
-     * is not consulted. A compound destination, such as an array access, is scanned, because its
+     * a use. That is so whether or not the body has been attributed, so the identifier's element is
+     * not consulted. A compound destination, such as an array access, is scanned, because its
      * subexpressions are evaluated.
      */
     @Override
@@ -2214,12 +2215,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       for (CallableDeclaration callable : declarations) {
         ExecutableElement declaration = callable.declaration();
-        TypeMirror parameterType =
-            PurityChecker.parameterTypeAsMemberOf(
-                callable.receiverType(), declaration, i + offset, types);
+        int declarationIndex = i + offset;
+        if (declarationIndex >= declaration.getParameters().size()) {
+          continue;
+        }
+        // Use the parameter's type in the type through which the call is made, such as the
+        // functional interface type that a method reference implements, so that a type argument
+        // such as the `SafeCallback` of `Target<SafeCallback>` supplies the purity of its
+        // functional method.
+        ExecutableType declarationType =
+            (ExecutableType) types.asMemberOf(callable.receiverType(), declaration);
         EnumSet<PurityKind> provided =
             PurityChecker.guaranteedFunctionalArgumentPurity(
-                atypeFactory, declaration, i + offset, parameterType, parameterFunction, env);
+                atypeFactory,
+                declaration,
+                declarationIndex,
+                declarationType.getParameterTypes().get(declarationIndex),
+                parameterFunction,
+                env);
         if (!provided.containsAll(assumed)) {
           // The error message names the first declaration whose calls lack the guarantee.
           if (mightRelyOnFunctionalParameter(implementation, params.get(i), parameterFunction)) {
@@ -5646,7 +5659,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           AnnotatedExecutableType declarationType;
           if (declaration.equals(overridden.getElement())) {
             declarationType = overridden;
-          } else if (callable.receiverType().equals(overriddenType.getUnderlyingType())) {
+          } else if (types.isSameType(
+              callable.receiverType(), overriddenType.getUnderlyingType())) {
             declarationType =
                 AnnotatedTypes.asMemberOf(types, atypeFactory, overriddenType, declaration);
           } else {
@@ -5785,16 +5799,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * If the method reference is cast to an intersection type, returns the bounds of that type
-     * that are class or interface types. Otherwise, returns an empty list.
+     * If the method reference is cast to an intersection type, returns the bounds of that type that
+     * are class or interface types. Otherwise, returns an empty list.
      *
-     * @return the bounds of the intersection type that the method reference is cast to, or an
-     *     empty list
+     * @return the bounds of the intersection type that the method reference is cast to, or an empty
+     *     list
      */
     private List<DeclaredType> intersectionCastBounds() {
       TreePath path = atypeFactory.getPath(overriderTree);
       TreePath parent = path == null ? null : path.getParentPath();
-      while (parent != null && parent.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+      while (parent != null && parent.getLeaf() instanceof ParenthesizedTree) {
         parent = parent.getParentPath();
       }
       if (parent == null
