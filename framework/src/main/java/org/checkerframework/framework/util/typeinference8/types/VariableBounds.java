@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -55,24 +54,18 @@ public class VariableBounds {
   private @Nullable ProperType instantiation = null;
 
   /**
-   * The source of the stamps stored in {@link #lastInstantiationChange}. It only increases, so a
-   * later change of any variable's instantiation gets a larger stamp than every earlier change.
-   */
-  private static final AtomicLong instantiationChangeCounter = new AtomicLong();
-
-  /**
-   * A stamp that records when {@link #instantiation} last changed, by being set to a different type
-   * or cleared, or 0 if it has never changed; see {@link #getLastInstantiationChange}.
+   * The number of times {@link #instantiation} has changed, by being set to a different type or
+   * cleared; see {@link #getInstantiationChanges}.
    *
-   * <p>A {@link ProperType} with an origin takes the maximum of this stamp over the variables that
-   * its origin depends on (see {@link ProperType#instantiationVersion}), and applies instantiations
-   * to its origin again only when the maximum differs from the maximum when it was last up to date;
-   * see {@link ProperType#applyInstantiations}. So the stamp is updated only when the instantiation
-   * actually changes: setting an instantiation equal to the current one leaves the stamp unchanged,
-   * so that instantiations are not applied again needlessly to types whose origins depend on this
+   * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
+   * contains (see {@link ProperType#instantiationVersion}), and applies instantiations to its
+   * origin again only when the sum differs from the sum when it was last up to date; see {@link
+   * ProperType#applyInstantiations}. So the count is incremented only when the instantiation
+   * actually changes: setting an instantiation equal to the current one leaves the count unchanged,
+   * so that instantiations are not applied again needlessly to types whose origins contain this
    * variable.
    */
-  private long lastInstantiationChange = 0;
+  private int instantiationChanges = 0;
 
   /**
    * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
@@ -191,7 +184,7 @@ public class VariableBounds {
     }
     if (instantiation != null) {
       instantiation = null;
-      lastInstantiationChange = instantiationChangeCounter.incrementAndGet();
+      instantiationChanges++;
     }
     bounds.clear();
     for (BoundKind kind : BoundKind.values()) {
@@ -216,24 +209,22 @@ public class VariableBounds {
     // ProperType#equals compares ignoreAnnotations, so an instantiation that ignores annotations is
     // replaced by an otherwise-equal one that does not.
     if (type.equals(instantiation)) {
-      // Leave lastInstantiationChange unchanged; see its Javadoc.
+      // Leave instantiationChanges unchanged; see its Javadoc.
       return;
     }
     instantiation = type;
-    lastInstantiationChange = instantiationChangeCounter.incrementAndGet();
+    instantiationChanges++;
   }
 
   /**
-   * Returns a stamp that records when the current instantiation of this variable last changed: when
-   * it was set to a type that differs from the previous one, or cleared. Setting it to a type equal
-   * to the current one does not change this stamp. A stamp is larger than the stamp of every
-   * earlier change to the instantiation of any variable.
+   * Returns a number that changes whenever the current instantiation of this variable changes: when
+   * it is set to a type that differs from the current one, or cleared. Setting it to a type equal
+   * to the current one does not change this number.
    *
-   * @return a stamp that records when the current instantiation of this variable last changed, or 0
-   *     if it has never changed
+   * @return a number that changes whenever the current instantiation of this variable changes
    */
-  long getLastInstantiationChange() {
-    return lastInstantiationChange;
+  int getInstantiationChanges() {
+    return instantiationChanges;
   }
 
   /**
