@@ -24,6 +24,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.InitializationTransfer;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -40,6 +41,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
@@ -409,8 +411,9 @@ public class NullnessTransfer
    * assumed to be non-null after the invocation.
    *
    * <p>When the flag is turned off, the analysis is sound: it checks that the method is
-   * SideEffectFree or the receiver is unassignable. Only if either one of the two is true is the
-   * receiver made non-null. The receiver is also made non-null if the method is annotated {@link
+   * SideEffectFree, the receiver is unassignable, or the receiver is a {@link MonotonicNonNull}
+   * field whose own receiver is unassignable. Only if one of these is true is the receiver made
+   * non-null. The receiver is also made non-null if the method is annotated {@link
    * org.checkerframework.framework.qual.DoesNotUnrefineReceiver}. Similar logic is applied to the
    * arguments of the invocation.
    *
@@ -448,7 +451,8 @@ public class NullnessTransfer
             && (nonNullAssumptionAfterInvocation
                 || isMethodSideEffectFree
                 || atypeFactory.hasDoesNotUnrefineReceiver(method)
-                || !receiverExpr.isAssignableByOtherCode())
+                || !receiverExpr.isAssignableByOtherCode()
+                || isMonotonicNonNullFieldWithStableReceiver(receiverExpr))
             && tree != null
             && !argumentsMayReassign(tree.getArguments(), receiverExpr);
 
@@ -483,7 +487,8 @@ public class NullnessTransfer
         JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
         if ((nonNullAssumptionAfterInvocation
                 || isMethodSideEffectFree
-                || !argExpr.isAssignableByOtherCode())
+                || !argExpr.isAssignableByOtherCode()
+                || isMonotonicNonNullFieldWithStableReceiver(argExpr))
             && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
           makeNonNull(result, n.getArgument(i));
         }
@@ -510,6 +515,30 @@ public class NullnessTransfer
     }
 
     return result;
+  }
+
+  /**
+   * Returns true if the given expression is an access of a {@link MonotonicNonNull} field whose
+   * receiver is not assignable by other code and contains no method call. Once such an expression
+   * is non-null, no code can make it null again, so a method call does not invalidate the knowledge
+   * that it is non-null.
+   *
+   * @param expr an expression
+   * @return true if {@code expr} is a {@link MonotonicNonNull} field access with a stable receiver
+   */
+  private boolean isMonotonicNonNullFieldWithStableReceiver(JavaExpression expr) {
+    if (!(expr instanceof FieldAccess fieldAccess)) {
+      return false;
+    }
+    JavaExpression fieldReceiver = fieldAccess.getReceiver();
+    // A method call's value can depend on state that does not appear in the expression, such as a
+    // static field that the method reads, so a receiver that contains a method call is not stable
+    // even if MethodCall.isAssignableByOtherCode() returns false.
+    return !fieldReceiver.isAssignableByOtherCode()
+        && !fieldReceiver.containsOfClass(MethodCall.class)
+        && atypeFactory
+            .fromElement(fieldAccess.getField())
+            .hasPrimaryAnnotation(nullnessTypeFactory.MONOTONIC_NONNULL);
   }
 
   /**
