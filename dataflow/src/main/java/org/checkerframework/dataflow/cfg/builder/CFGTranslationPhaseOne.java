@@ -2513,19 +2513,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (TypesUtils.isErasedSubtype(type, patternType, types)) {
         return true;
       }
-      switch (type.getKind()) {
-        case TYPEVAR:
-          return coversType(((TypeVariable) type).getUpperBound(), patternType);
-        case INTERSECTION:
-          for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-            if (coversType(bound, patternType)) {
-              return true;
-            }
-          }
-          return false;
-        default:
-          return false;
-      }
+      return switch (type.getKind()) {
+        case TYPEVAR -> coversType(((TypeVariable) type).getUpperBound(), patternType);
+        case INTERSECTION ->
+            ((IntersectionType) type)
+                .getBounds().stream().anyMatch(bound -> coversType(bound, patternType));
+        default -> false;
+      };
     }
 
     /**
