@@ -41,4 +41,21 @@ public class ThrowNullInTryFinally {
     // :: error: [return]
     return s;
   }
+
+  // The exception propagates from the inner catch clause through the finally block.
+  void caughtAfterFinally(@Nullable Object o) {
+    try {
+      try {
+        throw new RuntimeException();
+      } catch (RuntimeException e) {
+        o = "hello";
+        // :: error: [throwing.nullable]
+        throw null;
+      } finally {
+        System.out.println();
+      }
+    } catch (NullPointerException e) {
+      o.toString();
+    }
+  }
 }
