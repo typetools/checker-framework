@@ -250,4 +250,27 @@ public class Issue3028 {
     // :: warning: [cast.unsafe]
     Object o2 = (List<@NonNull String> & Runnable) l;
   }
+
+  interface A<T> extends Iterable<T> {}
+
+  interface B<T> extends Iterable<T> {}
+
+  void unsafeSidecast(A<@Nullable String> a) {
+    // :: warning: [cast.unsafe]
+    B<@NonNull String> b = (B<@NonNull String>) a;
+  }
+
+  void safeSidecast(A<@NonNull String> a) {
+    B<@NonNull String> b = (B<@NonNull String>) a;
+  }
+
+  void safeSidecastNullable(A<@Nullable String> a) {
+    B<@Nullable String> b = (B<@Nullable String>) a;
+  }
+
+  void sidecastToWildcard(A<@Nullable String> a) {
+    B<?> b = (B<?>) a;
+    // :: warning: [cast.unsafe]
+    B<? extends @NonNull String> b2 = (B<? extends @NonNull String>) a;
+  }
 }

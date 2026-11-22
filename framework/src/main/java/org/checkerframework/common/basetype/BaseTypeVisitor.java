@@ -53,11 +53,13 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3783,8 +3785,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *       Collection<@Nullable String>} to {@code List<@NonNull String>} is unsafe, because {@code
    *       Collection<@Nullable String>} is not a subtype of {@code Collection<@NonNull String>}.
    *   <li>otherwise, when the Java types are unrelated (as in a cast between two unrelated
-   *       interfaces), whether {@link #uncheckedTypeArgumentsContainAllPermittedTypes} holds. The
-   *       primary qualifiers are not compared in this case.
+   *       interfaces), whether {@link #uncheckedTypeArgumentsContainAllPermittedTypes} and {@link
+   *       #isSidecastSafeIncludingTypeArguments} hold. The primary qualifiers are not compared in
+   *       this case.
    * </ul>
    *
    * @param castType annotated type of the cast, without capture conversion
@@ -3840,7 +3843,101 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return typeHierarchy.isSubtype(exprType, castTypeAsExprType)
           && uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
     }
-    return uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
+    return uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM)
+        && isSidecastSafeIncludingTypeArguments(castType, exprType);
+  }
+
+  /**
+   * Returns true if a cast between types whose Java types are unrelated by subtyping (a sidecast,
+   * as in a cast between two unrelated interfaces) is safe with respect to the qualifiers on type
+   * arguments. A value of both types is an instance of each generic supertype G that the two types
+   * have in common, and Java requires each class to have just one parameterization of G. So the
+   * cast is safe if, for each such G, {@code exprType} viewed as an instance of G is a subtype of
+   * {@code castType} viewed as an instance of G, ignoring primary qualifiers.
+   *
+   * <p>For example, if interfaces {@code A<T>} and {@code B<T>} both extend {@code Iterable<T>},
+   * then a cast from {@code A<@Nullable String>} to {@code B<@NonNull String>} is unsafe, because
+   * {@code Iterable<@Nullable String>} is not a subtype of {@code Iterable<@NonNull String>}.
+   *
+   * @param castType annotated type of the cast; not a type variable
+   * @param exprType annotated type of the casted expression; not a type variable
+   * @return true if the sidecast from {@code exprType} to {@code castType} is safe with respect to
+   *     the qualifiers on type arguments
+   */
+  private boolean isSidecastSafeIncludingTypeArguments(
+      AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    if (castType.getKind() != TypeKind.DECLARED || exprType.getKind() != TypeKind.DECLARED) {
+      return true;
+    }
+    TypeMirror exprTM = exprType.getUnderlyingType();
+    Set<Element> visited = new HashSet<>();
+    ArrayDeque<AnnotatedDeclaredType> worklist = new ArrayDeque<>();
+    worklist.add((AnnotatedDeclaredType) castType);
+    while (!worklist.isEmpty()) {
+      AnnotatedDeclaredType castSuper = worklist.remove();
+      if (!visited.add(castSuper.getUnderlyingType().asElement())) {
+        continue;
+      }
+      worklist.addAll(castSuper.directSupertypes());
+      if (castSuper.getTypeArguments().isEmpty()
+          || !TypesUtils.isErasedSubtype(exprTM, castSuper.getUnderlyingType(), types)) {
+        continue;
+      }
+      AnnotatedDeclaredType exprSuper =
+          AnnotatedTypes.castedAsSuper(atypeFactory, exprType, castSuper);
+      if (!types.isSubtype(exprSuper.getUnderlyingType(), castSuper.getUnderlyingType())) {
+        // The Java type arguments differ, so Java does not accept the cast without an unchecked
+        // warning, which isCastSafeIncludingElementTypes has already handled.
+        continue;
+      }
+      // Compare only the type arguments; the caller checks the primary qualifiers.
+      AnnotatedDeclaredType castSuperCopy = castSuper.shallowCopy();
+      castSuperCopy.replaceAnnotations(exprSuper.getPrimaryAnnotations());
+      if (!typeHierarchy.isSubtype(exprSuper, castSuperCopy)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns the supertypes of {@code genericCastType} whose type arguments a non-raw Java type
+   * {@code exprTM} determines. If {@code genericCastType} has a supertype with the same erasure as
+   * {@code exprTM}, the result is that supertype; for example, for {@code List<E>} and {@code
+   * Collection<String>}, it is {@code Collection<E>}. Otherwise, if the Java types are unrelated,
+   * the result is each generic supertype G of {@code genericCastType} such that the erasure of
+   * {@code exprTM} is a subtype of the erasure of G; for example, for {@code B<T>} and {@code
+   * A<String>} that both extend {@code Iterable<T>}, it is {@code Iterable<T>}.
+   *
+   * @param genericCastType a generic class, with its type parameters as type arguments
+   * @param exprTM a Java type that is not raw
+   * @return the supertypes of {@code genericCastType} whose type arguments {@code exprTM}
+   *     determines
+   */
+  private List<Type> determinedSupertypes(DeclaredType genericCastType, TypeMirror exprTM) {
+    Type asExprType =
+        (Type)
+            TypesUtils.asSuper(
+                genericCastType, types.erasure(exprTM), atypeFactory.getProcessingEnv());
+    if (asExprType != null) {
+      return Collections.singletonList(asExprType);
+    }
+    List<Type> result = new ArrayList<>();
+    Set<Element> visited = new HashSet<>();
+    ArrayDeque<TypeMirror> worklist = new ArrayDeque<>(types.directSupertypes(genericCastType));
+    while (!worklist.isEmpty()) {
+      TypeMirror supertype = worklist.remove();
+      if (!(supertype instanceof DeclaredType declaredSupertype)
+          || !visited.add(declaredSupertype.asElement())) {
+        continue;
+      }
+      worklist.addAll(types.directSupertypes(supertype));
+      if (!declaredSupertype.getTypeArguments().isEmpty()
+          && TypesUtils.isErasedSubtype(exprTM, supertype, types)) {
+        result.add((Type) supertype);
+      }
+    }
+    return result;
   }
 
   /**
@@ -3864,6 +3961,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *       because the supertype of {@code List<E>} that has the same erasure as {@code
    *       Collection<String>} is {@code Collection<E>}. In a cast from {@code Object} or {@code
    *       Runnable} to {@code List<?>}, it is unchecked.
+   *   <li>the Java types are unrelated (a sidecast), and its type parameter appears in a generic
+   *       supertype G of the generic class of {@code castType} such that the erasure of {@code
+   *       exprTM} is a subtype of the erasure of G. A class has only one parameterization of G, so
+   *       {@code exprTM} determines the type argument. For example, if {@code A<T>} and {@code
+   *       B<T>} both extend {@code Iterable<T>}, then in a cast from {@code A<String>} to {@code
+   *       B<?>}, the type argument of {@code B} is checked. {@link
+   *       #isSidecastSafeIncludingTypeArguments} compares such type arguments.
    * </ul>
    *
    * <p>For example, a cast from {@code Object} or from a raw {@code List} to {@code List<?
@@ -3908,23 +4012,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TypeElement castElement = (TypeElement) castDeclaredType.getUnderlyingType().asElement();
     // The generic class of castType, such as List<E>.
     DeclaredType genericCastType = (DeclaredType) castElement.asType();
-    // The supertype of genericCastType that has the same erasure as exprTM, such as
-    // Collection<E>, or null if the Java types are unrelated or exprTM is raw.
-    Type genericCastTypeAsExprType =
-        isExprRaw
-            ? null
-            : (Type)
-                TypesUtils.asSuper(
-                    genericCastType, types.erasure(exprTM), atypeFactory.getProcessingEnv());
+    // The supertypes of genericCastType whose type arguments exprTM determines, such as
+    // Collection<E>; empty if exprTM is raw.
+    List<Type> determinedSupertypes =
+        isExprRaw ? Collections.emptyList() : determinedSupertypes(genericCastType, exprTM);
     // The generic class of castType with the declared bounds of its type parameters; computed only
     // if some type argument is unchecked.
     AnnotatedDeclaredType annotatedGenericCastType = null;
     List<? extends TypeMirror> typeParameters = genericCastType.getTypeArguments();
     for (int i = 0; i < typeParameters.size(); i++) {
-      if (genericCastTypeAsExprType != null
-          && genericCastTypeAsExprType.contains((Type) typeParameters.get(i))) {
-        // The type parameter appears in genericCastTypeAsExprType, so this type argument is
-        // checked; isCastSafeIncludingElementTypes compared it with exprType.
+      Type typeParameterType = (Type) typeParameters.get(i);
+      if (determinedSupertypes.stream().anyMatch(s -> s.contains(typeParameterType))) {
+        // The type parameter appears in a supertype that exprTM determines, so this type argument
+        // is checked; isCastSafeIncludingElementTypes compared it with exprType.
         continue;
       }
       // The run-time check of a cast verifies only the class of the value, so in place of an

@@ -7,6 +7,11 @@
 
 ### User-visible changes
 
+With `-AcheckCastElementType`, a cast between unrelated types, such as two
+unrelated interfaces, is checked against their common generic supertypes.  For
+example, if `A<T>` and `B<T>` both extend `Iterable<T>`, then a cast from
+`A<@Nullable String>` to `B<@NonNull String>` is an unsafe cast.
+
 ### Changes for type system implementers
 
 A default that a type system registers for an element through
