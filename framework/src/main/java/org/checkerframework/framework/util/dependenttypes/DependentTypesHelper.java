@@ -386,10 +386,10 @@ public class DependentTypesHelper {
    * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
    *
    * <p>If {@code receiver} is not deterministic or contains a local variable that is not
-   * effectively final, a field that is not final, or an array access, then an expression that depends on the receiver could refer to a different
-   * record than the one that was deconstructed. Therefore, such expressions are removed from the
-   * annotations on the component's declared type. Expressions that do not depend on the receiver,
-   * such as static fields, are retained.
+   * effectively final, a field that is not final, or an array access, then an expression that
+   * depends on the receiver could refer to a different record than the one that was deconstructed.
+   * Therefore, such expressions are removed from the annotations on the component's declared type.
+   * Expressions that do not depend on the receiver, such as static fields, are retained.
    *
    * @param type the type of the record component; is side-effected by this method
    * @param accessor the accessor method of the record component
