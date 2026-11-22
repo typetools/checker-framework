@@ -17,19 +17,20 @@ public class AssignmentInComparison {
   // A field, so that the Less Than Checker does not refine an expression to be less than it.
   @LTLengthOf("arr") int lessThanArrLength;
 
-  int[] setArr(int[] c) {
-    arr = c;
-    return c;
-  }
-
   @NonNegative int resetArr(int[] c) {
     arr = c;
     return 0;
   }
 
+  int[] setArr(int[] c, int[] d) {
+    arr = c;
+    return d;
+  }
+
+  // Assigning the result to `f` can change the result of the next call.
   @Pure
   @NonNegative int size() {
-    return f;
+    return f == 0 ? 1 : 0;
   }
 
   static void localTarget(@NonNegative int i, @NonNegative int j) {
@@ -187,9 +188,9 @@ public class AssignmentInComparison {
     }
   }
 
-  void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
-    if ((this.arr = b).length == setArr(c).length) {
-      // `setArr` sets `this.arr` to `c`, which might not have the same length as `b`.
+  void otherOperandReassignsLengthReceiver(int[] b, int[] c, int[] d) {
+    if ((this.arr = b).length == setArr(c, d).length) {
+      // `setArr` sets `this.arr` to `c`, which might not have the same length as `b` and `d`.
       // :: error: [assignment]
       int @SameLen("b") [] x = this.arr;
     }
@@ -211,11 +212,128 @@ public class AssignmentInComparison {
     }
   }
 
+  static void otherOperandReassignsLocalArrayOfGreater(
+      @LTEqLengthOf("#2") int limit, int[] a, int[] c) {
+    int i;
+    if (limit > (i = (a = c).length)) {
+      // `limit` is at most the length of the array that `a` referred to before the right operand
+      // reassigned `a`.  `i` is the length of the new array.
+      // :: error: [array.access.unsafe.high]
+      a[i] = 0;
+    }
+  }
+
+  static void otherOperandReassignsLocalArrayOfGreaterOrEqual(
+      @LTLengthOf("#2") int limit, int[] a, int[] c) {
+    int i;
+    if (limit >= (i = (a = c).length)) {
+      // :: error: [array.access.unsafe.high]
+      a[i] = 0;
+    }
+  }
+
+  // The right operand reassigns `b`, which the type of the left operand `a` names.
+  static void otherOperandReassignsSameLenOfLeft(int[] a, int[] c, int[] d) {
+    int[] b = a;
+    if (a.length == (c = (b = new int[0]) == null ? d : d).length) {
+      // `b` is the new array, not the one that has the length of `a`.
+      // :: error: [assignment]
+      int @SameLen("a") [] x = b;
+      int @SameLen("a") [] y = c;
+    }
+  }
+
+  // The right operand reassigns `b`, but `e` still has the length of `a`.
+  static void otherOperandReassignsSameLenOfLeftKeepsOthers(int[] a, int[] c, int[] d) {
+    int[] b = a;
+    int[] e = a;
+    if (a.length == (c = (b = new int[0]) == null ? d : d).length) {
+      int @SameLen("e") [] y = c;
+    }
+  }
+
   void otherOperandCallReassignsArray(@LTLengthOf("arr") int x, @NonNegative int i, int[] c) {
     if (x > i + resetArr(c)) {
       // `resetArr` reassigns `arr`, so `i` might not be less than the length of the new array.
       // :: error: [assignment]
       @LTLengthOf("arr") int y = i;
+    }
+  }
+
+  void additionOperandMentionsReassignedArray(@LTLengthOf("arr") int n, int[] c, int[] d) {
+    int i;
+    if ((i = n) + resetArr(c) < d.length) {
+      @LTLengthOf("d") int x = i;
+      // `n` is less than the length of the array that `arr` referred to before `resetArr`
+      // reassigned `arr`.
+      // :: error: [assignment]
+      @LTLengthOf("arr") int y = i;
+    }
+  }
+
+  void equalityReassignsArray(int j, int[] c) {
+    if (lessThanArrLength == (j = (arr = c).length)) {
+      // `lessThanArrLength` is less than the length of the array that `arr` referred to before the
+      // right operand reassigned `arr`.
+      // :: error: [assignment]
+      @LTLengthOf("arr") int y = j;
+    }
+  }
+
+  // The offset is the constant 1, even though the subtrahend is an assignment.
+  static void constantOffsetAssignment(int[] a, int j, int k) {
+    if (j - (k = 1) < a.length) {
+      @LTEqLengthOf("a") int x = j;
+    }
+  }
+
+  static void lengthComparisonReassignsInheritedName(
+      int[] a, int[] replacement, int[][] rows, int[] c) {
+    int[] b = a;
+    if (b.length == (c = rows[(a = replacement).length]).length) {
+      int @SameLen("b") [] x = c;
+      // `b` has the length of the array that `a` referred to before the comparison reassigned `a`.
+      // :: error: [assignment]
+      int @SameLen("a") [] y = c;
+    }
+  }
+
+  static void lengthComparisonKeepsInheritedName(int[] a, int[][] rows, int[] c, int k) {
+    int[] b = a;
+    if (b.length == (c = rows[k]).length) {
+      int @SameLen("b") [] x = c;
+      int @SameLen("a") [] y = c;
+    }
+  }
+
+  static void smallerOperandMentionsReassignedArray(int[] a, int[] b, int[] c, int i) {
+    if ((i = (a = b).length - 1) < (a = c).length + 100) {
+      // The type `@LTLengthOf("a")` of the left operand is about `b`, not `c`.
+      // :: error: [assignment]
+      @LTLengthOf("a") int y = i;
+    }
+  }
+
+  static void wideningOfAssignment(@NonNegative int i, @NonNegative int j) {
+    if ((i = j) > 0L) {
+      @Positive int x = i;
+      @Positive int y = j;
+    }
+  }
+
+  static void lossyPromotion(int bound, float f) {
+    if (bound >= f) {
+      // `bound` is rounded to a `float`, so `f` might be greater than `bound`.
+      // :: error: [assignment]
+      @LessThan("bound + 1") float y = f;
+    }
+  }
+
+  static void neqLengthOfReassignedArray(int[] a, int[] b, int i) {
+    if (a.length != (i = (a = b).length)) {
+      // The comparison is about the length of the original `a`, not of `b`.
+      // :: error: [assignment]
+      @LTLengthOf("a") int y = i;
     }
   }
 }

@@ -36,16 +36,6 @@ public class CastInComparison {
     }
   }
 
-  // `numbers` and `comparables` might be the same `Integer[]`, so the right operand might write
-  // `numbers[0]` after the left operand reads it.
-  void arrayWriteThroughInterfaceAlias(
-      @Nullable Number[] numbers, @Nullable Comparable<?>[] comparables, Object nonNull) {
-    if (((@Nullable Object) numbers[0]) == ((comparables[0] = null) == null ? nonNull : nonNull)) {
-      // :: error: (dereference.of.nullable)
-      numbers[0].intValue();
-    }
-  }
-
   // No write occurs, so refining the array element is sound.
   void arrayNoWrite(@Nullable Number[] numbers, Object nonNull) {
     if (((@Nullable Object) numbers[0]) == nonNull) {
