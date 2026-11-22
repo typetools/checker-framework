@@ -1550,11 +1550,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   @SuppressWarnings("signature") // the declarations of the stub file or classpath determine it
   private @Nullable @BinaryName String staticImportBinaryName(
       String owner, String[] identifiers, @Nullable CompilationUnit cu) {
-    Object member = staticMemberType(importedOwnerType(owner, cu), identifiers[0]);
+    String packageName = packageName(cu);
+    Object member = staticMemberType(importedOwnerType(owner, cu), identifiers[0], packageName);
     if (member == null || !isImportAccessible(member, cu)) {
       return null;
     }
-    return memberChainBinaryName(member, identifiers);
+    return memberChainBinaryName(member, identifiers, packageName);
   }
 
   /**
@@ -1594,15 +1595,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param owner a {@link TypeDeclaration} of the stub file, a {@link Class} on the classpath, or
    *     null
    * @param identifier the simple name of a member type
+   * @param packageName the package of the compilation unit in which the static import is written,
+   *     or the empty string for the unnamed package
    * @return the static member type: a {@link TypeDeclaration} of the stub file, a {@link Class} on
    *     the classpath, or null if there is none
    */
-  private @Nullable Object staticMemberType(@Nullable Object owner, String identifier) {
+  private @Nullable Object staticMemberType(
+      @Nullable Object owner, String identifier, String packageName) {
     Object member;
     if (owner instanceof TypeDeclaration<?> ownerDecl) {
       member = firstDeclarationAt(ownerDecl, new String[] {identifier}, false, true);
     } else if (owner instanceof Class<?> ownerClass) {
-      member = classMemberType(ownerClass, identifier);
+      member = memberClass(ownerClass, identifier, packageName, false, new HashSet<>());
     } else {
       return null;
     }
