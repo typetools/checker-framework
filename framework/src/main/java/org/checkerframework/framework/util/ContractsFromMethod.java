@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -122,6 +124,50 @@ public class ContractsFromMethod {
   private <T extends Contract> Set<T> getContractsOfKind(
       ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     Set<T> result = new LinkedHashSet<>();
+    addContractsOfKind(executableElement, kind, clazz, result);
+    return result;
+  }
+
+  /**
+   * Returns the contracts that are written on method or constructor {@code executableElement},
+   * without removing duplicates. Unlike {@link #getContracts}, the result contains a separate
+   * contract for each contract annotation, even if {@link Contract#equals} considers two of them
+   * equal. For example, if two different contract annotations enforce the same qualifier on the
+   * same expression, the result contains two contracts, whose {@link Contract#contractAnnotation}
+   * fields differ. This is useful for issuing a diagnostic at each written contract annotation.
+   *
+   * @param executableElement the method or constructor whose contracts to retrieve
+   * @return the contracts that are written on {@code executableElement}, including duplicates
+   */
+  public List<Contract> getWrittenContracts(ExecutableElement executableElement) {
+    List<Contract> result = new ArrayList<>();
+    addContractsOfKind(
+        executableElement, Contract.Kind.PRECONDITION, Contract.Precondition.class, result);
+    addContractsOfKind(
+        executableElement, Contract.Kind.POSTCONDITION, Contract.Postcondition.class, result);
+    addContractsOfKind(
+        executableElement,
+        Contract.Kind.CONDITIONALPOSTCONDITION,
+        Contract.ConditionalPostcondition.class,
+        result);
+    return result;
+  }
+
+  /**
+   * Adds the contracts (of a particular kind) on method or constructor {@code executableElement} to
+   * {@code result}.
+   *
+   * @param <T> the type of {@link Contract} to add
+   * @param executableElement the method whose contracts to add
+   * @param kind the kind of contracts to retrieve
+   * @param clazz the class to determine the type of the contracts
+   * @param result the collection to which to add the contracts; is side-effected by this method
+   */
+  private <T extends Contract> void addContractsOfKind(
+      ExecutableElement executableElement,
+      Contract.Kind kind,
+      Class<T> clazz,
+      Collection<? super T> result) {
     // Check for a single framework-defined contract annotation.
     // The result is RequiresQualifier, EnsuresQualifier, EnsuresQualifierIf, or null.
     AnnotationMirror frameworkContractAnno =
@@ -169,7 +215,6 @@ public class ContractsFromMethod {
         result.add(contract);
       }
     }
-    return result;
   }
 
   /**

@@ -1133,10 +1133,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<String> formalParamNames =
           CollectionsP.mapList(
               (VariableTree param) -> param.getName().toString(), tree.getParameters());
-      Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
-      checkContractsAtMethodDeclaration(tree, contracts, formalParamNames, abstractMethod);
+      checkContractsAtMethodDeclaration(tree, methodElement, formalParamNames, abstractMethod);
       if (warnRedundantAnnotations) {
-        checkContractQualifiersAreNotTop(modifiers.getAnnotations(), contracts);
+        // Use the written contracts, not the deduplicated ones, so that each written contract
+        // annotation whose qualifier is top receives a warning.
+        checkContractQualifiersAreNotTop(
+            modifiers.getAnnotations(),
+            atypeFactory.getContractsFromMethod().getWrittenContracts(methodElement));
       }
 
       // Infer postconditions
@@ -2242,15 +2245,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * exit, and that the contracts are well-formed.
    *
    * @param methodTree the method declaration
-   * @param contracts the contracts of {@code methodTree}
+   * @param methodElement the method element
    * @param formalParamNames the formal parameter names
    * @param abstractMethod true if the method is abstract
    */
   private void checkContractsAtMethodDeclaration(
       MethodTree methodTree,
-      Set<Contract> contracts,
+      ExecutableElement methodElement,
       List<String> formalParamNames,
       boolean abstractMethod) {
+    Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
+
     if (contracts.isEmpty()) {
       return;
     }
@@ -3486,10 +3491,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * wrapper for repeated contract annotations, such as {@code @RequiresQualifier.List}.
    *
    * @param annoTrees the annotations written on a method or constructor declaration
-   * @param contracts the contracts of the method or constructor
+   * @param contracts the contracts of the method or constructor, including a separate contract for
+   *     each written contract annotation even if {@link Contract#equals} considers them equal
    */
   protected void checkContractQualifiersAreNotTop(
-      List<? extends AnnotationTree> annoTrees, Set<Contract> contracts) {
+      List<? extends AnnotationTree> annoTrees, Collection<Contract> contracts) {
     // Maps the annotation, as written, of each contract whose qualifier is top to that qualifier.
     AnnotationMirrorMap<AnnotationMirror> topContractAnnos = new AnnotationMirrorMap<>();
     for (Contract contract : contracts) {

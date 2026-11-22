@@ -117,6 +117,20 @@ public class CustomContractTopQualifier {
   })
   void requiresCustomList() {}
 
+  // Different contract annotations that express the same contract.  Each one is redundant.
+  // :: warning: [contracts.toptype]
+  @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
+  // :: warning: [contracts.toptype]
+  @RequiresUnqualified("f")
+  void requiresSameContractTwice() {}
+
+  // Different type-system-specific contract annotations that express the same postcondition.
+  // :: warning: [contracts.toptype]
+  @RequiresOddEnsuresUnqualified("f")
+  // :: warning: [contracts.toptype]
+  @EnsuresUnqualified("f")
+  void ensuresSameContractTwice() {}
+
   // Implicitly repeated type-system-specific contract annotations.
   // :: warning: [contracts.toptype]
   @RequiresUnqualifiedRepeatable("f")
