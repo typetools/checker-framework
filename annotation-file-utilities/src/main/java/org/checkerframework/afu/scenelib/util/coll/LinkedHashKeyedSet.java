@@ -69,7 +69,8 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public @PolyOwningCollection Iterator<V> iterator(@PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
+  public @PolyOwningCollection Iterator<V> iterator(
+      @PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
     return new KeyedSetIterator();
   }
 

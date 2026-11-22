@@ -13,10 +13,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * {@code @CreatesCollectionObligation}.
  *
  * <p>A call to such a method on an owning receiver changes the type of the receiver to
- * {@code @OwningCollection}, and it creates an obligation for each method in the
- * {@code @MustCall} type of the receiver's type argument. A receiver of type
- * {@code @NotOwningCollection} keeps that type and gains no obligation, because it can insert
- * only non-owning elements. For example:
+ * {@code @OwningCollection}, and it creates an obligation for each method in the {@code @MustCall}
+ * type of the receiver's type argument. A receiver of type {@code @NotOwningCollection} keeps that
+ * type and gains no obligation, because it can insert only non-owning elements. For example:
  *
  * <pre><code>
  *  List&lt;Socket&gt; sockets = new ArrayList&lt;&gt;();
