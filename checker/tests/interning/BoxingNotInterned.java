@@ -13,6 +13,14 @@ public class BoxingNotInterned {
     @Interned Integer z = y;
   }
 
+  void boxByCast(int i, boolean bool) {
+    // :: error: [assignment]
+    @Interned Integer x = (Integer) i;
+    // :: error: [assignment]
+    @Interned Object o = (Object) i;
+    @Interned Boolean b = (Boolean) bool;
+  }
+
   void boxBooleanAndByte(boolean bool, byte b) {
     @Interned Boolean x = bool;
     @Interned Object o = bool;

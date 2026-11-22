@@ -1102,22 +1102,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Performs narrowing conversion on the input node to make it match the destination type.
+   * Performs narrowing conversion (JLS 5.1.3), or the widening and narrowing conversion from byte
+   * to char (JLS 5.1.4), on the input node to make it match the destination type. Does nothing if
+   * the conversion from the type of the node to the destination type is an identity or widening
+   * conversion.
    *
    * @param node a node producing a value of numeric primitive type
-   * @param destType the type to narrow the value to
+   * @param destType the numeric primitive type to narrow the value to
    * @return a Node with the value narrowed to the destType, which might be the input node
    */
   protected Node narrow(Node node, TypeMirror destType) {
-    // For narrowing conversion, see JLS 5.1.3
-    assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
-        : "narrowing must be applied to primitive types";
-    // Do not test `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a
-    // supertype of byte and short, but a constant char can be narrowed to byte or short (and a
-    // constant byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between
-    // distinct numeric primitive types that is not a widening conversion is a narrowing conversion
-    // (or, for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    assert TypesUtils.isNumeric(node.getType()) && TypesUtils.isNumeric(destType)
+        : "narrowing must be applied to numeric primitive types";
+    // Test `!types.isSubtype(node.getType(), destType)` (that is, "not a widening conversion"),
+    // not `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a supertype
+    // of byte and short, but a constant char can be narrowed to byte or short (and a constant
+    // byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between distinct
+    // numeric primitive types that is not a widening conversion is a narrowing conversion (or,
+    // for byte to char, a widening and narrowing conversion, JLS 5.1.4).
     if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
+      // The conversion from the type of node to destType is a narrowing conversion (or, for byte
+      // to char, a widening and narrowing conversion).
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
@@ -1144,18 +1149,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if the node is a compile-time constant and varType is byte, short, char, Byte,
-   * Short, or Character. Assignment conversion converts such a constant to the primitive type of
-   * varType, even by a narrowing conversion, before boxing it if varType is a boxed type (JLS 5.2),
-   * as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code Short s = (byte) 1;}.
+   * Returns true if the node is a compile-time constant of type byte, short, char, or int, and
+   * varType is byte, short, char, Byte, Short, or Character. Assignment conversion converts such a
+   * constant to the primitive type of varType, even by a narrowing conversion, before boxing it if
+   * varType is a boxed type (JLS 5.2), as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code
+   * Short s = (byte) 1;}.
    *
-   * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return true if the node is a compile-time constant and varType is byte, short, char, Byte,
-   *     Short, or Character
+   * @param varType the type of a variable (or general LHS) to be converted to
+   * @return true if the node is a compile-time constant of type byte, short, char, or int, and
+   *     varType is byte, short, char, Byte, Short, or Character
    */
-  protected boolean isConstantToByteShortOrChar(TypeMirror varType, Node node) {
-    return TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
+  protected boolean isConstantToByteShortOrChar(Node node, TypeMirror varType) {
+    TypeKind nodeKind = node.getType().getKind();
+    boolean isNodeKindNarrowable =
+        nodeKind == TypeKind.BYTE
+            || nodeKind == TypeKind.SHORT
+            || nodeKind == TypeKind.CHAR
+            || nodeKind == TypeKind.INT;
+    return isNodeKindNarrowable
+        && TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
         && isCompileTimeConstant(node);
   }
 
@@ -1165,19 +1178,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the constant to the primitive type of varType, then boxes it if varType is a boxed type. For
    * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
    *
-   * @param node a node producing a compile-time constant of primitive type
+   * @param node a node producing a compile-time constant of type byte, short, char, or int
    * @param varType the type to convert the constant to
    * @return a Node with the value converted to varType, which might be the input node
    * @see #isConstantToByteShortOrChar
    */
   protected Node convertConstant(Node node, TypeMirror varType) {
-    boolean isBoxed = TypesUtils.isBoxedPrimitive(varType);
-    TypeMirror primitiveType = isBoxed ? types.unboxedType(varType) : varType;
-    Node converted =
-        types.isSubtype(node.getType(), primitiveType)
-            ? widen(node, primitiveType)
-            : narrow(node, primitiveType);
-    return isBoxed ? box(converted) : converted;
+    TypeMirror primitiveType =
+        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
+    // If widen() changes the node, then narrowAndBox() only boxes it.
+    return narrowAndBox(widen(node, primitiveType), varType);
   }
 
   /**
@@ -1234,7 +1244,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(node, varType)) {
         node = convertConstant(node, varType);
       } else {
         node = box(node);
@@ -1247,7 +1257,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && isConstantToByteShortOrChar(varType, node)) {
+      if (contextAllowsNarrowing && isConstantToByteShortOrChar(node, varType)) {
         node = convertConstant(node, varType);
       }
     }
