@@ -1228,8 +1228,7 @@ public class InferenceFactory {
         IgnoredAnnotations.replaceIgnoredForEquality(
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
-            typeFactory.getQualifierHierarchy(),
-            context.modelTypes);
+            typeFactory.getQualifierHierarchy());
     return context.areMutualSubtypes(compared.type1(), compared.type2());
   }
 
@@ -1537,22 +1536,16 @@ public class InferenceFactory {
    */
   public List<AbstractType> getSubsTypeArgs(
       List<AbstractType> typeArgs, List<Variable> variables, Collection<Variable> instantiated) {
-    // The elements of `typeArgs` are substituted without copying them, so that every use of a
-    // variable in `variables` becomes the same object, such as the same fresh captured type
-    // variable.
     Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
-    // The instantiations of the variables in `instantiated` are substituted first, by copying them,
-    // so that a primary annotation on a use of such a variable replaces the instantiation's
-    // annotation, as in UseOfVariable#applyInstantiations.
-    Map<TypeVariable, AnnotatedTypeMirror> instantiatedMap = new HashMap<>();
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      instantiatedMap.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      // A copy, because the substitution below does not copy and can mutate what it substitutes.
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does
@@ -1561,43 +1554,24 @@ public class InferenceFactory {
     List<AbstractType> subsTypeArgs = new ArrayList<>();
     for (AbstractType typeArg : typeArgs) {
       AnnotatedTypeMirror type = typeArg.getAnnotatedType();
+      TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
       AnnotatedTypeMirror subs;
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
         AnnotatedTypeMirror upperBound =
-            substituteSubsTypeArgs(instantiatedMap, map, capTypeVar.getUpperBound());
+            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                map, capTypeVar.getUpperBound());
         AnnotatedTypeMirror lowerBound =
-            substituteSubsTypeArgs(instantiatedMap, map, capTypeVar.getLowerBound());
+            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                map, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
       } else {
-        subs = substituteSubsTypeArgs(instantiatedMap, map, type);
+        subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
       }
       subsTypeArgs.add(new ProperType(subs, context));
     }
     return subsTypeArgs;
-  }
-
-  /**
-   * Returns {@code type} with each use of a type variable in {@code instantiatedMap} replaced by a
-   * copy of its value, with the use's primary annotations if it has any, and then each use of a
-   * type variable in {@code map} replaced by its value itself. Helper method for {@link
-   * #getSubsTypeArgs}.
-   *
-   * @param instantiatedMap a map from type variables to the types that replace them, which are
-   *     copied
-   * @param map a map from type variables to the types that replace them, which are not copied
-   * @param type the type in which to substitute
-   * @return {@code type} with the type variables substituted
-   */
-  private AnnotatedTypeMirror substituteSubsTypeArgs(
-      Map<TypeVariable, AnnotatedTypeMirror> instantiatedMap,
-      Map<TypeVariable, AnnotatedTypeMirror> map,
-      AnnotatedTypeMirror type) {
-    TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
-    AnnotatedTypeMirror result =
-        instantiatedMap.isEmpty() ? type : typeVarSubstitutor.substitute(instantiatedMap, type);
-    return typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, result);
   }
 }
