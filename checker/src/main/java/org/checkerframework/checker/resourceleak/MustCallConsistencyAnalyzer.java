@@ -2421,6 +2421,7 @@ public class MustCallConsistencyAnalyzer {
       Set<Obligation> result = new LinkedHashSet<>(1);
       for (VariableTree param : method.getParameters()) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
+        assert paramElement != null : "@AssumeAssertion(nullness): the method has been attributed";
         boolean hasMustCallAlias = cmAtf.hasMustCallAlias(paramElement);
         boolean declaredTypeHasMustCall = cmAtf.declaredTypeHasMustCall(param);
         if (hasMustCallAlias
@@ -2640,7 +2641,7 @@ public class MustCallConsistencyAnalyzer {
         return obligation;
       }
     }
-    throw new BugInCF("No obligation equal to %s in %s", target, obligations);
+    throw new BugInCF("No Obligation equal to %s in %s", target, obligations);
   }
 
   /**
