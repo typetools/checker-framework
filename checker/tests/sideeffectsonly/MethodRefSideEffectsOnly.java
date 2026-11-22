@@ -299,8 +299,9 @@ public class MethodRefSideEffectsOnly {
 
   void varargsElementReassignedNotOk() {
     // The body stores `shared` into `#1[0]` before modifying `#1[0].child`, so what it modifies is
-    // not reached through the interface method's `#1`.
-    // :: warning: (purity.parameters.sideeffectsonly) :: error: (purity.methodref)
+    // not reached through the interface method's `#1`.  The parameters do correspond, so there is
+    // no purity.parameters.sideeffectsonly warning.
+    // :: error: (purity.methodref)
     NodeMutator m = MethodRefSideEffectsOnly::reassignsFirstThenMutates;
   }
 
