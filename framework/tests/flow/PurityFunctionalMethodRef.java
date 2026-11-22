@@ -70,6 +70,14 @@ public class PurityFunctionalMethodRef {
     runsAnnotated(PurityFunctionalMethodRef::applyStatic);
   }
 
+  void genericReferences() {
+    // Every argument of a call through GenericApplier<PureFunction> is a PureFunction, whose apply
+    // method is side-effect-free.
+    GenericApplier<PureFunction> f = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    GenericApplier<Function<String, Integer>> g = PurityFunctionalMethodRef::applyStatic;
+  }
+
   /** A subinterface that redeclares {@code Function.apply}, with a stronger guarantee. */
   @FunctionalInterface
   interface PureFunction extends Function<String, Integer> {
@@ -229,6 +237,53 @@ public class PurityFunctionalMethodRef {
     PureImplApplier a = PurityFunctionalMethodRef::applyStatic;
     // :: error: [purity.methodref.functional.parameter]
     ImpureImplApplier b = PurityFunctionalMethodRef::applyStatic;
+    // A call through GenericApplier<PureImpl>.apply checks nothing about its argument, but every
+    // argument is a PureImpl.
+    GenericApplier<PureImpl> c = PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    GenericApplier<ImpureImpl> d = PurityFunctionalMethodRef::applyStatic;
+  }
+
+  @FunctionalInterface
+  interface StringGetter {
+    String get();
+  }
+
+  @FunctionalInterface
+  interface ObjectGetter {
+    Object get();
+  }
+
+  /**
+   * Inherits {@code StringGetter.get} and {@code ObjectGetter.get}; neither overrides the other.
+   */
+  @FunctionalInterface
+  interface BothGetter extends StringGetter, ObjectGetter {}
+
+  @SideEffectFree
+  static boolean callObjectGetter(ObjectGetter g) {
+    return g.get() == null;
+  }
+
+  @FunctionalInterface
+  interface BothGetterCaller {
+    @SideEffectFree
+    boolean call(BothGetter g);
+  }
+
+  void siblingCallbackMethods() {
+    // A call through BothGetterCaller.call checks the argument's implementation of BothGetter's
+    // functional method, which is also its implementation of ObjectGetter.get.
+    BothGetterCaller a = PurityFunctionalMethodRef::callObjectGetter;
+  }
+
+  void intersectionCast() {
+    Object a = (Applier & java.io.Serializable) PurityFunctionalMethodRef::applyStatic;
+    // A call through UnannotatedApplier.apply can run the reference.
+    // :: error: [purity.methodref.functional.parameter]
+    Object b = (Applier & UnannotatedApplier) PurityFunctionalMethodRef::applyStatic;
+    // :: error: [purity.methodref.functional.parameter]
+    Object c = (UnannotatedApplier & Applier) PurityFunctionalMethodRef::applyStatic;
   }
 
   /**
