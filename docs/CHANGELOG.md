@@ -7,16 +7,7 @@
 
 ### User-visible changes
 
-A pattern variable, such as `s` in `o instanceof String s`, now defaults to the
-top qualifier, like a local variable, and is refined to the qualifiers of the
-value that the pattern matches.  This does not apply to a pattern variable
-nested in a record pattern.
-
 ### Changes for type system implementers
-
-`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables that are not
-nested in a record pattern.  `ElementUtils.isLocalVariable()` returns true for
-pattern variables.
 
 New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
 binding variable of an `instanceof` type pattern.  A subclass can override the
