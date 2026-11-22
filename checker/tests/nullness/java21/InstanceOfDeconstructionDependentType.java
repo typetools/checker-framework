@@ -74,6 +74,34 @@ public class InstanceOfDeconstructionDependentType {
     }
   }
 
+  KeyedMap current = new KeyedMap(Map.of(), "");
+
+  void nonFinalFieldReceiver(KeyedMap other) {
+    if (this.current instanceof KeyedMap(var mm, String k)) {
+      this.current = other;
+      // `current` is not final, so `k` is not a key for current.m.
+      // :: error: [unboxing.of.nullable]
+      int i = this.current.m.get(k);
+    }
+  }
+
+  final KeyedMap finalCurrent = new KeyedMap(Map.of(), "");
+
+  void finalFieldReceiver() {
+    if (this.finalCurrent instanceof KeyedMap(var mm, String k)) {
+      int i = this.finalCurrent.m.get(k);
+    }
+  }
+
+  void arrayReceiver(KeyedMap[] a, KeyedMap other) {
+    if (a[0] instanceof KeyedMap(var mm, String k)) {
+      a[0] = other;
+      // `a[0]` can be reassigned, so `k` is not a key for a[0].m.
+      // :: error: [unboxing.of.nullable]
+      int i = a[0].m.get(k);
+    }
+  }
+
   void adaptedExplicitType(KeyedMap km) {
     if (km instanceof KeyedMap(var mm, String k)) {
       @KeyFor("km.m") String k2 = k;

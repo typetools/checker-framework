@@ -35,6 +35,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
@@ -384,7 +386,7 @@ public class DependentTypesHelper {
    * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
    *
    * <p>If {@code receiver} is not deterministic or contains a local variable that is not
-   * effectively final, then an expression that depends on the receiver could refer to a different
+   * effectively final, a field that is not final, or an array access, then an expression that depends on the receiver could refer to a different
    * record than the one that was deconstructed. Therefore, such expressions are removed from the
    * annotations on the component's declared type. Expressions that do not depend on the receiver,
    * such as static fields, are retained.
@@ -406,7 +408,7 @@ public class DependentTypesHelper {
       return;
     }
 
-    boolean isStableReceiver = isDeterministicAndEffectivelyFinal(receiver);
+    boolean isStableReceiver = isDeterministicAndUnassignable(receiver);
     StringToJavaExpression stringToJavaExpr =
         stringExpr -> {
           JavaExpression declExpr =
@@ -428,22 +430,25 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Returns true if {@code expr} and all of its subexpressions are deterministic, and every local
-   * variable in {@code expr} is effectively final.
+   * Returns true if {@code expr} always refers to the same value: {@code expr} and all of its
+   * subexpressions are deterministic, every local variable in {@code expr} is effectively final,
+   * every field in {@code expr} is final, and {@code expr} contains no array accesses.
    *
    * <p>{@link MethodCall#isDeterministic} does not check the receiver of the call. For a record
    * pattern nested in another one, the receiver is an accessor call on the value matched by the
    * enclosing pattern, as in {@code getOuter().inner()}. That value is the same on each evaluation
    * only if every receiver in the chain is deterministic.
    *
-   * <p>A local variable that is reassigned after the record pattern refers to a different record
-   * than the one that was deconstructed, so a binding variable's qualifier must not mention it.
+   * <p>A variable, field, or array element that is reassigned after the record pattern refers to a
+   * different record than the one that was deconstructed. The declared type of a binding variable
+   * is not invalidated when such an assignment occurs, so a binding variable's qualifier must not
+   * mention a receiver path that can be reassigned.
    *
    * @param expr an expression
-   * @return true if {@code expr} and all of its subexpressions are deterministic, and every local
-   *     variable in {@code expr} is effectively final
+   * @return true if {@code expr} is deterministic and contains no reassignable local variable,
+   *     field, or array element
    */
-  private boolean isDeterministicAndEffectivelyFinal(JavaExpression expr) {
+  private boolean isDeterministicAndUnassignable(JavaExpression expr) {
     if (!expr.isDeterministic(factory)) {
       return false;
     }
@@ -463,6 +468,20 @@ public class DependentTypesHelper {
           result[0] = false;
         }
         return super.visitLocalVariable(localVarExpr, p);
+      }
+
+      @Override
+      protected Void visitFieldAccess(FieldAccess fieldAccessExpr, Void p) {
+        if (!fieldAccessExpr.isFinal()) {
+          result[0] = false;
+        }
+        return super.visitFieldAccess(fieldAccessExpr, p);
+      }
+
+      @Override
+      protected Void visitArrayAccess(ArrayAccess arrayAccessExpr, Void p) {
+        result[0] = false;
+        return super.visitArrayAccess(arrayAccessExpr, p);
       }
     }.scan(expr, null);
     return result[0];
