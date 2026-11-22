@@ -161,6 +161,19 @@ public class Issue3028 {
     List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) o;
   }
 
+  static class Outer<T> {
+    class Inner {}
+  }
+
+  // javac 17 treats a cast to `? extends Object` from a non-Object type as unchecked.
+  @SuppressWarnings("unchecked")
+  void nonNullWildcardEnclosingTypeDowncast(Object o) {
+    Outer<?>.Inner inner = (Outer<?>.Inner) o;
+    // The run-time check does not verify the type argument of the enclosing type.
+    // :: warning: [cast.unsafe]
+    Outer<? extends @NonNull Object>.Inner inner2 = (Outer<? extends @NonNull Object>.Inner) o;
+  }
+
   void nonNullWildcardDowncastFromCollection(Collection<? extends @NonNull Object> c) {
     List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) c;
   }
