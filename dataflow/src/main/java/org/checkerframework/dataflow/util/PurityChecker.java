@@ -378,7 +378,7 @@ public final class PurityChecker {
         || !(isSameOrOverrides(parameterFunction, declarationFunction, env)
             || isSameOrOverrides(declarationFunction, parameterFunction, env))) {
       TypeMirror parameterType = parameters.get(index).asType();
-      ExecutableElement implementation = functionalMethodOf(parameterType, parameterFunction, env);
+      ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
       if (implementation == null) {
         return EnumSet.noneOf(PurityKind.class);
       }
@@ -448,18 +448,19 @@ public final class PurityChecker {
    * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
    * or null if it has none.
    *
-   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
-   * argument can also be of a class type, including an anonymous class, that implements the
-   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
-   * functional subinterface can implement {@code paramFunction} with a default method and declare
-   * an unrelated abstract method as its own functional method; the default method is what runs.
+   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but
+   * {@code type} can also be a class type, including the type of an anonymous class, that
+   * implements the interface. The implementation is what will run, so its annotations are what
+   * matter. Likewise, a functional subinterface can implement {@code paramFunction} with a default
+   * method and declare an unrelated abstract method as its own functional method; the default
+   * method is what runs.
    *
-   * @param type the type of an argument
-   * @param paramFunction the functional method of the parameter's type
+   * @param type a type, such as the type of an argument or of a formal parameter
+   * @param paramFunction a functional interface's functional method, such as {@code Function.apply}
    * @param env the processing environment
    * @return the method of {@code type} that implements {@code paramFunction}, or null
    */
-  public static @Nullable ExecutableElement functionalMethodOf(
+  public static @Nullable ExecutableElement implementationOf(
       TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
     Elements elements = env.getElementUtils();
     TypeMirror functionalType = functionalInterfaceType(type, env);

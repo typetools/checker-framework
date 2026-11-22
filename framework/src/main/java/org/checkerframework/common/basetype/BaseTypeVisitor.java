@@ -78,6 +78,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -1964,7 +1965,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     } else {
       ExecutableElement argFunction =
-          PurityChecker.functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+          PurityChecker.implementationOf(TreeUtils.typeOf(argument), paramFunction, env);
       if (argFunction == null) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
@@ -2301,6 +2302,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitBinary(BinaryTree tree, Void p) {
+      // A reference is an operand only of == or !=, or of a string concatenation, which calls
+      // toString rather than the functional method.
       scanUnlessParameter(tree.getLeftOperand());
       scanUnlessParameter(tree.getRightOperand());
       return null;
@@ -5662,8 +5665,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that the referenced method is at least as pure as the functional interface method that
-     * the method reference implements.
+     * Checks that the referenced method is at least as pure as each method through which a call can
+     * run it: the functional interface method that the method reference implements, and the other
+     * methods that {@link #methodsThatRunReference} returns.
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
      * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
@@ -5672,7 +5676,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!checkPurityAnnotations) {
         return;
       }
-      EnumSet<PurityKind> superPurity = purityKinds(overridden.getElement(), false);
       // Apply the command-line assumptions to the referenced method, so that a method reference is
       // treated like a lambda whose body calls the referenced method.  Like such a call, a
       // side-effect-free referenced method that returns void is deterministic.
@@ -5692,46 +5695,56 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       subPurity.addAll(parameterPurity);
 
-      boolean ok;
-      if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
-        if (!checkPurityAnnotationsOption) {
-          // A @SideEffectsOnly annotation is verified only when -AcheckPurityAnnotations itself was
-          // supplied, not merely -AsuggestPureMethods or -Ainfer; see
-          // checkSideEffectsOnlyAnnotation.
-          ok = true;
-        } else if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
-          ok = true;
-        } else if (subPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
-          // Both methods are annotated with @SideEffectsOnly, and the referenced method is
-          // allowed to perform fewer side effects.
-          ok = sideEffectsOnlyIsNarrowed();
+      for (ExecutableElement declaration :
+          methodsThatRunReference(atypeFactory.getProcessingEnv())) {
+        EnumSet<PurityKind> superPurity = purityKinds(declaration, false);
+        boolean ok;
+        if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+          if (!checkPurityAnnotationsOption) {
+            // A @SideEffectsOnly annotation is verified only when -AcheckPurityAnnotations itself
+            // was supplied, not merely -AsuggestPureMethods or -Ainfer; see
+            // checkSideEffectsOnlyAnnotation.
+            ok = true;
+          } else if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+            ok = true;
+          } else if (subPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+            // Both methods are annotated with @SideEffectsOnly, and the referenced method is
+            // allowed to perform fewer side effects.
+            ok = sideEffectsOnlyIsNarrowed(declaration);
+          } else {
+            // The functional interface method has @SideEffectsOnly, and the referenced method has
+            // no side-effect annotation.  The referenced method inherits nothing from the
+            // functional interface method.
+            ok = false;
+          }
+          // The tests above account only for side effects.  The referenced method must also
+          // satisfy every other purity kind, such as @Deterministic, that the functional interface
+          // method promises.
+          EnumSet<PurityKind> superNonSideEffectKinds = superPurity.clone();
+          superNonSideEffectKinds.remove(PurityKind.SIDE_EFFECTS_ONLY);
+          ok = ok && subPurity.containsAll(superNonSideEffectKinds);
         } else {
-          // The functional interface method has @SideEffectsOnly, and the referenced method has
-          // no side-effect annotation.  The referenced method inherits nothing from the functional
-          // interface method.
-          ok = false;
+          // The referenced method is allowed to make more guarantees.
+          ok = subPurity.containsAll(superPurity);
         }
-        // The tests above account only for side effects.  The referenced method must also satisfy
-        // every other purity kind, such as @Deterministic, that the functional interface method
-        // promises.
-        EnumSet<PurityKind> superNonSideEffectKinds = superPurity.clone();
-        superNonSideEffectKinds.remove(PurityKind.SIDE_EFFECTS_ONLY);
-        ok = ok && subPurity.containsAll(superNonSideEffectKinds);
-      } else {
-        // The referenced method is allowed to make more guarantees.
-        ok = subPurity.containsAll(superPurity);
-      }
 
-      if (!ok) {
-        checker.reportError(
-            overriderTree,
-            "purity.methodref",
-            overriderType,
-            purityKindsToString(subPurity, overrider.getElement()),
-            overrider,
-            overriddenType,
-            purityKindsToString(superPurity, overridden.getElement()),
-            overridden);
+        if (!ok) {
+          AnnotatedExecutableType declarationType =
+              declaration.equals(overridden.getElement())
+                  ? overridden
+                  : AnnotatedTypes.asMemberOf(types, atypeFactory, overriddenType, declaration);
+          checker.reportError(
+              overriderTree,
+              "purity.methodref",
+              overriderType,
+              purityKindsToString(subPurity, overrider.getElement()),
+              overrider,
+              overriddenType,
+              purityKindsToString(superPurity, declaration),
+              declarationType);
+          // The error message names the first declaration whose purity the referenced method lacks.
+          break;
+        }
       }
       if (!infer) {
         checkMethodReferenceFunctionalParameters();
@@ -5747,9 +5760,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * the functional method's own annotations and of the command-line assumptions such as {@code
      * -AassumeSideEffectFree}.
      *
-     * <p>A call through the functional method, or through any method that the functional method
-     * overrides, can run the referenced method. Each call checks its arguments against the
-     * declaration that it invokes.
+     * <p>A call through any method that {@link #methodsThatRunReference} returns can run the
+     * referenced method. Each call checks its arguments against the declaration that it invokes.
      */
     private void checkMethodReferenceFunctionalParameters() {
       ExecutableElement referenced = overrider.getElement();
@@ -5758,11 +5770,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // The referenced method assumes nothing of its functional-interface arguments.
         return;
       }
-      ExecutableElement functionalMethod = overridden.getElement();
-      // The methods through which a call can run the referenced method.
-      List<ExecutableElement> declarations = new ArrayList<>();
-      declarations.add(functionalMethod);
-      declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
+      List<ExecutableElement> declarations = methodsThatRunReference(env);
       int offset = methodRefParameterOffset();
       List<? extends VariableElement> params = referenced.getParameters();
       for (int i = 0; i < params.size(); i++) {
@@ -5798,6 +5806,47 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
         }
       }
+    }
+
+    /**
+     * Returns the methods through which a call can run the referenced method: the functional
+     * interface method that the method reference implements, and every other method of the
+     * functional interface or of its supertypes that is override-equivalent to it in the functional
+     * interface (JLS 8.4.2). The latter include each method that the functional interface method
+     * overrides, and each abstract method that the functional interface inherits from another
+     * superinterface, as {@code A.run} and {@code B.run} in {@code interface C extends A, B}.
+     *
+     * @param env the processing environment
+     * @return the methods through which a call can run the referenced method, starting with the
+     *     functional interface method
+     */
+    private List<ExecutableElement> methodsThatRunReference(ProcessingEnvironment env) {
+      ExecutableElement functionalMethod = overridden.getElement();
+      List<ExecutableElement> result = new ArrayList<>();
+      result.add(functionalMethod);
+      TypeElement functionalInterface =
+          (TypeElement) overriddenType.getUnderlyingType().asElement();
+      // Use the functional interface's declared type, whose type arguments are its own type
+      // variables, so that a wildcard in the type of the method reference does not matter.
+      DeclaredType interfaceType = (DeclaredType) functionalInterface.asType();
+      ExecutableType functionalMethodType =
+          (ExecutableType) types.asMemberOf(interfaceType, functionalMethod);
+      for (TypeElement supertype : ElementUtils.getAllSupertypes(functionalInterface, env)) {
+        for (ExecutableElement method : ElementFilter.methodsIn(supertype.getEnclosedElements())) {
+          if (method.equals(functionalMethod)
+              || !method.getSimpleName().contentEquals(functionalMethod.getSimpleName())
+              || method.getModifiers().contains(Modifier.STATIC)
+              || method.getModifiers().contains(Modifier.PRIVATE)) {
+            continue;
+          }
+          ExecutableType methodType = (ExecutableType) types.asMemberOf(interfaceType, method);
+          if (types.isSubsignature(functionalMethodType, methodType)
+              || types.isSubsignature(methodType, functionalMethodType)) {
+            result.add(method);
+          }
+        }
+      }
+      return result;
     }
 
     /**
@@ -5849,24 +5898,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Returns true if the overriding method's {@code @SideEffectsOnly} annotation permits no more
-     * side effects than the overridden method's does. That is the case when every expression in the
-     * overrider's annotation is covered by some expression in the overridden method's annotation:
-     * it is that expression, or it is reached through it.
+     * side effects than {@code superMethod}'s does. That is the case when every expression in the
+     * overrider's annotation is covered by some expression in {@code superMethod}'s annotation: it
+     * is that expression, or it is reached through it.
      *
-     * <p>This method requires that both the overrider and the overridden method are annotated with
+     * <p>This method requires that both the overrider and {@code superMethod} are annotated with
      * {@code @SideEffectsOnly}.
      *
-     * @return true if the overrider's side effects are within the overridden method's
+     * @param superMethod the overridden method, or another method through which a call can run the
+     *     referenced method; see {@link #methodsThatRunReference}
+     * @return true if the overrider's side effects are within {@code superMethod}'s
      */
-    private boolean sideEffectsOnlyIsNarrowed() {
+    private boolean sideEffectsOnlyIsNarrowed(ExecutableElement superMethod) {
       Map<ExecutableElement, List<String>> seOnlySuperStrings =
-          atypeFactory.getSideEffectsOnlyExpressionMap(overridden.getElement());
+          atypeFactory.getSideEffectsOnlyExpressionMap(superMethod);
       Map<ExecutableElement, List<String>> seOnlySubStrings =
           atypeFactory.getSideEffectsOnlyExpressionMap(overrider.getElement());
       if (seOnlySuperStrings == null || seOnlySubStrings == null) {
         throw new BugInCF(
             "sideEffectsOnlyIsNarrowed requires @SideEffectsOnly on both methods: %s %s",
-            overridden.getElement(), overrider.getElement());
+            superMethod, overrider.getElement());
       }
 
       List<JavaExpression> seOnlySuperExpressions = parseSideEffectsOnly(seOnlySuperStrings);
