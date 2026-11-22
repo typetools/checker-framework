@@ -457,7 +457,7 @@ public final class Resolution {
   }
 
   /**
-   * Resolves {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
+   * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
    *
    * @param ai a variable to resolve
    * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
