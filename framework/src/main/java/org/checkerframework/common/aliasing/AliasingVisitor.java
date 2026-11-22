@@ -322,8 +322,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   /**
    * Returns true if {@code exp} is a use of a variable whose type is not written in source code,
    * such as {@code f} after {@code var f = create();}. The type of such a use can carry annotations
-   * that are not written in source code; see {@link
-   * org.checkerframework.framework.type.AnnotatedTypeFactory#isVariableTypeInferred}.
+   * that are not written in source code; see {@link TreeUtils#isVariableTypeInferred}.
    *
    * <p>An assignment expression such as {@code sb = create()} is treated like a use of its
    * left-hand side, because the type of an assignment expression is the type of its left-hand side.
@@ -343,7 +342,13 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
       return false;
     }
     Tree decl = atypeFactory.declarationFromElement(TreeUtils.elementFromUse(identTree));
-    return decl instanceof VariableTree varTree && atypeFactory.isVariableTypeInferred(varTree);
+    if (!(decl instanceof VariableTree)) {
+      return false;
+    }
+    // `getPath` returns null for a declaration in another compilation unit. Such a declaration
+    // declares a field, whose type is written in source code.
+    TreePath declPath = atypeFactory.getPath(decl);
+    return declPath != null && TreeUtils.isVariableTypeInferred(declPath);
   }
 
   /**
