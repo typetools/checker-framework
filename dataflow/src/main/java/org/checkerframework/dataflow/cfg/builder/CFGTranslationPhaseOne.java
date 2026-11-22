@@ -2363,12 +2363,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = scan(selectorExprTree, null);
-      // A null selector matches `case null` rather than throwing a NullPointerException, so do not
-      // unbox the selector of a switch that has a `case null` label.
-      if (!TreeUtils.hasNullCaseLabel(switchTree)) {
-        selectorExprNode = unbox(selectorExprNode);
-      }
+      Node selectorExprNode = unbox(scan(selectorExprTree, null));
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
