@@ -59,6 +59,20 @@ public class EnhancedForConversion {
     }
   }
 
+  // RawSource.iterator() returns a raw type, which is return-type-substitutable for
+  // Iterator<String> only by unchecked conversion.  Neither iterator() method overrides the other.
+  @SuppressWarnings("rawtypes")
+  interface RawSource {
+    Iterator iterator();
+  }
+
+  @SuppressWarnings("unchecked")
+  interface RawIterable extends RawSource, Iterable<String> {}
+
+  void rawIterator(RawIterable strings) {
+    for (String s : strings) {}
+  }
+
   void unboxArray(@Odd Integer[] array) {
     for (int x : array) {
       @Odd int y = x;
