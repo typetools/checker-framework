@@ -45,7 +45,6 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
@@ -1195,11 +1194,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
       // case 1:
       else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
-        // A static field is the same location regardless of the receiver.  Do not check whether
-        // the receivers can alias:  two subclasses that inherit the static field, such as `Left`
-        // in `Left.f` and `Right` in `Right.f`, are not related by subtyping.
-        if (fieldAccess.isStatic()
-            || canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
+        if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
           if (!otherFieldAccess.isFinal()) {
             if (val != null) {
               V newVal = val.leastUpperBound(otherVal);
@@ -1266,13 +1261,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // case 1:
       if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
         arrayValuesIterator.remove(); // remove information completely
-      } else if (canAlias(arrayAccess.getArray(), otherArrayAccess.getArray())
-          // #canAlias is not conservative for interface component types:  one `Integer[]` can be
-          // both a `Number[]` and a `Comparable<?>[]`.
-          || TypesUtils.canAliasConservative(
-              arrayAccess.getArray().getType(),
-              otherArrayAccess.getArray().getType(),
-              analysis.getTypes())) {
+      } else if (canAlias(arrayAccess.getArray(), otherArrayAccess.getArray())) {
         // TODO: one could be less strict here, and only raise the abstract
         // value for all array expressions with potentially aliasing receivers.
         arrayValuesIterator.remove(); // remove information completely
