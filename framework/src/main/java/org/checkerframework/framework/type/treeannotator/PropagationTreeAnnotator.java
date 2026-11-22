@@ -16,7 +16,6 @@ import com.sun.source.util.TreePath;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -100,26 +99,18 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         TypeMirror annosTM = initType.getUnderlyingType();
         boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
         if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
-          // The initializer is boxed or unboxed (JLS 5.2).
-          if (initIsPrimitive) {
-            // A primitive initializer is boxed to the component type if that is a boxed
-            // primitive, as in `new Byte[] {1}`.
-            annos =
-                atypeFactory.getBoxedAnnotations(
-                    annos,
-                    TypesUtils.isBoxedPrimitive(componentTM)
-                        ? atypeFactory.types.unboxedType(componentTM).getKind()
-                        : annosTM.getKind());
-          } else {
-            // A boxed initializer is unboxed to its own primitive type, which might then be
-            // widened to the component type, as in `new long[] {anInteger}` (JLS 5.1.8, 5.1.2).
-            TypeKind unboxedKind = unboxedKind(annosTM, componentTM);
-            annos = atypeFactory.getUnboxedAnnotations(annos, unboxedKind);
-            if (TypeKindUtils.getPrimitiveConversionKind(unboxedKind, componentTM.getKind())
-                == TypeKindUtils.PrimitiveConversionKind.WIDENING) {
-              annos = atypeFactory.getWidenedAnnotations(annos, unboxedKind, componentTM.getKind());
-            }
-          }
+          // The initializer is boxed or unboxed (JLS 5.2).  A primitive initializer is boxed to the
+          // component type if that is a boxed primitive, as in `new Byte[] {1}`.  A boxed
+          // initializer is unboxed to its own primitive type, which may then be widened to the
+          // component type, as in `new long[] {anInteger}`.
+          annos =
+              initIsPrimitive
+                  ? atypeFactory.getBoxedAnnotations(
+                      annos,
+                      TypesUtils.isBoxedPrimitive(componentTM)
+                          ? atypeFactory.types.unboxedType(componentTM).getKind()
+                          : annosTM.getKind())
+                  : atypeFactory.getUnboxedAnnotations(annos, unboxedKind(annosTM, componentTM));
           annosTM = componentTM;
         }
 
@@ -236,18 +227,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * @return the kind of the primitive type that {@code type} unboxes to
    */
   private TypeKind unboxedKind(TypeMirror type, TypeMirror primitiveComponentType) {
-    // Types.unboxedType() rejects type variables, so use the upper bound, as in
-    // `<T extends Character>`.
-    type = TypesUtils.upperBound(type);
-    if (type instanceof IntersectionType intersection) {
-      for (TypeMirror bound : intersection.getBounds()) {
-        TypeMirror upperBound = TypesUtils.upperBound(bound);
-        if (TypesUtils.isBoxedPrimitive(upperBound)) {
-          return atypeFactory.types.unboxedType(upperBound).getKind();
-        }
-      }
-      return primitiveComponentType.getKind();
-    }
     try {
       return atypeFactory.types.unboxedType(type).getKind();
     } catch (IllegalArgumentException e) {

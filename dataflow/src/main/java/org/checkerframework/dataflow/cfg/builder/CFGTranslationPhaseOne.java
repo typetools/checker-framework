@@ -68,7 +68,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -352,9 +351,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The ClassCastException type. */
   protected final TypeMirror classCastExceptionType;
 
-  /** The IllegalArgumentException type. */
-  protected final TypeMirror illegalArgumentExceptionType;
-
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
@@ -451,7 +447,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
-    illegalArgumentExceptionType = getTypeMirror(IllegalArgumentException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
@@ -2888,7 +2883,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
    * @param extraExceptionTypes types that label exceptional edges of the {@code close} call, in
-   *     addition to the types of the exceptions that the call might throw
+   *     addition to the types of the exceptions that the call might throw; the call follows those
+   *     edges whenever it throws an exception (see {@link
+   *     MethodInvocationNode#getAnyExceptionTypes()})
    * @param p the value to pass to calls to {@code scan}
    */
   private void addCloseCallForResource(
@@ -3018,7 +3015,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the path on which an exception (the primary exception) reached the synthetic finally block of a
    * try-with-resources statement. On that path, the statement suppresses any exception that {@code
    * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
-   * successor of the {@code close} call leads to the node that follows the added nodes.
+   * successor of the added nodes is the node that follows them.
    *
    * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
    * addition to the types of the exceptions that {@code close} might throw. So an analysis that
@@ -3028,17 +3025,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
    * unreachable.
    *
+   * <p>The call follows those edges whenever {@code close} throws an exception, whatever its type,
+   * so the call records their types (see {@link MethodInvocationNode#getAnyExceptionTypes()}). An
+   * analysis must not apply, on those edges, a fact that holds only when {@code close} throws an
+   * exception of a particular type, such as an exceptional postcondition of {@code close}. The
+   * normal successor of the call, if any, is unaffected.
+   *
    * <p>If {@code close} terminates execution, the call has no normal successor, but its exceptional
    * successors still reach the rethrow of the primary exception. That models termination by
    * throwing an exception. (If {@code close} terminates execution by exiting the JVM, the primary
    * exception does not propagate, but the CFG conservatively permits it to.)
-   *
-   * <p>The statement suppresses an exception that {@code close} throws by calling {@code
-   * addSuppressed} on the primary exception. If {@code close} throws the primary exception itself,
-   * {@code addSuppressed} throws an {@code IllegalArgumentException}, which propagates instead of
-   * the primary exception. So the path on which {@code close} throws an exception has an
-   * exceptional edge for {@code IllegalArgumentException}, outside the synthetic catch of the
-   * exception that {@code close} throws.
    *
    * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
    *     resource
@@ -3048,7 +3044,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private void addSuppressingCloseCallForResource(
       Tree resourceDeclarationTree, Set<TypeMirror> primaryExceptionTypes, Void p) {
     Label suppressedLabel = new Label();
-    Label afterSuppressionLabel = new Label();
     tryStack.pushFrame(
         new TryCatchFrame(
             types,
@@ -3056,20 +3051,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
     addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
     tryStack.popFrame();
-    extendWithExtendedNode(new UnconditionalJump(afterSuppressionLabel));
-
-    // The exception that close() threw reaches here.  Suppressing it fails if it is the primary
-    // exception itself.
     addLabelForNextNode(suppressedLabel);
-    extendWithNodeWithException(
-        new MarkerNode(
-            resourceDeclarationTree,
-            "suppress exception from close of resource #"
-                + TreeUtils.treeUids.get(resourceDeclarationTree),
-            env.getTypeUtils()),
-        illegalArgumentExceptionType);
-
-    addLabelForNextNode(afterSuppressionLabel);
   }
 
   /**
@@ -3524,19 +3506,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
-    // Throwing a null value throws a NullPointerException (JLS 14.18).
-    Set<TypeMirror> causes;
-    if (exception.getKind() == TypeKind.NULL) {
-      causes = Collections.singleton(nullPointerExceptionType);
-    } else if (mayBeNull(expression)) {
-      causes = new LinkedHashSet<>(2);
-      causes.add(exception);
-      causes.add(nullPointerExceptionType);
-    } else {
-      causes = Collections.singleton(exception);
-    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
-    NodeWithExceptionsHolder exNode = extendWithNodeWithExceptions(throwsNode, causes);
+    NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
     exNode.setTerminatesExecution(true);
     return throwsNode;
   }
@@ -3702,6 +3673,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // The receiver is evaluated before the arguments.
     Node receiver = getReceiver(methodSelect);
 
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
+
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
       // Don't convert arguments for enum super calls.  The AST contains no actual arguments,
@@ -3715,13 +3688,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
 
-    // Look up the method to invoke.  The access tests the receiver for nullness, which happens
-    // after the arguments are evaluated.  Its NullPointerException is separate from the exceptions
-    // of the MethodInvocationNode, which the invoked method throws after it is entered.  So, a
-    // handler for a NullPointerException from a null receiver does not assume the postconditions
-    // that the invoked method ensures on exceptional exit, such as
-    // @EnsuresCalledMethodsOnException.
-    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
+    // Look up the method to invoke, which tests the receiver for nullness after the arguments are
+    // evaluated.  The NullPointerException for a null receiver is thrown here rather than by the
+    // MethodInvocationNode, so its exceptional store is the one before the call, without any
+    // postcondition of the method, which never ran.
     extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
 
     // TODO: lock the receiver for synchronized methods
