@@ -288,6 +288,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private SwitchBuilder switchBuilder;
 
   /**
+   * The maximum number of nodes in extra exceptional copies of finally blocks, beyond which the
+   * exceptions that reach a finally block share one copy. An extra copy is one other than the first
+   * exceptional copy of a given finally block. See {@link #handleFinally}.
+   */
+  private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
+
+  /**
+   * The number of nodes in extra exceptional copies of finally blocks so far. Nodes in nested extra
+   * copies are counted more than once.
+   */
+  private int extraExceptionalFinallyNodes = 0;
+
+  /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
    * have at least one corresponding Node. Trees that undergo implicit conversions, such as boxing
    * or unboxing, can map to two distinct Nodes. The Node for the value before implicit conversion
@@ -2967,7 +2980,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // the analysis merges their stores there anyway.  The number of copies grows exponentially with
     // the depth of the nesting of finally blocks in finally blocks, with a base that grows with the
     // number of copies per finally block.  A copy for each type would make the base much larger.
-    for (Map<TypeMirror, Label> group : exceptionGroups(exceptionalFinallyFrame)) {
+    // To bound that growth, once the copies beyond the first copy for each finally block have
+    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the remaining groups of each
+    // finally block share a single copy, which rethrows each of their exceptions.
+    List<Map<TypeMirror, Label>> groups = new ArrayList<>(exceptionGroups(exceptionalFinallyFrame));
+    for (int i = 0; i < groups.size(); i++) {
+      Map<TypeMirror, Label> group = groups.get(i);
+      boolean isExtraCopy = i > 0;
+      if (isExtraCopy
+          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET
+          && i < groups.size() - 1) {
+        Map<TypeMirror, Label> sharedGroup = new ArrayMap<>();
+        for (Map<TypeMirror, Label> remainingGroup : groups.subList(i, groups.size())) {
+          sharedGroup.putAll(remainingGroup);
+        }
+        groups.subList(i, groups.size()).clear();
+        groups.add(sharedGroup);
+        group = sharedGroup;
+      }
+      int sizeBeforeCopy = nodeList.size();
+
       for (Label label : group.values()) {
         addLabelForNextNode(label);
       }
@@ -2995,6 +3027,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               Collections.unmodifiableSet(group.keySet()));
 
       throwing.setTerminatesExecution(true);
+
+      if (isExtraCopy) {
+        // This overcounts the nodes of a nested extra copy, which is conservative.
+        extraExceptionalFinallyNodes += nodeList.size() - sizeBeforeCopy;
+      }
     }
 
     if (returnTargetLC.wasAccessed()) {
