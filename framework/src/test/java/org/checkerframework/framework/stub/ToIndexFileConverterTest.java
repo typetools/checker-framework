@@ -1412,6 +1412,96 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * In a stub file that declares a cyclic inheritance hierarchy, which is not legal Java, a search
+   * for a member type of a classpath counterpart, which the cycle cuts short, does not prevent a
+   * later search from finding that member type. Here, the search for {@code X.Entry} searches
+   * {@code Y}, and that search of {@code Y} is cut short when it reaches {@code X} again, so it
+   * does not find {@code Entry}. The search of {@code X} then finds {@code Entry} in the classpath
+   * counterpart of {@code java.util.Map}. The search for {@code W.Entry} searches {@code Y} again,
+   * and finds {@code Entry} via {@code X}.
+   */
+  @Test
+  public void testCyclicInheritanceCutsShortSearchOfClasspathCounterpart() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "interface Map {}",
+            "package p;",
+            "interface X extends Y, java.util.Map {}",
+            "interface Y extends X {}",
+            "interface W extends Y {}",
+            "class MyClass {",
+            "  void myMethod(X.Entry x, W.Entry w) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A qualified name whose later identifiers the stub file omits is resolved within the classpath
+   * counterpart of the stub file's declaration.
+   */
+  @Test
+  public void testQualifiedNameIsResolvedWithinClasspathCounterpart() throws Exception {
+    // java.util.AbstractMap inherits Entry from java.util.Map.
+    String jaif =
+        convert(
+            "package java.util;",
+            "abstract class AbstractMap {}",
+            "class MyClass {",
+            "  void myMethod(AbstractMap.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type that the stub file omits from the enclosing class is found on the classpath. */
+  @Test
+  public void testOmittedMemberTypeOfEnclosingClass() throws Exception {
+    // java.util.HashMap declares a package-private member type named Node.
+    String jaif =
+        convert("package java.util;", "class HashMap {", "  void myMethod(Node n) {}", "}");
+    assertMethod(jaif, "HashMap", "myMethod(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * A member type that the stub file omits from a supertype that the stub file declares is found on
+   * the classpath.
+   */
+  @Test
+  public void testOmittedMemberTypeOfStubSupertype() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "abstract class AbstractMap {}",
+            "abstract class MyMap extends AbstractMap {",
+            "  void myMethod(SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "MyMap", "myMethod(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * A member type that the classpath counterpart of a class declares shadows a member type that the
+   * class inherits from a supertype that the stub file declares.
+   */
+  @Test
+  public void testCounterpartMemberTypeShadowsInheritedStubMemberType() throws Exception {
+    // java.util.HashMap declares a package-private member type named Node.
+    String jaif =
+        convert(
+            "package java.util;",
+            "class MySuper {",
+            "  static class Node {}",
+            "}",
+            "class HashMap extends MySuper {",
+            "  void myMethod(Node n) {}",
+            "}",
+            "class MyClass {",
+            "  void myMethod(HashMap.Node n) {}",
+            "}");
+    assertMethod(jaif, "HashMap", "myMethod(Ljava/util/HashMap$Node;)V");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
    * A missing member of a stub-declared type has the same binary name whether or not the name is
    * qualified by the stub file's package.
    */
