@@ -2,6 +2,7 @@
 // IOException and a MyChecked, which the Resource Leak Checker does not ignore.
 
 import java.io.*;
+import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
 abstract class FinallyRethrowsException {
@@ -124,6 +125,47 @@ abstract class FinallyRethrowsException {
       }
     } catch (IOException e) {
       r.close();
+    }
+  }
+
+  /** Closes r if it throws an Exception, but not if it throws a Throwable that is not one. */
+  @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+  public abstract void closeOnException(QuietCloseable r) throws IOException, Throwable;
+
+  void closedOnOneExceptionTypeFromOneNode() throws Throwable {
+    // One call throws an IOException after closing r, and a Throwable without closing r.  The
+    // IOException reaches the finally block while r is closed, and the first catch block returns.
+    // The Throwable reaches the finally block while r is open, and the second catch block closes
+    // r.  So r is closed on every path.  The finally block must not merge those two paths and then
+    // throw the IOException while r is open.
+    QuietCloseable r = allocQuietCloseable();
+    try {
+      try {
+        closeOnException(r);
+      } finally {
+        log();
+      }
+    } catch (IOException e) {
+      return;
+    } catch (Throwable t) {
+      r.close();
+      throw t;
+    }
+    r.close();
+  }
+
+  void closedBeforeOtherExceptionToSameDestination() throws IOException, MyChecked {
+    // A MyChecked exception reaches the finally block before r is allocated, and an IOException
+    // reaches it after r is closed.  Both propagate out of the method, so one copy of the finally
+    // block serves both.  r is closed on every path on which it is allocated.
+    QuietCloseable r = null;
+    try {
+      mightThrowMyChecked();
+      r = allocQuietCloseable();
+      r.close();
+      mightThrow();
+    } finally {
+      log();
     }
   }
 }
