@@ -2442,7 +2442,26 @@ public final class TreeUtils {
       return true;
     }
     JCExpression type = variableDecl.vartype;
-    return type != null && type.pos == Position.NOPOS;
+    // On JDK 21, javac sets no type for a binding variable that a record pattern declares using
+    // `var`, such as `v` in `o instanceof R(var v)`, and `declaredUsingVar()` returns false for it.
+    return type == null || type.pos == Position.NOPOS;
+  }
+
+  /**
+   * Returns true if the type of the given variable is not written in source code. That is, the
+   * variable is declared using {@code var} or is a formal parameter of an implicitly typed lambda,
+   * such as {@code x} in {@code x -> x.toString()}.
+   *
+   * @param path a path whose leaf is a variable declaration
+   * @return true if the type of the variable that the leaf of {@code path} declares is not written
+   *     in source code
+   */
+  public static boolean isVariableTypeInferred(TreePath path) {
+    if (isVariableTreeDeclaredUsingVar((VariableTree) path.getLeaf())) {
+      return true;
+    }
+    TreePath parentPath = path.getParentPath();
+    return parentPath != null && isImplicitlyTypedLambda(parentPath.getLeaf());
   }
 
   /**

@@ -9,7 +9,7 @@
 
 ### Changes for type system implementers
 
-New method `AnnotatedTypeFactory.isVariableTypeInferred()` returns true if a
+New method `TreeUtils.isVariableTypeInferred()` returns true if a
 variable's type is not written in source code.  On JDK 22 and later,
 `AnnotatedTypeMirror.getExplicitAnnotations()` can return annotations that are
 not written in source code for such a variable, so a check of the annotations

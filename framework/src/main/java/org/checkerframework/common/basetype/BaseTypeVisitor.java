@@ -2533,7 +2533,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so only validate if commonAssignmentCheck wasn't called.
       validateTypeOf(tree);
     }
-    if (!atypeFactory.isVariableTypeInferred(tree)) {
+    if (!TreeUtils.isVariableTypeInferred(getCurrentPath())) {
       warnRedundantAnnotations(tree, variableType);
     }
     Void result = super.visitVariable(tree, p);
