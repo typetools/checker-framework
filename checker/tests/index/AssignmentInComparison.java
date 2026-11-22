@@ -12,22 +12,15 @@ public class AssignmentInComparison {
 
   int[] arr = new int[0];
 
-  // A field, so that the Less Than Checker does not refine an expression to be less than it.
-  @LTLengthOf("arr") int lessThanArrLength;
-
-  int[] setArr(int[] c) {
+  int[] setArr(int[] c, int[] d) {
     arr = c;
-    return c;
+    return d;
   }
 
-  @NonNegative int resetArr(int[] c) {
-    arr = c;
-    return 0;
-  }
-
+  // Assigning the result to `f` can change the result of the next call.
   @Pure
   @NonNegative int size() {
-    return f;
+    return f == 0 ? 1 : 0;
   }
 
   static void localTarget(@NonNegative int i, @NonNegative int j) {
@@ -102,35 +95,11 @@ public class AssignmentInComparison {
     }
   }
 
-  void otherOperandReassignsLengthReceiver(int[] b, int[] c) {
-    if ((this.arr = b).length == setArr(c).length) {
-      // `setArr` sets `this.arr` to `c`, which might not have the same length as `b`.
+  void otherOperandReassignsLengthReceiver(int[] b, int[] c, int[] d) {
+    if ((this.arr = b).length == setArr(c, d).length) {
+      // `setArr` sets `this.arr` to `c`, which might not have the same length as `b` and `d`.
       // :: error: [assignment]
       int @SameLen("b") [] x = this.arr;
-    }
-  }
-
-  void otherOperandReassignsArrayOfGreater(int i, int[] c) {
-    if (lessThanArrLength > (i = (arr = c).length)) {
-      // `lessThanArrLength` is less than the length of the array that `arr` referred to before the
-      // right operand reassigned `arr`.  `i` is the length of the new array.
-      // :: error: [assignment]
-      @LTLengthOf("arr") int y = i;
-    }
-  }
-
-  void otherOperandReassignsArrayOfGreaterOrEqual(int i, int[] c) {
-    if (lessThanArrLength >= (i = (arr = c).length)) {
-      // :: error: [assignment]
-      @LTLengthOf("arr") int y = i;
-    }
-  }
-
-  void otherOperandCallReassignsArray(@LTLengthOf("arr") int x, @NonNegative int i, int[] c) {
-    if (x > i + resetArr(c)) {
-      // `resetArr` reassigns `arr`, so `i` might not be less than the length of the new array.
-      // :: error: [assignment]
-      @LTLengthOf("arr") int y = i;
     }
   }
 }

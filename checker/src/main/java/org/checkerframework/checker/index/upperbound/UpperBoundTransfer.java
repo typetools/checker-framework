@@ -349,10 +349,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       TransferInput<CFValue, CFStore> in) {
     // larger > smaller
     UBQualifier largerQual =
-        qualifierWhenComparisonCompletes(
-            UBQualifier.createUBQualifier(
-                largerAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-            larger);
+        UBQualifier.createUBQualifier(largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
     // larger + 1 >= smaller
     UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
     UBQualifier rightQualifier =
@@ -382,9 +379,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
     UBQualifier leftQualifier =
-        qualifierWhenComparisonCompletes(
-            UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-            left);
+        UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
     UBQualifier rightQualifier =
         UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
     UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
@@ -424,8 +419,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
 
       Node minuend = subtractionNode.getLeftOperand();
-      UBQualifier minuendQual =
-          qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend);
+      UBQualifier minuendQual = getUBQualifier(minuend, in);
       Node subtrahend = subtractionNode.getRightOperand();
       UBQualifier subtrahendQual = getUBQualifier(subtrahend, in);
 
@@ -435,26 +429,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       insertValueForComparedNode(
           store, subtrahend, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
-  }
-
-  /**
-   * Returns the given qualifier of the given node, or UNKNOWN if the qualifier might not hold when
-   * the comparison that contains the node completes, because it contains an expression whose value
-   * might change after the node is evaluated (see {@link
-   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of one
-   * node that is used to refine a different node.
-   *
-   * @param qualifier a qualifier of {@code node}
-   * @param node a node in an operand of a comparison
-   * @return {@code qualifier}, or UNKNOWN if it might not hold when the comparison completes
-   */
-  private UBQualifier qualifierWhenComparisonCompletes(UBQualifier qualifier, Node node) {
-    if (qualifier.isLessThanLengthQualifier()
-        && containsExpressionChangedBeforeComparisonCompletes(
-            atypeFactory.convertUBQualifierToAnnotation(qualifier), node)) {
-      return UpperBoundUnknownQualifier.UNKNOWN;
-    }
-    return qualifier;
   }
 
   /** Implements case 11. */

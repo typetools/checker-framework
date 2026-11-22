@@ -108,7 +108,6 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.StringToJavaExpression;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -152,6 +151,12 @@ public abstract class CFAbstractTransfer<
   private final ExecutableElement objectToString;
 
   /**
+   * The method {@code String.length()}, whose result depends only on its receiver, because a {@code
+   * String} is immutable.
+   */
+  private final ExecutableElement stringLength;
+
+  /**
    * Creates a CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
@@ -176,6 +181,7 @@ public abstract class CFAbstractTransfer<
         !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
     this.infer = analysis.checker.hasOption("infer");
     this.objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
+    this.stringLength = TreeUtils.getMethod("java.lang.String", "length", 0, analysis.getEnv());
   }
 
   /**
@@ -1070,7 +1076,7 @@ public abstract class CFAbstractTransfer<
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
-      if (isCheckedForChanges(expr)) {
+      if (isCheckedCandidate(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
@@ -1084,6 +1090,22 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns true if {@link #nodesWithValueOf} omits a candidate whose expression is {@code expr}
+   * when a write might change the candidate's value: that is, if a store can hold a value for
+   * {@code expr} (see {@link CFAbstractStore#canInsertJavaExpression}), or if {@code expr} is a
+   * unary or binary operation that does not contain {@link Unknown}.
+   *
+   * @param expr the expression for a candidate of {@link #nodesWithValueOf}
+   * @return true if a candidate whose expression is {@code expr} is omitted when a write might
+   *     change its value
+   */
+  private static boolean isCheckedCandidate(JavaExpression expr) {
+    return CFAbstractStore.canInsertJavaExpression(expr)
+        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
+            && !expr.containsUnknown());
+  }
+
+  /**
    * Returns the sides of the given assignment that have the value of the assignment when the
    * assignment completes.
    *
@@ -1092,9 +1114,9 @@ public abstract class CFAbstractTransfer<
    * assignment, and so on. For example, {@code a = b = c} is parsed as {@code a = (b = c)}, and its
    * chain is {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in
    * the chain, such as {@code a} and {@code b}, and the rhs of the last assignment in the chain,
-   * such as {@code c}. The result omits each side whose value the rest of the chain might change
-   * and that a store can hold a value for or that is a unary or binary operation (see {@link
-   * #mayBeChanged}). For example, the result for {@code s = "x" + s} is just {@code s}.
+   * such as {@code c}. The result omits each side that a store can hold a value for, or that is a
+   * unary or binary operation (see {@link #isCheckedCandidate}), and whose value the rest of the
+   * chain might change. For example, the result for {@code s = s + "x"} omits {@code s + "x"}.
    *
    * @param assignment an assignment node
    * @return the sides of {@code assignment} that have its value when it completes, in source order
@@ -1150,11 +1172,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, or the
-   * side is a unary or binary operation that does not contain {@link Unknown}, and writing the
-   * given locations might change the side's value. As in {@link #computeNodesWithValueOf}, an
-   * operation is checked because a client such as the SameLen Checker can relate it to other
-   * expressions.
+   * Returns true if the given side of a chain of assignments is a candidate that {@link
+   * #nodesWithValueOf} checks (see {@link #isCheckedCandidate}), and writing the given locations
+   * might change the side's value.
    *
    * @param side a side of a chain of assignments (see {@link #sidesOfAssignment}): an entire
    *     target, such as {@code a[i]} (not {@code a} or {@code i}), or the entire rhs of the last
@@ -1165,26 +1185,12 @@ public abstract class CFAbstractTransfer<
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} or it is an operation that does not
-   *     contain {@link Unknown}, and writing {@code written} might change its value
+   * @return true if {@code side} is a checked candidate and writing {@code written} might change
+   *     its value
    */
   private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return isCheckedForChanges(expr) && written.mayChange(expr, true);
-  }
-
-  /**
-   * Returns true if {@link #nodesWithValueOf} omits the given expression when its value might
-   * change: that is, if a store can hold a value for it, or it is a unary or binary operation that
-   * does not contain {@link Unknown}.
-   *
-   * @param expr an expression
-   * @return true if {@link #nodesWithValueOf} omits {@code expr} when its value might change
-   */
-  private static boolean isCheckedForChanges(JavaExpression expr) {
-    return CFAbstractStore.canInsertJavaExpression(expr)
-        || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
-            && !expr.containsUnknown());
+    return isCheckedCandidate(expr) && written.mayChange(expr, true);
   }
 
   /**
@@ -1247,52 +1253,6 @@ public abstract class CFAbstractTransfer<
       parentPath = path.getParentPath();
     }
     return result;
-  }
-
-  /**
-   * Returns true if the given annotation contains a Java expression whose value might change after
-   * the given node is evaluated and before the comparison (such as {@code ==} or {@code <}) that
-   * contains the node completes. The Java expressions in an annotation are the strings that {@link
-   * DependentTypesHelper} parses, such as {@code "a"} in {@code @LTLengthOf("a")}.
-   *
-   * <p>An annotation of {@code node} describes the values that the expressions in the annotation
-   * had when {@code node} was evaluated. A client that uses the annotation to refine a different
-   * node according to the outcome of the comparison can call this method to discard an annotation
-   * that might no longer hold when the comparison completes. For example, in {@code x > (i = (b =
-   * c).length)}, the type {@code @IndexFor("b")} of {@code x} is about the array that {@code b}
-   * referred to before the right operand reassigned {@code b}, so it does not imply that {@code i}
-   * is an index for {@code b} afterward.
-   *
-   * @param anno an annotation of {@code node}
-   * @param node a node in an operand of a comparison
-   * @return true if {@code anno} contains a Java expression whose value might change after {@code
-   *     node} is evaluated and before the comparison completes
-   */
-  protected boolean containsExpressionChangedBeforeComparisonCompletes(
-      AnnotationMirror anno, Node node) {
-    DependentTypesHelper dependentTypesHelper = analysis.atypeFactory.getDependentTypesHelper();
-    if (!dependentTypesHelper.hasDependentAnnotations()) {
-      return false;
-    }
-    TreePath path = sourcePath(node);
-    if (path == null) {
-      return false;
-    }
-    WrittenLocations written = locationsWrittenUntilComparison(node);
-    if (written.isEmpty()) {
-      return false;
-    }
-    boolean[] result = {false};
-    dependentTypesHelper.convertAnnotationMirror(
-        expression -> {
-          JavaExpression expr = analysis.atypeFactory.parseJavaExpressionString(expression, path);
-          if (written.mayChange(expr, false)) {
-            result[0] = true;
-          }
-          return expr;
-        },
-        anno);
-    return result[0];
   }
 
   /**
@@ -1383,15 +1343,6 @@ public abstract class CFAbstractTransfer<
 
     /** Creates an empty set of locations. */
     WrittenLocations() {}
-
-    /**
-     * Returns true if no location might be written.
-     *
-     * @return true if no location might be written
-     */
-    boolean isEmpty() {
-      return locals.isEmpty() && fields.isEmpty() && arrayElements.isEmpty() && !anyHeapLocation;
-    }
 
     /**
      * Adds a write to the given location.
@@ -1563,7 +1514,8 @@ public abstract class CFAbstractTransfer<
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
      * element changes only accesses of arrays that might alias the written array, and method calls.
-     * If side effects unrefine aliases (see {@link
+     * A call to {@code String.length()} changes only if its receiver changes, because a {@code
+     * String} is immutable. If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes every expression whose abstract value other code can modify (see {@link
      * JavaExpression#isModifiableByOtherCode}).
@@ -1596,6 +1548,9 @@ public abstract class CFAbstractTransfer<
             || mayChange(aa.getArray(), false)
             || mayChange(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
+        if (mc.getElement().equals(stringLength)) {
+          return mayChange(mc.getReceiver(), false);
+        }
         if (anyHeapLocation
             || !fields.isEmpty()
             || !arrayElements.isEmpty()
