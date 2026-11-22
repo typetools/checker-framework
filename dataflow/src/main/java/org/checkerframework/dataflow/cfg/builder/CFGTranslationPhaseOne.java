@@ -2845,13 +2845,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * IllegalArgumentException}, which {@code addSuppressed} throws if {@code close} threw the
    * primary exception itself; otherwise it reaches the rethrow of the primary exception.
    *
-   * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
-   * addition to the types of the exceptions that {@code close} might throw. So an analysis that
-   * ignores some exception types follows those edges, with the exceptional store of the call,
-   * whenever it follows the rethrow of the primary exception -- even if it ignores every exception
-   * that {@code close} might throw. Otherwise, if {@code close} terminates execution and might
-   * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
-   * unreachable.
+   * <p>The types of the primary exception label exceptional edges of the call, which lead to the
+   * rethrow, in addition to the types of the exceptions that {@code close} might throw. So an
+   * analysis that ignores some exception types follows those edges, with the exceptional store of
+   * the call, whenever it follows the rethrow of the primary exception -- even if it ignores every
+   * exception that {@code close} might throw. Otherwise, if {@code close} terminates execution and
+   * might throw only ignored exceptions, the analysis would consider the rethrow of the primary
+   * exception unreachable.
    *
    * <p>The call follows those edges whenever {@code close} throws an exception, whatever its type,
    * so the call records their types (see {@link MethodInvocationNode#getAnyExceptionTypes()}). An
