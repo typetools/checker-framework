@@ -41,7 +41,8 @@ Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
 `isConstantToByteShortOrChar()`.  New method
 `CFGTranslationPhaseOne.convertConstant()` converts a compile-time constant to
 `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
-conversion does.
+conversion does.  Both methods assume that javac has accepted the conversion;
+neither checks whether the constant's value fits in the destination type.
 
 ### Closed issues
 
