@@ -55,8 +55,9 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
   }
 
   /**
-   * Scans corresponding elements of {@code types1} and {@code types2}, and combines the results
-   * with {@link #reduce}. If one iterable is longer, its extra elements are not scanned.
+   * Returns the results of scanning each pair of corresponding elements of {@code types1} and
+   * {@code types2}, combined with {@link #reduce}. If one iterable is longer, its extra elements
+   * are not scanned.
    *
    * @param types1 a sequence of types
    * @param types2 a sequence of types
