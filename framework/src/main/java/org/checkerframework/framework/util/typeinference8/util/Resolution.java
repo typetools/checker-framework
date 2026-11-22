@@ -586,7 +586,9 @@ public final class Resolution {
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
       // which is still stored in a hash set of bounds.  Replacing annotations in place would
       // change that bound's hash code while it is in the set, so copy before mutating.  Only the
-      // primary annotations are changed below, so the copy keeps the origin.
+      // primary annotations are changed below, or those of a type variable's lower bound, so the
+      // copy keeps the origin.  ProperType#applyInstantiations keeps both kinds of change when it
+      // rebuilds the type from its origin (see IgnoredAnnotations#copyPrimaryAnnotations).
       lubProperType = lubProperType.copy();
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
         // A proper lower bound's primary annotations say nothing about `variable`'s only in the
@@ -689,7 +691,7 @@ public final class Resolution {
 
       Set<AbstractType> upperBounds = variable.getBounds().upperBounds();
       // Omit bounds that contain uninstantiated variables outside `as`, such as `alpha` in
-      // `variable <: alpha`.  A bound can contain an instantiated variable outside `as` whose
+      // `variable <: alpha`.  A bound can contain an instantiated variable, in `as` or not, whose
       // instantiation InferenceType#applyInstantiations did not apply, because that instantiation
       // ignores annotations and the result would not be proper.  Such a bound is kept, and
       // getSubsTypeArgs below applies the instantiation.  The annotations at the ignored positions
