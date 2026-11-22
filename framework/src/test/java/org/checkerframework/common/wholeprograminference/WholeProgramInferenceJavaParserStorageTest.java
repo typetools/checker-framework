@@ -10,7 +10,10 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.FieldAnnos;
@@ -103,7 +106,15 @@ public class WholeProgramInferenceJavaParserStorageTest {
    * @return the thrown exception
    */
   private static BugInCF assertTransferAnnotationsThrows(VariableDeclarator declaration) {
-    FieldAnnos fieldAnnos = new FieldAnnos(declaration);
+    // The element is a field that has the same type as the declaration; it is not used.
+    VariableElement element =
+        ElementFilter.fieldsIn(
+                env.getElementUtils().getTypeElement("java.lang.Integer").getEnclosedElements())
+            .stream()
+            .filter(field -> field.getSimpleName().contentEquals("MIN_VALUE"))
+            .findFirst()
+            .orElseThrow();
+    FieldAnnos fieldAnnos = new FieldAnnos(declaration, element);
     // Initialize the inferred type, so that transferAnnotations() would attempt a real transfer
     // if it did not stop at the unexpected parent node.
     AnnotatedTypeMirror intType =
@@ -122,8 +133,16 @@ public class WholeProgramInferenceJavaParserStorageTest {
   public void testCallableDeclarationAnnosToString() {
     MethodDeclaration methodDeclaration =
         StaticJavaParser.parseMethodDeclaration("void aMethod() {}");
+    // The element is a method that has the same signature as the declaration; it is not used.
+    ExecutableElement element =
+        ElementFilter.methodsIn(
+                env.getElementUtils().getTypeElement("java.lang.Thread").getEnclosedElements())
+            .stream()
+            .filter(method -> method.getSimpleName().contentEquals("run"))
+            .findFirst()
+            .orElseThrow();
     CallableDeclarationAnnos methodAnnos =
-        storage.new CallableDeclarationAnnos("testpkg.Outer", methodDeclaration);
+        storage.new CallableDeclarationAnnos("testpkg.Outer", methodDeclaration, element);
     AnnotatedTypeMirror stringType =
         AnnotatedTypeMirror.createType(
             env.getElementUtils().getTypeElement("java.lang.String").asType(), typeFactory, false);
