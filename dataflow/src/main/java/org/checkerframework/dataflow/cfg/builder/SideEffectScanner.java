@@ -126,29 +126,30 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
-    // String conversion of an operand of a string concatenation calls its toString() method,
-    // which might have side effects.
-    if (tree.getKind() == Tree.Kind.PLUS
-        && TypesUtils.isString(TreeUtils.typeOf(tree))
-        && (mightCallToString(TreeUtils.typeOf(tree.getLeftOperand()))
-            || mightCallToString(TreeUtils.typeOf(tree.getRightOperand())))) {
-      mightHaveSideEffects = true;
+    // String concatenation calls toString() on each operand that is a reference (JLS 5.1.11).
+    if (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree))) {
+      if (stringConversionMightHaveSideEffects(TreeUtils.typeOf(tree.getLeftOperand()))
+          || stringConversionMightHaveSideEffects(TreeUtils.typeOf(tree.getRightOperand()))) {
+        mightHaveSideEffects = true;
+      }
     }
     return super.visitBinary(tree, p);
   }
 
   /**
-   * Returns true if string conversion of a value of type {@code type} might call a toString()
-   * method that has side effects.
+   * Returns true if string conversion (JLS 5.1.11) of a value of the given type might have a side
+   * effect. String conversion of a primitive, a boxed primitive, a {@code String}, or {@code null}
+   * has no side effect. String conversion of any other reference calls its {@code toString()}
+   * method, which might have a side effect.
    *
-   * @param type the type of an operand of a string concatenation
-   * @return true if string conversion of a value of type {@code type} might have side effects
+   * @param type the type of an operand of string concatenation
+   * @return true if string conversion of a value of the given type might have a side effect
    */
-  private static boolean mightCallToString(TypeMirror type) {
-    return !type.getKind().isPrimitive()
-        && type.getKind() != TypeKind.NULL
-        && !TypesUtils.isString(type)
-        && !TypesUtils.isBoxedPrimitive(type);
+  private static boolean stringConversionMightHaveSideEffects(TypeMirror type) {
+    return !(type.getKind().isPrimitive()
+        || type.getKind() == TypeKind.NULL
+        || TypesUtils.isString(type)
+        || TypesUtils.isBoxedPrimitive(type));
   }
 
   @Override
