@@ -2,14 +2,21 @@ import java.util.List;
 import org.checkerframework.checker.interning.qual.Interned;
 
 // An enhanced for loop that boxes or unboxes its elements.  Every primitive is interned, but a
-// boxed value need not be, except for a boxed boolean or byte.
+// boxed value need not be, except for a boxed boolean or byte.  An element of an array of
+// primitives is interned.
 public class EnhancedForBoxing {
-  void boxInts(int[] ints) {
-    for (Integer x : ints) {
+  void boxArray(int[] array) {
+    for (Integer x : array) {
       // :: error: [assignment]
       @Interned Integer y = x;
     }
-    for (Object x : ints) {
+    Integer z = array[0];
+    // :: error: [assignment]
+    @Interned Integer y = z;
+  }
+
+  void boxArrayToObject(int[] array) {
+    for (Object x : array) {
       // :: error: [assignment]
       @Interned Object y = x;
     }
@@ -21,6 +28,15 @@ public class EnhancedForBoxing {
     }
     for (Boolean x : bools) {
       @Interned Boolean y = x;
+    }
+  }
+
+  void primitiveArray(int[] array) {
+    for (int x : array) {
+      @Interned int y = x;
+    }
+    for (long x : array) {
+      @Interned long y = x;
     }
   }
 

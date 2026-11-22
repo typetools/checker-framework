@@ -844,7 +844,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           result = combineTwoAnnotations(a, aTypeMirror, b, bTypeMirror, top);
         } else if (a != null) {
           if (!bAtvIsSet) {
-            bAtv = getTypeVar(bTypeMirror);
+            bAtv = getTypeVar(bTypeMirror, atypeFactory);
             bAtvIsSet = true;
           }
           if (bAtv == null) {
@@ -854,7 +854,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         } else if (b != null) {
           if (aAtv == null) {
             if (!aAtvIsSet) {
-              aAtv = getTypeVar(aTypeMirror);
+              aAtv = getTypeVar(aTypeMirror, atypeFactory);
               aAtvIsSet = true;
             }
             if (aAtv == null) {
@@ -864,11 +864,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           result = combineAnnotationWithTypeVar(b, aAtv, top, canCombinedSetBeMissingAnnos);
         } else {
           if (!aAtvIsSet) {
-            aAtv = getTypeVar(aTypeMirror);
+            aAtv = getTypeVar(aTypeMirror, atypeFactory);
             aAtvIsSet = true;
           }
           if (!bAtvIsSet) {
-            bAtv = getTypeVar(bTypeMirror);
+            bAtv = getTypeVar(bTypeMirror, atypeFactory);
             bAtvIsSet = true;
           }
           // Both annotations are null.
@@ -947,13 +947,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * {@code null} is returned.
    *
    * @param typeMirror a type mirror
+   * @param atypeFactory the type factory
    * @return the AnnotatedTypeVariable associated with the given TypeMirror or null
    */
-  private @Nullable AnnotatedTypeVariable getTypeVar(@Nullable TypeMirror typeMirror) {
+  /*package-private*/ static @Nullable AnnotatedTypeVariable getTypeVar(
+      @Nullable TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
     if (typeMirror == null) {
       return null;
     } else if (typeMirror.getKind() == TypeKind.WILDCARD) {
-      return getTypeVar(((WildcardType) typeMirror).getExtendsBound());
+      return getTypeVar(((WildcardType) typeMirror).getExtendsBound(), atypeFactory);
 
     } else if (typeMirror.getKind() == TypeKind.TYPEVAR) {
       TypeVariable typevar = ((TypeVariable) typeMirror);

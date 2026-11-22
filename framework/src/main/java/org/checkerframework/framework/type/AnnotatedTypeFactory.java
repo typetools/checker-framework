@@ -3173,18 +3173,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
     TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
     AnnotatedDeclaredType dt = fromElement(typeElt).asUse();
+    // Replace, rather than add to, any annotations that `fromElement` gave the boxed type.
     dt.replaceAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
     return dt;
   }
 
   /**
    * Returns annotations applicable to the boxed primitive type of {@code primitiveKind} that are
-   * copied or adapted from {@code annos}, for a boxing conversion (JLS 5.1.7). For example, the
-   * Interning Checker returns {@code @UnknownInterned}, because a boxed value need not be interned.
+   * copied or adapted from {@code annos}, for a boxing conversion (JLS 5.1.7). For example, for
+   * boxing an {@code int}, the Interning Checker returns {@code @UnknownInterned}, because a boxed
+   * {@code Integer} need not be interned.
    *
    * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
    *
-   * @param annos annotations to box, from a primitive
+   * <p>An override must not side-effect {@code annos}, which might be unmodifiable or might be
+   * owned by an abstract value. To return different annotations, copy {@code annos} first.
+   *
+   * @param annos annotations to box, from a primitive; must not be side-effected
    * @param primitiveKind the primitive type to box, such as {@code int}
    * @return result of converting {@code annos} from {@code primitiveKind} to its boxed primitive,
    *     such as {@code Integer}
@@ -3198,7 +3203,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns a primitive type: either the argument, or the result of unboxing it (which might affect
    * its annotations).
    *
-   * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
+   * <p>Subclasses should override {@link #getUnboxedAnnotations} rather than this method.
    *
    * @param type a type: a primitive, or a type to which unboxing conversion applies (see {@link
    *     TypesUtils#boxedPrimitiveForUnboxing})
@@ -3254,7 +3259,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
    *
-   * @param annos annotations to unbox, from a boxed primitive such as {@code Integer}
+   * <p>An override must not side-effect {@code annos}, which might be unmodifiable or might be
+   * owned by an abstract value. To return different annotations, copy {@code annos} first.
+   *
+   * @param annos annotations to unbox, from a boxed primitive such as {@code Integer}; must not be
+   *     side-effected
    * @param primitiveKind the primitive type that the boxed primitive unboxes to, such as {@code
    *     int}
    * @return result of converting {@code annos} from the boxed primitive to {@code primitiveKind}
