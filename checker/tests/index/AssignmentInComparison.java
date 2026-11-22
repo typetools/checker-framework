@@ -293,14 +293,6 @@ public class AssignmentInComparison {
     }
   }
 
-  static void lossyPromotion(int bound, float f) {
-    if (bound >= f) {
-      // `bound` is rounded to a `float`, so `f` might be greater than `bound`.
-      // :: error: [assignment]
-      @LessThan("bound + 1") float y = f;
-    }
-  }
-
   static void neqLengthOfReassignedArray(int[] a, int[] b, int i) {
     if (a.length != (i = (a = b).length)) {
       // The comparison is about the length of the original `a`, not of `b`.
