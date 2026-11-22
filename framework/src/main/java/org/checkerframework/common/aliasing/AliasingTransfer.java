@@ -144,12 +144,15 @@ public class AliasingTransfer extends CFTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    Tree parent = n.getTreePath().getParentPath().getLeaf();
-    boolean parentIsStatement = parent instanceof ExpressionStatementTree;
+    // A method call in a custom CFG might have no tree, and then its parent is unknown.  Treat such
+    // a call conservatively, as if its parent is not a statement.
+    boolean parentIsStatement =
+        n.getTree() != null
+            && n.getTreePath().getParentPath().getLeaf() instanceof ExpressionStatementTree;
 
     if (!parentIsStatement) {
 
-      ExecutableElement methodElement = TreeUtils.elementFromUse(n.getTree());
+      ExecutableElement methodElement = n.getTarget().getMethod();
       List<Node> args = n.getArguments();
       List<? extends VariableElement> params = methodElement.getParameters();
       assert (args.size() == params.size())
