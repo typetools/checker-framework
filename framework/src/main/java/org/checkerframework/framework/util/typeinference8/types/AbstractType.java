@@ -255,7 +255,10 @@ public abstract class AbstractType {
 
   /**
    * If {@code superType} is a supertype of this type, then this method returns the supertype of
-   * this type that is the same class as {@code superType}. Otherwise, it returns null.
+   * this type that is the same class as {@code superType}. Otherwise, it returns null. If both are
+   * array types, the classes of their component types are compared in the same way; for example,
+   * the supertype of {@code ArrayList<String>[]} that is the same class as {@code List[]} is {@code
+   * List<String>[]}.
    *
    * @param superType a type; need not be a supertype of this type
    * @return supertype of this type that is the same class as {@code superType}, or null if one
@@ -266,8 +269,7 @@ public abstract class AbstractType {
     if (typeJava.getKind() == TypeKind.WILDCARD) {
       typeJava = ((WildcardType) typeJava).getExtendsBound();
     }
-    TypeMirror asSuperJava = context.types.asSuper((Type) typeJava, ((Type) superType).asElement());
-    if (asSuperJava == null) {
+    if (javaAsSuper(typeJava, superType) == null) {
       return null;
     }
 
@@ -282,6 +284,30 @@ public abstract class AbstractType {
     typeFactory.initializeAtm(superAnnotatedType);
     AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
     return create(asSuper, ignoreAnnotations);
+  }
+
+  /**
+   * Returns the supertype of {@code type} that is the same class as {@code superType}, or null if
+   * there is none. If both are array types, the result is the array type whose component type is
+   * the supertype of {@code type}'s component type that is the same class as {@code superType}'s;
+   * {@link com.sun.tools.javac.code.Types#asSuper} alone would view an array type only as a class,
+   * such as {@code Object}, not as another array type.
+   *
+   * @param type a Java type
+   * @param superType a Java type; need not be a supertype of {@code type}
+   * @return the supertype of {@code type} that is the same class as {@code superType}, or null
+   */
+  private @Nullable TypeMirror javaAsSuper(TypeMirror type, TypeMirror superType) {
+    if (type.getKind() == TypeKind.ARRAY && superType.getKind() == TypeKind.ARRAY) {
+      TypeMirror component =
+          javaAsSuper(
+              ((ArrayType) type).getComponentType(), ((ArrayType) superType).getComponentType());
+      return component == null ? null : context.types.makeArrayType((Type) component);
+    }
+    if (type.getKind().isPrimitive() || superType.getKind().isPrimitive()) {
+      return context.types.isSameType((Type) type, (Type) superType) ? type : null;
+    }
+    return context.types.asSuper((Type) type, ((Type) superType).asElement());
   }
 
   /**
