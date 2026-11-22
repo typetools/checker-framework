@@ -2,7 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +10,7 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -444,27 +445,30 @@ public class AnnotationFileElementTypes {
    */
   private void parseAnnotationFileResource(
       AnnotationFileResource resource, AnnotationFileType parseType) {
-    try (BufferedInputStream annotationFileStream =
-        new BufferedInputStream(resource.getInputStream())) {
-      // Is it necessary to also skip files that consist only of Java comments?
-      Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-      if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-        return;
-      }
-      AnnotationFileParser.parseStubFile(
-          resource.getDescription(),
-          annotationFileStream,
-          factory,
-          factory.getProcessingEnv(),
-          annotationFileAnnos,
-          parseType);
+    // Read the entire file, so that a read failure is reported below as an IOException and so
+    // that the whole file can be checked for being whitespace-only.
+    byte[] contents;
+    try (InputStream in = resource.getInputStream()) {
+      contents = in.readAllBytes();
     } catch (IOException e) {
       factory
           .getChecker()
           .message(
               Diagnostic.Kind.WARNING,
               "Could not read annotation resource: " + resource.getDescription() + ": " + e);
+      return;
     }
+    // Is it necessary to also skip files that consist only of Java comments?
+    if (new String(contents, StandardCharsets.UTF_8).isBlank()) {
+      return;
+    }
+    AnnotationFileParser.parseStubFile(
+        resource.getDescription(),
+        new ByteArrayInputStream(contents),
+        factory,
+        factory.getProcessingEnv(),
+        annotationFileAnnos,
+        parseType);
   }
 
   /**

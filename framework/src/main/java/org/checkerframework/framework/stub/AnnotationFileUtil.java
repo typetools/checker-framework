@@ -460,7 +460,7 @@ public class AnnotationFileUtil {
    * @param fileType a type of annotation file
    * @return true if {@code name} ends with the file name extension of {@code fileType}
    */
-  static boolean hasAnnotationFileExtension(String name, AnnotationFileType fileType) {
+  private static boolean hasAnnotationFileExtension(String name, AnnotationFileType fileType) {
     return name.endsWith(fileType.isStub() ? ".astub" : ".ajava");
   }
 
