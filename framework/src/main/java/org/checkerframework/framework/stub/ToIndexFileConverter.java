@@ -1432,9 +1432,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     String qualifiedName = prefix + "." + className;
     String binaryName = loadClassBinaryName(qualifiedName);
     // No `.` follows the part of `binaryName` that comes from the import.
-    return (binaryName != null && binaryName.lastIndexOf('.') <= prefix.length())
-        ? binaryName
-        : null;
+    if (binaryName == null || binaryName.lastIndexOf('.') > prefix.length()) {
+      return null;
+    }
+    // An import on demand makes available only the accessible top-level or member types (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.  The first identifier of `className` names the type that the import makes
+    // available; the binary name of that type is a prefix of `binaryName`.
+    int firstLength = className.indexOf('.');
+    if (firstLength < 0) {
+      firstLength = className.length();
+    }
+    @SuppressWarnings("signature") // a prefix of a binary name, ending at the end of an identifier
+    @ClassGetName String firstBinaryName = binaryName.substring(0, prefix.length() + 1 + firstLength);
+    if (!isImportAccessible(loadClass(firstBinaryName), cu)) {
+      return null;
+    }
+    return binaryName;
   }
 
   /**
@@ -1450,9 +1464,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable String onDemandImportStubBinaryName(
       String prefix, String className, CompilationUnit cu) {
-    String declared = declaredInPackage(cu, prefix, className);
-    if (declared != null) {
-      return declared;
+    String[] identifiers = className.split("\\.", -1);
+    // An import on demand makes available only the accessible top-level types of a package (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.
+    TypeDeclaration<?> topLevel = stubTopLevelType(cu, prefix, identifiers[0]);
+    if (topLevel != null && isImportAccessible(topLevel, cu)) {
+      return memberBinaryName(topLevel, identifiers, 1);
     }
     String prefixBinaryName = declaredInStubFile(cu, prefix);
     TypeDeclaration<?> prefixDecl =
@@ -1460,7 +1478,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (prefixDecl == null) {
       return null;
     }
-    String[] identifiers = className.split("\\.", -1);
     Object first = firstDeclarationAt(prefixDecl, identifiers, false, true);
     // An import on demand makes available only the accessible member types (JLS 7.5.2).  An
     // inaccessible one does not shadow a type that a later import on demand makes available.
@@ -1471,17 +1488,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns true if a member type is accessible to an import on demand in the given compilation
-   * unit, as javac determines it: a public member type, or a member type of an interface or
+   * Returns true if a top-level or member type is accessible to an import on demand in the given
+   * compilation unit, as javac determines it: a public type, or a member type of an interface or
    * annotation interface, is accessible; a private member type is not; a protected or
-   * package-private member type is accessible only in its own package.
+   * package-private type is accessible only in its own package.
    *
-   * @param member a member type: a {@link TypeDeclaration} of the stub file, a {@link Class} on the
-   *     classpath, or null
-   * @param cu the stub file's compilation unit in which the import is written
+   * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
+   *     Class} on the classpath, or null
+   * @param cu the stub file's compilation unit in which the import is written, or null for the
+   *     converter's import context
    * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
-  private boolean isImportAccessible(@Nullable Object member, CompilationUnit cu) {
+  private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
     String cuPkgName = importContext(cu).pkgName();
     String cuPackage = cuPkgName == null ? "" : cuPkgName;
     if (member instanceof TypeDeclaration<?> memberDecl) {
