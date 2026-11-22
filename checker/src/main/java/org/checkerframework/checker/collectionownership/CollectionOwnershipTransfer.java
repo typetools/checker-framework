@@ -227,8 +227,8 @@ public class CollectionOwnershipTransfer
   /**
    * May refine the type of the collection to @OwningCollectionWithoutObligation in the else store
    * of the incoming transfer result. Does so if the given AST tree is the condition for a disposal
-   * loop whose body definitely calls every must-call method on every element of the collection.
-   * If the loop has several CFG copies (as in a {@code finally} block), which share the condition
+   * loop whose body definitely calls every must-call method on every element of the collection. If
+   * the loop has several CFG copies (as in a {@code finally} block), which share the condition
    * tree, every copy must do so.
    *
    * @param res the incoming transfer result

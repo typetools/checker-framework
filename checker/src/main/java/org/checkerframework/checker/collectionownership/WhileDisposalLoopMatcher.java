@@ -1083,7 +1083,8 @@ final class WhileDisposalLoopMatcher {
    * @param collectionVarNameForInvalidation collection variable whose writes should invalidate the
    *     match, if one exists.
    * @param collectionIsFieldOfThis true if this is an iterator loop and the collection is an owning
-   *     collection field of {@code this}, which a call such as {@code this.add(r)} might insert into.
+   *     collection field of {@code this}, which a call such as {@code this.add(r)} might insert
+   *     into.
    * @param headerVarName iterator variable or collection variable constrained by the loop header.
    * @param headerVarElement the element of {@code headerVarName}.
    * @param allowedExtractMethods extraction methods accepted for this matched header.

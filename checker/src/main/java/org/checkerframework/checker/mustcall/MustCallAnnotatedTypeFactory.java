@@ -247,8 +247,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private @MonotonicNonNull Boolean collectionOwnershipCheckerIsRunning;
 
   /**
-   * Returns true if the Collection Ownership Checker runs, as part of the Resource Leak Checker.
-   * It does not run when the Must Call Checker runs on its own.
+   * Returns true if the Collection Ownership Checker runs, as part of the Resource Leak Checker. It
+   * does not run when the Must Call Checker runs on its own.
    *
    * @return true if the Collection Ownership Checker runs
    */
