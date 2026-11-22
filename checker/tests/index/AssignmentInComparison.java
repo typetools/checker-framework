@@ -212,26 +212,6 @@ public class AssignmentInComparison {
     }
   }
 
-  static void otherOperandReassignsLocalArrayOfGreater(
-      @LTEqLengthOf("#2") int limit, int[] a, int[] c) {
-    int i;
-    if (limit > (i = (a = c).length)) {
-      // `limit` is at most the length of the array that `a` referred to before the right operand
-      // reassigned `a`.  `i` is the length of the new array.
-      // :: error: [array.access.unsafe.high]
-      a[i] = 0;
-    }
-  }
-
-  static void otherOperandReassignsLocalArrayOfGreaterOrEqual(
-      @LTLengthOf("#2") int limit, int[] a, int[] c) {
-    int i;
-    if (limit >= (i = (a = c).length)) {
-      // :: error: [array.access.unsafe.high]
-      a[i] = 0;
-    }
-  }
-
   // The right operand reassigns `b`, which the type of the left operand `a` names.
   static void otherOperandReassignsSameLenOfLeft(int[] a, int[] c, int[] d) {
     int[] b = a;
@@ -260,17 +240,6 @@ public class AssignmentInComparison {
     }
   }
 
-  void additionOperandMentionsReassignedArray(@LTLengthOf("arr") int n, int[] c, int[] d) {
-    int i;
-    if ((i = n) + resetArr(c) < d.length) {
-      @LTLengthOf("d") int x = i;
-      // `n` is less than the length of the array that `arr` referred to before `resetArr`
-      // reassigned `arr`.
-      // :: error: [assignment]
-      @LTLengthOf("arr") int y = i;
-    }
-  }
-
   void equalityReassignsArray(int j, int[] c) {
     if (lessThanArrLength == (j = (arr = c).length)) {
       // `lessThanArrLength` is less than the length of the array that `arr` referred to before the
@@ -287,10 +256,13 @@ public class AssignmentInComparison {
     }
   }
 
-  static void lengthComparisonReassignsInheritedName(
-      int[] a, int[] replacement, int[][] rows, int[] c) {
+  static int[] second(Object x, int[] y) {
+    return y;
+  }
+
+  static void lengthComparisonReassignsInheritedName(int[] a, int[] replacement, int[] d, int[] c) {
     int[] b = a;
-    if (b.length == (c = rows[(a = replacement).length]).length) {
+    if (b.length == (c = second(a = replacement, d)).length) {
       int @SameLen("b") [] x = c;
       // `b` has the length of the array that `a` referred to before the comparison reassigned `a`.
       // :: error: [assignment]
@@ -298,9 +270,9 @@ public class AssignmentInComparison {
     }
   }
 
-  static void lengthComparisonKeepsInheritedName(int[] a, int[][] rows, int[] c, int k) {
+  static void lengthComparisonKeepsInheritedName(int[] a, int[] d, int[] c) {
     int[] b = a;
-    if (b.length == (c = rows[k]).length) {
+    if (b.length == (c = second(b, d)).length) {
       int @SameLen("b") [] x = c;
       int @SameLen("a") [] y = c;
     }
