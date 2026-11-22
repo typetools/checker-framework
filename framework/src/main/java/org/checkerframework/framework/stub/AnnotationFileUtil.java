@@ -458,12 +458,13 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns an annotation file resource for the given entry in the given archive.
+   * Returns the given entry of the given archive, as an annotation file resource.
    *
    * @param archive a JAR or ZIP archive
    * @param jarFile {@code archive}, open
-   * @param entry an entry in {@code archive}
-   * @return an annotation file resource for {@code entry}
+   * @param entry the entry of {@code archive} to read
+   * @return a resource that holds the contents of {@code entry}, or a resource whose {@link
+   *     AnnotationFileResource#getInputStream} throws an exception if {@code entry} cannot be read
    */
   private static AnnotationFileResource archiveEntry(
       File archive, JarFile jarFile, JarEntry entry) {
@@ -476,8 +477,8 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns an annotation file resource that could not be read. Its {@link
-   * AnnotationFileResource#getInputStream} throws {@code e}, so the client reports the error when
+   * Returns the given exception, wrapped as an annotation file resource whose {@link
+   * AnnotationFileResource#getInputStream} throws the exception. The client reports the error when
    * it reads the resource.
    *
    * @param description a description of the resource
@@ -500,9 +501,10 @@ public class AnnotationFileUtil {
 
   /**
    * Passes each annotation file of type {@code fileType} at the given file system location to
-   * {@code action}, in order. Passes an archive entry while its archive is open, and reads the
-   * entry's contents just before passing it, so an archive's entries need not all be in memory at
-   * once.
+   * {@code action}. Passes the files in a directory in order of their names, and the entries in an
+   * archive in the order that the archive stores them. Passes an archive entry while its archive is
+   * open, and reads the entry's contents just before passing it, so an archive's entries need not
+   * all be in memory at once.
    *
    * <p>If {@code location} is a stub file or ajava file, passes it to {@code action}. If {@code
    * location} is a jarfile, passes all annotation files (of type {@code fileType}) contained in it.
