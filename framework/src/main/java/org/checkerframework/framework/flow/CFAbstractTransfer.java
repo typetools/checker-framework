@@ -216,12 +216,7 @@ public abstract class CFAbstractTransfer<
     analysis.setCurrentTree(tree);
     AnnotatedTypeMirror at;
     try {
-      // A boxing call's value is not the iterable's element type:  the element of an `int[]` is
-      // `@Interned`, for example, but a boxed `Integer` need not be.  visitMethodInvocation adapts
-      // the qualifiers of the boxed operand instead.
-      if (node instanceof MethodInvocationNode min
-          && min.getIterableExpression() != null
-          && !min.isBoxing()) {
+      if (node instanceof MethodInvocationNode min && min.getIterableExpression() != null) {
         ExpressionTree iter = min.getIterableExpression();
         at = factory.getIterableElementType(iter);
       } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {
