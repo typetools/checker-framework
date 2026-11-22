@@ -293,6 +293,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
+   * The maximum number of nodes in extra exceptional copies of finally blocks, beyond which the
+   * exceptions that reach a finally block share one copy. An extra copy is one other than the first
+   * exceptional copy of a given finally block. See {@link #handleFinally}.
+   */
+  private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
+
+  /**
+   * The number of nodes in extra exceptional copies of finally blocks so far. Nodes in nested extra
+   * copies are counted more than once.
+   */
+  private int extraExceptionalFinallyNodes = 0;
+
+  /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
    * have at least one corresponding Node. Trees that undergo implicit conversions, such as boxing
    * or unboxing, can map to two distinct Nodes. The Node for the value before implicit conversion
@@ -350,6 +363,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** The ClassCastException type. */
   protected final TypeMirror classCastExceptionType;
+
+  /** The IllegalArgumentException type. */
+  protected final TypeMirror illegalArgumentExceptionType;
 
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
@@ -447,6 +463,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
+    illegalArgumentExceptionType = getTypeMirror(IllegalArgumentException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
@@ -2905,16 +2922,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Adds a synthetic {@code close} call to the CFG, as {@link #addCloseCallForResource} does, for
    * the path on which an exception (the primary exception) reached the synthetic finally block of a
    * try-with-resources statement. On that path, the statement suppresses any exception that {@code
-   * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
-   * successor of the added nodes is the node that follows them.
+   * close} throws, by calling {@code addSuppressed} on the primary exception, and then it rethrows
+   * the primary exception (JLS 14.20.3.1). So every exceptional successor of the {@code close} call
+   * is a node that models the call to {@code addSuppressed}. That node may throw {@code
+   * IllegalArgumentException}, which {@code addSuppressed} throws if {@code close} threw the
+   * primary exception itself; otherwise it reaches the rethrow of the primary exception.
    *
-   * <p>The types of the primary exception label exceptional edges of the call to the rethrow, in
-   * addition to the types of the exceptions that {@code close} might throw. So an analysis that
-   * ignores some exception types follows those edges, with the exceptional store of the call,
-   * whenever it follows the rethrow of the primary exception -- even if it ignores every exception
-   * that {@code close} might throw. Otherwise, if {@code close} terminates execution and might
-   * throw only ignored exceptions, the analysis would consider the rethrow of the primary exception
-   * unreachable.
+   * <p>The types of the primary exception label exceptional edges of the call, which lead to the
+   * rethrow, in addition to the types of the exceptions that {@code close} might throw. So an
+   * analysis that ignores some exception types follows those edges, with the exceptional store of
+   * the call, whenever it follows the rethrow of the primary exception -- even if it ignores every
+   * exception that {@code close} might throw. Otherwise, if {@code close} terminates execution and
+   * might throw only ignored exceptions, the analysis would consider the rethrow of the primary
+   * exception unreachable.
    *
    * <p>The call follows those edges whenever {@code close} throws an exception, whatever its type,
    * so the call records their types (see {@link MethodInvocationNode#getAnyExceptionTypes()}). An
@@ -2942,7 +2962,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
     addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
     tryStack.popFrame();
+    Label afterSuppressionLabel = new Label();
+    extendWithExtendedNode(new UnconditionalJump(afterSuppressionLabel));
+
+    // The catch block calls addSuppressed on the primary exception, which throws
+    // IllegalArgumentException if close threw the primary exception itself.
     addLabelForNextNode(suppressedLabel);
+    extendWithNodeWithException(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "addSuppressed for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()),
+        illegalArgumentExceptionType);
+
+    addLabelForNextNode(afterSuppressionLabel);
   }
 
   /**
@@ -3017,7 +3050,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // the analysis merges their stores there anyway.  The number of copies grows exponentially with
     // the depth of the nesting of finally blocks in finally blocks, with a base that grows with the
     // number of copies per finally block.  A copy for each type would make the base much larger.
-    for (Map<TypeMirror, Label> group : exceptionGroups(exceptionalFinallyFrame)) {
+    // To bound that growth, once the copies beyond the first copy for each finally block have
+    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the remaining groups of each
+    // finally block share a single copy, which rethrows each of their exceptions.
+    List<Map<TypeMirror, Label>> groups = new ArrayList<>(exceptionGroups(exceptionalFinallyFrame));
+    for (int i = 0; i < groups.size(); i++) {
+      Map<TypeMirror, Label> group = groups.get(i);
+      boolean isExtraCopy = i > 0;
+      if (isExtraCopy
+          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET
+          && i < groups.size() - 1) {
+        Map<TypeMirror, Label> sharedGroup = new ArrayMap<>();
+        for (Map<TypeMirror, Label> remainingGroup : groups.subList(i, groups.size())) {
+          sharedGroup.putAll(remainingGroup);
+        }
+        groups.subList(i, groups.size()).clear();
+        groups.add(sharedGroup);
+        group = sharedGroup;
+      }
+      int sizeBeforeCopy = nodeList.size();
+
       for (Label label : group.values()) {
         addLabelForNextNode(label);
       }
@@ -3045,6 +3097,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               Collections.unmodifiableSet(group.keySet()));
 
       throwing.setTerminatesExecution(true);
+
+      if (isExtraCopy) {
+        // This overcounts the nodes of a nested extra copy, which is conservative.
+        extraExceptionalFinallyNodes += nodeList.size() - sizeBeforeCopy;
+      }
     }
 
     if (returnTargetLC.wasAccessed()) {
