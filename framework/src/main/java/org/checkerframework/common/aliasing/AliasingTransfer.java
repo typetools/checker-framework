@@ -96,9 +96,9 @@ public class AliasingTransfer extends CFTransfer {
     if (!(n instanceof MethodInvocationNode min)) {
       return;
     }
-    // A method call in a custom CFG might have no tree.  Such a call is not an enum's super call.
-    MethodInvocationTree minTree = min.getTree();
-    if (minTree != null && TreeUtils.isEnumSuperCall(minTree)) {
+    // A call without a tree, such as an unboxing call in a custom CFG, is not an enum super call.
+    MethodInvocationTree invocationTree = min.getTree();
+    if (invocationTree != null && TreeUtils.isEnumSuperCall(invocationTree)) {
       // Skipping the init() method for enums.
       return;
     }
