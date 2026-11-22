@@ -37,6 +37,23 @@ public class ThrowMayBeNull {
     return s;
   }
 
+  // Throwing a variable whose value is null throws a NullPointerException, even if the variable's
+  // declared type is another exception type.  The exception propagates through the finally block.
+  void variableCaughtAfterFinally(java.io.IOException ex) throws java.io.IOException {
+    @Nullable Object o = "hello";
+    try {
+      try {
+        o = null;
+        throw ex;
+      } finally {
+        System.out.println();
+      }
+    } catch (NullPointerException e) {
+      // :: error: (dereference.of.nullable)
+      o.toString();
+    }
+  }
+
   static class MyException extends RuntimeException {
     String throwThis() {
       @Nullable String s = null;
