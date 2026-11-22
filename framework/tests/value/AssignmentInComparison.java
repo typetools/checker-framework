@@ -54,6 +54,32 @@ public class AssignmentInComparison {
     }
   }
 
+  static class Box {
+    int f;
+  }
+
+  static void stringLengthAcrossFieldWrite(String s, Box box) {
+    // The write to `box.f` cannot change `s.length()`.
+    if (s.length() == (box.f = 3)) {
+      @ArrayLen(3) String exact = s;
+    }
+  }
+
+  static void stringLengthOfReassignedReceiver(String s, String t) {
+    if (s.length() == ((s = t) == null ? 3 : 3)) {
+      // `s` refers to `t` now, not to the string whose length is 3.
+      // :: error: [assignment]
+      @ArrayLen(3) String exact = s;
+    }
+  }
+
+  static void wideningOfAssignment(int i, int j) {
+    if ((i = j) == 3L) {
+      @IntVal(3) int x = i;
+      @IntVal(3) int y = j;
+    }
+  }
+
   static void annotationArgumentInRhs(int[] a, int[] b) {
     // The annotation argument `{0, 1}` is not an assignment to a variable.
     if ((a = new @IntVal({0, 1}) int[] {0, 1}) == b) {

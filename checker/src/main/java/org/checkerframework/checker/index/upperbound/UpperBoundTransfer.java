@@ -359,7 +359,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // larger + 1 >= smaller
     UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
     UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(smallerAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(
+                smallerAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            smaller);
     UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
     if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -389,7 +392,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
             left);
     UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            right);
     UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
     if (leftQualifier.isLessThanLengthQualifier()) {
@@ -444,8 +449,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * Returns the given qualifier of the given node, or UNKNOWN if the qualifier might not hold when
    * the comparison that contains the node completes, because it contains an expression whose value
    * might change after the node is evaluated (see {@link
-   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of one
-   * node that is used to refine a different node.
+   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of a
+   * node before using it to refine any node, including the node itself: in {@code (i = (a =
+   * b).length - 1) < (a = c).length + 100}, the type {@code @LTLengthOf("a")} of the left operand
+   * is about {@code b}, and it does not hold for {@code i} after {@code a} is reassigned.
    *
    * @param qualifier a qualifier of {@code node}
    * @param node a node in an operand of a comparison
@@ -491,9 +498,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {
     UBQualifier leftQualifier =
-        UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            left);
     UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            right);
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
@@ -542,10 +553,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       }
     }
 
-    if (receiver != null && !receiver.containsUnknown()) {
+    // If the sequence whose length was compared might change before the comparison completes, as
+    // in `a.length != (i = (a = b).length - 1)`, then the comparison says nothing about the length
+    // of the sequence that `receiver` refers to afterward.
+    if (receiver != null
+        && !receiver.containsUnknown()
+        && nodesWithValueOf(lengthAccess).contains(lengthAccess)) {
       UBQualifier otherQualifier =
-          UBQualifier.createUBQualifier(
-              otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker());
+          qualifierWhenComparisonCompletes(
+              UBQualifier.createUBQualifier(
+                  otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+              otherNode);
       String sequence = receiver.toString();
       // Check if otherNode + c - 1 < receiver.length
       if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {

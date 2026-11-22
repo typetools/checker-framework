@@ -152,6 +152,12 @@ public abstract class CFAbstractTransfer<
   private final ExecutableElement objectToString;
 
   /**
+   * The method {@code String.length()}, whose result depends only on its receiver, because a {@code
+   * String} is immutable.
+   */
+  private final ExecutableElement stringLength;
+
+  /**
    * Creates a CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
@@ -176,6 +182,7 @@ public abstract class CFAbstractTransfer<
         !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
     this.infer = analysis.checker.hasOption("infer");
     this.objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
+    this.stringLength = TreeUtils.getMethod("java.lang.String", "length", 0, analysis.getEnv());
   }
 
   /**
@@ -984,10 +991,12 @@ public abstract class CFAbstractTransfer<
    * node completes. The comparison is a binary comparison such as {@code ==} or {@code <}, and the
    * caller refines each node in the result according to the outcome of the comparison.
    *
-   * <p>If {@code node} is an assignment, the candidates are its sides: the target of each
-   * assignment in {@code node}'s chain of nested assignments, and the rhs of the innermost one. For
-   * example, the sides of {@code a = b = c}, which is parsed as {@code a = (b = c)}, are {@code a},
-   * {@code b}, and {@code c}. Otherwise, the only candidate is {@code node} itself.
+   * <p>If {@code node} is an assignment, or a widening conversion of an assignment that preserves
+   * the assigned value (such as from {@code int} to {@code long}), the candidates are the sides of
+   * the assignment: the target of each assignment in its chain of nested assignments, and the rhs
+   * of the innermost one. For example, the sides of {@code a = b = c}, which is parsed as {@code a
+   * = (b = c)}, are {@code a}, {@code b}, and {@code c}. Otherwise, the only candidate is {@code
+   * node} itself.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
    * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
@@ -1060,8 +1069,17 @@ public abstract class CFAbstractTransfer<
    * @return the result of {@link #nodesWithValueOf} for {@code node}
    */
   private List<Node> computeNodesWithValueOf(Node node) {
+    // In `(i = input) > 0L`, where `i` is an `int`, the left operand is a widening conversion of
+    // the assignment.  The sides of the assignment have the value of the conversion, if the
+    // conversion preserves every value.
+    Node unconverted =
+        node instanceof WideningConversionNode widening
+                && widening.getOperand() instanceof AssignmentNode
+                && isLosslessWidening(widening)
+            ? widening.getOperand()
+            : node;
     List<Node> candidates =
-        node instanceof AssignmentNode assignment
+        unconverted instanceof AssignmentNode assignment
             ? sidesOfAssignment(assignment)
             : Collections.singletonList(node);
     // Find the written locations only if a candidate might be omitted because of them, because
@@ -1081,6 +1099,24 @@ public abstract class CFAbstractTransfer<
       result.add(candidate);
     }
     return result;
+  }
+
+  /**
+   * Returns true if the given widening conversion preserves every value of its operand. A widening
+   * primitive conversion from {@code int} or {@code long} to {@code float}, or from {@code long} to
+   * {@code double}, might lose precision (JLS 5.1.2).
+   *
+   * @param widening a widening conversion
+   * @return true if {@code widening} preserves every value of its operand
+   */
+  private static boolean isLosslessWidening(WideningConversionNode widening) {
+    TypeKind from = widening.getOperand().getType().getKind();
+    TypeKind to = widening.getType().getKind();
+    return switch (to) {
+      case FLOAT -> from != TypeKind.INT && from != TypeKind.LONG;
+      case DOUBLE -> from != TypeKind.LONG;
+      default -> true;
+    };
   }
 
   /**
@@ -1571,7 +1607,8 @@ public abstract class CFAbstractTransfer<
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
      * element changes only accesses of arrays that might alias the written array, and method calls.
-     * If side effects unrefine aliases (see {@link
+     * A call to {@code String.length()} changes only if its receiver changes, because a {@code
+     * String} is immutable. If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes every expression whose abstract value other code can modify (see {@link
      * JavaExpression#isModifiableByOtherCode}).
@@ -1604,6 +1641,9 @@ public abstract class CFAbstractTransfer<
             || mayChange(aa.getArray(), false)
             || mayChange(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
+        if (mc.getElement().equals(stringLength)) {
+          return mayChange(mc.getReceiver(), false);
+        }
         if (anyHeapLocation
             || !fields.isEmpty()
             || !arrayElements.isEmpty()
