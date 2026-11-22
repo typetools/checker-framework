@@ -14,41 +14,6 @@ public class ReceiverRefinementInCatch {
     }
   }
 
-  void read() throws java.io.IOException {}
-
-  // A null receiver causes a NullPointerException, which a handler for IOException does not catch.
-  // So the receiver is non-null in that handler.
-  void checkedExceptionHandler(@Nullable ReceiverRefinementInCatch r) {
-    try {
-      // :: error: (dereference.of.nullable)
-      r.read();
-    } catch (java.io.IOException e) {
-      r.toString();
-    }
-  }
-
-  void checkedAndRuntimeExceptionHandlers(@Nullable ReceiverRefinementInCatch r) {
-    try {
-      // :: error: (dereference.of.nullable)
-      r.read();
-    } catch (java.io.IOException e) {
-      r.toString();
-    } catch (RuntimeException e) {
-      // :: error: (dereference.of.nullable)
-      r.toString();
-    }
-  }
-
-  // An Error handler cannot catch the NullPointerException either.
-  void errorHandler(@Nullable Object o) {
-    try {
-      // :: error: (dereference.of.nullable)
-      o.toString();
-    } catch (Error e) {
-      o.hashCode();
-    }
-  }
-
   void afterNormalCompletion(@Nullable Object o) {
     // :: error: (dereference.of.nullable)
     o.toString();

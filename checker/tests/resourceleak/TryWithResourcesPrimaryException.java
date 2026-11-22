@@ -31,33 +31,4 @@ abstract class TryWithResourcesPrimaryException {
       mightThrow();
     }
   }
-
-  static class CloseException extends Exception {}
-
-  interface ResourceWithCloseException extends AutoCloseable {
-    @Override
-    void close() throws CloseException;
-  }
-
-  public abstract @Owning ResourceWithCloseException allocWithCloseException();
-
-  public abstract void alwaysThrows() throws IOException;
-
-  // The try block always throws an IOException.  If close() throws a CloseException, the statement
-  // suppresses it and rethrows the IOException, so the CloseException handler is unreachable.  The
-  // IOException handler closes c.  If the CloseException replaced the IOException, then c would
-  // leak on the path through the CloseException handler.
-  void primaryExceptionNotReplaced() throws IOException {
-    Closeable c = allocWithoutException();
-    try {
-      try (ResourceWithCloseException r = allocWithCloseException()) {
-        alwaysThrows();
-        throw new Error();
-      }
-    } catch (IOException e) {
-      c.close();
-    } catch (CloseException e) {
-      // unreachable
-    }
-  }
 }

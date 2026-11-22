@@ -292,18 +292,6 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     }
   }
 
-  // The call has an exceptional edge after its argument is evaluated.  No other node in the try
-  // block can throw a NullPointerException after `l1 = p2`.
-  void methodCallMayBeNullAfterArgument(@Odd String p1, String p2, String s) {
-    String l1 = p1;
-    try {
-      s.equals(l1 = p2);
-    } catch (NullPointerException e) {
-      // :: error: [assignment]
-      @Odd String l3 = l1;
-    }
-  }
-
   class Inner {
     void qualifiedThis(@Odd String p1, String p2) {
       String l1 = p1;

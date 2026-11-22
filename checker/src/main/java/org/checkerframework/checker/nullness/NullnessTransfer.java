@@ -8,18 +8,12 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreeScanner;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -32,8 +26,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
@@ -110,9 +102,6 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
-  /** The type {@code java.lang.NullPointerException}. */
-  private final TypeMirror nullPointerExceptionType;
-
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -149,9 +138,6 @@ public class NullnessTransfer
             .getTypeFactory()
             .getChecker()
             .getBooleanOption("invocationPreservesArgumentNullness", true);
-
-    nullPointerExceptionType =
-        TypesUtils.typeFromClass(NullPointerException.class, analysis.getTypes(), elements);
   }
 
   /**
@@ -427,6 +413,8 @@ public class NullnessTransfer
   @Override
   public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<NullnessValue, NullnessStore> in) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
+
     MethodInvocationTree tree = n.getTree();
     ExecutableElement method = TreeUtils.elementFromUse(tree);
 
@@ -441,54 +429,29 @@ public class NullnessTransfer
     // The refinement applies to the receiver expression, not to the value that was evaluated
     // before the arguments, so it is skipped if evaluating the arguments might reassign the
     // receiver expression, as in `r.m(r = null)`.
-    // A method annotated @DoesNotUnrefineReceiver does not reassign its receiver expression.
     JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
-    boolean refineReceiver =
-        !n.getTarget().isStatic()
-            && (nonNullAssumptionAfterInvocation
-                || isMethodSideEffectFree
-                || atypeFactory.hasDoesNotUnrefineReceiver(method)
-                || !receiverExpr.isAssignableByOtherCode())
-            && !argumentsMayReassign(tree.getArguments(), receiverExpr);
-
-    // The receiver is also non-null on each exceptional successor that a NullPointerException due
-    // to a null receiver cannot reach, such as a handler for a checked exception that the method
-    // declares:  the invocation reached the method body.  storeBeforeInvocation is a copy because
-    // super.visitMethodInvocation modifies the input store in place.
-    List<TypeMirror> exceptionTypesWithoutNullReceiver =
-        refineReceiver ? exceptionTypesWithoutNullReceiver(n) : Collections.emptyList();
-    @Nullable NullnessStore storeBeforeInvocation =
-        exceptionTypesWithoutNullReceiver.isEmpty() ? null : in.getRegularStore().copy();
-
-    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
-
-    if (refineReceiver) {
+    if (!n.getTarget().isStatic()
+        && (nonNullAssumptionAfterInvocation
+            || isMethodSideEffectFree
+            || !receiverExpr.isAssignableByOtherCode())
+        && !argumentsMayReassign(tree.getArguments(), receiverExpr)) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
-      if (storeBeforeInvocation != null) {
-        result =
-            refineReceiverOnExceptionalSuccessors(
-                n, exceptionTypesWithoutNullReceiver, result, storeBeforeInvocation);
-      }
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
     // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
-    // case FlowNullness.java.  An argument is not made non-null if a later argument might reassign
-    // it, as in `m(x, x = null)`.
+    // case FlowNullness.java.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
-        JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
-        if ((nonNullAssumptionAfterInvocation
-                || isMethodSideEffectFree
-                || !argExpr.isAssignableByOtherCode())
-            && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
-          makeNonNull(result, n.getArgument(i));
-        }
+      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
+          && (nonNullAssumptionAfterInvocation
+              || isMethodSideEffectFree
+              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
+        makeNonNull(result, n.getArgument(i));
       }
     }
 
@@ -515,88 +478,12 @@ public class NullnessTransfer
   }
 
   /**
-   * Returns true if an exceptional edge of the given type cannot carry the {@code
-   * NullPointerException} that an invocation throws when its receiver is null.
-   *
-   * @param exceptionType the type of an exceptional edge
-   * @return true if an edge of type {@code exceptionType} cannot carry a {@code
-   *     NullPointerException}
-   */
-  private boolean excludesNullPointerException(TypeMirror exceptionType) {
-    return !analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType);
-  }
-
-  /**
-   * Returns the types of the exceptional successors of the given invocation that a {@code
-   * NullPointerException} due to a null receiver cannot reach, such as one for a checked exception
-   * that the invoked method declares.
-   *
-   * @param n a method invocation
-   * @return the types of the exceptional successors of {@code n} that exclude a null-receiver
-   *     failure
-   */
-  private List<TypeMirror> exceptionTypesWithoutNullReceiver(MethodInvocationNode n) {
-    Block block = n.getBlock();
-    if (!(block instanceof ExceptionBlock exceptionBlock)) {
-      return Collections.emptyList();
-    }
-    List<TypeMirror> result = new ArrayList<>();
-    for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
-      if (excludesNullPointerException(exceptionType)) {
-        result.add(exceptionType);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
-   * on each exceptional successor that a {@code NullPointerException} due to a null receiver cannot
-   * reach. The receiver remains unrefined on the other exceptional successors.
-   *
-   * @param n a method invocation whose receiver should be refined
-   * @param exceptionTypes the result of {@link #exceptionTypesWithoutNullReceiver} for {@code n}
-   * @param result the transfer result for {@code n}
-   * @param storeBefore a copy of the store before {@code n}; this method may modify it
-   * @return a transfer result like {@code result}, with the receiver refined on some exceptional
-   *     successors
-   */
-  private TransferResult<NullnessValue, NullnessStore> refineReceiverOnExceptionalSuccessors(
-      MethodInvocationNode n,
-      List<TypeMirror> exceptionTypes,
-      TransferResult<NullnessValue, NullnessStore> result,
-      NullnessStore storeBefore) {
-    Node receiver = n.getTarget().getReceiver();
-    Map<TypeMirror, NullnessStore> exceptionalStores = result.getExceptionalStores();
-    if (exceptionalStores != null) {
-      // Refine the exceptional stores that a superclass created.
-      for (Map.Entry<TypeMirror, NullnessStore> entry : exceptionalStores.entrySet()) {
-        if (excludesNullPointerException(entry.getKey())) {
-          makeNonNull(entry.getValue(), receiver);
-        }
-      }
-      return result;
-    }
-    // An exceptional successor without a store in the map gets the store before n.
-    makeNonNull(storeBefore, receiver);
-    Map<TypeMirror, NullnessStore> newExceptionalStores = new HashMap<>();
-    for (TypeMirror exceptionType : exceptionTypes) {
-      newExceptionalStores.put(exceptionType, storeBefore.copy());
-    }
-    return result.withExceptionalStores(newExceptionalStores);
-  }
-
-  /**
    * Returns true if evaluating the given method arguments might reassign the given receiver
    * expression or a subexpression of it. This is conservative. It returns true if an argument
    * assigns any part of the receiver expression. If the receiver expression is assignable by other
    * code, it also returns true if an argument assigns a non-local variable or (unless {@link
    * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
-   *
-   * <p>Matching a record pattern, as in {@code o instanceof R(int i)}, implicitly invokes the
-   * record's component accessors. This method handles them as it handles explicit method
-   * invocations.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
    * arguments. Evaluating the arguments executes such a body only through a method or constructor
@@ -655,19 +542,6 @@ public class NullnessTransfer
                 || super.visitNewClass(tree, p);
           }
 
-          // Matching a record pattern implicitly invokes the record's component accessors.
-          // TreeScanner has no visitDeconstructionPattern method before Java 21, so this method
-          // overrides scan instead.
-          @Override
-          public Boolean scan(@Nullable Tree tree, Void p) {
-            if (tree != null
-                && tree.getKind().name().equals("DECONSTRUCTION_PATTERN")
-                && recordPatternMayHaveSideEffect(tree)) {
-              return true;
-            }
-            return super.scan(tree, p);
-          }
-
           // visitMethodInvocation and visitNewClass handle the invocations that execute the body
           // of a lambda expression or anonymous class.
 
@@ -693,28 +567,6 @@ public class NullnessTransfer
               return true;
             }
             return receiverAssignableByOtherCode && !(assigned instanceof LocalVariable);
-          }
-
-          /*
-           * Returns true if matching the given record pattern might reassign the receiver, by
-           * invoking one of the record's component accessors.  Does not examine nested patterns;
-           * scan visits them.
-           *
-           * @param recordPattern a record pattern (a deconstruction pattern)
-           * @return true if matching {@code recordPattern} might reassign the receiver
-           */
-          private boolean recordPatternMayHaveSideEffect(Tree recordPattern) {
-            TypeElement recordElement = TypesUtils.getTypeElement(TreeUtils.typeOf(recordPattern));
-            if (recordElement == null) {
-              return receiverAssignableByOtherCode && !nonNullAssumptionAfterInvocation;
-            }
-            for (RecordComponentElement component : recordElement.getRecordComponents()) {
-              ExecutableElement accessor = component.getAccessor();
-              if (mayHaveSideEffect(accessor)) {
-                return true;
-              }
-            }
-            return false;
           }
 
           /*
