@@ -30,7 +30,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
@@ -335,10 +337,24 @@ public class InvocationTypeInference {
         // AnnotatedTypeFactory#methodFromUse erases the return type in this case.
         returnType = returnType.getErased();
       }
-      qualifiersIncompatibleWithTarget =
-          returnType.isProper()
-              && ((ProperType) returnType).isAssignable(target.boxType())
-                  == ConstraintSet.TRUE_ANNO_FAIL;
+      if (returnType.isProper()) {
+        ProperType properReturnType = (ProperType) returnType;
+        ProperType assignedTo = target.boxType();
+        if (target.getTypeKind().isPrimitive()
+            && TypesUtils.isBoxedPrimitive(properReturnType.getJavaType())) {
+          // Assignment to a primitive target unboxes and then may widen (JLS 5.2), as in
+          // `long x = f(i)` where `f` returns `Integer`.  `Integer` is not assignable to `Long`,
+          // the boxed target, so compare the unboxed return type to the primitive target instead.
+          AnnotatedPrimitiveType unboxed =
+              context.typeFactory.getUnboxedType(
+                  (AnnotatedDeclaredType) properReturnType.getAnnotatedType());
+          properReturnType =
+              (ProperType) properReturnType.create(unboxed, properReturnType.ignoreAnnotations);
+          assignedTo = target;
+        }
+        qualifiersIncompatibleWithTarget =
+            properReturnType.isAssignable(assignedTo) == ConstraintSet.TRUE_ANNO_FAIL;
+      }
     }
     return new InferenceResult(
         b4.getInstantiatedVariables(),

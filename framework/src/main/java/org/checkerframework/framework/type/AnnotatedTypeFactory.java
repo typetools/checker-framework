@@ -1734,8 +1734,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     lambdaParamTypes.put(param, type.deepCopy());
     if (shouldCache) {
       // A request made before inference finished may have cached a type computed from a target
-      // type that was not yet known.
+      // type that was not yet known, or from a different inference problem whose outermost tree is
+      // the same (see DefaultTypeArgumentInference).  Both the element's type and the type of its
+      // declaration are cached, and fromMember consults the latter before reading lambdaParamTypes.
       elementCache.remove(param);
+      Tree paramDecl = declarationFromElement(param);
+      if (paramDecl != null) {
+        fromMemberTreeCache.remove(paramDecl);
+      }
     }
   }
 
