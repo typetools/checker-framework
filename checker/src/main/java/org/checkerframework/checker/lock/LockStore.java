@@ -117,14 +117,24 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
    * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown.
    */
-  private CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
+  private @Nullable CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {
       AnnotationMirrorSet set = new AnnotationMirrorSet();
       set.add(atypeFactory.GUARDEDBYUNKNOWN);
       set.add(atypeFactory.LOCKPOSSIBLYHELD);
       return analysis.createAbstractValue(set, je.getType());
     }
+    return changeLockAnnoToTop(currentValue);
+  }
 
+  /**
+   * Makes a new CFValue with the same annotations as currentValue except that the annotation in the
+   * LockPossiblyHeld hierarchy is set to LockPossiblyHeld.
+   *
+   * @param currentValue the value to modify
+   * @return a copy of {@code currentValue} whose LockPossiblyHeld annotation is LockPossiblyHeld
+   */
+  private @Nullable CFValue changeLockAnnoToTop(CFValue currentValue) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
@@ -238,7 +248,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     if (thisValue != null) {
-      thisValue = changeLockAnnoToTop(null, thisValue);
+      thisValue = changeLockAnnoToTop(thisValue);
     }
   }
 

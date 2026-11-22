@@ -111,15 +111,7 @@ public class EnumSwitchGuardReassignsSelector {
     }
   }
 
-  class Mutator {
-    @Override
-    public String toString() {
-      field = E.A;
-      return "mutator";
-    }
-  }
-
-  void stringConcatenationGuard(E input, Mutator mutator) {
+  void stringConcatenationGuardLastCase(E input, Mutator mutator) {
     field = input;
     switch (field) {
       // String concatenation calls mutator.toString(), which reassigns the selector.
