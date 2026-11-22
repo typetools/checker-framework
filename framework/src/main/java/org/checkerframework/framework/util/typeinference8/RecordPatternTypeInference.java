@@ -192,23 +192,31 @@ public class RecordPatternTypeInference {
     // Step 2: create inference variables alpha1, ..., alphan (`alphas`) for the type parameters
     // P1, ..., Pn of the record class R (`record`), with bounds from the declared bounds of P1,
     // ..., Pn.
-    Theta map = context.inferenceTypeFactory.createThetaForTypeParameters(deconstructor, record);
-    List<Variable> alphas = new ArrayList<>(map.values());
+    Theta alphaMap =
+        context.inferenceTypeFactory.createThetaForTypeParameters(deconstructor, record);
+    List<Variable> alphas = new ArrayList<>(alphaMap.values());
 
     // Step 3: capture the matched type T (`matchedType`) if it is a parameterized type, or else
     // each parameterized type among its upper bounds, recursively.  Create inference variables
     // beta1, ..., betak to replace the captured type variables that are type arguments of the
-    // captures.
+    // captures.  The betas are in a separate Theta from the alphas, because only captured type
+    // variables are replaced in the matched type.  For example, within `record Box<T>`, the
+    // matched type `Box<T>` mentions the record's type parameter T, which must not be replaced
+    // by its alpha.
     List<AnnotatedDeclaredType> capturedTypes = new ArrayList<>();
     addCapturedParameterizedTypes(matchedType, capturedTypes);
+    Theta betaMap = new Theta();
     context.inferenceTypeFactory.addVariablesForCapturedTypeArguments(
-        deconstructor, capturedTypes, map);
+        deconstructor, capturedTypes, betaMap);
+    Theta map = new Theta();
+    map.putAll(alphaMap);
+    map.putAll(betaMap);
     BoundSet boundSet = BoundSet.initialBounds(map, context);
 
     // Step 4: for each capture T' (`tPrime`, with each captured type variable replaced by its
     // beta), reduce <T' = R'>, where R' (`rPrime`) is the supertype of R<alpha1, ..., alphan>
     // (`recordType`) that is a parameterization of the same generic class as T'.
-    AbstractType recordType = context.inferenceTypeFactory.getTypeOfElement(record, map);
+    AbstractType recordType = context.inferenceTypeFactory.getTypeOfElement(record, alphaMap);
     for (AnnotatedDeclaredType capturedType : capturedTypes) {
       AbstractType rPrime = recordType.asSuper(capturedType.getUnderlyingType());
       if (rPrime == null) {
@@ -218,7 +226,7 @@ public class RecordPatternTypeInference {
             "Record pattern %s: %s is not a supertype of %s",
             TreeUtils.toStringTruncated(pattern, 65), capturedType, recordType);
       }
-      AbstractType tPrime = InferenceType.create(capturedType, map, context);
+      AbstractType tPrime = InferenceType.create(capturedType, betaMap, context);
       ConstraintSet constraints =
           new ConstraintSet(
               new Typing("Record pattern " + pattern, tPrime, rPrime, Kind.TYPE_EQUALITY));

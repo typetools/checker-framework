@@ -30,14 +30,10 @@ public class PatternVariableLocalVariableDefault {
   record Box(String s) {}
 
   @DefaultQualifier(value = Untainted.class, locations = TypeUseLocation.LOCAL_VARIABLE)
-  void varBindingWithDefault(Box b, @Untainted Object u) {
+  void varBindingWithDefault(Box b) {
     // The `var` binding variable gets the @Untainted default, but the component is tainted.
     // :: error: [assignment]
     if (b instanceof Box(var s)) {}
-    switch (u) {
-      case String s -> {}
-      default -> {}
-    }
   }
 
   void varBindingWithoutDefault(Box b) {

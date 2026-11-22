@@ -555,7 +555,8 @@ pattern using the primary qualifier of the corresponding record component's
 type (Section~\ref{type-refinement}).  The refined qualifier can be more
 precise than the component's qualifier:  a qualifier that is not a subtype
 of the qualifier upper bound of the pattern variable's Java type
-(Section~\ref{upper-bound-for-use}) is replaced by that bound, and a checker may refine pattern variables further.
+(Section~\ref{upper-bound-for-use}) is replaced by that bound, and a checker
+can refine pattern variables further.
 
 When a type pattern nested in a record pattern has an explicit type, such as
 \<@Untainted String a> below, the checker checks the type pattern against the

@@ -68,8 +68,9 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>Where JLS 4.10.5 gives a wildcard {@code ? extends U} whose bound U is an intersection
  *       type, this class gives {@code ?}, because the bound of a wildcard cannot be an intersection
  *       type.
- *   <li>Where the downward projection in JLS 4.10.5 gives a wildcard {@code ? super U} whose bound
- *       U is an intersection type, this class treats the downward projection as undefined.
+ *   <li>Where JLS 4.10.5 gives a wildcard {@code ? super L} whose bound L is an intersection type,
+ *       this class gives {@code ?} in an upward projection, and the downward projection is
+ *       undefined, for the same reason.
  * </ul>
  */
 public final class AnnotatedTypeProjection {
@@ -200,7 +201,12 @@ public final class AnnotatedTypeProjection {
       if (wildcard.getUnderlyingType().getSuperBound() == null) {
         return createWildcard(upperBound, null, true);
       }
-      return createWildcard(upperBound, downward(wildcard.getSuperBound()), false);
+      AnnotatedTypeMirror lowerBound = downward(wildcard.getSuperBound());
+      if (lowerBound != null && lowerBound.getKind() == TypeKind.INTERSECTION) {
+        // See the class Javadoc.  `?` is a supertype of `? super lowerBound`.
+        lowerBound = null;
+      }
+      return createWildcard(upperBound, lowerBound, false);
     }
 
     AnnotatedTypeMirror projectedTypeArg = upward(typeArg);
@@ -212,7 +218,12 @@ public final class AnnotatedTypeProjection {
             || !types.isSubtype(declaredBound, projectedTypeArg.getUnderlyingType()))) {
       return createWildcard(projectedTypeArg, null, true);
     }
-    return createWildcard(projectedTypeArg, downward(typeArg), false);
+    AnnotatedTypeMirror lowerBound = downward(typeArg);
+    if (lowerBound != null && lowerBound.getKind() == TypeKind.INTERSECTION) {
+      // See the class Javadoc.  `?` is a supertype of `? super lowerBound`.
+      lowerBound = null;
+    }
+    return createWildcard(projectedTypeArg, lowerBound, false);
   }
 
   /**
@@ -265,9 +276,8 @@ public final class AnnotatedTypeProjection {
               typeArgs.add(createWildcard(upperBound, null, true));
             } else {
               AnnotatedTypeMirror lowerBound = upward(wildcard.getSuperBound());
-              // A wildcard's bound cannot be an intersection type, so treat the downward
-              // projection as undefined.  This is sound but loses precision.
               if (lowerBound.getKind() == TypeKind.INTERSECTION) {
+                // See the class Javadoc.
                 return null;
               }
               typeArgs.add(createWildcard(upward(wildcard.getExtendsBound()), lowerBound, false));
@@ -315,7 +325,8 @@ public final class AnnotatedTypeProjection {
    *
    * @param upperBound the upper bound of the wildcard if its Java type is {@code ? extends
    *     upperBound}; otherwise, the source of the annotations on its {@code Object} upper bound
-   * @param lowerBound the lower bound of the wildcard, or null if its Java type has no lower bound
+   * @param lowerBound the lower bound of the wildcard, or null if its Java type has no lower bound;
+   *     not an intersection type
    * @param preferExtendsBound if true, the Java type of the wildcard is {@code ? extends
    *     upperBound} unless {@code lowerBound} is non-null or {@code upperBound} is an intersection
    *     type; if false, the Java type of the wildcard is {@code ? super lowerBound} or {@code ?}
@@ -325,6 +336,9 @@ public final class AnnotatedTypeProjection {
       AnnotatedTypeMirror upperBound,
       @Nullable AnnotatedTypeMirror lowerBound,
       boolean preferExtendsBound) {
+    if (lowerBound != null && lowerBound.getKind() == TypeKind.INTERSECTION) {
+      throw new BugInCF("Wildcard with an intersection lower bound: ? super %s", lowerBound);
+    }
     // A wildcard's bound cannot be an intersection type, so `?` stands in for `? extends A & B`.
     boolean hasExtendsBound =
         lowerBound == null && preferExtendsBound && upperBound.getKind() != TypeKind.INTERSECTION;
