@@ -49,6 +49,8 @@ public class SwitchSelectorSideEffects {
   static class Mutator {
     @Override
     public String toString() {
+      // The annotated JDK declares Object.toString() to be side-effect-free.
+      // :: error: (purity.assign.field)
       selector = null;
       return "";
     }
