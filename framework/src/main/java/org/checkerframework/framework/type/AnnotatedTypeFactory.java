@@ -1598,7 +1598,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the set of qualifiers that are the upper bounds for a use of the type.
+   * Returns the set of qualifiers that are the upper bounds for a use of the type. The result
+   * contains exactly one qualifier in each type hierarchy.
    *
    * @param type a type whose upper bounds to obtain
    * @return the set of qualifiers that are the upper bounds for a use of the type
@@ -1612,7 +1613,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * specified for the type.
    *
    * <p>This implementation returns the top qualifiers by default. Subclasses can override this
-   * method to return different qualifiers.
+   * method to return different qualifiers. The result need not contain a qualifier in every type
+   * hierarchy; in a hierarchy in which it has none, the default upper bound is top.
    *
    * @return the set of qualifiers that are the upper bound for a type use if no other bound is
    *     specified for the type

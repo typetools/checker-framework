@@ -107,7 +107,10 @@ public class QualifierUpperBounds {
   }
 
   /**
-   * Returns the set of qualifiers that are the upper bounds for a use of the type.
+   * Returns the set of qualifiers that are the upper bounds for a use of the type. The result
+   * contains exactly one qualifier in each type hierarchy. In a hierarchy in which no bound is
+   * specified for the type (by an annotation on its declaration, by {@link UpperBoundFor}, or by
+   * {@link AnnotatedTypeFactory#getDefaultTypeDeclarationBounds}), the bound is top.
    *
    * @param type the TypeMirror
    * @return the set of qualifiers that are the upper bounds for a use of the type
@@ -138,14 +141,13 @@ public class QualifierUpperBounds {
     }
 
     addMissingAnnotations(bounds, atypeFactory.getDefaultTypeDeclarationBounds());
+    addMissingAnnotations(bounds, qualHierarchy.getTopAnnotations());
     return bounds;
   }
 
   /**
    * Returns {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
-   * of {@code type} in the same hierarchy replaced by that bound. A qualifier in a hierarchy for
-   * which {@code type} has no upper bound is returned unchanged. (That can happen if a subclass
-   * overrides {@link AnnotatedTypeFactory#getDefaultTypeDeclarationBounds}.)
+   * of {@code type} in the same hierarchy replaced by that bound.
    *
    * @param type the type whose qualifier upper bounds limit {@code annos}
    * @param annos the qualifiers to limit
@@ -158,8 +160,8 @@ public class QualifierUpperBounds {
     for (AnnotationMirror anno : annos) {
       AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
       if (bound == null) {
-        limitedAnnos.add(anno);
-        continue;
+        throw new BugInCF(
+            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
       }
       limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
     }
