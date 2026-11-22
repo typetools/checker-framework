@@ -82,11 +82,36 @@ public class EnumSwitchGuardReassignsSelector {
     @Override
     public String toString() {
       field = E.A;
-      return "mutator";
+      return "";
     }
   }
 
+  // String concatenation calls toString(), which might reassign the selector expression.
   void stringConcatenationGuard(E input, Mutator mutator) {
+    field = input;
+    switch (field) {
+      case E ignored when ("" + mutator) == null -> {}
+      case B -> {
+        // :: error: (assignment)
+        @EnumVal("B") E x = field;
+      }
+      case A -> {}
+    }
+  }
+
+  // String conversion of a primitive, boxed primitive, or String has no side effect.
+  void stringConcatenationNoSideEffects(E input, int i, Integer boxed, String s) {
+    field = input;
+    switch (field) {
+      case E ignored when ("" + i + boxed + s) == null -> {}
+      case B -> {
+        @EnumVal("B") E x = field;
+      }
+      case A -> {}
+    }
+  }
+
+  void stringConcatenationGuardLastCase(E input, Mutator mutator) {
     field = input;
     switch (field) {
       // String concatenation calls mutator.toString(), which reassigns the selector.
