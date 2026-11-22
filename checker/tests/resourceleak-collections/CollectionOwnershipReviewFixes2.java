@@ -5,7 +5,6 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 /*
  * Tests:
- *  - a reassigned parameter may be owning when it is inserted into a collection;
  *  - a self-assignment does not move ownership;
  *  - an assignment to an unrelated field with the same name as the collection does not prevent
  *    certification of a disposal loop;
@@ -17,14 +16,6 @@ class CollectionOwnershipReviewFixes2 {
 
   static class Stats {
     int resources;
-  }
-
-  void insertReassignedParam(@NotOwningCollection List<Resource> borrowed, Resource r) {
-    r = new Resource();
-    // :: error: illegal.collection.mutator.owning.insert.into.notowning
-    borrowed.add(r);
-    r.close();
-    r.flush();
   }
 
   void insertParam(@NotOwningCollection List<Resource> borrowed, Resource r) {

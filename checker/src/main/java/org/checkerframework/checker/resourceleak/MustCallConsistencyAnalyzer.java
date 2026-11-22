@@ -244,19 +244,19 @@ public class MustCallConsistencyAnalyzer {
    * The CFG currently being analyzed by {@link #analyze(ControlFlowGraph)}.
    *
    * <p>This field is initialized at the start of {@code analyze} and is only used by helpers that
-   * reason about whether newly-created obligations can still reach the regular exit.
+   * reason about whether newly-created obligations can still reach a method exit.
    */
   private @Nullable ControlFlowGraph currentCfg = null;
 
   /**
-   * Cached set of blocks that can reach a regular exit block, respecting {@link
+   * Cached set of blocks that can reach the regular or exceptional exit block, respecting {@link
    * #getSuccessorsExceptIgnoredExceptions(Block)} filtering.
    *
    * <p>This cache is scoped to {@link #currentCfg}. It is cleared at the start of each top-level
    * {@link #analyze(ControlFlowGraph)} call and computed lazily only if collection-obligation
    * reporting needs it.
    */
-  private @Nullable Set<Block> blocksThatCanReachRegularExit = null;
+  private @Nullable Set<Block> blocksThatCanReachExit = null;
 
   /**
    * Trees for which `collection.obligation.never.enforced` has already been reported in the current
@@ -836,63 +836,66 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Ensures {@link #blocksThatCanReachRegularExit} has been computed for {@link #currentCfg}.
+   * Ensures {@link #blocksThatCanReachExit} has been computed for {@link #currentCfg}.
    *
    * <p>This method is idempotent. The expensive reverse-reachability computation runs at most once
    * per top-level CFG analysis.
    */
-  private void ensureBlocksThatCanReachRegularExitComputed() {
-    if (blocksThatCanReachRegularExit != null) {
+  private void ensureBlocksThatCanReachExitComputed() {
+    if (blocksThatCanReachExit != null) {
       return;
     }
     if (currentCfg == null) {
-      throw new BugInCF("ensureBlocksThatCanReachRegularExitComputed called with no currentCfg");
+      throw new BugInCF("ensureBlocksThatCanReachExitComputed called with no currentCfg");
     }
-    blocksThatCanReachRegularExit = computeBlocksThatCanReachRegularExit(currentCfg);
+    blocksThatCanReachExit = computeBlocksThatCanReachExit(currentCfg);
   }
 
   /**
-   * Returns whether {@code block} can reach the regular method exit in the current CFG.
+   * Returns whether {@code block} can reach a method exit, regular or exceptional, in the current
+   * CFG. The analysis checks the obligations that reach either exit, so an obligation created in a
+   * block that can reach neither exit is never checked.
    *
    * <p>Reachability is computed with the same filtered exceptional successors used by the main
-   * obligation traversal, so ignored exceptional edges do not make a block count as
-   * regular-exit-reachable.
+   * obligation traversal, so ignored exceptional edges do not make a block count as exit-reachable.
    *
    * @param block the block to query
-   * @return true if {@code block} can reach the regular exit along allowed successor edges
+   * @return true if {@code block} can reach a method exit along allowed successor edges
    */
-  private boolean canReachRegularExit(Block block) {
-    ensureBlocksThatCanReachRegularExitComputed();
-    return blocksThatCanReachRegularExit != null && blocksThatCanReachRegularExit.contains(block);
+  private boolean canReachExit(Block block) {
+    ensureBlocksThatCanReachExitComputed();
+    return blocksThatCanReachExit != null && blocksThatCanReachExit.contains(block);
   }
 
   /**
-   * Computes the blocks in {@code cfg} that can reach the regular exit.
+   * Computes the blocks in {@code cfg} that can reach the regular exit or the exceptional exit.
    *
    * <p>The computation uses the same filtered exceptional edges as the main analysis:
    *
    * <ol>
    *   <li>Enumerate blocks reachable from the entry block.
-   *   <li>Seed the worklist with the regular exit block, if that block is itself reachable.
+   *   <li>Seed the worklist with the regular and exceptional exit blocks that are themselves
+   *       reachable.
    *   <li>Run a reverse traversal through predecessor edges, but only when the predecessor-to-
    *       successor edge is one that {@link #getSuccessorsExceptIgnoredExceptions(Block)} would
    *       follow during forward propagation.
    * </ol>
    *
    * @param cfg the CFG currently being analyzed
-   * @return the set of blocks that can reach the regular exit
+   * @return the set of blocks that can reach a method exit
    */
-  private Set<Block> computeBlocksThatCanReachRegularExit(ControlFlowGraph cfg) {
+  private Set<Block> computeBlocksThatCanReachExit(ControlFlowGraph cfg) {
     Block entry = cfg.getEntryBlock();
     Set<Block> reachable = CollectionOwnershipUtils.reachableFrom(entry);
-    Block normalExit = cfg.getRegularExitBlock();
     Set<Block> exitBlocks = new HashSet<>();
-    if (reachable.contains(normalExit)) {
-      exitBlocks.add(normalExit);
+    for (Block exit : List.of(cfg.getRegularExitBlock(), cfg.getExceptionalExitBlock())) {
+      if (reachable.contains(exit)) {
+        exitBlocks.add(exit);
+      }
     }
 
-    // Reverse reachability from the regular exit.
-    Set<Block> canReachRegularExit = new HashSet<>(exitBlocks);
+    // Reverse reachability from the exits.
+    Set<Block> canReachExit = new HashSet<>(exitBlocks);
     Deque<Block> worklist = new ArrayDeque<>(exitBlocks);
 
     while (!worklist.isEmpty()) {
@@ -904,12 +907,12 @@ public class MustCallConsistencyAnalyzer {
         if (!isAllowedSuccessor(pred, cur)) {
           continue;
         }
-        if (canReachRegularExit.add(pred)) {
+        if (canReachExit.add(pred)) {
           worklist.addLast(pred);
         }
       }
     }
-    return canReachRegularExit;
+    return canReachExit;
   }
 
   /**
@@ -944,8 +947,7 @@ public class MustCallConsistencyAnalyzer {
    * must-call obligations.
    *
    * <p>This method also initializes per-CFG state used by helpers that diagnose collection
-   * obligations at their creation sites when those obligations cannot reach the regular method
-   * exit.
+   * obligations at their creation sites when those obligations cannot reach any method exit.
    *
    * @param cfg the control flow graph of the method to check
    */
@@ -953,7 +955,7 @@ public class MustCallConsistencyAnalyzer {
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
     this.currentCfg = cfg;
-    this.blocksThatCanReachRegularExit = null;
+    this.blocksThatCanReachExit = null;
     this.reportedNeverEnforcedSites.clear();
 
     // The `visited` set contains everything that has been added to the worklist, even if it has
@@ -1099,11 +1101,13 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Reports a collection obligation that is created in a region with no path to the regular method
-   * exit.
+   * Reports a collection obligation that is created in a region with no path to a method exit,
+   * regular or exceptional, such as the body of an infinite loop.
    *
-   * <p>Such an obligation will never reach the normal enforcement point in {@link #analyze}, so it
-   * should be diagnosed at the creation site instead of being silently dropped from checking.
+   * <p>Such an obligation will never reach an enforcement point in {@link #analyze}, so it should
+   * be diagnosed at the creation site instead of being silently dropped from checking. An
+   * obligation that can reach only the exceptional exit is checked there, so it is not reported
+   * here.
    *
    * @param node the invocation that creates the collection obligation
    * @param mustCallMethod one required method of the collection element type, used in the message
@@ -1114,7 +1118,7 @@ public class MustCallConsistencyAnalyzer {
     Tree tree = node.getTree();
     if (tree != null
         && node.getBlock() != null
-        && !canReachRegularExit(node.getBlock())
+        && !canReachExit(node.getBlock())
         && reportedNeverEnforcedSites.add(tree)) {
       checker.reportError(
           tree, "collection.obligation.never.enforced", mustCallMethod, receiverTree.toString());
@@ -1784,8 +1788,12 @@ public class MustCallConsistencyAnalyzer {
     if (lhsElement.getKind() == ElementKind.FIELD) {
       boolean isOwningField = !noLightweightOwnership && cmAtf.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
-      // non-final and owning.
-      if (isOwningField && cmAtf.canCreateObligations() && !ElementUtils.isFinal(lhsElement)) {
+      // non-final and owning.  A loop body analysis tracks only the loop's element, so it would
+      // report spurious errors; the regular analysis checks the same assignment.
+      if (!isLoopBodyAnalysis
+          && isOwningField
+          && cmAtf.canCreateObligations()
+          && !ElementUtils.isFinal(lhsElement)) {
         checkReassignmentToOwningField(obligations, assignmentNode);
       }
 
@@ -3862,9 +3870,8 @@ public class MustCallConsistencyAnalyzer {
       store = cmAtf.getStoreAfter(lastNode);
     }
     // The loop body analysis tracks only the collection element's Obligation.  If the loop body
-    // overwrote the loop variable, other aliases such as `saved` in `Resource saved = r; r =
-    // other;`
-    // might still hold it.
+    // overwrote the loop variable, other aliases such as `saved` in
+    // `Resource saved = r; r = other;` might still hold it.
     if (obligations.size() > 1) {
       throw new BugInCF("Loop body analysis tracks more than one Obligation: " + obligations);
     }

@@ -691,7 +691,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (element.isEmpty()) {
       return numParams - 1;
     }
-    int paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    int paramIndex;
+    try {
+      paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    } catch (NumberFormatException e) {
+      // The parameter number is too large to be an int, so it names no parameter.
+      return -1;
+    }
     return paramIndex >= 0 && paramIndex < numParams ? paramIndex : -1;
   }
 
