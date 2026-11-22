@@ -894,15 +894,20 @@ type-check) from writing just
 However, it does make sense to write a single polymorphic qualifier
 \emph{within} a formal parameter type, as in
 \begin{Verbatim}
-  void m2a(List<@PolyNull MySubClass> strings)
+  void m2a(List<@PolyNull MySubClass> elements)
 \end{Verbatim}
 which is similar to
 \begin{Verbatim}
-  void m2b(List<? extends @Nullable MySubClass> strings)
+  void m2b(List<? extends @Nullable MySubClass> elements)
 \end{Verbatim}
-Method \<m2b()> can be called with (for example) \code{List<@Nullable
-  MySubClass>} and \code{List<@NonNull MySubClass>}, which are not legal
-arguments to method \<m2a()>.
+Both methods can be called with \code{List<@Nullable MySubClass>} and
+\code{List<@NonNull MySubClass>}.  Each call to \<m2a()> instantiates
+\<@PolyNull> to the element qualifier.  The two signatures differ when the
+element class itself changes.  If \<MySubSubClass> is a proper subtype of
+\<MySubClass>, then \<m2b()> can be called with \code{List<@Nullable
+  MySubSubClass>}.  The \<extends> wildcard admits this list, while the
+invariant type argument of \<m2a()> requires \<MySubClass> for either
+qualifier instantiation, so that list is not a legal argument to \<m2a()>.
 
 
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
