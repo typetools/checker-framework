@@ -143,7 +143,9 @@ public class QualifierUpperBounds {
 
   /**
    * Returns {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
-   * of {@code type} in the same hierarchy replaced by that bound.
+   * of {@code type} in the same hierarchy replaced by that bound. A qualifier in a hierarchy for
+   * which {@code type} has no upper bound is returned unchanged. (That can happen if a subclass
+   * overrides {@link AnnotatedTypeFactory#getDefaultTypeDeclarationBounds}.)
    *
    * @param type the type whose qualifier upper bounds limit {@code annos}
    * @param annos the qualifiers to limit
@@ -156,8 +158,8 @@ public class QualifierUpperBounds {
     for (AnnotationMirror anno : annos) {
       AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
       if (bound == null) {
-        throw new BugInCF(
-            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
+        limitedAnnos.add(anno);
+        continue;
       }
       limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
     }
