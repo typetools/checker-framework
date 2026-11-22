@@ -1400,8 +1400,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       firstLength = className.length();
     }
     @SuppressWarnings("signature") // a prefix of a binary name, ending at the end of an identifier
-    @ClassGetName String firstBinaryName =
-        binaryName.substring(0, prefix.length() + 1 + firstLength);
+    @ClassGetName String firstBinaryName = binaryName.substring(0, prefix.length() + 1 + firstLength);
     if (!isImportAccessible(loadClass(firstBinaryName), cu)) {
       return null;
     }
