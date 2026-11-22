@@ -19,7 +19,6 @@ public class PatternVariableLocalVariableDefault {
       s = tainted;
     }
     switch (o) {
-      // :: warning: [case.pattern.unsafe]
       case String s -> {
         // :: error: [assignment]
         s = tainted;

@@ -162,7 +162,6 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -460,39 +459,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkRecordPatternTypeInference(tree);
       checkNestedTypePatterns(tree);
     }
-    // JDK 17's `TreeVisitor` has no `visitPatternCaseLabel` method.
-    if (getCurrentPath() != null && PatternCaseLabelUtils.isPatternCaseLabelTree(tree)) {
-      checkCaseLabelTypePattern(new TreePath(getCurrentPath(), tree));
-    }
     return super.scan(tree, p);
-  }
-
-  /**
-   * If the case label at {@code caseLabelPath} is a type pattern, reports a {@code
-   * case.pattern.unsafe} warning if the type of its binding variable is not a safe downcast from
-   * the type that {@link #instanceofPatternMatchedType} returns for the type of the switch's
-   * selector expression. This is the same check that {@link #checkInstanceofPattern} performs for a
-   * type pattern in an {@code instanceof}.
-   *
-   * <p>For example, in the Tainting Checker, if {@code o} is {@code @Tainted}, then this method
-   * warns about {@code case @Untainted String s} in {@code switch (o)}.
-   *
-   * @param caseLabelPath the path to a pattern case label
-   */
-  protected void checkCaseLabelTypePattern(TreePath caseLabelPath) {
-    Tree pattern = PatternCaseLabelUtils.getPattern(caseLabelPath.getLeaf());
-    if (!(pattern instanceof BindingPatternTree bindingPattern)) {
-      // A record pattern is checked by `checkRecordPatternTypeInference` and
-      // `checkNestedTypePatterns`.
-      return;
-    }
-    VariableTree variableTree = bindingPattern.getVariable();
-    ExpressionTree selector = TreePathUtil.switchSelectorOfCaseLabel(caseLabelPath);
-    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-    AnnotatedTypeMirror selectorType = atypeFactory.getAnnotatedType(selector);
-    if (!isTypeCastSafe(variableType, instanceofPatternMatchedType(selectorType))) {
-      checker.reportWarning(bindingPattern, "case.pattern.unsafe", selectorType, variableTree);
-    }
   }
 
   /**
@@ -4178,8 +4145,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Returns the type of the values of {@code expType} that a type pattern can match, given the type
    * of the value that the pattern is matched against: the left operand of an instanceof expression,
-   * the selector expression of a switch whose case label is the pattern, or the record component
-   * that a type pattern nested in a record pattern is matched against.
+   * or the record component that a type pattern nested in a record pattern is matched against.
    *
    * <p>This implementation returns {@code expType} itself. A subclass overrides this method if the
    * run-time test of a type pattern rejects some values whatever their Java type; for example, a
