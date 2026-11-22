@@ -683,7 +683,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the node holder
    */
   protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
-      Node node, Set<TypeMirror> causes) {
+      Node node, Set<? extends TypeMirror> causes) {
     addToLookupMap(node);
     Map<TypeMirror, Set<Label>> exceptions = new ArrayMap<>(causes.size());
     for (TypeMirror cause : causes) {
