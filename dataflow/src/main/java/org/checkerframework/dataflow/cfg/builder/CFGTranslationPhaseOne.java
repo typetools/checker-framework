@@ -345,6 +345,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The ClassCastException type. */
   protected final TypeMirror classCastExceptionType;
 
+  /** The IllegalArgumentException type. */
+  protected final TypeMirror illegalArgumentExceptionType;
+
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
@@ -441,6 +444,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
+    illegalArgumentExceptionType = getTypeMirror(IllegalArgumentException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
@@ -2814,8 +2818,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Adds a synthetic {@code close} call to the CFG, as {@link #addCloseCallForResource} does, for
    * the path on which an exception (the primary exception) reached the synthetic finally block of a
    * try-with-resources statement. On that path, the statement suppresses any exception that {@code
-   * close} throws, and then it rethrows the primary exception (JLS 14.20.3.1). So every exceptional
-   * successor of the added nodes is the node that follows them.
+   * close} throws, by calling {@code addSuppressed} on the primary exception, and then it rethrows
+   * the primary exception (JLS 14.20.3.1). So every exceptional successor of the {@code close} call
+   * is a node that models the call to {@code addSuppressed}. That node may throw {@code
+   * IllegalArgumentException}, which {@code addSuppressed} throws if {@code close} threw the
+   * primary exception itself; otherwise it reaches the rethrow of the primary exception.
    *
    * <p>If {@code close} terminates execution, the call has no normal successor, but its exceptional
    * successors still reach the rethrow of the primary exception. That models termination by
@@ -2835,7 +2842,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
     addCloseCallForResource(resourceDeclarationTree, p);
     tryStack.popFrame();
+    Label afterSuppressionLabel = new Label();
+    extendWithExtendedNode(new UnconditionalJump(afterSuppressionLabel));
+
+    // The catch block calls addSuppressed on the primary exception, which throws
+    // IllegalArgumentException if close threw the primary exception itself.
     addLabelForNextNode(suppressedLabel);
+    extendWithNodeWithException(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "addSuppressed for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()),
+        illegalArgumentExceptionType);
+
+    addLabelForNextNode(afterSuppressionLabel);
   }
 
   /**
