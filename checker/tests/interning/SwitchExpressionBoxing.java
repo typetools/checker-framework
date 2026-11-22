@@ -1,4 +1,5 @@
-// A switch expression whose results are boxed booleans is interned.
+// A switch expression whose results are boxed booleans is interned, but one whose results are
+// boxed ints is not.
 
 // @below-java17-jdk-skip-test
 
@@ -22,5 +23,24 @@ public class SwitchExpressionBoxing {
       case A -> x + y;
       case B -> x - y;
     };
+  }
+
+  void assignEqualTo(Kind k, int x, int y) {
+    Boolean result =
+        switch (k) {
+          case A -> x == y;
+          case B -> x != y;
+        };
+    @Interned Boolean interned = result;
+  }
+
+  void assignSum(Kind k, int x, int y) {
+    Integer result =
+        switch (k) {
+          case A -> x + y;
+          case B -> x - y;
+        };
+    // :: error: [assignment]
+    @Interned Integer interned = result;
   }
 }

@@ -929,9 +929,12 @@ public abstract class CFAbstractTransfer<
    */
   @SuppressWarnings("interning:not.interned") // CFG node identity
   private static boolean isTargetOfUnboxingCall(MethodAccessNode n) {
-    // Cheap filter: the receiver of an unboxing call is a boxed primitive.  This avoids scanning
-    // the block for most method accesses.
-    if (!TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
+    // Cheap filter: an unboxing method is declared in a boxed primitive type.  This avoids
+    // scanning the block for most method accesses.  Test the declaring type rather than the
+    // receiver's type, which may be a type variable with a boxed-primitive bound, as in
+    // `((T) b).booleanValue()` where `T extends Boolean`.
+    TypeElement declaringType = ElementUtils.enclosingTypeElement(n.getMethod());
+    if (declaringType == null || !TypesUtils.isBoxedPrimitive(declaringType.asType())) {
       return false;
     }
     return nextNode(n) instanceof MethodInvocationNode call
