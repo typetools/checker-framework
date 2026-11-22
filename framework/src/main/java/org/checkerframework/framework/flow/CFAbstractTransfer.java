@@ -928,9 +928,12 @@ public abstract class CFAbstractTransfer<
    */
   @SuppressWarnings("interning:not.interned") // CFG node identity
   private static boolean isTargetOfUnboxingCall(MethodAccessNode n) {
-    // Cheap filter: the receiver of an unboxing call is a boxed primitive.  This avoids scanning
-    // the block for most method accesses.
-    if (!TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
+    // Cheap filter: an unboxing method is declared in a boxed primitive type.  This avoids
+    // scanning the block for most method accesses.  Test the declaring type rather than the
+    // receiver's type, which may be a type variable with a boxed-primitive bound, as in
+    // `((T) b).booleanValue()` where `T extends Boolean`.
+    TypeElement declaringType = ElementUtils.enclosingTypeElement(n.getMethod());
+    if (declaringType == null || !TypesUtils.isBoxedPrimitive(declaringType.asType())) {
       return false;
     }
     Block block = n.getBlock();
@@ -1731,10 +1734,9 @@ public abstract class CFAbstractTransfer<
    * stores after an invocation.
    *
    * @param invocationNode a method call node or an object creation node
-   * @param executableElement the method or constructor being called; used in diagnostics if {@code
-   *     invocationTree} is null
+   * @param executableElement the method or constructor whose contracts are {@code postconditions}
    * @param invocationTree the tree for the method call or for the object creation; may be null for
-   *     a method call in a custom CFG
+   *     a method call in a custom CFG. It is used only as the location of diagnostics.
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    * @param postconditions the postconditions
@@ -1790,12 +1792,7 @@ public abstract class CFAbstractTransfer<
         // report errors here
         if (e.isFlowParseError()) {
           Object[] args = new Object[e.args.length + 1];
-          // A method call in a custom CFG might have no tree.
-          ExecutableElement invokedElement =
-              (invocationTree == null)
-                  ? executableElement
-                  : (ExecutableElement) TreeUtils.elementFromUse(invocationTree);
-          args[0] = ElementUtils.getSimpleSignature(invokedElement);
+          args[0] = ElementUtils.getSimpleSignature(executableElement);
           System.arraycopy(e.args, 0, args, 1, e.args.length);
           analysis.checker.reportError(invocationTree, "flowexpr.parse.error.postcondition", args);
         } else {

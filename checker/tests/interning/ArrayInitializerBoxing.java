@@ -26,4 +26,10 @@ public class ArrayInitializerBoxing {
   void unboxAndWiden(Integer i) {
     @Interned long[] ls = new long[] {i, i};
   }
+
+  // The initializer's type is a type variable whose bound is a boxed primitive.  It unboxes to
+  // int, which is then widened to long.
+  <T extends Integer> void unboxTypeVariable(T t) {
+    @Interned long[] ls = new long[] {t, t};
+  }
 }
