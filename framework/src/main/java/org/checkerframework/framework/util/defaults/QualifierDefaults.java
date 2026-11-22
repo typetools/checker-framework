@@ -557,10 +557,13 @@ public class QualifierDefaults {
         (atypeFactory
                 instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAnnotatedTypeFactory)
             && genericAnnotatedTypeFactory.getShouldDefaultTypeVarLocals();
+    // A binding variable nested in a record pattern is not defaulted, so its type is the type
+    // variable itself.
     applyToTypeVar =
         defaultTypeVarLocals
             && elt != null
             && ElementUtils.isLocalVariable(elt)
+            && !atypeFactory.isNestedBindingVariable(elt)
             && type.getKind() == TypeKind.TYPEVAR;
     applyDefaultsElement(elt, type);
     applyToTypeVar = false;
