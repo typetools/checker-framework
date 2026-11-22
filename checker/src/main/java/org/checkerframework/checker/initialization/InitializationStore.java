@@ -135,7 +135,11 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     fieldValues.putAll(invariantFields);
   }
 
-  /** A copy constructor. */
+  /**
+   * A copy constructor.
+   *
+   * @param other the store to copy
+   */
   public InitializationStore(S other) {
     super(other);
     initializedFields = new HashSet<>(other.initializedFields);
