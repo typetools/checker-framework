@@ -524,6 +524,16 @@ allprojects { currentProj ->
           // Always run Error Prone, even if the compiled classes are up to date or cached.
           outputs.upToDateWhen { false }
           outputs.cacheIf { false }
+          // Error Prone's fixes are not formatted.  Finalize this task rather than the
+          // `errorProneFix` task, so that the fixes are formatted even if another project's
+          // compilation fails (which prevents `errorProneFix` and its finalizers from running).
+          finalizedBy("spotlessJavaApply")
+          // `spotlessJava` computes the formatted source and `spotlessJavaApply` copies it over
+          // the source files, so `spotlessJava` must read the source files after they are
+          // patched.  Otherwise, `spotlessJavaApply` would undo the fixes.
+          project.tasks.named("spotlessJava") {
+            mustRunAfter(compilationTask)
+          }
         }
       } else {
         options.errorprone.enabled = false
@@ -535,9 +545,9 @@ allprojects { currentProj ->
 tasks.register("errorProneFix") {
   description = "Applies Error Prone's suggested fixes to the source files"
   group = "Verification"
+  // Each compilation that applies fixes is finalized by its project's `spotlessJavaApply` task,
+  // which formats the fixes.
   dependsOn(subprojects.collect { "${it.path}:compileJava" })
-  // Error Prone's fixes are not formatted.
-  finalizedBy(subprojects.collect { "${it.path}:spotlessJavaApply" })
   if (errorProneFix && !compilerRunsOnJava21orHigher) {
     throw new GradleException("errorProneFix requires compiling with JDK 21 or higher, because Error Prone does")
   }
