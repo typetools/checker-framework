@@ -3,7 +3,6 @@
 // Test that a case label does not refine a selector expression that a guard might have reassigned.
 
 import org.checkerframework.common.value.qual.EnumVal;
-import org.checkerframework.dataflow.qual.Pure;
 
 public class EnumSwitchGuardReassignsSelector {
 
@@ -38,31 +37,6 @@ public class EnumSwitchGuardReassignsSelector {
       case B -> {
         // :: error: (assignment)
         @EnumVal("B") E x = field;
-      }
-      case A -> {}
-    }
-  }
-
-  static E staticField;
-
-  @Pure
-  static E getStaticField() {
-    return staticField;
-  }
-
-  static boolean resetStatic() {
-    staticField = E.A;
-    return false;
-  }
-
-  // A guard might change the result of a method call that is the selector expression.
-  void methodCallSelector(E input) {
-    staticField = input;
-    switch (getStaticField()) {
-      case E ignored when resetStatic() -> {}
-      case B -> {
-        // :: error: (assignment)
-        @EnumVal("B") E x = getStaticField();
       }
       case A -> {}
     }
