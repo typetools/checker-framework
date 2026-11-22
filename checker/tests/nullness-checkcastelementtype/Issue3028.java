@@ -115,6 +115,13 @@ public class Issue3028 {
     StringList s = (StringList) list;
   }
 
+  <T extends Runnable & List<@Nullable String>>
+      void unsafeDowncastToNonGenericSubclassFromIntersection(T t) {
+    // As in unsafeDowncastToNonGenericSubclass, the value is a List<@Nullable String>.
+    // :: warning: [cast.unsafe]
+    StringList s = (StringList) t;
+  }
+
   void upcastToObject(List<@Nullable String> list) {
     Object o = (Object) list;
   }

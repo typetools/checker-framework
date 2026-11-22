@@ -3847,6 +3847,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Returns true if every unchecked type argument of {@code castType} contains every type that its
    * type parameter permits.
    *
+   * <p>The type arguments of {@code castType} include those of its enclosing types, such as the
+   * type argument of {@code Outer<?>} in {@code Outer<?>.Inner}.
+   *
    * <p>A type argument of {@code castType} is <em>unchecked</em> if the run-time check of the cast,
    * which verifies only the class of the value, does not verify it, even given that the value has
    * Java type {@code exprTM}. A cast that is checked in the sense of JLS 5.1.6.2 can still have
@@ -3895,7 +3898,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     AnnotatedDeclaredType castDeclaredType = (AnnotatedDeclaredType) castType;
-    if (castDeclaredType.getTypeArguments().isEmpty() || castDeclaredType.isUnderlyingTypeRaw()) {
+    if (castDeclaredType.isUnderlyingTypeRaw()) {
       return true;
     }
     boolean isExprRaw = ((Type) exprTM).isRaw();
@@ -3916,34 +3919,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             : (Type)
                 TypesUtils.asSuper(
                     genericCastType, types.erasure(exprTM), atypeFactory.getProcessingEnv());
-    // The generic class of castType with the declared bounds of its type parameters; computed only
-    // if some type argument is unchecked.
-    AnnotatedDeclaredType annotatedGenericCastType = null;
-    List<? extends TypeMirror> typeParameters = genericCastType.getTypeArguments();
-    for (int i = 0; i < typeParameters.size(); i++) {
-      if (genericCastTypeAsExprType != null
-          && genericCastTypeAsExprType.contains((Type) typeParameters.get(i))) {
-        // The type parameter appears in genericCastTypeAsExprType, so this type argument is
-        // checked; isCastSafeIncludingElementTypes compared it with exprType.
+    // Examine the type arguments of castType and of each of its enclosing types, such as the type
+    // argument of Outer<?> in Outer<?>.Inner.  genericLevel is the generic class of castLevel, with
+    // the declared bounds of its type parameters.
+    for (AnnotatedDeclaredType castLevel = castDeclaredType,
+            genericLevel = atypeFactory.getAnnotatedType(castElement);
+        castLevel != null && genericLevel != null;
+        castLevel = castLevel.getEnclosingType(), genericLevel = genericLevel.getEnclosingType()) {
+      List<AnnotatedTypeMirror> typeArgs = castLevel.getTypeArguments();
+      List<AnnotatedTypeMirror> typeParameters = genericLevel.getTypeArguments();
+      if (typeArgs.size() != typeParameters.size()) {
+        // castLevel is raw.
         continue;
       }
-      // The run-time check of a cast verifies only the class of the value, so in place of an
-      // unchecked type argument, the value may have any type argument within the bounds of
-      // its type parameter.  The type argument of castType must contain all of them.
-      AnnotatedTypeMirror typeArg = castDeclaredType.getTypeArguments().get(i);
-      if (typeArg.getKind() != TypeKind.WILDCARD) {
-        // Only a wildcard can contain every type within the bounds of a type parameter.
-        return false;
-      }
-      AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typeArg;
-      if (annotatedGenericCastType == null) {
-        annotatedGenericCastType = atypeFactory.getAnnotatedType(castElement);
-      }
-      AnnotatedTypeVariable typeParameter =
-          (AnnotatedTypeVariable) annotatedGenericCastType.getTypeArguments().get(i);
-      if (!typeHierarchy.isSubtype(typeParameter.getUpperBound(), wildcard.getExtendsBound())
-          || !typeHierarchy.isSubtype(wildcard.getSuperBound(), typeParameter.getLowerBound())) {
-        return false;
+      for (int i = 0; i < typeParameters.size(); i++) {
+        AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) typeParameters.get(i);
+        if (genericCastTypeAsExprType != null
+            && genericCastTypeAsExprType.contains((Type) typeParameter.getUnderlyingType())) {
+          // The type parameter appears in genericCastTypeAsExprType, so this type argument is
+          // checked; isCastSafeIncludingElementTypes compared it with exprType.
+          continue;
+        }
+        // The run-time check of a cast verifies only the class of the value, so in place of an
+        // unchecked type argument, the value may have any type argument within the bounds of
+        // its type parameter.  The type argument of castType must contain all of them.
+        AnnotatedTypeMirror typeArg = typeArgs.get(i);
+        if (typeArg.getKind() != TypeKind.WILDCARD) {
+          // Only a wildcard can contain every type within the bounds of a type parameter.
+          return false;
+        }
+        AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typeArg;
+        if (!typeHierarchy.isSubtype(typeParameter.getUpperBound(), wildcard.getExtendsBound())
+            || !typeHierarchy.isSubtype(wildcard.getSuperBound(), typeParameter.getLowerBound())) {
+          return false;
+        }
       }
     }
     return true;
