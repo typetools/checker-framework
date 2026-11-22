@@ -51,6 +51,16 @@ changed after creation.  A fixed-size data structure has no \<add> or
 support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
 
+An annotation such as \<@IndexFor("a")> or \<@SameLen("a")> is about the
+sequence that the variable \<a> currently refers to.  If \<a> is
+reassigned, then a refined type that names \<a> is discarded, and the
+assignment is an error (\<reassignment.invalidates.type>) if it might make
+false the declared type of a local variable or formal parameter that names
+\<a>.  For example, after \<a = c;>, a formal parameter declared as
+\<@IndexFor("a") int i> might not be an index for \<c>.  In a constructor,
+write \<@SameLen("\#2")> rather than naming the field that the constructor
+initializes.  See Section~\ref{java-expressions-reassignment}.
+
 To run the Index Checker, run either of these commands:
 
 \begin{alltt}

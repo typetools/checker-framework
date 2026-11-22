@@ -1446,6 +1446,56 @@ systems) ``\code{<self>}''.
 %% TODO: we might eventually have an @SpecField annotation
 
 
+\subsectionAndLabel{Reassigning a variable that a type names}{java-expressions-reassignment}
+
+A type that names a variable describes the variable's current value.  For
+example, \<@IndexFor("a") int i> states that \<i> is a valid index for the
+array that \<a> currently refers to.  If \<a> is reassigned, the type of
+\<i> refers to the new array, so the type might no longer be true.  The
+Checker Framework handles a reassignment as follows.
+
+\begin{itemize}
+\item
+  A refined type (Section~\ref{type-refinement}) that names the reassigned
+  variable is discarded.  For example, within the \<then> branch of
+  \code{if (i < a.length)}, the type of \<i> is refined to
+  \<@LTLengthOf("a")>; after \<a = c;>, the type of \<i> reverts to its
+  declared type.
+
+\item
+  An assignment to a variable that the declared type of a local variable or
+  formal parameter names is an error (\<reassignment.invalidates.type>),
+  unless the declared type still holds after the assignment.  The checker
+  replaces the reassigned variable by the assigned expression in the
+  declared type, then checks that the variable's current type is a subtype
+  of the result.  For example:
+
+\begin{Verbatim}
+  void m(@IndexFor("#2") int i, int[] a, int @SameLen("#2") [] b, int[] c) {
+    a = b;  // OK: b has the same length as a
+    a = c;  // error: i might not be an index for c, and c might not have the same length as b
+  }
+\end{Verbatim}
+
+  An increment, a decrement, a compound assignment such as \<a += 2>, and
+  an assignment whose right-hand side cannot be expressed as a Java
+  expression (such as a call to a method that is not deterministic, or
+  \<new int[n]>) is an error if a declared type names the reassigned
+  variable.  A self-assignment such as \<a = a> is always permitted.
+\end{itemize}
+
+In a constructor, a formal parameter's type that names a field refers to
+the field's value at the beginning of the constructor, which is the field's
+default value (such as \<null>), not to the value that the constructor
+assigns to the field.  Assigning the field is then an error.  To relate one
+formal parameter to another, name the other one with the \<\#> syntax,
+such as \<@SameLen("\#2")>.
+
+The checker does not check a reassignment against the declared type of a
+field, and it does not account for a method call that reassigns a field
+that a type names.
+
+
 \subsectionAndLabel{Limitations}{java-expressions-limitations}
 
 If you mention a class in a Java expression, then that class must be

@@ -7,6 +7,19 @@
 
 ### User-visible changes
 
+A type that names a variable is no longer trusted after the variable is
+reassigned.  A refined type that names the reassigned variable is discarded.  An
+assignment, increment, or compound assignment to a variable that the declared
+type of a local variable or formal parameter names is an error,
+`reassignment.invalidates.type`, unless the declared type still holds for the
+new value.  For example, after `a = c`, a formal parameter declared as
+`@IndexFor("a") int i` might not be an index for `c`.  This affects every type
+system with expressions in its annotations, such as the Index Checker and
+`@KeyFor`.  In a constructor, a formal parameter's type that names a field
+refers to the field's default value; to relate formal parameters, write `#2`
+rather than the field name.  See the manual section "Reassigning a variable that
+a type names".
+
 ### Changes for type system implementers
 
 A default that a type system registers for an element through
