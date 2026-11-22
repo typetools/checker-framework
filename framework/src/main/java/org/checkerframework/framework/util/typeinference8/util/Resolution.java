@@ -625,9 +625,8 @@ public final class Resolution {
     boundSet.removeCaptures(as);
     List<Variable> asList = new ArrayList<>();
     List<AbstractType> typeArg = new ArrayList<>();
-    // The instantiated variables outside `as` that the upper bounds of the fresh type variables
-    // contain.
-    Set<Variable> instantiatedOutsideAs = new LinkedHashSet<>();
+    // The variables that the upper bounds of the fresh type variables contain.
+    Set<Variable> upperBoundVars = new LinkedHashSet<>();
 
     for (Variable variable : as) {
       variable.getBounds().applyInstantiationsToBounds();
@@ -683,11 +682,7 @@ public final class Resolution {
               !u.getInferenceVariables().stream()
                   .allMatch(v -> as.contains(v) || v.getInstantiation() != null));
       for (AbstractType u : upperBounds) {
-        for (Variable v : u.getInferenceVariables()) {
-          if (!as.contains(v)) {
-            instantiatedOutsideAs.add(v);
-          }
-        }
+        upperBoundVars.addAll(u.getInferenceVariables());
       }
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
@@ -720,8 +715,15 @@ public final class Resolution {
       typeArg.add(freshTypeVar);
     }
 
+    // Every variable in an upper bound that is not replaced by a fresh type variable has an
+    // instantiation: either it is outside `as` (see the `removeIf` above), or it is in `as` but
+    // had an instantiation when the loop above reached it, so the loop skipped it.  Such a variable
+    // can be reached after the bound that contains it was examined, so this set is computed after
+    // the loop.
+    Set<Variable> instantiated = new LinkedHashSet<>(upperBoundVars);
+    asList.forEach(instantiated::remove);
     List<AbstractType> subsTypeArg =
-        context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList, instantiatedOutsideAs);
+        context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList, instantiated);
 
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {
