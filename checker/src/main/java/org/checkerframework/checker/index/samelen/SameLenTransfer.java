@@ -241,13 +241,15 @@ public class SameLenTransfer extends CFTransfer {
   /**
    * Returns {@code n}'s annotation from the SameLen hierarchy (see {@link #getAnno}), without the
    * expressions whose values might change after {@code n} is evaluated and before the comparison
-   * that contains {@code n} completes.
+   * that contains {@code n} completes (see {@link
+   * #containsExpressionChangedBeforeComparisonCompletes}).
    *
    * <p>The annotation of {@code n} relates {@code n} to the values that the expressions in the
-   * annotation had when {@code n} was evaluated. For example, in {@code a.length == ((b = new
-   * int[0]) == null ? c : c).length}, the type {@code @SameLen("b")} of {@code a} is about the array
-   * that {@code b} referred to before the right operand reassigned {@code b}, so the comparison
-   * does not imply that {@code b} has the same length as {@code c}.
+   * annotation had when {@code n} was evaluated. For example, in {@code b.length == (a =
+   * c).length}, where {@code b} has type {@code @SameLen("a")}, the result for {@code b} does not
+   * contain {@code a}, because after the comparison {@code a} refers to a different sequence. The
+   * writes that are considered include those of an assignment whose right-hand side is {@code n},
+   * as in {@code (a = b).length == c.length} where {@code b} has type {@code @SameLen("a")}.
    *
    * @param n a node in an operand of a comparison
    * @return {@code n}'s annotation from the SameLen hierarchy, without the expressions that might
@@ -260,17 +262,17 @@ public class SameLenTransfer extends CFTransfer {
         || !containsExpressionChangedBeforeComparisonCompletes(anno, n)) {
       return anno;
     }
-    List<String> kept = new ArrayList<>();
-    for (String expr :
-        AnnotationUtils.getElementValueArray(
-            anno, atypeFactory.sameLenValueElement, String.class)) {
+    List<String> unchanged = new ArrayList<>();
+    List<String> values =
+        AnnotationUtils.getElementValueArray(anno, atypeFactory.sameLenValueElement, String.class);
+    for (String value : values) {
       if (!containsExpressionChangedBeforeComparisonCompletes(
-          atypeFactory.createSameLen(Collections.singletonList(expr)), n)) {
-        kept.add(expr);
+          atypeFactory.createSameLen(Collections.singletonList(value)), n)) {
+        unchanged.add(value);
       }
     }
     // Removing elements preserves the alphabetical order that createSameLen requires.
-    return kept.isEmpty() ? UNKNOWN : atypeFactory.createSameLen(kept);
+    return unchanged.isEmpty() ? UNKNOWN : atypeFactory.createSameLen(unchanged);
   }
 
   /**

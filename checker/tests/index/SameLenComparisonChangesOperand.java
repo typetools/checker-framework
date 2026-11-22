@@ -2,6 +2,8 @@
 // changes the operand's value after evaluating it.  For example, if i is 12, then after the
 // comparison in changedLater, s is "ab3" but "x" + i is "x3".
 
+import org.checkerframework.dataflow.qual.Pure;
+
 public class SameLenComparisonChangesOperand {
 
   void changedLater(int i, String s) {
@@ -14,25 +16,56 @@ public class SameLenComparisonChangesOperand {
     }
   }
 
-  // If s is "a" and t is "bb", then after the comparison s is "xa", but "x" + s is "xxa".
-  void assignmentChangesItsRhs(String s, String t) {
-    if ((s = "x" + s).length() == t.length()) {
-      String u = "x" + s;
-      for (int k = 0; k < u.length(); k++) {
-        // :: error: (argument)
-        t.charAt(k);
-      }
-      for (int k = 0; k < s.length(); k++) {
-        t.charAt(k);
-      }
-    }
-  }
-
   void unchanged(int i, String s) {
     if (("x" + i).length() == s.length()) {
       String u = "x" + i;
       for (int k = 0; k < s.length(); k++) {
         u.charAt(k);
+      }
+    }
+  }
+
+  // After the assignment, s + "x" is one character longer than t.
+  void changedInAssignment(String s, String t) {
+    if ((s = s + "x").length() == t.length()) {
+      String u = s + "x";
+      for (int k = 0; k < u.length(); k++) {
+        // :: error: (argument)
+        t.charAt(k);
+      }
+    }
+  }
+
+  void unchangedInAssignment(String s, String t, String v) {
+    if ((s = v + "x").length() == t.length()) {
+      String u = v + "x";
+      for (int k = 0; k < u.length(); k++) {
+        t.charAt(k);
+      }
+    }
+  }
+
+  @Pure
+  static int[] keepSecond(int[] x, int[] y) {
+    return y;
+  }
+
+  // The type of a is @SameLen("c") when a is evaluated, but the right operand then reassigns c.
+  void staleNameInType(int[] a, int[] b) {
+    int[] c = a;
+    if (a.length == keepSecond(c = new int[0], b).length) {
+      for (int k = 0; k < a.length; k++) {
+        // :: error: (array.access.unsafe.high)
+        c[k] = 0;
+      }
+    }
+  }
+
+  void unchangedNameInType(int[] a, int[] b, int[] d) {
+    int[] c = a;
+    if (a.length == keepSecond(d = new int[0], b).length) {
+      for (int k = 0; k < a.length; k++) {
+        c[k] = 0;
       }
     }
   }

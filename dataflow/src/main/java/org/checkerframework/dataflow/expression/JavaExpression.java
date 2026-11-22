@@ -407,6 +407,46 @@ public abstract class JavaExpression {
   }
 
   //
+  // Printing
+  //
+
+  /**
+   * Returns the printed form of this expression, as it should appear immediately before a postfix
+   * operation, such as a method call {@code .m()} or an array access {@code [i]}. The result is
+   * parenthesized unless this is an expression that the postfix operation cannot regroup. For
+   * example, the binary operation {@code a + b} yields {@code (a + b)}, so that a method call on it
+   * prints as {@code (a + b).trim()} rather than as {@code a + b.trim()}, which means something
+   * different; and the numeric literal {@code 5} yields {@code (5)}, because {@code 5.intValue()}
+   * does not parse.
+   *
+   * @return the printed form of this expression, parenthesized if a postfix operation could regroup
+   *     it
+   */
+  @Pure
+  public String toStringAsPostfixOperand() {
+    boolean needsParentheses;
+    if (this instanceof LocalVariable
+        || this instanceof FormalParameter
+        || this instanceof FieldAccess
+        || this instanceof MethodCall
+        || this instanceof ArrayAccess
+        || this instanceof ThisReference
+        || this instanceof SuperReference
+        || this instanceof ClassName) {
+      needsParentheses = false;
+    } else if (this instanceof ValueLiteral valueLiteral) {
+      // A numeric literal can be negative, as in `-1.intValue()`, or can absorb the dot, as in
+      // `5.intValue()`.  Other literals, such as `"abc"`, `'c'`, `true`, and `null`, are atomic.
+      needsParentheses = valueLiteral.getValue() instanceof Number;
+    } else {
+      // For example, a binary or unary operation, an array creation, or an unknown expression such
+      // as a cast or a conditional expression.
+      needsParentheses = true;
+    }
+    return needsParentheses ? "(" + this + ")" : toString();
+  }
+
+  //
   // Visitor and debugging
   //
 
