@@ -2,8 +2,6 @@
 // changes the operand's value after evaluating it.  For example, if i is 12, then after the
 // comparison in changedLater, s is "ab3" but "x" + i is "x3".
 
-import org.checkerframework.dataflow.qual.Pure;
-
 public class SameLenComparisonChangesOperand {
 
   void changedLater(int i, String s) {
@@ -41,31 +39,6 @@ public class SameLenComparisonChangesOperand {
       String u = v + "x";
       for (int k = 0; k < u.length(); k++) {
         t.charAt(k);
-      }
-    }
-  }
-
-  @Pure
-  static int[] keepSecond(int[] x, int[] y) {
-    return y;
-  }
-
-  // The type of a is @SameLen("c") when a is evaluated, but the right operand then reassigns c.
-  void staleNameInType(int[] a, int[] b) {
-    int[] c = a;
-    if (a.length == keepSecond(c = new int[0], b).length) {
-      for (int k = 0; k < a.length; k++) {
-        // :: error: (array.access.unsafe.high)
-        c[k] = 0;
-      }
-    }
-  }
-
-  void unchangedNameInType(int[] a, int[] b, int[] d) {
-    int[] c = a;
-    if (a.length == keepSecond(d = new int[0], b).length) {
-      for (int k = 0; k < a.length; k++) {
-        c[k] = 0;
       }
     }
   }

@@ -211,11 +211,19 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     if (intLiteral == 0) {
       if (atypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-        insertForNodesWithValueOf(otherNode, POS, store);
+        List<Node> internals = nodesWithValueOf(otherNode);
+        for (Node internal : internals) {
+          JavaExpression je = JavaExpression.fromNode(internal);
+          store.insertValue(je, POS);
+        }
       }
     } else if (intLiteral == -1) {
       if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-        insertForNodesWithValueOf(otherNode, NN, store);
+        List<Node> internals = nodesWithValueOf(otherNode);
+        for (Node internal : internals) {
+          JavaExpression je = JavaExpression.fromNode(internal);
+          store.insertValue(je, NN);
+        }
       }
     }
   }
@@ -267,7 +275,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
         .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
-      insertForNodesWithValueOf(otherNode, POS, store);
+      store.insertValue(otherJe, POS);
     }
   }
 
@@ -293,29 +301,19 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
-    AnnotationMirror newLBType;
+    JavaExpression leftJe = JavaExpression.fromNode(left);
+
     if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
-      newLBType = NN;
-    } else if (AnnotationUtils.areSame(rightAnno, NN) || AnnotationUtils.areSame(rightAnno, POS)) {
-      newLBType = POS;
-    } else {
+      store.insertValue(leftJe, NN);
       return;
     }
-    insertForNodesWithValueOf(left, newLBType, store);
-  }
-
-  /**
-   * Inserts the given annotation into the store for each node that has the value of {@code node}
-   * when the comparison that contains it completes. Does not insert it for {@code node} if a later
-   * part of the comparison might change its value, as in {@code i > (i = 0)}.
-   *
-   * @param node an operand of a comparison
-   * @param anno the annotation to insert
-   * @param store the store to modify
-   */
-  private void insertForNodesWithValueOf(Node node, AnnotationMirror anno, CFStore store) {
-    for (Node internal : nodesWithValueOf(node)) {
-      store.insertValue(JavaExpression.fromNode(internal), anno);
+    if (AnnotationUtils.areSame(rightAnno, NN)) {
+      store.insertValue(leftJe, POS);
+      return;
+    }
+    if (AnnotationUtils.areSame(rightAnno, POS)) {
+      store.insertValue(leftJe, POS);
+      return;
     }
   }
 
@@ -340,12 +338,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
+    JavaExpression leftJe = JavaExpression.fromNode(left);
+
     AnnotationMirror newLBType =
         atypeFactory
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    insertForNodesWithValueOf(left, newLBType, store);
+    store.insertValue(leftJe, newLBType);
   }
 
   /**

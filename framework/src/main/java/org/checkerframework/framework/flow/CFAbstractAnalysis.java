@@ -124,8 +124,8 @@ public abstract class CFAbstractAnalysis<
    * argument and on the trees around the argument's tree, but which would otherwise be recomputed
    * once per dataflow iteration per comparison.
    *
-   * <p>The keys are nodes of a single control flow graph, so {@link #initFields} clears this.
-   * This is an {@link IdentityHashMap} because the result depends on the trees around the node, but
+   * <p>The keys are nodes of a single control flow graph, so {@link #initFields} clears this. This
+   * is an {@link IdentityHashMap} because the result depends on the trees around the node, but
    * {@link Node#equals} can be true for nodes that represent different trees.
    */
   final IdentityHashMap<Node, List<Node>> nodesWithValueOfCache = new IdentityHashMap<>();

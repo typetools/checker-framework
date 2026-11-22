@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -191,75 +190,20 @@ public class SameLenTransfer extends CFTransfer {
    * @param store the store in which to perform refinement
    */
   private void refineEq(Node left, Node right, CFStore store) {
-    TreePath currentPath = atypeFactory.getPath(left.getTree());
-    if (currentPath == null) {
-      // propagateCombinedSameLen would do nothing.
-      return;
-    }
     List<JavaExpression> exprs = new ArrayList<>(2);
     List<AnnotationMirror> annos = new ArrayList<>(2);
-    addOperandSameLens(left, currentPath, exprs, annos);
-    addOperandSameLens(right, currentPath, exprs, annos);
+    for (Node internal : nodesWithValueOf(left)) {
+      exprs.add(JavaExpression.fromNode(internal));
+      annos.add(getAnno(internal));
+    }
+    for (Node internal : nodesWithValueOf(right)) {
+      exprs.add(JavaExpression.fromNode(internal));
+      annos.add(getAnno(internal));
+    }
 
     AnnotationMirror combinedSameLen = atypeFactory.createCombinedSameLen(exprs, annos);
 
     propagateCombinedSameLen(combinedSameLen, left, store);
-  }
-
-  /**
-   * Adds to {@code exprs} the expressions that have the value of {@code operand} when the
-   * comparison completes, and adds their SameLen annotations to {@code annos}.
-   *
-   * <p>Each annotation was computed when its expression was evaluated. It omits each name whose
-   * expression {@code operand} or the rest of the comparison might change, because such a name
-   * might not have the same length when the comparison completes. For example, in {@code a.length
-   * == f(c = new int[0], b).length}, if the type of {@code a} is {@code @SameLen("c")}, the
-   * annotation that this method adds for {@code a} omits {@code c}.
-   *
-   * @param operand an operand of a comparison, possibly an assignment
-   * @param currentPath the path at which to parse the expressions in SameLen annotations
-   * @param exprs the list of expressions to add to
-   * @param annos the list of annotations to add to, in parallel with {@code exprs}
-   */
-  private void addOperandSameLens(
-      Node operand,
-      TreePath currentPath,
-      List<JavaExpression> exprs,
-      List<AnnotationMirror> annos) {
-    // Computed lazily, because computing it can be costly and most annotations name nothing.
-    Predicate<JavaExpression> mayBeChanged = null;
-    for (Node internal : nodesWithValueOf(operand)) {
-      exprs.add(JavaExpression.fromNode(internal));
-      AnnotationMirror anno = getAnno(internal);
-      if (anno != null && atypeFactory.areSameByClass(anno, SameLen.class)) {
-        List<String> names =
-            AnnotationUtils.getElementValueArray(
-                anno, atypeFactory.sameLenValueElement, String.class);
-        if (!names.isEmpty()) {
-          if (mayBeChanged == null) {
-            mayBeChanged = mayBeChangedByOrAfter(operand);
-          }
-          List<String> unchangedNames = new ArrayList<>(names.size());
-          for (String name : names) {
-            JavaExpression je;
-            try {
-              je = atypeFactory.parseJavaExpressionString(name, currentPath);
-            } catch (JavaExpressionParseException e) {
-              // The name cannot be checked, and propagateCombinedSameLen would skip it anyway.
-              continue;
-            }
-            if (!mayBeChanged.test(je)) {
-              unchangedNames.add(name);
-            }
-          }
-          if (unchangedNames.size() != names.size()) {
-            // `unchangedNames` is a sublist of `names`, so it is in alphabetical order.
-            anno = atypeFactory.createSameLen(unchangedNames);
-          }
-        }
-      }
-      annos.add(anno);
-    }
   }
 
   /**

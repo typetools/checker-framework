@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -151,6 +151,12 @@ public abstract class CFAbstractTransfer<
   private final ExecutableElement objectToString;
 
   /**
+   * The method {@code String.length()}, whose result depends only on its receiver, because a {@code
+   * String} is immutable.
+   */
+  private final ExecutableElement stringLength;
+
+  /**
    * Creates a CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
@@ -175,6 +181,7 @@ public abstract class CFAbstractTransfer<
         !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
     this.infer = analysis.checker.hasOption("infer");
     this.objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
+    this.stringLength = TreeUtils.getMethod("java.lang.String", "length", 0, analysis.getEnv());
   }
 
   /**
@@ -1010,10 +1017,11 @@ public abstract class CFAbstractTransfer<
    *       evaluated before {@code b[i]}.
    * </ul>
    *
-   * A method call, object creation, or string conversion (which calls {@code toString()}) might
-   * write any field or array element, unless the method or constructor is side-effect-free (see
-   * {@link AnnotatedTypeFactory#isSideEffectFree}). The result omits a field that such a call might
-   * write even when the store would keep the field's refinement across the call, as it does for a
+   * A method call, object creation, string conversion (which calls {@code toString()}), or record
+   * pattern (which calls record component accessors) might write any field or array element, unless
+   * the method or constructor is side-effect-free (see {@link
+   * AnnotatedTypeFactory#isSideEffectFree}). The result omits a field that such a call might write
+   * even when the store would keep the field's refinement across the call, as it does for a
    * refinement to the target of a monotonic qualifier (see {@link
    * org.checkerframework.framework.qual.MonotonicQualifier}): whether the store keeps a refinement
    * depends on the refined value, which this method does not know.
@@ -1095,30 +1103,6 @@ public abstract class CFAbstractTransfer<
     return CFAbstractStore.canInsertJavaExpression(expr)
         || ((expr instanceof UnaryOperation || expr instanceof BinaryOperation)
             && !expr.containsUnknown());
-  }
-
-  /**
-   * Returns a predicate that is true of each expression whose value, when the comparison that
-   * contains {@code node} completes, might differ from its value before {@code node} was evaluated.
-   * The value can differ if {@code node} itself, or the code that is evaluated after {@code node}
-   * and before the comparison completes, writes a variable, field, or array element that the
-   * expression reads. See {@link #nodesWithValueOf} for details.
-   *
-   * <p>A client can use this to discard information, computed when {@code node} was evaluated,
-   * that mentions other expressions. For example, the SameLen Checker uses it to discard the names
-   * in the {@code @SameLen} type of an operand that are not valid when the comparison completes.
-   *
-   * @param node a node in an operand of a comparison, possibly an assignment
-   * @return a predicate that is true of each expression that evaluating {@code node} and the rest
-   *     of the comparison might change
-   */
-  protected Predicate<JavaExpression> mayBeChangedByOrAfter(Node node) {
-    WrittenLocations written = locationsWrittenUntilComparison(node);
-    TreePath path = sourcePath(node);
-    if (path != null) {
-      written.scan(path.getLeaf(), null);
-    }
-    return expr -> written.mayChange(expr, false);
   }
 
   /**
@@ -1325,9 +1309,10 @@ public abstract class CFAbstractTransfer<
    * field, or an array element, such as {@code x}, {@code o.f}, or {@code a[i]}. {@link #add} adds
    * a write to a given location, and {@link #scan} adds the writes that evaluating a tree might
    * perform: its assignments, compound assignments, increments, decrements, method calls, object
-   * creations, and string conversions. A method call, object creation, or string conversion (which
-   * calls {@code toString()}) might write every non-final field and every array element, unless the
-   * method or constructor is side-effect-free; {@link #anyHeapLocation} records that.
+   * creations, string conversions, and record patterns. A method call, object creation, string
+   * conversion (which calls {@code toString()}), or record pattern (which calls record component
+   * accessors) might write every non-final field and every array element, unless the method or
+   * constructor is side-effect-free; {@link #anyHeapLocation} records that.
    *
    * <p>{@link #scan} does not descend into lambda bodies or class bodies, because they do not
    * execute when the tree is evaluated. The writes of such a body to fields and array elements are
@@ -1382,7 +1367,8 @@ public abstract class CFAbstractTransfer<
     /**
      * Adds the writes that the given tree performs itself, after its subtrees are evaluated: the
      * write of an assignment, compound assignment, increment, or decrement, and the writes of a
-     * method call, object creation, or string conversion. Does not add the writes of the subtrees.
+     * method call, object creation, string conversion, or record pattern. Does not add the writes
+     * of the subtrees.
      *
      * @param tree a tree
      */
@@ -1409,6 +1395,31 @@ public abstract class CFAbstractTransfer<
         addCall(TreeUtils.elementFromUse(newClassTree));
       } else if (tree instanceof BinaryTree binaryTree && tree.getKind() == Tree.Kind.PLUS) {
         addStringConversions(binaryTree.getLeftOperand(), binaryTree.getRightOperand());
+      } else if (TreeUtils.isDeconstructionPatternTree(tree)) {
+        addRecordAccessorCalls(tree);
+      }
+    }
+
+    /**
+     * Adds the writes of the calls to record component accessors that matching the given record
+     * pattern performs, such as the call to {@code x()} when matching {@code R(var x)}. The writes
+     * of nested record patterns are added when they are scanned.
+     *
+     * @param deconstructionPattern a record pattern (a {@code DeconstructionPatternTree})
+     */
+    private void addRecordAccessorCalls(Tree deconstructionPattern) {
+      TypeElement record = TypesUtils.getTypeElement(TreeUtils.typeOf(deconstructionPattern));
+      if (record == null || record.getKind() != ElementKind.RECORD) {
+        anyHeapLocation = true;
+        return;
+      }
+      for (RecordComponentElement component : record.getRecordComponents()) {
+        ExecutableElement accessor = component.getAccessor();
+        if (accessor == null) {
+          anyHeapLocation = true;
+        } else {
+          addCall(accessor);
+        }
       }
     }
 
@@ -1503,7 +1514,8 @@ public abstract class CFAbstractTransfer<
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
      * element changes only accesses of arrays that might alias the written array, and method calls.
-     * If side effects unrefine aliases (see {@link
+     * A call to {@code String.length()} changes only if its receiver changes, because a {@code
+     * String} is immutable. If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes every expression whose abstract value other code can modify (see {@link
      * JavaExpression#isModifiableByOtherCode}).
@@ -1536,6 +1548,9 @@ public abstract class CFAbstractTransfer<
             || mayChange(aa.getArray(), false)
             || mayChange(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
+        if (mc.getElement().equals(stringLength)) {
+          return mayChange(mc.getReceiver(), false);
+        }
         if (anyHeapLocation
             || !fields.isEmpty()
             || !arrayElements.isEmpty()
