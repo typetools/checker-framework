@@ -9,12 +9,16 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreeScanner;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -27,6 +31,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
@@ -103,6 +108,9 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
+  /** The type {@code java.lang.NullPointerException}. */
+  private final TypeMirror nullPointerExceptionType;
+
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -139,6 +147,9 @@ public class NullnessTransfer
             .getTypeFactory()
             .getChecker()
             .getBooleanOption("invocationPreservesArgumentNullness", true);
+
+    nullPointerExceptionType =
+        TypesUtils.typeFromClass(NullPointerException.class, analysis.getTypes(), elements);
   }
 
   /**
@@ -399,7 +410,9 @@ public class NullnessTransfer
    *
    * <p>When the flag is turned off, the analysis is sound: it checks that the method is
    * SideEffectFree or the receiver is unassignable. Only if either one of the two is true is the
-   * receiver made non-null. Similar logic is applied to the arguments of the invocation.
+   * receiver made non-null. The receiver is also made non-null if the method is annotated {@link
+   * org.checkerframework.framework.qual.DoesNotUnrefineReceiver}. Similar logic is applied to the
+   * arguments of the invocation.
    *
    * <p>The receiver of a static method invocation is never made non-null, because the invocation
    * does not dereference it.
@@ -414,8 +427,6 @@ public class NullnessTransfer
   @Override
   public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<NullnessValue, NullnessStore> in) {
-    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
-
     MethodInvocationTree tree = n.getTree();
     ExecutableElement method = n.getTarget().getMethod();
 
@@ -430,15 +441,32 @@ public class NullnessTransfer
     // before the arguments, so it is skipped if evaluating the arguments might reassign the
     // receiver expression, as in `r.m(r = null)`.  It is also skipped for a synthetic invocation
     // that has no tree, whose arguments cannot be examined.
+    // A method annotated @DoesNotUnrefineReceiver does not reassign its receiver expression.
     JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
-    if (!n.getTarget().isStatic()
-        && (nonNullAssumptionAfterInvocation
-            || isMethodSideEffectFree
-            || !receiverExpr.isAssignableByOtherCode())
-        && tree != null
-        && !argumentsMayReassign(tree.getArguments(), receiverExpr)) {
+    boolean refineReceiver =
+        !n.getTarget().isStatic()
+            && (nonNullAssumptionAfterInvocation
+                || isMethodSideEffectFree
+                || atypeFactory.hasDoesNotUnrefineReceiver(method)
+                || !receiverExpr.isAssignableByOtherCode())
+            && tree != null
+            && !argumentsMayReassign(tree.getArguments(), receiverExpr);
+
+    // The exceptional successors of the invocation get the store before the invocation, which
+    // super.visitMethodInvocation modifies in place.  So, copy it first.
+    @Nullable NullnessStore storeBeforeInvocation =
+        refineReceiver && n.getBlock() instanceof ExceptionBlock
+            ? in.getRegularStore().copy()
+            : null;
+
+    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
+
+    if (refineReceiver) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
+      if (storeBeforeInvocation != null) {
+        result = refineReceiverOnExceptionalSuccessors(n, result, storeBeforeInvocation);
+      }
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
@@ -485,6 +513,52 @@ public class NullnessTransfer
   }
 
   /**
+   * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
+   * on each exceptional successor whose exception type excludes {@code NullPointerException}, such
+   * as a handler for a checked exception that the invoked method declares. An exception of such a
+   * type comes from the invoked method, which the invocation entered only because the receiver is
+   * non-null.
+   *
+   * <p>The receiver remains unrefined on the other exceptional successors. That loses no precision
+   * for an invocation in source code, because its {@code NullPointerException} for a null receiver
+   * comes from its {@code MethodAccessNode}, and every handler that such an edge of {@code n}
+   * reaches also catches that {@code NullPointerException}. But it is necessary for a synthetic
+   * invocation, such as the {@code iterator()} call of an enhanced {@code for} loop, which can
+   * throw that {@code NullPointerException} itself.
+   *
+   * @param n a method invocation whose receiver should be refined
+   * @param result the transfer result for {@code n}
+   * @param storeBefore the store before {@code n}; is not side-effected
+   * @return a transfer result like {@code result}, with the receiver refined on some exceptional
+   *     successors
+   */
+  private TransferResult<NullnessValue, NullnessStore> refineReceiverOnExceptionalSuccessors(
+      MethodInvocationNode n,
+      TransferResult<NullnessValue, NullnessStore> result,
+      NullnessStore storeBefore) {
+    if (!(n.getBlock() instanceof ExceptionBlock exceptionBlock)) {
+      return result;
+    }
+    Node receiver = n.getTarget().getReceiver();
+    Map<TypeMirror, NullnessStore> oldExceptionalStores = result.getExceptionalStores();
+    Map<TypeMirror, NullnessStore> newExceptionalStores =
+        oldExceptionalStores == null ? new HashMap<>() : new HashMap<>(oldExceptionalStores);
+    boolean refined = false;
+    for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
+      if (analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
+        continue;
+      }
+      NullnessStore exceptionalStore = newExceptionalStores.get(exceptionType);
+      NullnessStore refinedStore =
+          (exceptionalStore == null ? storeBefore : exceptionalStore).copy();
+      makeNonNull(refinedStore, receiver);
+      newExceptionalStores.put(exceptionType, refinedStore);
+      refined = true;
+    }
+    return refined ? result.withExceptionalStores(newExceptionalStores) : result;
+  }
+
+  /**
    * Returns true if evaluating the given method arguments might reassign the given receiver
    * expression or a subexpression of it. The "receiver" may also be an earlier argument of the
    * invocation. This is conservative. It returns true if an argument assigns any part of the
@@ -493,6 +567,10 @@ public class NullnessTransfer
    * returns true if an argument assigns a non-local variable or (unless {@link
    * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
+   *
+   * <p>Matching a record pattern, as in {@code o instanceof R(int i)}, implicitly invokes the
+   * record's component accessors. This method handles them as it handles explicit method
+   * invocations.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
    * arguments. Evaluating the arguments executes such a body only through a method or constructor
@@ -556,6 +634,19 @@ public class NullnessTransfer
                 || super.visitNewClass(tree, p);
           }
 
+          // Matching a record pattern implicitly invokes the record's component accessors.
+          // TreeScanner has no visitDeconstructionPattern method before Java 21, so this method
+          // overrides scan instead.
+          @Override
+          public Boolean scan(@Nullable Tree tree, Void p) {
+            if (tree != null
+                && tree.getKind().name().equals("DECONSTRUCTION_PATTERN")
+                && recordPatternMayHaveSideEffect(tree)) {
+              return true;
+            }
+            return super.scan(tree, p);
+          }
+
           // visitMethodInvocation and visitNewClass handle the invocations that execute the body
           // of a lambda expression or anonymous class.
 
@@ -588,6 +679,27 @@ public class NullnessTransfer
               return true;
             }
             return receiverMayChangeByOtherCode && !(assigned instanceof LocalVariable);
+          }
+
+          /*
+           * Returns true if matching the given record pattern might reassign the receiver, by
+           * invoking one of the record's component accessors.  Does not examine nested patterns;
+           * scan visits them.
+           *
+           * @param recordPattern a record pattern (a deconstruction pattern)
+           * @return true if matching {@code recordPattern} might reassign the receiver
+           */
+          private boolean recordPatternMayHaveSideEffect(Tree recordPattern) {
+            TypeElement recordElement = TypesUtils.getTypeElement(TreeUtils.typeOf(recordPattern));
+            if (recordElement == null) {
+              return receiverMayChangeByOtherCode && !nonNullAssumptionAfterInvocation;
+            }
+            for (RecordComponentElement component : recordElement.getRecordComponents()) {
+              if (mayHaveSideEffect(component.getAccessor())) {
+                return true;
+              }
+            }
+            return false;
           }
 
           /*

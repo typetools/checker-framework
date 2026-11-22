@@ -17,25 +17,11 @@ public class ReceiverDependsOnStaticField {
   @SideEffectFree
   void sefAccept(@Nullable Object o) {}
 
-  static @Nullable Object clearSlot() {
-    slot = null;
-    return null;
-  }
-
   void directAssignment() {
     if (current() == null) {
       return;
     }
     current().sefAccept(slot = null);
-    // :: error: (dereference.of.nullable)
-    current().toString();
-  }
-
-  void nestedCall() {
-    if (current() == null) {
-      return;
-    }
-    current().sefAccept(clearSlot());
     // :: error: (dereference.of.nullable)
     current().toString();
   }

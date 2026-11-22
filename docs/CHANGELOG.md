@@ -47,6 +47,10 @@ Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
 `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
 conversion does.
 
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
