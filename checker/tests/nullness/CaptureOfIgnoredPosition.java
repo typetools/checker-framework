@@ -24,10 +24,12 @@ public class CaptureOfIgnoredPosition {
       Box<@NonNull U> nonNullU, Box<@Nullable U> nullableU, @NonNull U nn, @Nullable U nble) {
     // :: error: (dereference.of.nullable)
     get0(listOf(nonNullU, nble)).toString();
-    // TODO: This is a false positive.  Capture conversion of the argument's type makes the ignored
-    // position the upper bound of a captured type variable, and the result of capture conversion
-    // (see ProperType#create) does not record ignored positions, so the ignored annotation,
-    // @Nullable, is compared as a real annotation.
+    // TODO: This is a false positive.  Capture conversion of the argument's type makes the
+    // ignored
+    // position the upper bound of a captured type variable, and the result of capture
+    // conversion does not record ignored positions, so the ignored annotation,
+    // @Nullable, is
+    // compared as a real annotation.
     // :: error: (dereference.of.nullable)
     get0(listOfN(nullableU, nn)).toString();
 
