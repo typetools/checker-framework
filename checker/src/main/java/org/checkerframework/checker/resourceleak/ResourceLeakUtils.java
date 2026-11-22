@@ -370,6 +370,8 @@ public final class ResourceLeakUtils {
   /**
    * Returns the list of mustcall obligations for the given {@code TypeMirror} upper bound (either
    * the type variable itself if it is concrete or the upper bound if its a wildcard or generic).
+   * The upper bound of a type variable or wildcard may itself be a type variable, as for {@code T}
+   * in {@code <R extends Closeable, T extends R>}; this method uses its upper bound in turn.
    *
    * <p>If the type variable has no upper bound, for instance if it is a wildcard with no extends
    * clause the method returns null.
@@ -381,17 +383,21 @@ public final class ResourceLeakUtils {
    */
   public static @Nullable List<String> getMcValues(
       TypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
-    if (type instanceof TypeVariable) {
-      // a generic - replace with upper bound and return null if it has no upper bound
-      type = ((TypeVariable) type).getUpperBound();
+    // Replace a type variable or wildcard with its upper bound, until the type is neither or the
+    // bound is annotated, as in `T extends @MustCall("close") R`.
+    while (type instanceof TypeVariable || type instanceof WildcardType) {
+      if (type instanceof TypeVariable typeVariable) {
+        type = typeVariable.getUpperBound();
+      } else {
+        type = ((WildcardType) type).getExtendsBound();
+      }
       if (type == null) {
+        // There is no upper bound, as for a wildcard with no extends clause.
         return null;
       }
-    } else if (type instanceof WildcardType) {
-      // a wildcard - replace with upper bound and return null if it has no upper bound
-      type = ((WildcardType) type).getExtendsBound();
-      if (type == null) {
-        return null;
+      if (AnnotationUtils.containsSameByClass(type.getAnnotationMirrors(), MustCall.class)
+          || hasManualMustCallUnknownAnno(type)) {
+        break;
       }
     }
 

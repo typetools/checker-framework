@@ -198,6 +198,10 @@ public class CollectionOwnershipTransfer
       switch (rhsType) {
         case OwningCollection, OwningCollectionWithoutObligation -> {
           JavaExpression rhsJE = JavaExpression.fromNode(rhs);
+          if (lhsJE.equals(rhsJE)) {
+            // A self-assignment, such as `list = list`, does not move ownership.
+            break;
+          }
           if (node.isDesugaredFromEnhancedArrayForLoop()
               || (node.getExpression().getTree() instanceof ExpressionTree rhsTree
                   && atypeFactory.isOwningCollectionField(rhsTree))) {
@@ -472,7 +476,9 @@ public class CollectionOwnershipTransfer
         super.visitObjectCreation(node, input);
     updateStoreWithTempVar(result, node);
 
-    ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
+    // For an anonymous class, use the superclass constructor, whose parameters correspond to the
+    // arguments.  The anonymous class's constructor may have an extra enclosing-instance parameter.
+    ExecutableElement constructor = TreeUtils.getSuperConstructor(node.getTree());
     result = transferOwnershipForMethodInvocation(constructor, args, argTypes, result);
 
     // The return value defaulting logic cannot recognize that a diamond-constructed collection

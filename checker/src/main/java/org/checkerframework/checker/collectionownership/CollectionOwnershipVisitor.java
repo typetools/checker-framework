@@ -411,20 +411,25 @@ public class CollectionOwnershipVisitor
               + ElementUtils.getQualifiedName(enclosingElement)
               + " has an empty @MustCall annotation";
     } else {
+      // A @MustCall value is a method name, and a call to any overload with that name satisfies
+      // the obligation.  So a must-call method destructs the field only if every overload with
+      // its name in the class is annotated @CollectionFieldDestructor for the field.
       List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
-      for (Element siblingElement : siblingsOfOwningField) {
-        if (siblingElement.getKind() == ElementKind.METHOD
-            && enclosingMustCallValues.contains(siblingElement.getSimpleName().toString())) {
-
-          ExecutableElement siblingMethod = (ExecutableElement) siblingElement;
-
-          List<String> destructedFields =
-              atypeFactory.getCollectionFieldDestructorAnnoFields(siblingMethod);
-          for (String destructedFieldName : destructedFields) {
-            if (atypeFactory.expressionIsFieldAccess(destructedFieldName, fieldElement)) {
-              return;
+      for (String mustCallMethodName : enclosingMustCallValues) {
+        boolean hasOverload = false;
+        boolean allOverloadsDestructField = true;
+        for (Element siblingElement : siblingsOfOwningField) {
+          if (siblingElement.getKind() == ElementKind.METHOD
+              && siblingElement.getSimpleName().contentEquals(mustCallMethodName)) {
+            hasOverload = true;
+            if (!destructsField((ExecutableElement) siblingElement, fieldElement)) {
+              allOverloadsDestructField = false;
+              break;
             }
           }
+        }
+        if (hasOverload && allOverloadsDestructField) {
+          return;
         }
       }
       error =
@@ -438,5 +443,22 @@ public class CollectionOwnershipVisitor
         fieldTree.getName().toString(),
         MustCallConsistencyAnalyzer.formatMissingMustCallMethods(mustCallValues),
         error);
+  }
+
+  /**
+   * Returns true if the given method is annotated {@code @CollectionFieldDestructor} for the given
+   * field of {@code this}.
+   *
+   * @param method a method
+   * @param field a field
+   * @return true if {@code method} is a {@code @CollectionFieldDestructor} for {@code field}
+   */
+  private boolean destructsField(ExecutableElement method, VariableElement field) {
+    for (String destructedFieldName : atypeFactory.getCollectionFieldDestructorAnnoFields(method)) {
+      if (atypeFactory.expressionIsFieldAccess(destructedFieldName, field)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

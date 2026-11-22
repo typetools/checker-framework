@@ -78,6 +78,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -157,6 +158,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The {@code Iterator.hasNext()} method. */
   private final ExecutableElement iteratorHasNext =
       TreeUtils.getMethod("java.util.Iterator", "hasNext", 0, processingEnv);
+
+  /** The {@code List.get(int)} method. */
+  private final ExecutableElement listGet =
+      TreeUtils.getMethod("java.util.List", "get", 1, processingEnv);
 
   /** The {@code Collection.size()} and {@code Map.size()} methods. */
   private final List<ExecutableElement> sizeMethods =
@@ -603,6 +608,21 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
+   * Returns the argument of the given invocation of {@code List.get(int)} or of a method that
+   * overrides it, such as {@code i} for {@code list.get(i)}.
+   *
+   * @param tree a tree
+   * @return the index argument if {@code tree} is an invocation of {@code List.get(int)}, otherwise
+   *     null
+   */
+  @Nullable ExpressionTree getListGetIndex(Tree tree) {
+    if (TreeUtils.isMethodInvocation(tree, listGet, processingEnv)) {
+      return ((MethodInvocationTree) tree).getArguments().get(0);
+    }
+    return null;
+  }
+
+  /**
    * Returns true if the given tree is an invocation of {@code Collection.size()}, {@code
    * Map.size()}, or a method that overrides one of them.
    *
@@ -671,7 +691,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (element.isEmpty()) {
       return numParams - 1;
     }
-    int paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    int paramIndex;
+    try {
+      paramIndex = JavaExpressionParseUtil.parameterIndex(element) - 1;
+    } catch (NumberFormatException e) {
+      // The parameter number is too large to be an int, so it names no parameter.
+      return -1;
+    }
     return paramIndex >= 0 && paramIndex < numParams ? paramIndex : -1;
   }
 
@@ -718,8 +744,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     // If the inserted element is a parameter, and it has no explicit @Owning annotation, then it's
-    // definitely not owning.
-    if (insertedElement != null && insertedElement.getKind() == ElementKind.PARAMETER) {
+    // definitely not owning.  This holds only if the parameter still holds the argument; a
+    // reassigned parameter is classified by the checks below.
+    if (insertedElement != null
+        && insertedElement.getKind() == ElementKind.PARAMETER
+        && ElementUtils.isEffectivelyFinal(insertedElement)) {
       return !rlAtf.hasOwning(insertedElement)
           ? CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING
           : CollectionMutatorArgumentKind.MAY_BE_OWNING;
@@ -907,7 +936,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given expression {@code e} refers to {@code this.field}.
+   * Returns true if the given expression {@code e} refers to {@code this.field}, such as {@code
+   * "field"} or {@code "this.field"}, but not {@code "other.field"}.
    *
    * @param e the expression
    * @param field the field
@@ -916,7 +946,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
   public boolean expressionIsFieldAccess(String e, VariableElement field) {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
-      return je instanceof FieldAccess fieldAccess && fieldAccess.getField().equals(field);
+      return je instanceof FieldAccess fieldAccess
+          && fieldAccess.getField().equals(field)
+          && (fieldAccess.getReceiver() instanceof ThisReference || fieldAccess.isStatic());
     } catch (JavaExpressionParseException ex) {
       // The parsing error will be reported elsewhere, assuming e was derived from an
       // annotation.
@@ -963,7 +995,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
         super.replace(type, replacements);
         return;
       }
-      AnnotationMirrorMap<AnnotationMirror> notOwning = new AnnotationMirrorMap<>(replacements);
+      AnnotationMirrorMap<AnnotationMirror> notOwning = new AnnotationMirrorMap<>();
+      notOwning.putAll(replacements);
       notOwning.put(POLY, NOTOWNINGCOLLECTION);
       super.replace(type, notOwning);
     }

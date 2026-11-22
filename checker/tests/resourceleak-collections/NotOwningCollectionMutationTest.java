@@ -211,8 +211,9 @@ class NotOwningCollectionMutationTest {
   }
 
   /*
-   * Inserting non-owning elements into an owning collection is allowed, because it does not
-   * create a new collection obligation.
+   * Inserting non-owning elements into an owning collection is allowed. Like any insertion, it
+   * gives the collection an obligation for its elements (see errOcAddNotOwningCallNoDispose), so
+   * the collection must still be disposed of.
    */
   void okOcInsertNotOwning(
       @OwningCollection List<TrackedResource> list, @NotOwning TrackedResource resource) {
