@@ -18,6 +18,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,6 +60,25 @@ public class AnnotationFileElementTypesTest {
    * @throws IOException if the source file cannot be written or the compiler cannot be run
    */
   private List<String> diagnostics(String stubs) throws IOException {
+    return diagnostics(stubs, null);
+  }
+
+  /**
+   * Compiles a trivial class with the Value Checker and the given {@code -Astubs} command-line
+   * option, and returns the compiler's diagnostics.
+   *
+   * @param stubs the argument to the {@code -Astubs} command-line option
+   * @param extraClasspath a directory to prepend to the classpath, or null
+   * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
+   *     "WARNING: Ignoring Foo.stub: ..."
+   * @throws IOException if the source file cannot be written or the compiler cannot be run
+   */
+  private List<String> diagnostics(String stubs, @Nullable File extraClasspath)
+      throws IOException {
+    String classpath = System.getProperty("java.class.path");
+    if (extraClasspath != null) {
+      classpath = extraClasspath.getPath() + File.pathSeparator + classpath;
+    }
     File sourceFile = write(new File(tmp.getRoot(), "src/Test.java"), "class Test {}");
     File classes = tmp.newFolder();
     List<String> options =
@@ -70,7 +90,7 @@ public class AnnotationFileElementTypesTest {
             "-d",
             classes.getPath(),
             "-classpath",
-            System.getProperty("java.class.path"));
+            classpath);
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
     try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
@@ -135,5 +155,17 @@ public class AnnotationFileElementTypesTest {
     assertHasDiagnostic(
         "WARNING: Could not read annotation resource: " + jar.getPath(),
         diagnostics(jar.getPath()));
+  }
+
+  /**
+   * Tests that a classpath annotation file that starts with much whitespace is parsed, not skipped
+   * as if it were empty.
+   */
+  @Test
+  public void leadingWhitespaceOnClasspath() throws IOException {
+    File classpathDir = tmp.newFolder();
+    write(new File(classpathDir, "Padded.astub"), " ".repeat(150) + "this is not a stub file");
+    assertHasDiagnostic(
+        "WARNING: /Padded.astub:", diagnostics("checker.jar/Padded.astub", classpathDir));
   }
 }
