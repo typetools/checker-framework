@@ -324,36 +324,63 @@ public class AnnotationFileElementTypes {
       }
       SourceChecker checker = factory.getChecker();
       for (String path : intellijAnnotationPaths) {
-        List<AnnotationFileResource> allFiles =
-            AnnotationFileUtil.allAnnotationFiles(path, AnnotationFileType.INTELLIJ_ANNOTATIONS);
-        if (allFiles == null) {
+        File location = AnnotationFileUtil.findFileSystemLocation(path);
+        if (location == null) {
           checker.message(
               Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
-        } else if (allFiles.isEmpty()) {
+          continue;
+        }
+        // Parse each resource as it is found, so that the contents of all the annotation files
+        // in an archive need not be in memory at once.  Count every resource, including
+        // unreadable ones, which are reported when they are parsed.
+        int[] numResources = {0};
+        AnnotationFileUtil.forEachAnnotationFile(
+            location,
+            AnnotationFileType.INTELLIJ_ANNOTATIONS,
+            resource -> {
+              numResources[0]++;
+              parseIntellijAnnotationResource(resource);
+            },
+            archive ->
+                checker.message(
+                    Diagnostic.Kind.NOTE,
+                    "Not reading archive "
+                        + archive
+                        + ", which is within directory "
+                        + path
+                        + "; to read it, name the archive itself"));
+        if (numResources[0] == 0) {
           // The path exists but contains no annotations.xml file, so the user gets no
           // annotations from it.  That is most likely a mistake, so warn rather than issuing a
           // note, which javac does not display by default.
           checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
-        } else {
-          for (AnnotationFileResource resource : allFiles) {
-            try (BufferedInputStream annotationFileStream =
-                new BufferedInputStream(resource.getInputStream())) {
-              IntelliJAnnotationParser.parseAnnotationsXml(
-                  resource.getDescription(),
-                  annotationFileStream,
-                  factory,
-                  processingEnv,
-                  annotationFileAnnos);
-            } catch (IOException e) {
-              checker.message(
-                  Diagnostic.Kind.ERROR,
-                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
-            }
-          }
         }
       }
     } finally {
       parsing = wasParsing;
+    }
+  }
+
+  /**
+   * Parses the given IntelliJ IDEA annotation file. Issues an error if it cannot be read.
+   *
+   * @param resource an IntelliJ IDEA annotation file
+   */
+  private void parseIntellijAnnotationResource(AnnotationFileResource resource) {
+    try (BufferedInputStream annotationFileStream =
+        new BufferedInputStream(resource.getInputStream())) {
+      IntelliJAnnotationParser.parseAnnotationsXml(
+          resource.getDescription(),
+          annotationFileStream,
+          factory,
+          factory.getProcessingEnv(),
+          annotationFileAnnos);
+    } catch (IOException e) {
+      factory
+          .getChecker()
+          .message(
+              Diagnostic.Kind.ERROR,
+              "Could not read IntelliJ IDEA annotations: " + resource.getDescription() + ": " + e);
     }
   }
 
