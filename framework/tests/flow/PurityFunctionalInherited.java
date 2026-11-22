@@ -93,6 +93,22 @@ public class PurityFunctionalInherited {
   // IgnoringBase.apply does not rely on the purity of its argument.
   static class SubOfIgnoring extends IgnoringBase implements Unannotated {}
 
+  /** Redeclares {@code Unannotated.apply}, which a call can still go through. */
+  @FunctionalInterface
+  interface StrongUnannotated extends Unannotated {
+    @Override
+    @SideEffectFree
+    int apply(Supplier<Integer> s);
+  }
+
+  // A call through Unannotated.apply can run Base.apply, but that is reported at Sub, which
+  // SubOfSub extends.  StrongUnannotated.apply guarantees what Base.apply assumes.
+  static class SubOfSub extends Sub implements StrongUnannotated {}
+
+  // Unannotated enters the hierarchy here, through StrongUnannotated.
+  // :: error: [purity.inherited.functional.parameter]
+  static class SubOfStrong extends Base implements StrongUnannotated {}
+
   /** The errors are at the declarations of Sub and SubOverrides, not where they are used. */
   void passesImplementations() {
     runsUnannotated(new Sub());

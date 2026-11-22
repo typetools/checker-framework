@@ -186,8 +186,11 @@ call checks its arguments only against the overridden method's promise.  So
 the method can assume only the purity that it and every method it overrides
 promise for that parameter.  An overridden method that makes no promise, or
 whose parameter at that position is not a functional interface (for example,
-its type is a type variable), guarantees only the purity that the annotations
-on its parameter type's implementation of the functional method promise.
+its type is a type variable whose upper bound is not a functional interface),
+guarantees only the purity that the annotations on its parameter type's
+implementation of the functional method promise.  A type variable whose upper
+bound is a functional interface, as in \code{<T extends Supplier<Integer>{}>},
+is treated as that interface.
 
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
@@ -195,8 +198,9 @@ a \<@SideEffectsOnly> method).  The requirement is the same for every
 functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
 type is a functional interface is checked:  the method can assume nothing about an
-argument to a parameter whose type is a type variable, nor about the elements
-of a varargs array.  How the argument is checked depends on its form.
+argument to a parameter whose type is a type variable (unless the type
+variable's upper bound is a functional interface), nor about the elements of a
+varargs array.  How the argument is checked depends on its form.
 Parentheses around the argument are ignored, and so is a cast of a lambda, a
 method reference, a conditional expression, or a switch expression, because
 such a cast does not change the code that the argument denotes.
@@ -263,8 +267,13 @@ exemption does not apply to a method from a compiled library, whose body the
 checker cannot inspect.  If javac has not yet
 type-checked the body (as when the referenced method is in a top-level class
 that appears later in the same source file), the checker conservatively
-treats every identifier with the parameter's name as a use that relies on the
-assumption.
+treats every identifier with the parameter's name, other than the destination
+of an assignment, as a use that relies on the assumption.
+
+If a method reference is cast to an intersection type, as in
+\<(A \& B) Util::call>, then a call through the methods of every bound and of
+their supertypes that have the same signature can run it, so the same rule
+applies to each of those methods.
 
 \begin{Verbatim}
   class Util {

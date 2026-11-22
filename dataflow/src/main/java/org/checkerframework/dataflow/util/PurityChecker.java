@@ -30,10 +30,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -269,8 +272,8 @@ public final class PurityChecker {
    * declaration does not guarantee; see {@link #guaranteedFunctionalArgumentPurity}. An overridden
    * declaration with no purity annotation guarantees only what the functional method of its
    * parameter promises. One whose parameter at {@code index} is not a functional interface, such as
-   * a type variable, guarantees only what its parameter type's implementation of the functional
-   * method promises.
+   * an unbounded type variable, guarantees only what the implementation of the functional method in
+   * its parameter type, as a member of {@code method}'s class, promises.
    *
    * <p>A class can also implement an interface method with a method that it inherits, and a method
    * reference implements a functional method; neither is an override. {@code BaseTypeVisitor}
@@ -315,16 +318,42 @@ public final class PurityChecker {
       ProcessingEnvironment env) {
     EnumSet<PurityKind> result = functionalParameterKinds(annoProvider, method, env);
     PurityUtils.addDeterminismOfVoidCall(result, parameterFunction.getReturnType());
-    for (ExecutableElement overridden :
-        ElementUtils.getOverriddenMethods(method, env.getTypeUtils())) {
+    Types types = env.getTypeUtils();
+    for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(method, types)) {
       if (result.isEmpty()) {
         break;
       }
+      // A call through `overridden` on an object of `method`'s class passes an argument of the
+      // overridden parameter's type as a member of that class.
+      TypeMirror parameterType =
+          parameterTypeAsMemberOf(
+              (DeclaredType) method.getEnclosingElement().asType(), overridden, index, types);
       result.retainAll(
           guaranteedFunctionalArgumentPurity(
-              annoProvider, overridden, index, parameterFunction, env));
+              annoProvider, overridden, index, parameterType, parameterFunction, env));
     }
     return result;
+  }
+
+  /**
+   * Returns the type of {@code declaration}'s formal parameter at {@code index}, as a member of
+   * {@code type}, or null if there is no such parameter.
+   *
+   * <p>For example, if {@code declaration} is {@code int apply(T t)} in {@code interface I<T>},
+   * and {@code type} is {@code I<Runnable>} or a class that implements it, the result for index 0
+   * is {@code Runnable}.
+   *
+   * @param type a type of which {@code declaration} is a member
+   * @param declaration a method
+   * @param index the 0-based index of a formal parameter of {@code declaration}
+   * @param types the type utilities
+   * @return the type of the parameter at {@code index} as a member of {@code type}, or null
+   */
+  public static @Nullable TypeMirror parameterTypeAsMemberOf(
+      DeclaredType type, ExecutableElement declaration, int index, Types types) {
+    List<? extends TypeMirror> parameterTypes =
+        ((ExecutableType) types.asMemberOf(type, declaration)).getParameterTypes();
+    return index >= 0 && index < parameterTypes.size() ? parameterTypes.get(index) : null;
   }
 
   /**
@@ -341,21 +370,34 @@ public final class PurityChecker {
    * superinterface type. The argument's implementation of {@code parameterFunction} is then its
    * implementation of the overriding method, which the call checked.
    *
+   * <p>Neither method need override the other, if {@code declaration}'s parameter type inherits
+   * both from superinterfaces that are unrelated to each other, as {@code A.get} and {@code B.get}
+   * in {@code interface Both extends A, B}. The two are override-equivalent in that type, so every
+   * argument implements both with the same method.
+   *
    * <p>If {@code declaration}'s parameter is not a functional interface (see {@link
-   * #functionalMethodOfType}), or if neither {@code parameterFunction} nor the functional method of
-   * {@code declaration}'s parameter overrides the other, then the call checks nothing about the
-   * code that {@code parameterFunction} runs. The parameter's type might nonetheless implement
-   * {@code parameterFunction}: for example, with a default method of a functional subinterface that
+   * #functionalMethodOfType}), or if its functional method and {@code parameterFunction} are
+   * different methods of its type, then the call checks nothing about the code that {@code
+   * parameterFunction} runs. The argument's type might nonetheless implement {@code
+   * parameterFunction}: for example, with a default method of a functional subinterface that
    * declares an unrelated abstract method as its functional method, or with a method of a class
    * that implements the functional interface. Every argument's implementation of {@code
    * parameterFunction} is that method or an override of it, so it has the purity that that method's
-   * annotations promise, which is the result. The result is empty if the parameter's type has no
+   * annotations promise, which is the result. The result is empty if the argument's type has no
    * implementation of {@code parameterFunction}, as for a type variable whose upper bound is {@code
    * Object}.
+   *
+   * <p>The argument's type is {@code parameterType}, which can be more specific than the type of
+   * {@code declaration}'s parameter. For example, a call through {@code I<PureImpl>.apply}, where
+   * {@code I<T>} declares {@code int apply(T t)}, checks nothing about its argument, but the
+   * argument is a {@code PureImpl}, whose implementation of {@code parameterFunction} is what runs.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method that a call might invoke
    * @param index the 0-based index of a formal parameter of {@code declaration}
+   * @param parameterType the type of {@code declaration}'s parameter at {@code index}, as a member
+   *     of the type through which the call invokes {@code declaration}; see {@link
+   *     #parameterTypeAsMemberOf}. If null, the declared type of the parameter is used.
    * @param parameterFunction a functional method that might be called on the argument: the
    *     functional method of the type of the parameter at {@code index} in an overrider of {@code
    *     declaration} or in a method that a method reference refers to
@@ -366,17 +408,21 @@ public final class PurityChecker {
       AnnotationProvider annoProvider,
       ExecutableElement declaration,
       int index,
+      @Nullable TypeMirror parameterType,
       ExecutableElement parameterFunction,
       ProcessingEnvironment env) {
     List<? extends VariableElement> parameters = declaration.getParameters();
     if (index < 0 || index >= parameters.size()) {
       return EnumSet.noneOf(PurityKind.class);
     }
+    TypeMirror declaredParameterType = parameters.get(index).asType();
     ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
     if (declarationFunction == null
-        || !(isSameOrOverrides(parameterFunction, declarationFunction, env)
-            || isSameOrOverrides(declarationFunction, parameterFunction, env))) {
-      TypeMirror parameterType = parameters.get(index).asType();
+        || !isSameImplementation(
+            declarationFunction, parameterFunction, declaredParameterType, env)) {
+      if (parameterType == null) {
+        parameterType = declaredParameterType;
+      }
       ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
       if (implementation == null) {
         return EnumSet.noneOf(PurityKind.class);
@@ -510,6 +556,50 @@ public final class PurityChecker {
     return method.equals(other)
         || env.getElementUtils()
             .overrides(method, other, (TypeElement) method.getEnclosingElement());
+  }
+
+  /**
+   * Returns true if every object of type {@code type} implements {@code function} and {@code
+   * other} with the same method. That is so if one of them overrides the other, or if they are
+   * override-equivalent as members of {@code type} (JLS 8.4.2), as {@code A.get} and {@code B.get}
+   * are in {@code interface Both extends A, B}, though neither overrides the other.
+   *
+   * @param function the functional method of {@code type}
+   * @param other another method
+   * @param type a functional interface type, or a type variable whose upper bound is one
+   * @param env the processing environment
+   * @return true if every object of type {@code type} implements {@code function} and {@code other}
+   *     with the same method
+   */
+  private static boolean isSameImplementation(
+      ExecutableElement function,
+      ExecutableElement other,
+      TypeMirror type,
+      ProcessingEnvironment env) {
+    if (isSameOrOverrides(other, function, env) || isSameOrOverrides(function, other, env)) {
+      return true;
+    }
+    if (!function.getSimpleName().equals(other.getSimpleName())) {
+      return false;
+    }
+    if (type.getKind() == TypeKind.TYPEVAR) {
+      type = TypesUtils.upperBound(type);
+    }
+    if (type.getKind() != TypeKind.DECLARED) {
+      return false;
+    }
+    DeclaredType declaredType = (DeclaredType) type;
+    Types types = env.getTypeUtils();
+    TypeMirror erasedType = types.erasure(declaredType);
+    if (!types.isSubtype(erasedType, types.erasure(function.getEnclosingElement().asType()))
+        || !types.isSubtype(erasedType, types.erasure(other.getEnclosingElement().asType()))) {
+      // One of the methods is not a member of `type`.
+      return false;
+    }
+    ExecutableType functionType = (ExecutableType) types.asMemberOf(declaredType, function);
+    ExecutableType otherType = (ExecutableType) types.asMemberOf(declaredType, other);
+    return types.isSubsignature(functionType, otherType)
+        || types.isSubsignature(otherType, functionType);
   }
 
   /**
