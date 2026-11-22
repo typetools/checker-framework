@@ -1740,7 +1740,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // Caching is disabled if annotation files are being parsed, because calls to this
     // method before the annotation files are fully read can return incorrect results.
-    if (shouldCache && !isParsingAnnotationFiles()) {
+    // See `fromMember` for why the types of some binding variables are not cached.
+    if (shouldCache && !isParsingAnnotationFiles() && !isBindingVariableWithoutExplicitType(decl)) {
       elementCache.put(elt, type.deepCopy());
     }
     return type;
@@ -1807,7 +1808,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       throw new BugInCF(
           "AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
     }
-    if (shouldCache && fromMemberTreeCache.containsKey(tree)) {
+    // The type of a binding variable declared without an explicit type depends on the type of the
+    // value that its record pattern is matched against, which can change as dataflow analysis
+    // iterates.  `inferRecordPatternType` caches the result of inference for the record pattern.
+    boolean cacheResult = shouldCache && !isBindingVariableWithoutExplicitType(tree);
+    if (cacheResult && fromMemberTreeCache.containsKey(tree)) {
       return fromMemberTreeCache.get(tree).deepCopy();
     }
     AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
@@ -1827,11 +1832,49 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
 
-    if (shouldCache) {
+    if (cacheResult) {
       fromMemberTreeCache.put(tree, result.deepCopy());
     }
 
     return result;
+  }
+
+  /**
+   * Returns true if {@code tree} is an identifier that refers to a binding variable that is
+   * declared without an explicit type.
+   *
+   * @param tree an expression
+   * @return true if {@code tree} is a use of a binding variable without an explicit type
+   * @see #isBindingVariableWithoutExplicitType
+   */
+  private boolean isUseOfBindingVariableWithoutExplicitType(ExpressionTree tree) {
+    if (!(tree instanceof IdentifierTree)) {
+      return false;
+    }
+    Element elt = TreeUtils.elementFromTree(tree);
+    return elt != null
+        && elt.getKind() == ElementKind.BINDING_VARIABLE
+        && isBindingVariableWithoutExplicitType(declarationFromElement(elt));
+  }
+
+  /**
+   * Returns true if {@code tree} declares a binding variable without an explicit type, such as
+   * {@code x} in {@code o instanceof Box(var x)}. The type of such a variable depends on the type
+   * of the value that its record pattern is matched against, which can change as dataflow analysis
+   * iterates, so its type is not cached.
+   *
+   * @param tree a declaration, or null
+   * @return true if {@code tree} declares a binding variable without an explicit type
+   */
+  private static boolean isBindingVariableWithoutExplicitType(@Nullable Tree tree) {
+    if (!(tree instanceof VariableTree variableTree)) {
+      return false;
+    }
+    if (variableTree.getType() != null && !TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
+      return false;
+    }
+    VariableElement elt = TreeUtils.elementFromDeclaration(variableTree);
+    return elt != null && elt.getKind() == ElementKind.BINDING_VARIABLE;
   }
 
   /**
@@ -1917,7 +1960,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // cached during dataflow analysis. See Issue #602.
         && !(tree instanceof NewClassTree)
         && !(tree instanceof NewArrayTree)
-        && !(tree instanceof ConditionalExpressionTree)) {
+        && !(tree instanceof ConditionalExpressionTree)
+        // See `fromMember`.
+        && !isUseOfBindingVariableWithoutExplicitType(tree)) {
       fromExpressionTreeCache.put(tree, result.deepCopy());
     }
     if (debugGat) {
