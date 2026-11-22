@@ -3,8 +3,10 @@ package org.checkerframework.checker.index.samelen;
 import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.IndexUtil;
@@ -64,5 +66,50 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
       }
     }
     return super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Also permits the reassignment if each sequence {@code r} in the {@code @SameLen} annotation
+   * of {@code requiredType} is {@code variable} itself, is in the {@code @SameLen} annotation of
+   * {@code currentType}, or has the same length as one of those sequences before the reassignment.
+   * For example, if {@code b} is {@code @SameLen("a")} and {@code c} is {@code @SameLen("a")}, then
+   * after {@code a = c}, {@code b} is still {@code @SameLen("a")}.
+   */
+  @Override
+  protected boolean isValidAfterReassignment(
+      VariableElement variable,
+      AnnotatedTypeMirror currentType,
+      AnnotatedTypeMirror requiredType,
+      ExpressionTree reassignmentTree) {
+    if (super.isValidAfterReassignment(variable, currentType, requiredType, reassignmentTree)) {
+      return true;
+    }
+    AnnotationMirror requiredAnno = requiredType.getPrimaryAnnotation(SameLen.class);
+    if (requiredAnno == null) {
+      return false;
+    }
+    TreeSet<String> sameLens = new TreeSet<>();
+    sameLens.add(variable.getSimpleName().toString());
+    AnnotationMirror currentAnno = currentType.getPrimaryAnnotation(SameLen.class);
+    if (currentAnno != null) {
+      sameLens.addAll(
+          AnnotationUtils.getElementValueArray(
+              currentAnno, atypeFactory.sameLenValueElement, String.class));
+    }
+    for (String required :
+        AnnotationUtils.getElementValueArray(
+            requiredAnno, atypeFactory.sameLenValueElement, String.class)) {
+      if (sameLens.contains(required)) {
+        continue;
+      }
+      List<String> requiredSameLens =
+          atypeFactory.getSameLensFromString(required, reassignmentTree, getCurrentPath());
+      if (Collections.disjoint(requiredSameLens, sameLens)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

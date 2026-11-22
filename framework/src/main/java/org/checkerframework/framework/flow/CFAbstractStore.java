@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -43,6 +44,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1083,11 +1085,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Updates the information in the store by considering an assignment with target {@code n}.
    *
+   * <p>If the target is a local variable or a field, this also removes each value whose dependent
+   * type annotation might name the target (see {@link #removeValuesThatMightName}). If {@code val}
+   * itself has such an annotation, the target gets no value: the annotation names the target's
+   * value before the assignment, but after the assignment the same text would name the new value.
+   *
    * @param n the left-hand side of an assignment
    * @param val the right-hand value of an assignment
    */
   public void updateForAssignment(Node n, @Nullable V val) {
     JavaExpression je = JavaExpression.fromNode(n);
+    if (je instanceof LocalVariable || je instanceof FieldAccess) {
+      removeValuesThatMightName(je);
+      if (val != null && mightName(val, je)) {
+        val = null;
+      }
+    }
     if (je instanceof ArrayAccess aa) {
       updateForArrayAssignment(aa, val);
     } else if (je instanceof FieldAccess fa) {
@@ -1097,6 +1110,54 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
+  }
+
+  /**
+   * Removes each value in this store that has a dependent type annotation that might name {@code
+   * variable}. Call this when {@code variable} is assigned a new value. For example, after {@code a
+   * = c}, the type {@code @LTLengthOf("a")} of {@code i} would claim that {@code i} is less than
+   * the length of the new array, but it was established for the old one.
+   *
+   * <p>This removes the whole value, so a local variable reverts to its declared type. That is
+   * sound only if the declared type does not depend on the old value of {@code variable}; {@link
+   * org.checkerframework.common.basetype.BaseTypeVisitor} reports an error at an assignment that
+   * might invalidate the declared type of a local variable in scope.
+   *
+   * @param variable a local variable or a field access that is assigned
+   */
+  protected void removeValuesThatMightName(JavaExpression variable) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if (!dependentTypesHelper.hasDependentAnnotations()) {
+      return;
+    }
+    Predicate<V> mightName = value -> mightName(value, variable);
+    localVariableValues.values().removeIf(mightName);
+    fieldValues.values().removeIf(mightName);
+    arrayValues.values().removeIf(mightName);
+    methodCallExpressions.values().removeIf(mightName);
+    classValues.values().removeIf(mightName);
+    iteratedCollectionElements.values().removeIf(mightName);
+    if (thisValue != null && mightName.test(thisValue)) {
+      thisValue = null;
+    }
+  }
+
+  /**
+   * Returns true if a dependent type annotation of {@code value} might name {@code variable}. See
+   * {@link DependentTypesHelper#mightName(AnnotationMirror, JavaExpression)}.
+   *
+   * @param value an abstract value
+   * @param variable a local variable or a field access
+   * @return true if a dependent type annotation of {@code value} might name {@code variable}
+   */
+  private boolean mightName(V value, JavaExpression variable) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    for (AnnotationMirror anno : value.getAnnotations()) {
+      if (dependentTypesHelper.mightName(anno, variable)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
