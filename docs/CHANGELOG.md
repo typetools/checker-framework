@@ -10,7 +10,12 @@
 ### Changes for type system implementers
 
 `CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
-assignment node.  New method `CFAbstractTransfer.rhsMayRelocateTarget()`
+assignment node.  Its signature changed from
+`processCommonAssignment(TransferInput, Node lhs, Node rhs, S store, V rhsValue)`
+to
+`processCommonAssignment(TransferInput, AssignmentNode assignment, Node lhs, Node rhs, S store, V rhsValue)`.
+A subclass that overrides the old signature must override the new one instead;
+`CFAbstractTransfer` no longer calls the old one.  New method `CFAbstractTransfer.rhsMayRelocateTarget()`
 returns true if evaluating an assignment's right-hand side might change the
 location that its target denotes, as in `n.next = (n = o)`.
 

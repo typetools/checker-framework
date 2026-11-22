@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -12,6 +13,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchExpressionTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -116,6 +118,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -2391,6 +2394,47 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns true if matching the cases that precede the given case might write a location: if a
+   * guard (the expression after {@code when}) or a record pattern (which calls record component
+   * accessors) of an earlier case might write a variable, field, or array element. Such a write
+   * happens after the switch selector expression is evaluated and before the given case is matched,
+   * so the selector expression might no longer have the value that is compared to the case. Returns
+   * true if the enclosing switch cannot be found.
+   *
+   * @param n a case
+   * @return true if matching the cases that precede {@code n} might write a location
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private boolean earlierCasesMayWrite(CaseNode n) {
+    CaseTree caseTree = n.getTree();
+    TreePath path = analysis.atypeFactory.getPath(caseTree);
+    if (path == null || path.getParentPath() == null) {
+      return true;
+    }
+    Tree switchTree = path.getParentPath().getLeaf();
+    List<? extends CaseTree> cases;
+    if (switchTree instanceof SwitchTree switchStatement) {
+      cases = switchStatement.getCases();
+    } else if (switchTree instanceof SwitchExpressionTree switchExpression) {
+      cases = switchExpression.getCases();
+    } else {
+      return true;
+    }
+    WrittenLocations written = new WrittenLocations();
+    for (CaseTree earlierCase : cases) {
+      if (earlierCase == caseTree) {
+        return !written.isEmpty();
+      }
+      for (Tree label : CaseUtils.getLabels(earlierCase)) {
+        written.scan(label, null);
+      }
+      written.scan(CaseUtils.getGuard(earlierCase), null);
+    }
+    // `caseTree` is not among the cases of the switch.
+    return true;
+  }
+
+  /**
    * A case produces no value, but it might imply some facts about the switch selector expression.
    */
   @Override
@@ -2403,6 +2447,10 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    // The selector expression still has the value of the synthetic variable only if matching the
+    // earlier cases writes nothing.  For example, in `switch ((String) x)`, an earlier
+    // `case String s when (x = y).isEmpty()` changes `x`.
+    boolean selectorMayBeChanged = earlierCasesMayWrite(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -2410,9 +2458,11 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (!selectorMayBeChanged) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
