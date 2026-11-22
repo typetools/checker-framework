@@ -48,7 +48,7 @@ public class UnnameableEnumInheritsType {
 
                 @org.checkerframework.framework.qual.RequiresQualifier(expression = { "this.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
                 @org.checkerframework.dataflow.qual.SideEffectFree
-                void useFields(Nested this) {
+                void useFields() {
                 }
             }
         }
