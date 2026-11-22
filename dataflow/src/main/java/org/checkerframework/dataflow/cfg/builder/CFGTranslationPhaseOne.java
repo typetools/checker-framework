@@ -3056,9 +3056,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param doneLabel label for the normal successor of the try block (no exceptions, returns,
    *     breaks, or continues)
    * @param finallyLabel label for the entry of the finally block for the normal case
-   * @param exceptionalFinallyFrame the frame that the exceptions of the try block and catch clauses
-   *     reach; its labels are the entries of the copies of the finally block for when an exception
-   *     reaches it
+   * @param exceptionalFinallyFrame the frame that the exceptions of the try block and of the catch
+   *     blocks reach; its labels are the entries of the copies of the finally block for when the
+   *     try block or a catch block throws an exception
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block, for each
    *     path except the ones on which an exception reaches the finally block
    * @param exceptionalFinallyBlockCFGGenerator generates CFG nodes and edges for the finally block,
