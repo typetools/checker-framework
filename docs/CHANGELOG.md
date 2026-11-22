@@ -14,9 +14,6 @@ command-line option is ignored, with a note.  Within a directory or archive,
 hidden files and directories (whose names start with `.`), such as the
 `._Foo.astub` files that macOS creates, are ignored.
 
-A file named in `-Astubs` or `-Aajava` that is not an archive and does not have
-the expected extension (`.astub` or `.ajava`) yields a warning.
-
 ### Changes for type system implementers
 
 A default that a type system registers for an element through

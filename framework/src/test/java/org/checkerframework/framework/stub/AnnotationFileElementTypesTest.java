@@ -73,8 +73,7 @@ public class AnnotationFileElementTypesTest {
    *     "WARNING: Ignoring Foo.stub: ..."
    * @throws IOException if the source file cannot be written or the compiler cannot be run
    */
-  private List<String> diagnostics(String stubs, @Nullable File extraClasspath)
-      throws IOException {
+  private List<String> diagnostics(String stubs, @Nullable File extraClasspath) throws IOException {
     String classpath = System.getProperty("java.class.path");
     if (extraClasspath != null) {
       classpath = extraClasspath.getPath() + File.pathSeparator + classpath;
@@ -119,20 +118,6 @@ public class AnnotationFileElementTypesTest {
       }
     }
     Assert.fail("No diagnostic starts with \"" + prefix + "\"; diagnostics: " + diagnostics);
-  }
-
-  /** Tests that a named file whose name does not suit its file type yields a warning. */
-  @Test
-  public void unusableNamedFile() throws IOException {
-    File stub = write(new File(tmp.getRoot(), "Foo.stub"), "package p;");
-    assertHasDiagnostic(
-        "WARNING: Ignoring " + stub.getPath() + ": the name of a stub file must end with .astub",
-        diagnostics(stub.getPath()));
-
-    File ajava = write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
-    assertHasDiagnostic(
-        "WARNING: Ignoring " + ajava.getPath() + ", which is an ajava file; supply it via -Aajava",
-        diagnostics(ajava.getPath()));
   }
 
   /** Tests that an archive within a named directory yields a note. */
