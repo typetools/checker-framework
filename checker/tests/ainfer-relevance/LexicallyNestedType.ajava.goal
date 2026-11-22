@@ -14,7 +14,7 @@ public class LexicallyNestedType {
 
     static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Number nestedNumber;
 
-    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "LexicallyNestedType.class.nestedNumber" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "LexicallyNestedType.nestedNumber" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Impure
     static void assignField() {
         nestedNumber = getSibling1();

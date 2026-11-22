@@ -22,7 +22,7 @@ public class RelevantNestedType {
     // "AbstractMap.SimpleEntry" does not appear in the checker's `@RelevantJavaTypes`.
     static AbstractMap.@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 SimpleEntry<String, String> subtype;
 
-    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantNestedType.class.subtype" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantNestedType.subtype" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Impure
     static void assignFields() {
         nestedName = getSibling1();
@@ -57,7 +57,7 @@ public class RelevantNestedType {
         return null;
     }
 
-    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "RelevantNestedType.class.rawName" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "RelevantNestedType.rawName" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Pure
     static AbstractMap.SimpleEntry<String, String> getSibling1Subtype() {
         return null;
