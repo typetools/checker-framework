@@ -21,17 +21,17 @@ public class OmitDefaultQualifierArray {
     @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence[][] sibling1Field2D;
 
     @org.checkerframework.dataflow.qual.Impure
-    void setField(OmitDefaultQualifierArray this, CharSequence[] cs) {
+    void setField(CharSequence[] cs) {
         field = cs;
     }
 
     @org.checkerframework.dataflow.qual.Impure
-    void setField2D(OmitDefaultQualifierArray this, CharSequence[][] cs) {
+    void setField2D(CharSequence[][] cs) {
         field2D = cs;
     }
 
     @org.checkerframework.dataflow.qual.Impure
-    void setFieldVarargs(OmitDefaultQualifierArray this, CharSequence... cs) {
+    void setFieldVarargs(CharSequence... cs) {
         field = cs;
     }
 
@@ -46,11 +46,11 @@ public class OmitDefaultQualifierArray {
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
-    void setSibling1Varargs(OmitDefaultQualifierArray this, @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence... cs) {
+    void setSibling1Varargs(@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence... cs) {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    CharSequence[] getField(OmitDefaultQualifierArray this) {
+    CharSequence[] getField() {
         return field;
     }
 
