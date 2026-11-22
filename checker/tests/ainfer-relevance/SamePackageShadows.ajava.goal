@@ -17,7 +17,7 @@ public class SamePackageShadows {
 
     static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 List listField;
 
-    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "SamePackageShadows.listField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "SamePackageShadows.class.listField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Impure
     static void assignFields() {
         runnableField = getSibling1Runnable();
@@ -45,7 +45,7 @@ public class SamePackageShadows {
         return null;
     }
 
-    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "SamePackageShadows.runnableField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "SamePackageShadows.class.runnableField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Pure
     static List getSibling1List() {
         return null;

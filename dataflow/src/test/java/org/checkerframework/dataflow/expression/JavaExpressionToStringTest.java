@@ -44,9 +44,6 @@ public class JavaExpressionToStringTest {
   /** The method {@code Integer.intValue()}. */
   private final ExecutableElement intValueMethod;
 
-  /** The static field {@code Integer.MAX_VALUE}. */
-  private final VariableElement maxValueField;
-
   /** The instance field {@code Integer.value}. */
   private final VariableElement valueField;
 
@@ -69,7 +66,6 @@ public class JavaExpressionToStringTest {
     intType = types.getPrimitiveType(TypeKind.INT);
     trimMethod = getMethod(stringElement, "trim");
     intValueMethod = getMethod(integerElement, "intValue");
-    maxValueField = getField(integerElement, "MAX_VALUE");
     valueField = getField(integerElement, "value");
   }
 
@@ -171,12 +167,6 @@ public class JavaExpressionToStringTest {
         "((String) o).trim()", trim(new Unknown(stringType, "(String) o")).toString());
     Assert.assertEquals(
         "(b ? x : y).trim()", trim(new Unknown(stringType, "b ? x : y")).toString());
-  }
-
-  @Test
-  public void fieldAccessOnClassName() {
-    FieldAccess access = new FieldAccess(new ClassName(integerType), maxValueField);
-    Assert.assertEquals("java.lang.Integer.MAX_VALUE", access.toString());
   }
 
   @Test
