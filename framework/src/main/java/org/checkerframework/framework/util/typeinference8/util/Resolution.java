@@ -623,9 +623,8 @@ public final class Resolution {
     boundSet.removeCaptures(as);
     List<Variable> asList = new ArrayList<>();
     List<AbstractType> typeArg = new ArrayList<>();
-    // The instantiated variables outside `as` that the upper bounds of the fresh type variables
-    // contain.
-    Set<Variable> instantiatedOutsideAs = new LinkedHashSet<>();
+    // The variables that the upper bounds of the fresh type variables contain.
+    Set<Variable> varsInUpperBounds = new LinkedHashSet<>();
 
     for (Variable variable : as) {
       variable.getBounds().applyInstantiationsToBounds();
@@ -690,7 +689,7 @@ public final class Resolution {
 
       Set<AbstractType> upperBounds = variable.getBounds().upperBounds();
       // Omit bounds that contain uninstantiated variables outside `as`, such as `alpha` in
-      // `variable <: alpha`.  A bound can contain an instantiated variable outside `as` whose
+      // `variable <: alpha`.  A bound can contain an instantiated variable, in `as` or not, whose
       // instantiation InferenceType#applyInstantiations did not apply, because that instantiation
       // ignores annotations and the result would not be proper.  Such a bound is kept, and
       // getSubsTypeArgs below applies the instantiation.  The annotations at the ignored positions
@@ -701,11 +700,7 @@ public final class Resolution {
               !u.getInferenceVariables().stream()
                   .allMatch(v -> as.contains(v) || v.getInstantiation() != null));
       for (AbstractType u : upperBounds) {
-        for (Variable v : u.getInferenceVariables()) {
-          if (!as.contains(v)) {
-            instantiatedOutsideAs.add(v);
-          }
-        }
+        varsInUpperBounds.addAll(u.getInferenceVariables());
       }
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
@@ -739,8 +734,19 @@ public final class Resolution {
       typeArg.add(freshTypeVar);
     }
 
+    // The instantiated variables, other than those that get a fresh type variable, that the upper
+    // bounds contain.  These include every variable outside `as` in those bounds, and any variable
+    // in `as` that the loop above skipped because it already had an instantiation, or that got one
+    // only after the bounds of an earlier variable were collected.
+    Set<Variable> instantiatedInUpperBounds = new LinkedHashSet<>();
+    for (Variable v : varsInUpperBounds) {
+      if (!asList.contains(v) && v.getInstantiation() != null) {
+        instantiatedInUpperBounds.add(v);
+      }
+    }
+
     List<AbstractType> subsTypeArg =
-        context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList, instantiatedOutsideAs);
+        context.inferenceTypeFactory.getSubsTypeArgs(typeArg, asList, instantiatedInUpperBounds);
 
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {
