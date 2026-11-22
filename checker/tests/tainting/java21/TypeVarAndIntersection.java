@@ -12,6 +12,7 @@
 //      recursively.  All bounds produced in steps 3 and 4 are incorporated into a single bound
 //      set."
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.checkerframework.checker.tainting.qual.Tainted;
@@ -147,6 +148,35 @@ public class TypeVarAndIntersection {
     if (q instanceof Both(var a)) {
       // :: error: [assignment]
       @Untainted String aa = a;
+    }
+  }
+
+  interface I1 {}
+
+  interface I2 {}
+
+  record ArrayOfBounded<T extends I1 & I2>(T[] items) {}
+
+  /**
+   * The upward projection of the type of the component is an array whose component type is an
+   * intersection type.
+   */
+  static void arrayOfIntersection(ArrayOfBounded<?> r) {
+    if (r instanceof ArrayOfBounded(var items)) {
+      I1 i1 = items[0];
+      I2 i2 = items[0];
+    }
+  }
+
+  record NestedSuper<T extends I1 & I2>(List<? super List<? super T>> value) {}
+
+  /**
+   * The upward projection of the type of the component would contain a wildcard whose lower bound
+   * is an intersection type, which is not representable.
+   */
+  static void superOfIntersection(NestedSuper<?> r) {
+    if (r instanceof NestedSuper(var value)) {
+      Object o = value.get(0);
     }
   }
 }

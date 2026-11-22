@@ -461,13 +461,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Checks each type pattern that is a nested pattern of the record pattern {@code recordPattern}
-   * and whose type is written explicitly (not {@code var}): the type of its binding variable must
-   * be compatible with the type of the record component that the type pattern is matched against.
+   * Checks each type pattern (including a {@code var} pattern) that is a nested pattern of the
+   * record pattern {@code recordPattern}: the type of its binding variable must be compatible with
+   * the type of the record component that the type pattern is matched against.
    *
-   * <p>If the type pattern is unconditional for the type of the record component (JLS 14.30.3), the
-   * pattern always matches, so the check is an assignment check. Otherwise, the check is the same
-   * as for a type pattern in an {@code instanceof}.
+   * <p>If the pattern is a {@code var} pattern, or a type pattern that is unconditional for the
+   * type of the record component (JLS 14.30.3), the pattern always matches, so the check is an
+   * assignment check. For a {@code var} pattern, this check matters only for the primary
+   * qualifiers, which are defaulted (for example, by a {@code LOCAL_VARIABLE} default) rather than
+   * taken from the record component. Otherwise, the check is the same as for a type pattern in an
+   * {@code instanceof}.
    *
    * @param recordPattern a {@code DeconstructionPatternTree}
    */
@@ -481,12 +484,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       VariableTree variableTree = bindingPattern.getVariable();
-      if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
-        continue;
-      }
       AnnotatedTypeMirror componentType = componentTypes.get(i);
       AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-      if (atypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
+      // A `var` pattern matches every value of the record component.  Its binding variable takes
+      // the type of the component, except that its primary qualifiers are defaulted, so check them
+      // as for an assignment.
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
+          || atypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
         commonAssignmentCheck(variableType, componentType, bindingPattern, "assignment");
       } else {
         checkConditionalNestedTypePattern(bindingPattern, variableType, componentType);

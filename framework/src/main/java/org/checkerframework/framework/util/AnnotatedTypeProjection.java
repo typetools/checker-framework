@@ -1,7 +1,9 @@
 package org.checkerframework.framework.util;
 
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +56,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *       parameter, compare Java types and ignore annotations.
  * </ul>
  *
- * <p>This class also differs from JLS 4.10.5 in two ways:
+ * <p>This class also differs from JLS 4.10.5 in three ways:
  *
  * <ul>
  *   <li>The upward projection of a restricted type variable is the upward projection of its upper
@@ -82,6 +84,9 @@ public final class AnnotatedTypeProjection {
   /** The javac type utilities. */
   private final com.sun.tools.javac.code.Types javacTypes;
 
+  /** The javac symbol table. */
+  private final Symtab symtab;
+
   /**
    * The restricted type variables whose upward projection is being computed. Computing the upward
    * projection of one of these type variables again would not terminate, because its upper bound
@@ -97,9 +102,9 @@ public final class AnnotatedTypeProjection {
   private AnnotatedTypeProjection(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
     this.types = atypeFactory.types;
-    this.javacTypes =
-        com.sun.tools.javac.code.Types.instance(
-            ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext());
+    Context context = ((JavacProcessingEnvironment) atypeFactory.getProcessingEnv()).getContext();
+    this.javacTypes = com.sun.tools.javac.code.Types.instance(context);
+    this.symtab = Symtab.instance(context);
   }
 
   /**
@@ -439,7 +444,12 @@ public final class AnnotatedTypeProjection {
    */
   private AnnotatedArrayType withComponentType(
       AnnotatedArrayType type, AnnotatedTypeMirror componentType) {
-    ArrayType javaType = types.getArrayType(componentType.getUnderlyingType());
+    TypeMirror javaComponentType = componentType.getUnderlyingType();
+    // `Types.getArrayType` rejects an intersection component type.
+    ArrayType javaType =
+        javaComponentType.getKind() == TypeKind.INTERSECTION
+            ? new Type.ArrayType((Type) javaComponentType, symtab.arrayClass)
+            : types.getArrayType(javaComponentType);
     AnnotatedArrayType result =
         (AnnotatedArrayType) AnnotatedTypeMirror.createType(javaType, atypeFactory, false);
     result.addAnnotations(type.getPrimaryAnnotations());
