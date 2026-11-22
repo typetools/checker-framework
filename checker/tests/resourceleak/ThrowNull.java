@@ -11,6 +11,11 @@ public class ThrowNull {
     throw null;
   }
 
+  void throwConditionalNull(String host, int port, boolean b) throws IOException {
+    Socket s = new Socket(host, port);
+    throw b ? null : null;
+  }
+
   void throwNullPointerException(String host, int port) throws IOException {
     Socket s = new Socket(host, port);
     throw new NullPointerException();
