@@ -33,7 +33,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>an assignment, a compound assignment, or an increment or decrement;
  *   <li>instantiation of an anonymous class, whose initializers run;
  *   <li>string concatenation with an operand whose type is a reference type other than {@code
- *       String}, which calls the operand's {@code toString()} method;
+ *       String} or a boxed primitive type, which calls the operand's {@code toString()} method;
  *   <li>an enhanced {@code for} loop, which calls {@code iterator()}, {@code hasNext()}, and {@code
  *       next()} if it iterates over an {@code Iterable}; and
  *   <li>a try-with-resources statement, which calls {@code close()}.
@@ -126,26 +126,30 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
-    // String conversion of an operand that is a non-String reference calls its toString().
-    if (tree.getKind() == Tree.Kind.PLUS
-        && TypesUtils.isString(TreeUtils.typeOf(tree))
-        && (callsToStringInConcatenation(TreeUtils.typeOf(tree.getLeftOperand()))
-            || callsToStringInConcatenation(TreeUtils.typeOf(tree.getRightOperand())))) {
-      mightHaveSideEffects = true;
+    // String concatenation calls toString() on each operand that is a reference (JLS 5.1.11).
+    if (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree))) {
+      if (stringConversionMightHaveSideEffects(TreeUtils.typeOf(tree.getLeftOperand()))
+          || stringConversionMightHaveSideEffects(TreeUtils.typeOf(tree.getRightOperand()))) {
+        mightHaveSideEffects = true;
+      }
     }
     return super.visitBinary(tree, p);
   }
 
   /**
-   * Returns true if string conversion of an operand of type {@code type}, in a string
-   * concatenation, might call a {@code toString()} method.
+   * Returns true if string conversion (JLS 5.1.11) of a value of the given type might have a side
+   * effect. String conversion of a primitive, a boxed primitive, a {@code String}, or {@code null}
+   * has no side effect. String conversion of any other reference calls its {@code toString()}
+   * method, which might have a side effect.
    *
-   * @param type the type of a string concatenation operand
-   * @return true if string conversion of a value of type {@code type} might call {@code toString()}
+   * @param type the type of an operand of string concatenation
+   * @return true if string conversion of a value of the given type might have a side effect
    */
-  private static boolean callsToStringInConcatenation(TypeMirror type) {
-    TypeKind kind = type.getKind();
-    return !kind.isPrimitive() && kind != TypeKind.NULL && !TypesUtils.isString(type);
+  private static boolean stringConversionMightHaveSideEffects(TypeMirror type) {
+    return !(type.getKind().isPrimitive()
+        || type.getKind() == TypeKind.NULL
+        || TypesUtils.isString(type)
+        || TypesUtils.isBoxedPrimitive(type));
   }
 
   @Override
