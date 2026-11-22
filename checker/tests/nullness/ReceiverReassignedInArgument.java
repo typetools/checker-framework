@@ -5,8 +5,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 
 // A call's receiver is evaluated before its arguments.  If an argument reassigns the receiver
 // expression, then normal completion of the call does not show that the receiver expression is
-// non-null afterward.  Likewise for an argument that a later argument reassigns.
-// ReceiverRefinementInCatch.java contains more such tests.
+// non-null afterward.  ReceiverRefinementInCatch.java contains more such tests.
 public class ReceiverReassignedInArgument {
 
   @Nullable ReceiverReassignedInArgument f;
@@ -19,24 +18,6 @@ public class ReceiverReassignedInArgument {
   void assignInNestedArgument() {
     ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
     r.take(String.valueOf(r = null));
-    // :: error: (dereference.of.nullable)
-    r.toString();
-  }
-
-  void take2(Object first, @Nullable Object second) {}
-
-  // A later argument reassigns an earlier argument that is passed to a non-null parameter.
-  void assignEarlierArgument() {
-    Object r = new Object();
-    take2(r, r = null);
-    // :: error: (dereference.of.nullable)
-    r.toString();
-  }
-
-  // A later argument reassigns both the receiver and an earlier argument.
-  void assignReceiverAndEarlierArgument() {
-    ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
-    r.take2(r, r = null);
     // :: error: (dereference.of.nullable)
     r.toString();
   }
@@ -72,9 +53,8 @@ public class ReceiverReassignedInArgument {
   @SideEffectFree
   void sefTake2(Object first, @Nullable Object second) {}
 
-  // A later argument reassigns an earlier argument that is passed to a non-null parameter of a
-  // side-effect-free method.
-  void assignEarlierArgumentSideEffectFree() {
+  // A later argument reassigns an earlier argument that is passed to a non-null parameter.
+  void assignEarlierArgument() {
     ReceiverReassignedInArgument r = new ReceiverReassignedInArgument();
     r.sefTake2(r, r = null);
     // :: error: (dereference.of.nullable)

@@ -20,7 +20,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.InitializationTransfer;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -36,7 +35,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
@@ -400,9 +398,8 @@ public class NullnessTransfer
    * assumed to be non-null after the invocation.
    *
    * <p>When the flag is turned off, the analysis is sound: it checks that the method is
-   * SideEffectFree, the receiver is unassignable, or the receiver is a {@link MonotonicNonNull}
-   * field whose own receiver is unassignable. Only if one of these is true is the receiver made
-   * non-null. Similar logic is applied to the arguments of the invocation.
+   * SideEffectFree or the receiver is unassignable. Only if either one of the two is true is the
+   * receiver made non-null. Similar logic is applied to the arguments of the invocation.
    *
    * <p>The receiver of a static method invocation is never made non-null, because the invocation
    * does not dereference it.
@@ -437,8 +434,7 @@ public class NullnessTransfer
     if (!n.getTarget().isStatic()
         && (nonNullAssumptionAfterInvocation
             || isMethodSideEffectFree
-            || !receiverExpr.isAssignableByOtherCode()
-            || isMonotonicNonNullFieldWithStableReceiver(receiverExpr))
+            || !receiverExpr.isAssignableByOtherCode())
         && tree != null
         && !argumentsMayReassign(tree.getArguments(), receiverExpr)) {
       // Make receiver non-null.
@@ -450,21 +446,19 @@ public class NullnessTransfer
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
     // case FlowNullness.java.
     // As for the receiver, the refinement is skipped if evaluating a later argument might reassign
-    // the argument expression, as in `m(r, r = null)`.
+    // the argument expression, as in `r.m(r, r = null)`.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-      if (!methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
-        continue;
-      }
-      JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
-      if ((nonNullAssumptionAfterInvocation
-              || isMethodSideEffectFree
-              || !argExpr.isAssignableByOtherCode()
-              || isMonotonicNonNullFieldWithStableReceiver(argExpr))
-          && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
-        makeNonNull(result, n.getArgument(i));
+      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
+        JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
+        if ((nonNullAssumptionAfterInvocation
+                || isMethodSideEffectFree
+                || !argExpr.isAssignableByOtherCode())
+            && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
+          makeNonNull(result, n.getArgument(i));
+        }
       }
     }
 
@@ -491,37 +485,13 @@ public class NullnessTransfer
   }
 
   /**
-   * Returns true if the given expression is an access of a {@link MonotonicNonNull} field whose
-   * receiver is not assignable by other code and contains no method call. Once such an expression
-   * is non-null, no code can make it null again, so a method call does not invalidate the knowledge
-   * that it is non-null.
-   *
-   * @param expr an expression
-   * @return true if {@code expr} is a {@link MonotonicNonNull} field access with a stable receiver
-   */
-  private boolean isMonotonicNonNullFieldWithStableReceiver(JavaExpression expr) {
-    if (!(expr instanceof FieldAccess fieldAccess)) {
-      return false;
-    }
-    JavaExpression fieldReceiver = fieldAccess.getReceiver();
-    // A method call's value can depend on state that does not appear in the expression, such as a
-    // static field that the method reads, so a receiver that contains a method call is not stable
-    // even if MethodCall.isAssignableByOtherCode() returns false.
-    return !fieldReceiver.isAssignableByOtherCode()
-        && !fieldReceiver.containsOfClass(MethodCall.class)
-        && atypeFactory
-            .fromElement(fieldAccess.getField())
-            .hasPrimaryAnnotation(nullnessTypeFactory.MONOTONIC_NONNULL);
-  }
-
-  /**
-   * Returns true if evaluating the given method arguments might reassign the given expression or a
-   * subexpression of it. The expression is the receiver or an argument of the invocation, and
-   * {@code arguments} are the arguments that are evaluated after it. This is conservative. It
-   * returns true if an argument assigns any part of the expression. If the expression is assignable
-   * by other code or contains a method call (whose value might depend on state that does not appear
-   * in the expression), it also returns true if an argument assigns a non-local variable or (unless
-   * {@link #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
+   * Returns true if evaluating the given method arguments might reassign the given receiver
+   * expression or a subexpression of it. The "receiver" may also be an earlier argument of the
+   * invocation. This is conservative. It returns true if an argument assigns any part of the
+   * receiver expression. If the receiver expression is assignable by other code or contains a
+   * method call (whose value might depend on state that does not appear in the expression), it also
+   * returns true if an argument assigns a non-local variable or (unless {@link
+   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
    * side-effect-free.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
@@ -529,21 +499,21 @@ public class NullnessTransfer
    * invocation (an anonymous class's initializers run as part of its constructor), which this
    * method handles as described above.
    *
-   * @param arguments some arguments of a method invocation
-   * @param expr the receiver, or an argument, of the method invocation
-   * @return true if evaluating {@code arguments} might reassign {@code expr}
+   * @param arguments the arguments of a method invocation
+   * @param receiverExpr the receiver of the method invocation
+   * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
    */
   private boolean argumentsMayReassign(
-      List<? extends ExpressionTree> arguments, JavaExpression expr) {
+      List<? extends ExpressionTree> arguments, JavaExpression receiverExpr) {
     if (arguments.isEmpty()) {
       return false;
     }
     // A method call's value can depend on state that does not appear in the expression, such as a
     // static field that the method reads.  (MethodCall.isAssignableByOtherCode() examines only the
     // receiver and arguments.)  So, an assignment to a non-local variable or a call with side
-    // effects might change the value of an expression that contains a method call.
-    boolean exprMayChangeByOtherCode =
-        expr.isAssignableByOtherCode() || expr.containsOfClass(MethodCall.class);
+    // effects might change the value of a receiver that contains a method call.
+    boolean receiverMayChangeByOtherCode =
+        receiverExpr.isAssignableByOtherCode() || receiverExpr.containsOfClass(MethodCall.class);
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -553,19 +523,19 @@ public class NullnessTransfer
 
           @Override
           public Boolean visitAssignment(AssignmentTree tree, Void p) {
-            return assignsExpr(tree.getVariable()) || super.visitAssignment(tree, p);
+            return assignsReceiver(tree.getVariable()) || super.visitAssignment(tree, p);
           }
 
           @Override
           public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            return assignsExpr(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
+            return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
           }
 
           @Override
           public Boolean visitUnary(UnaryTree tree, Void p) {
             switch (tree.getKind()) {
               case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
-                if (assignsExpr(tree.getExpression())) {
+                if (assignsReceiver(tree.getExpression())) {
                   return true;
                 }
               }
@@ -607,27 +577,27 @@ public class NullnessTransfer
           }
 
           /*
-           * Returns true if assigning the given variable might reassign {@code expr}.
+           * Returns true if assigning the given variable might reassign the receiver.
            *
            * @param variable the left-hand side of an assignment
-           * @return true if assigning {@code variable} might reassign {@code expr}
+           * @return true if assigning {@code variable} might reassign the receiver
            */
-          private boolean assignsExpr(ExpressionTree variable) {
+          private boolean assignsReceiver(ExpressionTree variable) {
             JavaExpression assigned = JavaExpression.fromTree(variable);
-            if (expr.containsSyntacticEqualJavaExpression(assigned)) {
+            if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
               return true;
             }
-            return exprMayChangeByOtherCode && !(assigned instanceof LocalVariable);
+            return receiverMayChangeByOtherCode && !(assigned instanceof LocalVariable);
           }
 
           /*
-           * Returns true if invoking the given method or constructor might reassign {@code expr}.
+           * Returns true if invoking the given method or constructor might reassign the receiver.
            *
            * @param executable a method or constructor
-           * @return true if invoking {@code executable} might reassign {@code expr}
+           * @return true if invoking {@code executable} might reassign the receiver
            */
           private boolean mayHaveSideEffect(ExecutableElement executable) {
-            return exprMayChangeByOtherCode
+            return receiverMayChangeByOtherCode
                 && !nonNullAssumptionAfterInvocation
                 && !atypeFactory.isSideEffectFree(executable);
           }
