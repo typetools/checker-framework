@@ -170,6 +170,19 @@ public class AnnotationFileElementTypesTest {
         diagnostics(ajava.getPath()));
   }
 
+  /**
+   * Tests that a named classpath annotation file whose name does not suit its file type yields a
+   * warning.
+   */
+  @Test
+  public void unusableNamedClasspathFile() throws IOException {
+    File classpathDir = tmp.newFolder();
+    write(new File(classpathDir, "Foo.ajava"), "package p;");
+    assertHasDiagnostic(
+        "WARNING: Ignoring checker.jar/Foo.ajava, which is an ajava file; supply it via -Aajava",
+        diagnostics("checker.jar/Foo.ajava", classpathDir));
+  }
+
   /** Tests that a named stub file whose name does not end with {@code .astub} is used. */
   @Test
   public void namedStubFileWithOtherName() throws IOException {
