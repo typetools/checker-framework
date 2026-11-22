@@ -228,7 +228,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    */
   private TypeKind unboxedKind(TypeMirror type, TypeMirror primitiveComponentType) {
     try {
-      return atypeFactory.types.unboxedType(type).getKind();
+      // Erase `type` so that a type variable unboxes to the primitive type of its bound.
+      return atypeFactory.types.unboxedType(atypeFactory.types.erasure(type)).getKind();
     } catch (IllegalArgumentException e) {
       return primitiveComponentType.getKind();
     }

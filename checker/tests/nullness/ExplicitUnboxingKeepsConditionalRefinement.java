@@ -59,6 +59,21 @@ public class ExplicitUnboxingKeepsConditionalRefinement {
     }
   }
 
+  // The receiver's type is a type variable whose bound is Boolean.
+  static class Generic<T extends Boolean> {
+    @SuppressWarnings("nullness:contracts.conditional.postcondition") // the body is irrelevant
+    @EnsuresNonNullIf(expression = "#1", result = true)
+    T isNN(@Nullable Object o) {
+      throw new Error();
+    }
+
+    void ifThen(@Nullable Object o) {
+      if (isNN(o).booleanValue()) {
+        o.hashCode();
+      }
+    }
+  }
+
   int intValue(Integer i) {
     return i.intValue() + i.intValue();
   }

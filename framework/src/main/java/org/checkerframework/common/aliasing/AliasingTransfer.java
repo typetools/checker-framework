@@ -2,6 +2,7 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
@@ -95,7 +96,9 @@ public class AliasingTransfer extends CFTransfer {
     if (!(n instanceof MethodInvocationNode min)) {
       return;
     }
-    if (TreeUtils.isEnumSuperCall(min.getTree())) {
+    // A call without a tree, such as an unboxing call in a custom CFG, is not an enum super call.
+    MethodInvocationTree invocationTree = min.getTree();
+    if (invocationTree != null && TreeUtils.isEnumSuperCall(invocationTree)) {
       // Skipping the init() method for enums.
       return;
     }
