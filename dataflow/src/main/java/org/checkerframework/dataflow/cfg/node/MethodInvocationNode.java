@@ -7,9 +7,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
@@ -59,6 +62,21 @@ public class MethodInvocationNode extends Node {
    * <p>Is set by {@link #setEnhancedForLoop}.
    */
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
+
+  /**
+   * Types that label exceptional edges of this invocation that it follows whenever it throws an
+   * exception, regardless of the type of the exception that it throws. Usually empty.
+   *
+   * <p>If this MethodInvocationNode is a synthetic {@code close()} call on a path on which a
+   * try-with-resources statement suppresses any exception that {@code close()} throws and then
+   * rethrows the primary exception, then these are the types of the primary exception.
+   *
+   * <p>A fact that holds only when the invoked method throws an exception of a particular type,
+   * such as an exceptional postcondition, does not hold on an edge labeled by one of these types.
+   *
+   * <p>Is set by {@link #setAnyExceptionTypes}.
+   */
+  protected Set<TypeMirror> anyExceptionTypes = Collections.emptySet();
 
   /**
    * Creates a MethodInvocationNode.
@@ -142,6 +160,33 @@ public class MethodInvocationNode extends Node {
    */
   public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
     this.enhancedForLoop = enhancedForLoop;
+  }
+
+  /**
+   * Returns the types that label exceptional edges of this invocation that it follows whenever it
+   * throws an exception, regardless of the type of the exception that it throws. Usually empty.
+   *
+   * <p>A fact that holds only when the invoked method throws an exception of a particular type,
+   * such as an exceptional postcondition, does not hold on an edge labeled by one of these types.
+   *
+   * @return the types that label exceptional edges that this invocation follows whenever it throws
+   *     an exception
+   * @see #anyExceptionTypes
+   */
+  public Set<TypeMirror> getAnyExceptionTypes() {
+    return anyExceptionTypes;
+  }
+
+  /**
+   * Sets the types that label exceptional edges of this invocation that it follows whenever it
+   * throws an exception, regardless of the type of the exception that it throws.
+   *
+   * @param anyExceptionTypes the types that label exceptional edges that this invocation follows
+   *     whenever it throws an exception
+   * @see #getAnyExceptionTypes()
+   */
+  public void setAnyExceptionTypes(Set<TypeMirror> anyExceptionTypes) {
+    this.anyExceptionTypes = anyExceptionTypes;
   }
 
   @Override
