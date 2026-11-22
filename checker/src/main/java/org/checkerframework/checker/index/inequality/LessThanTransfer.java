@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.inequality;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -51,7 +52,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     JavaExpression leftJe = JavaExpression.fromNode(left);
     // If evaluating `right` might change the value of `left`, as in `i > (i = 0)`, then the
     // comparison says nothing about the current value of `left`.
-    if (leftJe != null && !leftJe.isAssignableByOtherCode() && !mayBeChangedByLaterOperand(left)) {
+    // If `left` is a conversion that changes its value, as in `bound > f` where the `int` `bound`
+    // is rounded to a `float`, then the comparison says nothing about the value of `leftJe`.
+    if (leftJe != null
+        && !leftJe.isAssignableByOtherCode()
+        && !mayBeChangedByLaterOperand(left)
+        && !isValueChangingConversion(left)) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -62,6 +68,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // right is already bottom, nothing to refine.
         return;
       }
+      lessThanExpressions = lessThanExpressionsWhenComparisonCompletes(lessThanExpressions, right);
       String leftString = leftJe.toString();
       if (!lessThanExpressions.contains(leftString)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
@@ -88,7 +95,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     JavaExpression leftJe = JavaExpression.fromNode(left);
     // If evaluating `right` might change the value of `left`, as in `i >= (i = 0)`, then the
     // comparison says nothing about the current value of `left`.
-    if (leftJe != null && !leftJe.isAssignableByOtherCode() && !mayBeChangedByLaterOperand(left)) {
+    // If `left` is a conversion that changes its value, as in `bound >= f` where the `int` `bound`
+    // is rounded to a `float`, then the comparison says nothing about the value of `leftJe`.
+    if (leftJe != null
+        && !leftJe.isAssignableByOtherCode()
+        && !mayBeChangedByLaterOperand(left)
+        && !isValueChangingConversion(left)) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -99,6 +111,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // right is already bottom, nothing to refine.
         return;
       }
+      lessThanExpressions = lessThanExpressionsWhenComparisonCompletes(lessThanExpressions, right);
       String leftIncremented = incrementedExpression(leftJe);
       if (!lessThanExpressions.contains(leftIncremented)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
@@ -130,6 +143,31 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         }
         AnnotationMirror refine = factory.createLessThanQualifier(expressions);
         return recreateTransferResult(refine, result);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the given expressions that {@code node} is less than, except those whose value might
+   * change after the value of {@code node} is computed and before the comparison that contains
+   * {@code node} completes. For example, if {@code x} is {@code @LessThan("bound")}, then the
+   * result for {@code (bound = x)} omits {@code "bound"}, because after the assignment {@code x}
+   * equals {@code bound}.
+   *
+   * @param expressions the expressions that {@code node} is less than
+   * @param node a node in an operand of a comparison
+   * @return the expressions in {@code expressions} that {@code node} is still less than when the
+   *     comparison completes
+   */
+  private List<String> lessThanExpressionsWhenComparisonCompletes(
+      List<String> expressions, Node node) {
+    LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
+    List<String> result = new ArrayList<>(expressions.size());
+    for (String expression : expressions) {
+      AnnotationMirror anno = factory.createLessThanQualifier(Collections.singletonList(expression));
+      if (!containsExpressionChangedBeforeComparisonCompletes(anno, node)) {
+        result.add(expression);
       }
     }
     return result;

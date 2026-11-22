@@ -957,6 +957,15 @@ public abstract class CFAbstractTransfer<
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
       if (!firstValue.equals(secondValue)) {
+        // `firstValue` describes the value of `firstNode` when it was evaluated. If it mentions an
+        // expression that might change before the comparison completes, as `arr` does in `limit
+        // == (j = (arr = c).length)` if `limit` is `@LTLengthOf("arr")`, then it might not hold
+        // for `secondNode` afterward.
+        for (AnnotationMirror anno : firstValue.getAnnotations()) {
+          if (containsExpressionChangedBeforeComparisonCompletes(anno, firstNode)) {
+            return res;
+          }
+        }
         List<Node> secondParts = nodesWithValueOf(secondNode);
         for (Node secondPart : secondParts) {
           JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
@@ -1406,6 +1415,11 @@ public abstract class CFAbstractTransfer<
    * is an index for {@code b} afterward. To check {@code node} itself, use {@link
    * #mayBeChangedByLaterOperand}.
    *
+   * <p>If {@code node} is an assignment, cast, or conversion, its annotation describes the value of
+   * its operand, so this method considers the writes after that operand is evaluated, including the
+   * writes by the assignment. For example, in {@code (bound = x) > limit}, the type
+   * {@code @LessThan("bound")} of {@code x} does not hold after {@code bound = x}.
+   *
    * @param anno an annotation of {@code node}
    * @param node a node in an operand of a comparison
    * @return true if {@code anno} contains a Java expression whose value might change after {@code
@@ -1417,6 +1431,7 @@ public abstract class CFAbstractTransfer<
     if (!dependentTypesHelper.hasDependentAnnotations()) {
       return false;
     }
+    node = valueSource(node);
     TreePath path = sourcePath(node);
     if (path == null) {
       return false;
@@ -1436,6 +1451,47 @@ public abstract class CFAbstractTransfer<
         },
         anno);
     return result[0];
+  }
+
+  /**
+   * Returns the node whose value the given node has, looking through assignments, casts, and
+   * conversions. For example, returns {@code x} for {@code (int) (bound = x)}.
+   *
+   * @param node a node
+   * @return the innermost operand of the chain of assignments, casts, and conversions that starts
+   *     with {@code node}
+   */
+  private static Node valueSource(Node node) {
+    while (true) {
+      if (node instanceof AssignmentNode assignment) {
+        node = assignment.getExpression();
+      } else if (node instanceof TypeCastNode cast) {
+        node = cast.getOperand();
+      } else if (node instanceof WideningConversionNode widening) {
+        node = widening.getOperand();
+      } else if (node instanceof NarrowingConversionNode narrowing) {
+        node = narrowing.getOperand();
+      } else {
+        return node;
+      }
+    }
+  }
+
+  /**
+   * Returns true if the given node, after looking through value-preserving widening conversions, is
+   * a conversion that might change the value of its operand, such as the conversion of {@code i}
+   * to {@code float} in {@code i < 16_777_216f}. {@link JavaExpression#fromNode} ignores the
+   * conversion, so the expression for such a node does not have the node's value.
+   *
+   * @param node a node
+   * @return true if {@code node} is a conversion that might change the value of its operand
+   */
+  protected static boolean isValueChangingConversion(Node node) {
+    while (node instanceof WideningConversionNode widening
+        && isValuePreservingConversion(widening)) {
+      node = widening.getOperand();
+    }
+    return node instanceof WideningConversionNode || node instanceof NarrowingConversionNode;
   }
 
   /**

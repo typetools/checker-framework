@@ -1094,8 +1094,14 @@ public final class TypesUtils {
       return true;
     }
     if (a.getKind() == TypeKind.ARRAY && b.getKind() == TypeKind.ARRAY) {
-      return mayHaveCommonSubtype(
-          ((ArrayType) a).getComponentType(), ((ArrayType) b).getComponentType(), types);
+      TypeMirror componentA = ((ArrayType) a).getComponentType();
+      TypeMirror componentB = ((ArrayType) b).getComponentType();
+      // `types.isSubtype` accepts primitive widening, such as `int` to `long`, but an `int[]` is
+      // never a `long[]`.
+      if (componentA.getKind().isPrimitive() || componentB.getKind().isPrimitive()) {
+        return types.isSameType(componentA, componentB);
+      }
+      return mayHaveCommonSubtype(componentA, componentB, types);
     }
     if (a.getKind() == TypeKind.DECLARED && b.getKind() == TypeKind.DECLARED) {
       TypeElement elementA = (TypeElement) ((DeclaredType) a).asElement();

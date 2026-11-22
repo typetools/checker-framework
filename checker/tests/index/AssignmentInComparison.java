@@ -218,4 +218,37 @@ public class AssignmentInComparison {
       @LTLengthOf("arr") int y = i;
     }
   }
+
+  void equalityReassignsArray(int j, int[] c) {
+    if (lessThanArrLength == (j = (arr = c).length)) {
+      // `lessThanArrLength` is less than the length of the array that `arr` referred to before the
+      // right operand reassigned `arr`.
+      // :: error: [assignment]
+      @LTLengthOf("arr") int y = j;
+    }
+  }
+
+  // The offset is the constant 1, even though the subtrahend is an assignment.
+  static void constantOffsetAssignment(int[] a, int j, int k) {
+    if (j - (k = 1) < a.length) {
+      @LTEqLengthOf("a") int x = j;
+    }
+  }
+
+  static void comparisonWithNaN(int i, double bound) {
+    if (i > bound) {
+    } else {
+      // `bound` might be NaN, in which case `i > bound` and `i <= bound` are both false.
+      // :: error: [assignment]
+      @LessThan("bound + 1") int y = i;
+    }
+  }
+
+  static void lossyPromotion(int bound, float f) {
+    if (bound >= f) {
+      // `bound` is rounded to a `float`, so `f` might be greater than `bound`.
+      // :: error: [assignment]
+      @LessThan("bound + 1") float y = f;
+    }
+  }
 }

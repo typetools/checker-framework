@@ -13,6 +13,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class provides methods shared by the Index Checker's internal checkers in their transfer
@@ -38,7 +39,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
     // Refine the else branch, which is the inverse of the then branch.
-    refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    if (!mayBeNaN(rfi)) {
+      refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    }
 
     return rfi.newResult;
   }
@@ -57,7 +60,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
     // Refine the else branch.
-    refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    if (!mayBeNaN(rfi)) {
+      refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    }
 
     return rfi.newResult;
   }
@@ -76,7 +81,9 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
     // Refine the else branch.
-    refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    if (!mayBeNaN(rfi)) {
+      refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    }
     return rfi.newResult;
   }
 
@@ -94,8 +101,23 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
     // Refine the else branch.
-    refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    if (!mayBeNaN(rfi)) {
+      refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    }
     return rfi.newResult;
+  }
+
+  /**
+   * Returns true if an operand of the given comparison might be NaN. Every comparison with NaN is
+   * false, so the else branch of such a comparison does not imply the inverse comparison: if
+   * {@code d} is NaN, then both {@code i > d} and {@code i <= d} are false.
+   *
+   * @param rfi the refinement information for a numerical comparison
+   * @return true if the comparison is a floating-point comparison
+   */
+  private static boolean mayBeNaN(IndexRefinementInfo rfi) {
+    return TypesUtils.isFloatingPoint(rfi.left.getType())
+        || TypesUtils.isFloatingPoint(rfi.right.getType());
   }
 
   /**

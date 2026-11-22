@@ -11,6 +11,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.junit.Assert;
@@ -259,5 +260,18 @@ public class TypesUtilsCanAliasTest {
     assertCanAliasConservative(false, types.getArrayType(integer), types.getArrayType(string));
     assertCanAliasConservative(
         false, types.getArrayType(number), types.getArrayType(types.getArrayType(number)));
+  }
+
+  /** Arrays with different primitive component types never alias, even if one widens to the other. */
+  @Test
+  public void conservativePrimitiveArrays() {
+    TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
+    TypeMirror longType = types.getPrimitiveType(TypeKind.LONG);
+    TypeMirror intArray = types.getArrayType(intType);
+    TypeMirror longArray = types.getArrayType(longType);
+    assertCanAliasConservative(true, intArray, types.getArrayType(intType));
+    assertCanAliasConservative(false, intArray, longArray);
+    assertCanAliasConservative(false, types.getArrayType(intArray), types.getArrayType(longArray));
+    assertCanAliasConservative(false, intArray, types.getArrayType(type("java.lang.Integer")));
   }
 }
