@@ -5530,9 +5530,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           continue;
         }
         for (ExecutableElement declaration : declarations) {
+          int declarationIndex = i + offset;
+          if (declarationIndex >= declaration.getParameters().size()) {
+            continue;
+          }
+          // Use the parameter's type in the functional interface type that the method reference
+          // implements, so that a type argument such as the `SafeCallback` of
+          // `Target<SafeCallback>` supplies the purity of its functional method.
+          ExecutableType declarationType =
+              (ExecutableType) types.asMemberOf(overriddenType.getUnderlyingType(), declaration);
           EnumSet<PurityKind> provided =
               PurityChecker.guaranteedFunctionalArgumentPurity(
-                  atypeFactory, declaration, i + offset, parameterFunction, env);
+                  atypeFactory,
+                  declaration,
+                  declarationIndex,
+                  declarationType.getParameterTypes().get(declarationIndex),
+                  parameterFunction,
+                  env);
           if (!provided.containsAll(assumed)) {
             // The error message names the first declaration whose calls lack the guarantee.
             if (mightRelyOnFunctionalParameter(referenced, params.get(i), parameterFunction)) {

@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -371,22 +372,60 @@ public final class PurityChecker {
     if (index < 0 || index >= parameters.size()) {
       return EnumSet.noneOf(PurityKind.class);
     }
+    return guaranteedFunctionalArgumentPurity(
+        annoProvider, declaration, index, parameters.get(index).asType(), parameterFunction, env);
+  }
+
+  /**
+   * Returns the purity that a call through {@code declaration} guarantees of {@code
+   * parameterFunction}, as implemented by the argument that the call passes to the parameter at
+   * {@code index}, whose type at the call is {@code parameterType}. See {@link
+   * #guaranteedFunctionalArgumentPurity(AnnotationProvider, ExecutableElement, int,
+   * ExecutableElement, ProcessingEnvironment)}.
+   *
+   * <p>{@code parameterType} can be more specific than the declared type of the parameter: for
+   * example, when {@code declaration} is a member of a generic type and the parameter's declared
+   * type is one of the type's type variables, {@code parameterType} is the type argument that the
+   * receiver type supplies. Every argument has that type, so its implementation of {@code
+   * parameterFunction} has the purity that the type's implementation promises. A call checks its
+   * arguments against {@code declaration}'s purity annotation only if the declared type of the
+   * parameter is a functional interface, however.
+   *
+   * @param annoProvider the annotation provider
+   * @param declaration a method that a call might invoke
+   * @param index the 0-based index of a formal parameter of {@code declaration}
+   * @param parameterType the type of the parameter at {@code index}, as a member of the receiver
+   *     type of the call; its declared type if the receiver type is not known
+   * @param parameterFunction a functional method that might be called on the argument
+   * @param env the processing environment
+   * @return the purity that a call through {@code declaration} guarantees of the argument
+   */
+  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
+      AnnotationProvider annoProvider,
+      ExecutableElement declaration,
+      int index,
+      TypeMirror parameterType,
+      ExecutableElement parameterFunction,
+      ProcessingEnvironment env) {
+    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
     ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
-    if (declarationFunction == null
-        || !(isSameOrOverrides(parameterFunction, declarationFunction, env)
+    if (declarationFunction != null
+        && (isSameOrOverrides(parameterFunction, declarationFunction, env)
             || isSameOrOverrides(declarationFunction, parameterFunction, env))) {
-      TypeMirror parameterType = parameters.get(index).asType();
-      ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
-      if (implementation == null) {
-        return EnumSet.noneOf(PurityKind.class);
-      }
-      EnumSet<PurityKind> result = PurityUtils.getPurityKinds(annoProvider, implementation);
-      PurityUtils.addDeterminismOfVoidCall(result, implementation.getReturnType());
-      return result;
+      result.addAll(functionalParameterKinds(annoProvider, declaration, env));
+      result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
+      PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
     }
-    EnumSet<PurityKind> result = functionalParameterKinds(annoProvider, declaration, env);
-    result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
-    PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
+    if (parameterType.getKind() == TypeKind.WILDCARD) {
+      TypeMirror extendsBound = ((WildcardType) parameterType).getExtendsBound();
+      parameterType =
+          extendsBound != null ? extendsBound : declaration.getParameters().get(index).asType();
+    }
+    ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
+    if (implementation != null) {
+      result.addAll(PurityUtils.getPurityKinds(annoProvider, implementation));
+      PurityUtils.addDeterminismOfVoidCall(result, implementation.getReturnType());
+    }
     return result;
   }
 
