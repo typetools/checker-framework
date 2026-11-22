@@ -94,10 +94,10 @@ a   [ LocalVariable ]
 a = 0   [ Assignment ]
 expression statement a = 0   [ ExpressionStatement ]
 (this)   [ ImplicitThis ]
-(this).test   [ MethodAccess ]
 a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a - b)   [ NumericalSubtraction ]
+(this).test   [ MethodAccess ]
 ~~~~~~~~~
 TransferInput#39
 After:   busy expressions = (a - b)

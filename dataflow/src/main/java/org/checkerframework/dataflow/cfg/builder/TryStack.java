@@ -61,6 +61,26 @@ import org.plumelib.util.ArraySet;
     return labels;
   }
 
+  /**
+   * Returns the set of possible {@link Label}s where control might transfer when an exception of
+   * the given type is thrown, looking past finally blocks. Each label is the entry of a catch block
+   * or the exit label. If the exception reaches a finally block, then the result contains the
+   * labels to which the finally block rethrows it, rather than the entry of the finally block.
+   *
+   * @param thrown a type of exception, such as {@code java.io.IOException}
+   * @return where control might transfer when {@code thrown} is thrown, other than finally blocks
+   */
+  public Set<Label> possibleLabelsPastFinally(TypeMirror thrown) {
+    Set<Label> labels = new ArraySet<>(1);
+    for (TryFrame frame : frames) {
+      if (!(frame instanceof TryFinallyFrame) && frame.possibleLabels(thrown, labels)) {
+        return labels;
+      }
+    }
+    labels.add(exitLabel);
+    return labels;
+  }
+
   @Override
   public String toString() {
     StringJoiner sj = new StringJoiner(System.lineSeparator());
