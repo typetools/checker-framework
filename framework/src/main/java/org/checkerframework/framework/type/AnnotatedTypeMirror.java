@@ -463,7 +463,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * class file, so the result can contain annotations that are not written in source code. In
    * particular, for a variable whose type is inferred, such as one declared using {@code var}, the
    * result can be non-empty even though no annotation is written. See {@link
-   * AnnotatedTypeFactory#isVariableTypeInferred}.
+   * org.checkerframework.javacutil.TreeUtils#isVariableTypeInferred}.
    *
    * @return the set of explicitly written annotations on this type that are supported by this
    *     checker
