@@ -384,6 +384,8 @@ public class Java8InferenceContext {
           return true;
         }
         for (int i = 0; i < bounds1.size(); i++) {
+          // A bound of an intersection is not an enclosing type, but it may contain one.  The
+          // bounds themselves are compared by areMutualSubtypes, where needed.
           if (!enclosingTypesAreMutualSubtypes(bounds1.get(i), bounds2.get(i), visitedWildcards)) {
             return false;
           }

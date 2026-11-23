@@ -1529,13 +1529,17 @@ public class InferenceFactory {
   public List<AbstractType> getSubsTypeArgs(
       List<AbstractType> typeArgs, List<Variable> variables, Collection<Variable> instantiated) {
     // The fresh type variables are substituted without copying, so that every use of one refers to
-    // the same object.
+    // the same object, which keeps the identity links between fresh type variables whose bounds
+    // refer to one another.
     Map<TypeVariable, AnnotatedTypeMirror> freshMap = new HashMap<>();
     for (int i = 0; i < typeArgs.size(); i++) {
       freshMap.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
-    // The instantiations are substituted by copying, which also applies the primary annotations
-    // written on a use of a variable, such as `@Nullable` in `Pair<@Nullable A, B>`.
+    // The instantiations are substituted by copying:  each use of a variable in `instantiated` is
+    // replaced by its own copy of the instantiation, with the use's primary annotations, if any,
+    // replacing the instantiation's (see TypeVariableSubstitutor#substituteTypeVariable), such as
+    // `@Nullable` in `Pair<@Nullable A, B>`.  Copying also keeps the substitution from mutating the
+    // instantiation.
     Map<TypeVariable, AnnotatedTypeMirror> instantiatedMap = new HashMap<>();
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
