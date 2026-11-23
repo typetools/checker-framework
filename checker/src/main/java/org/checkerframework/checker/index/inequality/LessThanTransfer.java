@@ -19,6 +19,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
 
 /**
@@ -49,6 +50,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       TransferInput<CFValue, CFStore> in) {
     // left > right so right < left
     // Refine right to @LessThan("left")
+    if (isFloatingPointComparison(left, right)) {
+      return;
+    }
     JavaExpression leftJe = JavaExpression.fromNode(left);
     // If evaluating `right` might change the value of `left`, as in `i > (i = 0)`, then the
     // comparison says nothing about the current value of `left`.
@@ -92,6 +96,9 @@ public class LessThanTransfer extends IndexAbstractTransfer {
 
     // left > right so right is less than left
     // Refine right to @LessThan("left")
+    if (isFloatingPointComparison(left, right)) {
+      return;
+    }
     JavaExpression leftJe = JavaExpression.fromNode(left);
     // If evaluating `right` might change the value of `left`, as in `i >= (i = 0)`, then the
     // comparison says nothing about the current value of `left`.
@@ -190,6 +197,22 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     } else {
       return Collections.emptyList();
     }
+  }
+
+  /**
+   * Returns true if the comparison of the given operands is performed in floating point. Such a
+   * comparison does not imply an integral bound. Converting an integral value to {@code float} or
+   * {@code double} might round it, as in {@code limit >= (f = i)} where {@code limit} is 16777216,
+   * {@code i} is 16777217, and {@code f} is a {@code float}. Furthermore, a comparison with NaN is
+   * false, so the negation of a comparison does not imply the opposite comparison.
+   *
+   * @param left the left operand of a comparison
+   * @param right the right operand of the comparison
+   * @return true if the comparison of {@code left} and {@code right} is performed in floating point
+   */
+  private static boolean isFloatingPointComparison(Node left, Node right) {
+    return TypesUtils.isFloatingPoint(left.getType())
+        || TypesUtils.isFloatingPoint(right.getType());
   }
 
   /**
