@@ -838,7 +838,11 @@ public class VariableBounds {
     // instantiations to the bounds below may replace it.  This is the result of applying
     // instantiations to that bound, or null if the bound is unchanged.
     AbstractType refreshedInstantiation = null;
-    for (Set<AbstractType> boundList : bounds.values()) {
+    // Proper bounds that were replaced by a different proper bound, with their kinds; see below.
+    List<BoundKind> refreshedKinds = null;
+    List<AbstractType> refreshedBounds = null;
+    for (BoundKind kind : BoundKind.values()) {
+      Set<AbstractType> boundList = getBoundsOfKind(kind);
       if (boundList.isEmpty()) {
         // Most variables have no bound of most kinds, and iterating a LinkedHashSet allocates.
         continue;
@@ -858,6 +862,14 @@ public class VariableBounds {
           boundListChanged = true;
           if (!boundList.contains(newBound)) {
             changed = true;
+            if (bound.isProper()) {
+              if (refreshedKinds == null || refreshedBounds == null) {
+                refreshedKinds = new ArrayList<>();
+                refreshedBounds = new ArrayList<>();
+              }
+              refreshedKinds.add(kind);
+              refreshedBounds.add(newBound);
+            }
           }
         }
         newBounds.add(newBound);
@@ -867,6 +879,17 @@ public class VariableBounds {
         // and keeps each remaining bound at the position of its first occurrence.
         boundList.clear();
         boundList.addAll(newBounds);
+      }
+    }
+
+    // A proper bound changes only when it has an origin and the instantiation of a variable in that
+    // origin has changed; see ProperType#applyInstantiations.  The constraints implied by the old
+    // bound and its complementary bounds might already have been reduced, while the instantiation
+    // still ignored annotations, so they say nothing about the annotations of the new bound.
+    // Recheck the new bound against its complementary bounds, so that a conflict yields false.
+    if (refreshedKinds != null && refreshedBounds != null) {
+      for (int i = 0; i < refreshedBounds.size(); i++) {
+        addConstraintsFromComplementaryBounds(null, refreshedKinds.get(i), refreshedBounds.get(i));
       }
     }
     constraints.applyInstantiations();
