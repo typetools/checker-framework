@@ -55,4 +55,22 @@ public class RecordPatternAccessorException {
       x.hashCode();
     }
   }
+
+  record Empty() {}
+
+  // A record pattern with no components calls no accessor method.
+  void zeroComponentRecordPattern(Object o) {
+    @Nullable Object x = "";
+    try {
+      x = null;
+      switch (o) {
+        case Empty() -> {}
+        default -> {}
+      }
+      x = "";
+    } catch (MatchException e) {
+      // The catch block is unreachable.
+      x.hashCode();
+    }
+  }
 }

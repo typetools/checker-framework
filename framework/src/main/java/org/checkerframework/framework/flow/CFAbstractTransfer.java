@@ -1436,10 +1436,16 @@ public abstract class CFAbstractTransfer<
     S result = store.copy();
     result.updateForUnknownSideEffect();
     if (!refineSelectorExpression) {
-      // An accessor might have changed the selector expression, even if the selector expression
-      // is a field with a monotonic qualifier or a call to a pure method, which
-      // updateForUnknownSideEffect does not unrefine.
-      result.clearValue(JavaExpression.fromNode(n.getSwitchOperand().getExpression()));
+      JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+      // An accessor might have changed the value of a selector expression that contains a method
+      // call, even a call to a pure method, by changing the state that the method reads.
+      // updateForUnknownSideEffect might not unrefine such an expression.  For a field access,
+      // updateForUnknownSideEffect keeps only facts that an assignment cannot falsify, such as a
+      // fact about an unassignable field or a monotonic qualifier like @MonotonicNonNull, so
+      // those facts remain valid.
+      if (!(selector instanceof FieldAccess) || selector.containsOfClass(MethodCall.class)) {
+        result.clearValue(selector);
+      }
     }
     return result;
   }

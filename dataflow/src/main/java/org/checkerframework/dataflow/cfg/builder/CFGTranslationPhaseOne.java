@@ -2483,17 +2483,38 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (int i = 0; i < components.size(); i++) {
         TypeMirror componentType = types.asMemberOf(recordType, components.get(i));
         Tree nestedPattern = nestedPatterns.get(i);
-        // A nested type pattern that matches every non-null value also matches null.  A nested
-        // record pattern does not match null.
+        // A nested pattern must also match a null component.  A nested record pattern does not
+        // match null.  A nested type pattern matches null only if it is unconditional for the
+        // component type (JLS 14.30.2), which depends only on erasures (JLS 14.30.3).  A type
+        // pattern whose type is a non-leftmost bound of a type variable or intersection type
+        // matches every non-null value but not null.
         boolean unconditional =
             nestedPattern.getKind().name().equals("ANY_PATTERN")
-                || (nestedPattern instanceof BindingPatternTree
-                    && matchesEveryNonNullValue(nestedPattern, componentType));
+                || (nestedPattern instanceof BindingPatternTree bindingPattern
+                    && isUnconditional(bindingPattern, componentType));
         if (!unconditional) {
           return false;
         }
       }
       return true;
+    }
+
+    /**
+     * Returns true if the type pattern {@code bindingPattern} is unconditional for {@code type}
+     * (JLS 14.30.3), so it matches every value of type {@code type}, including null when it is
+     * nested in a record pattern.
+     *
+     * @param bindingPattern a type pattern
+     * @param type the type of the values that are tested against {@code bindingPattern}
+     * @return true if {@code bindingPattern} is unconditional for {@code type}
+     */
+    private boolean isUnconditional(BindingPatternTree bindingPattern, TypeMirror type) {
+      TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
+      if (type.getKind().isPrimitive()) {
+        // Avoid treating a primitive widening conversion, such as int to float, as a subtype.
+        return types.isSameType(type, patternType);
+      }
+      return TypesUtils.isErasedSubtype(type, patternType, types);
     }
 
     /**
@@ -2544,8 +2565,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
         boolean labelsMightHaveSideEffects = false;
-        // True if a label contains a record pattern.  Matching it invokes record accessors, which
-        // might throw an exception even if they are side-effect-free.
+        // True if a label contains a record pattern with at least one component.  Matching it
+        // invokes record accessors, which might throw an exception even if they are
+        // side-effect-free.  A record pattern with no components, such as `Empty()`, invokes no
+        // accessor.
         boolean labelsInvokeAccessors = false;
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
@@ -2554,7 +2577,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             // even if the match fails.  mightHaveSideEffects also examines nested record patterns.
             labelsMightHaveSideEffects = true;
           }
-          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+          if (TreeUtils.isDeconstructionPatternTree(exprTree)
+              && !DeconstructionPatternUtils.getNestedPatterns(exprTree).isEmpty()) {
             labelsInvokeAccessors = true;
           }
         }

@@ -10,6 +10,7 @@
 // only its effect on the switch selector expression.
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RecordAccessorSideEffects {
@@ -88,5 +89,41 @@ public class RecordAccessorSideEffects {
       // :: error: [dereference.of.nullable]
       f.hashCode();
     }
+  }
+
+  // An impure accessor might reassign a @MonotonicNonNull selector field, but cannot make it null.
+
+  record Reassigning(int x) implements Shape3 {
+    @Override
+    public int x() {
+      f = null;
+      return 0;
+    }
+  }
+
+  record Other3(int y) implements Shape3 {}
+
+  sealed interface Shape3 permits Reassigning, Other3 {}
+
+  @MonotonicNonNull Shape3 monotonicSelector;
+
+  void monotonicNonNullSelector(Shape3 s) {
+    monotonicSelector = s;
+    try {
+      switch (monotonicSelector) {
+        case Reassigning(int x) when x > 0 -> {
+          monotonicSelector.hashCode();
+        }
+        case Reassigning(int x) -> {
+          monotonicSelector.hashCode();
+        }
+        case Other3 o -> {
+          monotonicSelector.hashCode();
+        }
+      }
+    } catch (MatchException e) {
+      monotonicSelector.hashCode();
+    }
+    monotonicSelector.hashCode();
   }
 }
