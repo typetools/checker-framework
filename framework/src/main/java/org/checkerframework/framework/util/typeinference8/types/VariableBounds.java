@@ -894,6 +894,27 @@ public class VariableBounds {
   }
 
   /**
+   * Returns the variables that the origins (see {@link AbstractType#getOriginInferenceVariables})
+   * of the bounds against this variable, and of its instantiation, contain. Their instantiations
+   * determine the ignored positions of those bounds, so these are dependencies for annotations
+   * only: resolution of the Java types does not depend on them.
+   *
+   * @return the variables that the origins of this variable's bounds and instantiation contain
+   */
+  public Collection<Variable> getVariablesContainedInBoundOrigins() {
+    List<Variable> contained = new ArrayList<>();
+    for (Set<AbstractType> boundList : bounds.values()) {
+      for (AbstractType bound : boundList) {
+        contained.addAll(bound.getOriginInferenceVariables());
+      }
+    }
+    if (instantiation != null) {
+      contained.addAll(instantiation.getOriginInferenceVariables());
+    }
+    return contained;
+  }
+
+  /**
    * Returns the instantiation of this variable, or null if this variable has no instantiation.
    *
    * @return the instantiation of this variable, or null

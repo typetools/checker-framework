@@ -1537,9 +1537,13 @@ public class InferenceFactory {
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
-    // The instantiations of the variables in `instantiated` are substituted first, by copying them,
-    // so that a primary annotation on a use of such a variable replaces the instantiation's
-    // annotation, as in UseOfVariable#applyInstantiations.
+    // The instantiations of the variables in `instantiated` are substituted first.  Each use of a
+    // variable in `instantiated` is replaced by its own copy of the instantiation, with the use's
+    // primary annotations, if any, replacing the instantiation's (see
+    // TypeVariableSubstitutor#substituteTypeVariable), as in UseOfVariable#applyInstantiations.
+    // Copying also keeps the substitution from mutating the instantiation.  A use of a variable in
+    // `variables` is replaced by the fresh type variable itself, without copying, which keeps the
+    // identity links between fresh type variables whose bounds refer to one another.
     Map<TypeVariable, AnnotatedTypeMirror> instantiatedMap = new HashMap<>();
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();

@@ -941,6 +941,11 @@ public class ProperType extends AbstractType {
     return origin;
   }
 
+  @Override
+  public Collection<Variable> getOriginInferenceVariables() {
+    return originVariables;
+  }
+
   /**
    * Returns true if {@code a} and {@code b} have the same Java type, each is a subtype of the
    * other, as is each pair of their corresponding enclosing types (see {@link
