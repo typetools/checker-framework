@@ -817,14 +817,15 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * A literal usually merges the then-store and else-store of its input, as most nodes do; see
-   * {@link #createTransferResult}.
+   * Returns a TransferResult whose value is the literal's value according to the type factory.
    *
-   * <p>The exception is a boolean literal that is the right operand of a boolean operator such as
-   * {@code ==} or {@code &}, possibly within {@code !} operators, casts, and explicit calls to
-   * {@code booleanValue()}. The then-store and else-store of its input describe the operator's left
-   * operand, so the literal passes them along for the operator to use; see {@link
-   * #createTransferResultOfBooleanOperator}.
+   * <p>If {@code n} is a boolean literal that is the right operand of {@code ==}, {@code !=},
+   * {@code &}, {@code |}, or {@code ^} (possibly within parentheses, {@code !} operators, casts,
+   * and explicit calls to {@code booleanValue()}), the result's then-store and else-store are the
+   * then-store and else-store of {@code in}. These describe the operator's left operand, and {@link
+   * #createTransferResultOfBooleanOperator} uses them to compute the operator's then-store and
+   * else-store. Otherwise, the result's stores are those of {@code in}, merged as by {@link
+   * #createTransferResult(CFAbstractValue, TransferInput)}.
    */
   @Override
   public TransferResult<V, S> visitValueLiteral(ValueLiteralNode n, TransferInput<V, S> in) {
