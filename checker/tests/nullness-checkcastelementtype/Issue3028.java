@@ -122,6 +122,26 @@ public class Issue3028 {
     StringList s = (StringList) t;
   }
 
+  <T extends List<@Nullable String> & Runnable>
+      void unsafeDowncastToNonGenericSubclassFromIntersectionListFirst(T t) {
+    // :: warning: [cast.unsafe]
+    StringList s = (StringList) t;
+  }
+
+  <T extends Runnable & List<@NonNull String>> void downcastToNonGenericSubclassFromIntersection(
+      T t) {
+    StringList s = (StringList) t;
+  }
+
+  <T extends Runnable & List<@NonNull String>> void downcastFromIntersection(T t) {
+    ArrayList<@NonNull String> list = (ArrayList<@NonNull String>) t;
+  }
+
+  <T extends Runnable & List<@Nullable String>> void unsafeDowncastFromIntersection(T t) {
+    // :: warning: [cast.unsafe]
+    ArrayList<@NonNull String> list = (ArrayList<@NonNull String>) t;
+  }
+
   void upcastToObject(List<@Nullable String> list) {
     Object o = (Object) list;
   }
