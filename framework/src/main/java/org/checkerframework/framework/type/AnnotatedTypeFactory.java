@@ -3296,13 +3296,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeKind exprKind = exprType.getKind();
     TypeKind widenedKind = widenedType.getKind();
 
-    if (!TypeKindUtils.isNumeric(widenedKind)) {
+    if (!TypeKindUtils.isNumericPrimitive(widenedKind)) {
       // The target type is not a numeric primitive, so primitive widening is not applicable.
       return exprType;
     }
 
     AnnotatedPrimitiveType exprPrimitiveType;
-    if (TypeKindUtils.isNumeric(exprKind)) {
+    if (TypeKindUtils.isNumericPrimitive(exprKind)) {
       exprPrimitiveType = (AnnotatedPrimitiveType) exprType;
     } else if (TypesUtils.isNumericBoxed(exprType.getUnderlyingType())) {
       exprPrimitiveType = getUnboxedType((AnnotatedDeclaredType) exprType);
@@ -3429,7 +3429,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
         TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
-    if (TypeKindUtils.isNumeric(resultTypeKind)) {
+    if (TypeKindUtils.isNumericPrimitive(resultTypeKind)) {
       TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
       AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
       AnnotatedPrimitiveType rightUnboxed = applyUnboxing(right);

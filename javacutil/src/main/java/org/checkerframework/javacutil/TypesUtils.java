@@ -506,9 +506,21 @@ public final class TypesUtils {
    *
    * @param type a type
    * @return true if the argument is a primitive numeric type
+   * @deprecated use {@link #isNumericPrimitive}
    */
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeMirror type) {
-    return TypeKindUtils.isNumeric(type.getKind());
+    return isNumericPrimitive(type);
+  }
+
+  /**
+   * Returns true iff the argument is a primitive numeric type.
+   *
+   * @param type a type
+   * @return true if the argument is a primitive numeric type
+   */
+  public static boolean isNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isNumericPrimitive(type.getKind());
   }
 
   /** The fully-qualified names of the numeric boxed types. */
