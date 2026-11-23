@@ -414,11 +414,9 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Passes each annotation file of type {@code fileType} at the given file system location to
-   * {@code action}. Passes the files in a directory in order of their names, and the entries in an
-   * archive in the order that the archive stores them. Passes an archive entry while its archive is
-   * open, and reads the entry's contents just before passing it, so an archive's entries need not
-   * all be in memory at once.
+   * Runs {@code action} on each annotation file of type {@code fileType} at the given file system
+   * location. Passes the files under a directory in order of their names, and the entries in an
+   * archive in the order that the archive stores them.
    *
    * <p>If {@code location} is a file, then it is used if it is an archive (see {@link #isArchive})
    * or if its name ends with the extension of {@code fileType} ({@code .astub} for a stub file or
@@ -562,9 +560,9 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Passes each annotation file of type {@code fileType} at the given file system location to
-   * {@code action}, as described in {@link #forEachAnnotationFile(File, AnnotationFileType,
-   * Consumer, Consumer)}.
+   * Runs {@code action} on each annotation file of type {@code fileType} at the given file system
+   * location, as described in {@link #forEachAnnotationFile(File, AnnotationFileType, Consumer,
+   * Consumer)}.
    *
    * @param location a file or directory that the user named, or that was found by searching a
    *     directory
@@ -601,6 +599,8 @@ public class AnnotationFileUtil {
       String name = location.getName();
       if (isArchive(name)) {
         if (isUserSupplied) {
+          // Passes an archive entry while its archive is open, and reads the entry's contents just
+          // before passing it, so an archive's entries need not all be in memory at once.
           forEachArchiveEntry(location, fileType, action);
         } else {
           ignoredArchiveAction.accept(location);
@@ -612,8 +612,8 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Passes each annotation file of type {@code fileType} in the given archive to {@code action},
-   * while the archive is open.
+   * Opens the given archive, passes each annotation file of type {@code fileType} in it to {@code
+   * action}, and closes the archive.
    *
    * @param archive a JAR or ZIP archive
    * @param fileType type of annotation files to pass to {@code action}
