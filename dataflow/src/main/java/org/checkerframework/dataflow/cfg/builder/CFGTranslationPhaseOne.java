@@ -1160,7 +1160,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             || nodeKind == TypeKind.INT;
     return isNodeKindNarrowable
         && TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
-        && isCompileTimeConstant(node);
+        && node.getTree() instanceof ExpressionTree expressionTree
+        && TreeUtils.isCompileTimeConstant(expressionTree);
   }
 
   /**
@@ -1180,22 +1181,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
     // If widen() changes the node, then narrowAndBox() only boxes it.
     return narrowAndBox(widen(node, primitiveType), varType);
-  }
-
-  /**
-   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
-   * {@code 1 + 2}, or a use of a constant variable.
-   *
-   * @param node a node
-   * @return true if the node is a compile-time constant expression
-   */
-  private static boolean isCompileTimeConstant(Node node) {
-    Tree tree = node.getTree();
-    if (tree == null) {
-      return false;
-    }
-    Type type = (Type) TreeUtils.typeOf(tree);
-    return type != null && type.constValue() != null;
   }
 
   /**

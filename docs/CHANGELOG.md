@@ -18,11 +18,15 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
-Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
-`isNarrowableConstantConversion()`.  New method
+Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
+by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
+opposite order.  It returns true for any compile-time constant of type `byte`,
+`short`, `char`, or `int`, such as `1 + 2` or a use of a constant variable, not
+only for a literal.  New method
 `CFGTranslationPhaseOne.convertNarrowableConstant()` converts a compile-time
 constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
-assignment conversion does.
+assignment conversion does.  New method `TreeUtils.isCompileTimeConstant()`
+returns true if a tree is a constant expression.
 
 Deprecated methods:
 
