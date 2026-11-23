@@ -1222,15 +1222,27 @@ continuing at the target of the jump. The Dataflow Framework models this
 behavior by adding a jump to a duplicate of the finally block before the
 jump to the original target of the control flow statement.
 
-Likewise, an exception that the \code{try} block or a \code{catch} block
-throws causes execution of the \code{finally} block, which then rethrows the
-exception.  The Dataflow Framework models this behavior with further
-duplicates of the \code{finally} block, each of which ends by rethrowing the
-exception.  Exception types that would be rethrown to the same places (the
+Likewise, an exception that escapes the \code{try} block (because no
+\code{catch} block handles it) or that escapes a \code{catch} block causes
+execution of the \code{finally} block.  If the \code{finally} block
+completes normally, the exception is then rethrown; if the \code{finally}
+block completes abruptly, for example by a \code{return} or by throwing
+another exception, that replaces the pending exception, which is not
+rethrown.  (If a \code{catch} block handles an exception and completes
+normally, the \code{finally} block runs but does not rethrow that
+exception.)  The Dataflow Framework models this behavior with further
+duplicates of the \code{finally} block, each of which ends, if the
+\code{finally} block completes normally, by rethrowing the exception.
+Exception types that would be rethrown to the same places (the
 same \code{catch} blocks, or the exit of the method) share a duplicate.
 Exception types that would be rethrown to different places get different
 duplicates, so that the analysis does not merge the stores of paths that
-never meet.
+never meet.  Because nested \code{finally} blocks multiply the duplicates,
+the Dataflow Framework bounds the number of nodes, in one control flow
+graph, of the exceptional duplicates beyond the first for each
+\code{finally} block.  Once the bound is reached, the exception types that
+do not yet have a duplicate share one duplicate, even if they would be
+rethrown to different places.
 
 
 \subsection{AST to CFG Translation}

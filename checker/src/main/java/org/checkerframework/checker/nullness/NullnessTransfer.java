@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -53,6 +54,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -109,8 +111,8 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
-  /** The type {@code java.lang.NullPointerException}. */
-  private final TypeMirror nullPointerExceptionType;
+  /** The method {@code Object.toString()}. */
+  private final ExecutableElement objectToString;
 
   /**
    * Create a new NullnessTransfer for the given analysis.
@@ -149,8 +151,7 @@ public class NullnessTransfer
             .getChecker()
             .getBooleanOption("invocationPreservesArgumentNullness", true);
 
-    nullPointerExceptionType =
-        TypesUtils.typeFromClass(NullPointerException.class, analysis.getTypes(), elements);
+    objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
   }
 
   /**
@@ -525,22 +526,19 @@ public class NullnessTransfer
 
   /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
-   * on each exceptional successor whose exception type excludes {@code NullPointerException}, such
-   * as a handler for a checked exception that the invoked method declares. An exception of such a
-   * type comes from the invoked method, which the invocation entered only because the receiver is
-   * non-null.
+   * on each exceptional successor of {@code n}. An exception that {@code n} throws comes from the
+   * invoked method, which the invocation entered only because the receiver is non-null.
    *
-   * <p>The receiver remains unrefined on the other exceptional successors. That loses no precision
-   * for an invocation in source code, because its {@code NullPointerException} for a null receiver
-   * comes from its {@code MethodAccessNode}, and every handler that such an edge of {@code n}
-   * reaches also catches that {@code NullPointerException}. But it is necessary for a synthetic
-   * invocation, such as the {@code iterator()} call of an enhanced {@code for} loop, which can
-   * throw that {@code NullPointerException} itself.
+   * <p>This is sound because the {@code NullPointerException} for a null receiver does not come
+   * from {@code n}, but from its {@code MethodAccessNode}, which precedes {@code n}. That is true
+   * both for an invocation in source code and for a synthetic invocation, such as the {@code
+   * iterator()} call of an enhanced {@code for} loop. A handler that catches that {@code
+   * NullPointerException} also receives the unrefined store from the {@code MethodAccessNode}.
    *
    * @param n a method invocation whose receiver should be refined
    * @param result the transfer result for {@code n}
    * @param storeBefore the store before {@code n}; is not side-effected
-   * @return a transfer result like {@code result}, with the receiver refined on some exceptional
+   * @return a transfer result like {@code result}, with the receiver refined on the exceptional
    *     successors
    */
   private TransferResult<NullnessValue, NullnessStore> refineReceiverOnExceptionalSuccessors(
@@ -556,9 +554,6 @@ public class NullnessTransfer
         oldExceptionalStores == null ? new HashMap<>() : new HashMap<>(oldExceptionalStores);
     boolean refined = false;
     for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
-      if (analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
-        continue;
-      }
       NullnessStore exceptionalStore = newExceptionalStores.get(exceptionType);
       NullnessStore refinedStore =
           (exceptionalStore == null ? storeBefore : exceptionalStore).copy();
@@ -617,7 +612,22 @@ public class NullnessTransfer
 
           @Override
           public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
+            // `s += o`, for a String variable s, implicitly invokes o.toString().
+            return assignsReceiver(tree.getVariable())
+                || (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
+                    && TypesUtils.isString(TreeUtils.typeOf(tree.getVariable()))
+                    && stringConversionMayHaveSideEffect(tree.getExpression()))
+                || super.visitCompoundAssignment(tree, p);
+          }
+
+          // String concatenation implicitly invokes toString() on an operand that is not a String.
+          @Override
+          public Boolean visitBinary(BinaryTree tree, Void p) {
+            return (tree.getKind() == Tree.Kind.PLUS
+                    && TypesUtils.isString(TreeUtils.typeOf(tree))
+                    && (stringConversionMayHaveSideEffect(tree.getLeftOperand())
+                        || stringConversionMayHaveSideEffect(tree.getRightOperand())))
+                || super.visitBinary(tree, p);
           }
 
           @Override
@@ -711,6 +721,42 @@ public class NullnessTransfer
               }
             }
             return false;
+          }
+
+          /*
+           * Returns true if converting the given expression to a string, as string concatenation
+           * does, might reassign the receiver by invoking a toString() method.  Does not examine
+           * the subexpressions of the operand; scan visits them.
+           *
+           * @param operand an operand of string concatenation
+           * @return true if converting {@code operand} to a string might reassign the receiver
+           */
+          private boolean stringConversionMayHaveSideEffect(ExpressionTree operand) {
+            TypeMirror type = TreeUtils.typeOf(operand);
+            if (type.getKind().isPrimitive()
+                || type.getKind() == TypeKind.NULL
+                || TypesUtils.isString(type)) {
+              return false;
+            }
+            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+            if (typeElement == null) {
+              // For example, an array type.
+              return mayHaveSideEffect(objectToString);
+            }
+            // As for an explicit invocation, use the toString() methods of the static type.
+            // getAllMethodsIn also returns overridden methods, which is conservative.
+            boolean foundToString = false;
+            for (ExecutableElement m :
+                ElementUtils.getAllMethodsIn(typeElement, nullnessTypeFactory.getElementUtils())) {
+              if (m.getSimpleName().contentEquals("toString") && m.getParameters().isEmpty()) {
+                foundToString = true;
+                if (mayHaveSideEffect(m)) {
+                  return true;
+                }
+              }
+            }
+            // An interface need not declare or inherit a toString() method.
+            return !foundToString && mayHaveSideEffect(objectToString);
           }
 
           /*
