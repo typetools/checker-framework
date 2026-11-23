@@ -40,7 +40,8 @@ public class ReceiverRefinementInCatch {
   }
 
   // The call's RuntimeException edge reaches a handler for a subtype of RuntimeException, but the
-  // NullPointerException for a null receiver does not.  So the receiver is non-null in that handler.
+  // NullPointerException for a null receiver does not.  So the receiver is non-null in that
+  // handler.
   void runtimeExceptionSubtypeHandler(@Nullable Object o) {
     try {
       // :: error: (dereference.of.nullable)
