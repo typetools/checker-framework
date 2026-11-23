@@ -486,7 +486,7 @@ public final class TypesUtils {
    * @return true if the given type is a numeric primitive or can be unboxed to one
    */
   public static boolean isNumericAfterUnboxing(TypeMirror type, Types types) {
-    return isNumeric(unboxedTypeOrSelf(type, types));
+    return isNumericPrimitive(unboxedTypeOrSelf(type, types));
   }
 
   /**
@@ -583,9 +583,21 @@ public final class TypesUtils {
    *
    * @param type a type
    * @return true if the argument is a primitive numeric type
+   * @deprecated use {@link #isNumericPrimitive}
    */
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeMirror type) {
-    return TypeKindUtils.isNumeric(type.getKind());
+    return isNumericPrimitive(type);
+  }
+
+  /**
+   * Returns true iff the argument is a primitive numeric type.
+   *
+   * @param type a type
+   * @return true if the argument is a primitive numeric type
+   */
+  public static boolean isNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isNumericPrimitive(type.getKind());
   }
 
   /** The fully-qualified names of the numeric boxed types. */
@@ -1820,7 +1832,6 @@ public final class TypesUtils {
    * @return true if assignment to the type might be a narrowing
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
-    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
     TypeKind unboxedKind = unboxedTypeOrSelf(type, types).getKind();
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
