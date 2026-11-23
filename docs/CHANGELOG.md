@@ -51,6 +51,10 @@ In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` t
 `createIteratorVariableForEnhancedForLoop()` and
 `createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
+Deprecated methods:
+
+* `TypesUtils.isNumeric()` => `isNumericPrimitive()`
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
