@@ -25,4 +25,31 @@ public class ReceiverDependsOnStaticField {
     // :: error: (dereference.of.nullable)
     current().toString();
   }
+
+  void clearSlot() {
+    slot = null;
+  }
+
+  void acceptNonNull(Object o) {}
+
+  // The invoked method is not side-effect-free and might write the static field, so normal
+  // completion of the call does not show that the receiver is non-null afterward.
+  void sideEffectingCallNoArguments() {
+    if (current() == null) {
+      return;
+    }
+    current().clearSlot();
+    // :: error: (dereference.of.nullable)
+    current().toString();
+  }
+
+  // Likewise for an argument passed to a non-null parameter.
+  void sideEffectingCallNonNullArgument() {
+    if (current() == null) {
+      return;
+    }
+    acceptNonNull(current());
+    // :: error: (dereference.of.nullable)
+    current().toString();
+  }
 }

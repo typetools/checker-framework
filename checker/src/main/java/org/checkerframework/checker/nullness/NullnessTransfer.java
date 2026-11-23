@@ -448,7 +448,7 @@ public class NullnessTransfer
             && (nonNullAssumptionAfterInvocation
                 || isMethodSideEffectFree
                 || atypeFactory.hasDoesNotUnrefineReceiver(method)
-                || !receiverExpr.isAssignableByOtherCode())
+                || !mayChangeByOtherCode(receiverExpr))
             && tree != null
             && !argumentsMayReassign(tree.getArguments(), receiverExpr);
 
@@ -483,7 +483,7 @@ public class NullnessTransfer
         JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
         if ((nonNullAssumptionAfterInvocation
                 || isMethodSideEffectFree
-                || !argExpr.isAssignableByOtherCode())
+                || !mayChangeByOtherCode(argExpr))
             && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
           makeNonNull(result, n.getArgument(i));
         }
@@ -586,12 +586,9 @@ public class NullnessTransfer
     if (arguments.isEmpty()) {
       return false;
     }
-    // A method call's value can depend on state that does not appear in the expression, such as a
-    // static field that the method reads.  (MethodCall.isAssignableByOtherCode() examines only the
-    // receiver and arguments.)  So, an assignment to a non-local variable or a call with side
-    // effects might change the value of a receiver that contains a method call.
-    boolean receiverMayChangeByOtherCode =
-        receiverExpr.isAssignableByOtherCode() || receiverExpr.containsOfClass(MethodCall.class);
+    // An assignment to a non-local variable or a call with side effects might change the value of
+    // a receiver that is assignable by other code or that contains a method call.
+    boolean receiverMayChangeByOtherCode = mayChangeByOtherCode(receiverExpr);
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -720,6 +717,20 @@ public class NullnessTransfer
       }
     }
     return false;
+  }
+
+  /**
+   * Returns true if code other than an assignment to the given expression (or to a subexpression of
+   * it) might change the expression's value. That is the case if the expression is assignable by
+   * other code or contains a method call. A method call's value can depend on state that does not
+   * appear in the expression, such as a static field that the method reads. ({@link
+   * MethodCall#isAssignableByOtherCode()} examines only the receiver and arguments.)
+   *
+   * @param expr an expression
+   * @return true if code other than an assignment to {@code expr} might change its value
+   */
+  private static boolean mayChangeByOtherCode(JavaExpression expr) {
+    return expr.isAssignableByOtherCode() || expr.containsOfClass(MethodCall.class);
   }
 
   /**
