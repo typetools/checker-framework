@@ -1052,13 +1052,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         .computeIfAbsent(
             declaration,
             d -> {
-              Map<String, TypeDeclaration<?>> memberTypes = new HashMap<>();
+              Map<String, TypeDeclaration<?>> nestedTypes = new HashMap<>();
               for (BodyDeclaration<?> member : d.getMembers()) {
                 if (member instanceof TypeDeclaration<?> nestedType) {
-                  memberTypes.putIfAbsent(nestedType.getNameAsString(), nestedType);
+                  nestedTypes.putIfAbsent(nestedType.getNameAsString(), nestedType);
                 }
               }
-              return memberTypes;
+              return nestedTypes;
             })
         .get(identifier);
   }
@@ -1244,6 +1244,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the member type named {@code identifier} that a class on the classpath declares or
    * inherits, and that is inherited by the subclasses of {@code clazz} along an inheritance path.
+   *
+   * <p>An <em>inheritance path</em> is a sequence of types, each a direct supertype of the one
+   * before it, that starts at the type whose member type is sought and ends at a type that declares
+   * the member type. For example, if {@code Sub extends Middle}, {@code Middle extends Base}, and
+   * {@code Base} declares {@code Inner}, then {@code Sub}, {@code Middle}, {@code Base} is an
+   * inheritance path for {@code Sub.Inner}. The subclasses of {@code clazz} along the path are the
+   * types that precede {@code clazz} on it.
    *
    * <p>A class inherits a member type of a supertype only if the member type is not private and is
    * accessible in the class (JLS 8.5). Therefore, a package-private member type is inherited along
