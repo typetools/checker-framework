@@ -1164,8 +1164,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @see #isNarrowableConstantConversion
    */
   protected Node convertNarrowableConstant(Node node, TypeMirror varType) {
-    TypeMirror primitiveType =
-        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
+    TypeMirror primitiveType = TypesUtils.unboxedTypeOrSelf(varType, types);
     // If widen() changes the node, then narrowAndBox() only boxes it.
     return narrowAndBox(widen(node, primitiveType), varType);
   }
