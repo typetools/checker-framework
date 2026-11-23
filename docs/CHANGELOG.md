@@ -28,6 +28,7 @@ of a block.
 
 Deprecated methods:
 
+* `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
 * `TypesUtils.isNumeric()` => `isNumericPrimitive()`
 
 ### Closed issues
