@@ -22,6 +22,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -179,5 +180,18 @@ public class AnnotationFileElementTypesTest {
         " ".repeat(150) + "package p; class NoSuchClass {}");
     assertHasDiagnostic(
         "WARNING: /Padded.astub:", diagnostics("checker.jar/Padded.astub", classpathDir));
+  }
+
+  /** Tests that a classpath annotation file that cannot be read yields a warning. */
+  @Test
+  public void unreadableFileOnClasspath() throws IOException {
+    File classpathDir = tmp.newFolder();
+    File stub = write(new File(classpathDir, "Unreadable.astub"), "package p;");
+    Assume.assumeTrue(stub.setReadable(false));
+    // Making a file unreadable has no effect for the root user.
+    Assume.assumeFalse(Files.isReadable(stub.toPath()));
+    assertHasDiagnostic(
+        "WARNING: Could not read annotation resource: /Unreadable.astub: ",
+        diagnostics("checker.jar/Unreadable.astub", classpathDir));
   }
 }
