@@ -392,6 +392,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The String type. */
   protected final TypeMirror stringType;
 
+  /** The Throwable type. */
+  protected final TypeMirror throwableType;
+
   /**
    * Supertypes of all unchecked exceptions. The size is 2 and the contents are {@code
    * RuntimeException} and {@code Error}.
@@ -470,6 +473,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     classFormatErrorType = maybeGetTypeMirror(ClassFormatError.class);
     noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
     stringType = getTypeMirror(String.class);
+    throwableType = getTypeMirror(Throwable.class);
 
     uncheckedExceptionTypes = new ArraySet<>(2);
     uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
@@ -3018,7 +3022,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      exceptionalFinallyBlockCFGGenerator.accept(Collections.unmodifiableSet(group.keySet()));
+      exceptionalFinallyBlockCFGGenerator.accept(group.types());
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithExceptions(
