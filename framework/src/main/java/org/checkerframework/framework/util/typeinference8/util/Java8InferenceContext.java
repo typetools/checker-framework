@@ -285,8 +285,8 @@ public class Java8InferenceContext {
   /**
    * Returns true if {@link #areMutualSubtypes} holds for {@code type1} and {@code type2}, and also
    * for each pair of corresponding enclosing types within them. The type hierarchy does not compare
-   * enclosing types, so {@link #areMutualSubtypes} alone does not notice that {@code
-   * Outer<@NonNull String>.Inner} and {@code Outer<@Nullable String>.Inner} differ.
+   * enclosing types, so {@link #areMutualSubtypes} alone does not notice that {@code Outer<@NonNull
+   * String>.Inner} and {@code Outer<@Nullable String>.Inner} differ.
    *
    * <p>Use this method to decide whether two types that should be interchangeable have the same
    * annotations everywhere, rather than to check a constraint.

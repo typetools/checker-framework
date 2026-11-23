@@ -71,8 +71,8 @@ import org.checkerframework.javacutil.BugInCF;
  * supertype, or the annotations at the corresponding position of the other type. (An exception: in
  * a hierarchy in which both types ignore the annotations at a position, that position is not
  * replaced before a least upper bound or greatest lower bound, so that a least upper bound there
- * combines the annotations of both types; see {@link #replaceIgnoredForLubOrGlb}.) The rest of
- * each type is then compared or combined as usual.
+ * combines the annotations of both types; see {@link #replaceIgnoredForLubOrGlb}.) The rest of each
+ * type is then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
