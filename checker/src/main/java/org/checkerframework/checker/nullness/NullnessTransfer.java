@@ -739,8 +739,7 @@ public class NullnessTransfer
                 || TypesUtils.isString(type)) {
               return false;
             }
-            TypeElement typeElement =
-                TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
             if (typeElement == null) {
               // For example, an array type.
               return mayHaveSideEffect(objectToString);
