@@ -119,6 +119,16 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
         || TypesUtils.isFloatingPoint(rfi.right.getType());
   }
 
+  /**
+   * Refines the given store, given that {@code left > right} holds in it.
+   *
+   * @param left the greater operand of a comparison
+   * @param leftAnno the annotation on the type of {@code left}
+   * @param right the lesser operand of the comparison
+   * @param rightAnno the annotation on the type of {@code right}
+   * @param store the store to refine, in which {@code left > right} holds
+   * @param in the input to the transfer function for the comparison
+   */
   protected abstract void refineGT(
       Node left,
       AnnotationMirror leftAnno,
@@ -127,6 +137,16 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
       CFStore store,
       TransferInput<CFValue, CFStore> in);
 
+  /**
+   * Refines the given store, given that {@code left >= right} holds in it.
+   *
+   * @param left the greater-or-equal operand of a comparison
+   * @param leftAnno the annotation on the type of {@code left}
+   * @param right the lesser-or-equal operand of the comparison
+   * @param rightAnno the annotation on the type of {@code right}
+   * @param store the store to refine, in which {@code left >= right} holds
+   * @param in the input to the transfer function for the comparison
+   */
   protected abstract void refineGTE(
       Node left,
       AnnotationMirror leftAnno,
