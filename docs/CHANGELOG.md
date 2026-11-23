@@ -30,6 +30,7 @@ returns true if a tree is a constant expression.
 
 Deprecated methods:
 
+* `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
 * `TypesUtils.isNumeric()` => `isNumericPrimitive()`
 
 ### Closed issues
