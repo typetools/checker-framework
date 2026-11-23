@@ -1,5 +1,5 @@
 // Tests that an exception that a finally block rethrows is not ignored.  The exceptions are an
-// IOException and a MyChecked, which the Resource Leak Checker does not ignore.
+// IOException, a MyChecked, and a MyThrowable, which the Resource Leak Checker does not ignore.
 
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.*;
@@ -30,6 +30,9 @@ abstract class FinallyRethrowsException {
 
   /** A checked exception that the Resource Leak Checker does not ignore. */
   static class MyChecked extends Exception {}
+
+  /** A throwable that is not an Exception, and that the Resource Leak Checker does not ignore. */
+  static class MyThrowable extends Throwable {}
 
   public abstract void mightThrow() throws IOException;
 
@@ -128,14 +131,14 @@ abstract class FinallyRethrowsException {
     }
   }
 
-  /** Closes r if it throws an Exception, but not if it throws a Throwable that is not one. */
+  /** Closes r if it throws an Exception, but not if it throws a MyThrowable. */
   @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
-  public abstract void closeOnException(QuietCloseable r) throws IOException, Throwable;
+  public abstract void closeOnException(QuietCloseable r) throws IOException, MyThrowable;
 
-  void closedOnOneExceptionTypeFromOneNode() throws Throwable {
-    // One call throws an IOException after closing r, and a Throwable without closing r.  The
+  void closedOnOneExceptionTypeFromOneNode() throws MyThrowable {
+    // One call throws an IOException after closing r, and a MyThrowable without closing r.  The
     // IOException reaches the finally block while r is closed, and the first catch block returns.
-    // The Throwable reaches the finally block while r is open, and the second catch block closes
+    // The MyThrowable reaches the finally block while r is open, and the second catch block closes
     // r.  So r is closed on every path.  The finally block must not merge those two paths and then
     // throw the IOException while r is open.
     QuietCloseable r = allocQuietCloseable();
@@ -147,7 +150,7 @@ abstract class FinallyRethrowsException {
       }
     } catch (IOException e) {
       return;
-    } catch (Throwable t) {
+    } catch (MyThrowable t) {
       r.close();
       throw t;
     }
@@ -166,6 +169,26 @@ abstract class FinallyRethrowsException {
       mightThrow();
     } finally {
       log();
+    }
+  }
+
+  @Owning
+  Closeable successFlag() throws IOException {
+    // A false positive.  The finally block closes c on every path on which an exception reaches it,
+    // because success is false on each such path.  The Resource Leak Checker does not track the
+    // value of success, so it reports that c might be open when the finally block rethrows the
+    // IOException.
+    // :: error: [required.method.not.called]
+    Closeable c = alloc();
+    boolean success = false;
+    try {
+      mightThrow();
+      success = true;
+      return c;
+    } finally {
+      if (!success) {
+        c.close();
+      }
     }
   }
 }

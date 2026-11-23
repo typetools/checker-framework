@@ -1237,7 +1237,12 @@ Exception types that would be rethrown to the same places (the
 same \code{catch} blocks, or the exit of the method) share a duplicate.
 Exception types that would be rethrown to different places get different
 duplicates, so that the analysis does not merge the stores of paths that
-never meet.
+never meet.  Because nested \code{finally} blocks multiply the duplicates,
+the Dataflow Framework bounds the number of nodes, in one control flow
+graph, of the exceptional duplicates beyond the first for each
+\code{finally} block.  Once the bound is reached, the exception types that
+do not yet have a duplicate share one duplicate, even if they would be
+rethrown to different places.
 
 
 \subsection{AST to CFG Translation}
