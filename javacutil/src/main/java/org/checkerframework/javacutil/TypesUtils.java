@@ -506,9 +506,21 @@ public final class TypesUtils {
    *
    * @param type a type
    * @return true if the argument is a primitive numeric type
+   * @deprecated use {@link #isNumericPrimitive}
    */
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeMirror type) {
-    return TypeKindUtils.isNumeric(type.getKind());
+    return isNumericPrimitive(type);
+  }
+
+  /**
+   * Returns true iff the argument is a primitive numeric type.
+   *
+   * @param type a type
+   * @return true if the argument is a primitive numeric type
+   */
+  public static boolean isNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isNumericPrimitive(type.getKind());
   }
 
   /** The fully-qualified names of the numeric boxed types. */
@@ -770,6 +782,12 @@ public final class TypesUtils {
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
    * is sometimes null; in that case, this method returns null.
    *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
+   *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
@@ -780,6 +798,12 @@ public final class TypesUtils {
   /**
    * Returns the type parameter for this wildcard from the underlying type's bound field. This field
    * is sometimes null; in that case, this method returns null.
+   *
+   * <p>The result may be a type parameter of a class other than the one that the wildcard is a type
+   * argument of. javac overwrites the bound field whenever it substitutes the wildcard for a type
+   * variable, so the result depends on which computations have already been performed on the
+   * wildcard. When the declared type that has the wildcard as a type argument is known, use it to
+   * determine the type parameter instead.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -1731,7 +1755,6 @@ public final class TypesUtils {
    * @return true if assignment to the type might be a narrowing
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
-    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
     TypeMirror unboxedType = isBoxedPrimitive(type) ? types.unboxedType(type) : type;
     TypeKind unboxedKind = unboxedType.getKind();
     return unboxedKind == TypeKind.BYTE

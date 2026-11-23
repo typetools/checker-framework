@@ -1007,6 +1007,18 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the tree is a constant expression (JLS 15.29), such as {@code 3}, {@code 1 +
+   * 2}, {@code "a" + "b"}, or a use of a constant variable.
+   *
+   * @param tree an expression tree
+   * @return true if the tree is a constant expression
+   */
+  public static boolean isCompileTimeConstant(ExpressionTree tree) {
+    Type type = (Type) typeOf(tree);
+    return type != null && type.constValue() != null;
+  }
+
+  /**
    * Returns the receiver tree of a field access or a method invocation.
    *
    * @param expression a field access or a method invocation
