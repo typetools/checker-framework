@@ -948,7 +948,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     return new TreeInfo() {
       @Override
-      public boolean isNumeric() {
+      public boolean isNumericOrBoxed() {
         return numeric;
       }
 
@@ -4296,8 +4296,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node left = scan(leftTree, p);
         Node right = scan(rightTree, p);
 
-        if (leftInfo.isNumeric()
-            && rightInfo.isNumeric()
+        if (leftInfo.isNumericOrBoxed()
+            && rightInfo.isNumericOrBoxed()
             && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =
