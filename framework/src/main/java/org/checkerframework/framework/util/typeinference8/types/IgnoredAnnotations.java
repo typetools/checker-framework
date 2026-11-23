@@ -14,6 +14,7 @@ import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -208,9 +209,12 @@ final class IgnoredAnnotations {
    *   <li>If neither type has an origin (see {@link ProperType#getOrigin}), then neither has
    *       ignored positions, so return the types' own annotated types.
    *   <li>Find the supertype whose class is that of {@code resultType} (see {@link #asSuper}) of
-   *       each type, or of its upper bound if it is a type variable. If the two supertypes are of
-   *       different classes, then their positions do not correspond, so return the types' own
-   *       annotated types.
+   *       each type, or of its upper bound if it is a type variable. If the positions of the two
+   *       supertypes cannot correspond (see {@link #positionsCanCorrespond}), as for unrelated
+   *       classes, then return the types' own annotated types. Supertypes of different classes,
+   *       one a subclass of the other, can correspond: for example, the greatest lower bound of
+   *       {@code ArrayList<String>} and {@code List<String>} is {@code ArrayList<String>}, and the
+   *       type arguments correspond.
    *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
    *       the annotations of the corresponding position of the other, in each hierarchy in which
    *       the annotations of only one of the two positions are ignored (see {@link
@@ -250,8 +254,7 @@ final class IgnoredAnnotations {
     AbstractType bound2 = upperBoundIfTypeVariable(upToDate2);
     AbstractType asSuper1 = asSuper(bound1, resultType, types);
     AbstractType asSuper2 = asSuper(bound2, resultType, types);
-    if (!types.isSameType(
-        types.erasure(asSuper1.getJavaType()), types.erasure(asSuper2.getJavaType()))) {
+    if (!positionsCanCorrespond(asSuper1.getJavaType(), asSuper2.getJavaType(), types)) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
     AnnotatedTypeMirror atm1 = asSuper1.getAnnotatedType().deepCopy();
@@ -310,8 +313,7 @@ final class IgnoredAnnotations {
     // bound, so compare the positions of that bound.
     AbstractType otherAsSuper =
         asSuper(upperBoundIfTypeVariable(upToDate(other)), resultType, types);
-    if (!types.isSameType(
-        types.erasure(typeAsSuper.getJavaType()), types.erasure(otherAsSuper.getJavaType()))) {
+    if (!positionsCanCorrespond(typeAsSuper.getJavaType(), otherAsSuper.getJavaType(), types)) {
       return true;
     }
     AnnotatedTypeMirror atm = typeAsSuper.getAnnotatedType();
@@ -391,8 +393,8 @@ final class IgnoredAnnotations {
         atm1,
         atm2,
         (a1, a2) -> {
-          Set<AnnotationMirror> annos1 = a1.getPrimaryAnnotations();
-          Set<AnnotationMirror> annos2 = a2.getPrimaryAnnotations();
+          AnnotationMirrorSet annos1 = a1.getPrimaryAnnotations();
+          AnnotationMirrorSet annos2 = a2.getPrimaryAnnotations();
           return annos1.size() == annos2.size()
               && qh.isSubtypeQualifiersOnly(annos1, annos2)
               && qh.isSubtypeQualifiersOnly(annos2, annos1);
@@ -417,6 +419,41 @@ final class IgnoredAnnotations {
       result = result.getTypeVarUpperBound();
     }
     return result;
+  }
+
+  /**
+   * Returns true if the positions of types whose Java types are {@code type1} and {@code type2} can
+   * correspond (see {@link #allCorrespondingPositionsMatch}): their erasures are the same, or they
+   * are declared types one of whose classes is a subclass of the other, or they are array types
+   * whose component types satisfy this condition. For example, the type argument of {@code
+   * ArrayList<String>} corresponds to that of {@code List<String>}, but no position of {@code
+   * ArrayList<String>} corresponds to one of {@code LinkedList<String>}.
+   *
+   * <p>A least upper bound or greatest lower bound of declared types of different classes, one a
+   * subclass of the other, is the subclass type; for example, the greatest lower bound of {@code
+   * ArrayList<String>} and {@code List<String>} is {@code ArrayList<String>}. Its type arguments
+   * come from the subclass type only, so the annotations of the superclass type must be copied into
+   * the ignored positions of the subclass type.
+   *
+   * @param type1 a Java type
+   * @param type2 a Java type
+   * @param types the type utilities
+   * @return true if the positions of types whose Java types are {@code type1} and {@code type2} can
+   *     correspond
+   */
+  private static boolean positionsCanCorrespond(TypeMirror type1, TypeMirror type2, Types types) {
+    if (type1.getKind() == TypeKind.ARRAY && type2.getKind() == TypeKind.ARRAY) {
+      return positionsCanCorrespond(
+          ((ArrayType) type1).getComponentType(), ((ArrayType) type2).getComponentType(), types);
+    }
+    TypeMirror erasure1 = types.erasure(type1);
+    TypeMirror erasure2 = types.erasure(type2);
+    if (types.isSameType(erasure1, erasure2)) {
+      return true;
+    }
+    return type1.getKind() == TypeKind.DECLARED
+        && type2.getKind() == TypeKind.DECLARED
+        && (types.isSubtype(erasure1, erasure2) || types.isSubtype(erasure2, erasure1));
   }
 
   /**
@@ -887,6 +924,36 @@ final class IgnoredAnnotations {
           return true;
         },
         types);
+    if (copies.size() > 1) {
+      // A position can be both the target of one copy and the source of another (for example, a
+      // wildcard's bound and a position of the other type, which correspond to each other and both
+      // correspond to the wildcard), so a write could change an annotation that a later copy
+      // reads.  Read every source from a snapshot taken before any write, so the result does not
+      // depend on the order in which the targets are processed.
+      IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> snapshots = new IdentityHashMap<>();
+      // Snapshot the wildcards first, and map the bound of each to the bound of its snapshot.
+      // combineCopies compares sources by identity, so a copy from a wildcard's bound and a copy
+      // from the wildcard itself must still read the same snapshot.
+      for (List<Copy> copyList : copies.values()) {
+        for (Copy copy : copyList) {
+          AnnotatedTypeMirror from = copy.from();
+          if (from.getKind() == TypeKind.WILDCARD && !snapshots.containsKey(from)) {
+            AnnotatedTypeMirror snapshot = from.deepCopy();
+            snapshots.put(from, snapshot);
+            snapshots.putIfAbsent(boundOf(from), boundOf(snapshot));
+          }
+        }
+      }
+      for (Map.Entry<AnnotatedTypeMirror, List<Copy>> entry : copies.entrySet()) {
+        List<Copy> snapshotCopies = new ArrayList<>(entry.getValue().size());
+        for (Copy copy : entry.getValue()) {
+          AnnotatedTypeMirror snapshot =
+              snapshots.computeIfAbsent(copy.from(), AnnotatedTypeMirror::deepCopy);
+          snapshotCopies.add(new Copy(snapshot, copy.hierarchies()));
+        }
+        entry.setValue(snapshotCopies);
+      }
+    }
     for (Map.Entry<AnnotatedTypeMirror, List<Copy>> entry : copies.entrySet()) {
       combineCopies(entry.getKey(), entry.getValue(), qh);
     }

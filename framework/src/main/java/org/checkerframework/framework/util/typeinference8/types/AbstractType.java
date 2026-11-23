@@ -269,7 +269,8 @@ public abstract class AbstractType {
     if (typeJava.getKind() == TypeKind.WILDCARD) {
       typeJava = ((WildcardType) typeJava).getExtendsBound();
     }
-    if (javaAsSuper(typeJava, superType) == null) {
+    TypeMirror javaSuper = javaAsSuper(typeJava, superType);
+    if (javaSuper == null) {
       return null;
     }
 
@@ -279,8 +280,16 @@ public abstract class AbstractType {
       type = ((AnnotatedWildcardType) type).getExtendsBound();
     }
 
+    // For arrays, AnnotatedTypes.asSuper replaces only the annotated component type of the target,
+    // not its Java type, so the target must already have the Java type of the result, such as
+    // List<String>[] rather than List[].  For a declared type, AnnotatedTypes.asSuper returns a
+    // supertype of `type` itself, so the requested type is used.
+    TypeMirror targetJava =
+        superType.getKind() == TypeKind.ARRAY && javaSuper.getKind() == TypeKind.ARRAY
+            ? javaSuper
+            : superType;
     AnnotatedTypeMirror superAnnotatedType =
-        AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
+        AnnotatedTypeMirror.createType(targetJava, typeFactory, type.isDeclaration());
     typeFactory.initializeAtm(superAnnotatedType);
     AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
     return create(asSuper, ignoreAnnotations);
