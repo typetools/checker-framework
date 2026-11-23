@@ -1824,7 +1824,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodAccessNode iteratorAccessNode = new MethodAccessNode(iteratorSelect, expressionNode);
       iteratorAccessNode.setInSource(false);
-      extendWithNode(iteratorAccessNode);
+      // As for an ordinary method invocation, the NullPointerException for a null iterable is
+      // thrown by the method access, so its exceptional store does not include any postcondition
+      // of iterator(), which never ran.
+      extendWithNode(
+          iteratorAccessNode,
+          accessMayThrowNullPointerException(iteratorAccessNode.getMethod(), expressionNode));
       MethodInvocationNode iteratorCallNode =
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
@@ -3453,7 +3458,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   @Override
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
-    TypeMirror exception = expression.getType();
+    // `throw null` throws a NullPointerException (JLS 14.18).  The null type is not a declared
+    // type, which TryCatchFrame.possibleLabels requires.
+    TypeMirror exception =
+        expression.getType().getKind() == TypeKind.NULL
+            ? nullPointerExceptionType
+            : expression.getType();
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
     NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
     exNode.setTerminatesExecution(true);

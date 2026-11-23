@@ -543,17 +543,19 @@ public class NullnessTransfer
 
   /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
-   * on each exceptional successor whose exception type excludes {@code NullPointerException}, such
-   * as a handler for a checked exception that the invoked method declares. An exception of such a
-   * type comes from the invoked method, which the invocation entered only because the receiver is
-   * non-null.
+   * on some exceptional successors.
    *
-   * <p>The receiver remains unrefined on the other exceptional successors. That loses no precision
-   * for an invocation in source code, because its {@code NullPointerException} for a null receiver
-   * comes from its {@code MethodAccessNode}, and every handler that such an edge of {@code n}
-   * reaches also catches that {@code NullPointerException}. But it is necessary for a synthetic
-   * invocation, such as the {@code iterator()} call of an enhanced {@code for} loop, which can
-   * throw that {@code NullPointerException} itself.
+   * <p>For an invocation in source code, the receiver is refined on every exceptional successor.
+   * The {@code NullPointerException} for a null receiver comes from the invocation's {@code
+   * MethodAccessNode}, which precedes {@code n}. So, every exception that {@code n} throws comes
+   * from the invoked method, which the invocation entered only because the receiver is non-null.
+   * This includes an exception of a type such as {@code RuntimeException} that reaches a handler
+   * for a narrower type, such as {@code IllegalArgumentException}.
+   *
+   * <p>For a synthetic invocation, whose {@code MethodAccessNode} is not guaranteed to throw that
+   * {@code NullPointerException}, the receiver is refined only on each exceptional successor whose
+   * exception type excludes {@code NullPointerException}, such as a handler for a checked exception
+   * that the invoked method declares.
    *
    * @param n a method invocation whose receiver should be refined
    * @param result the transfer result for {@code n}
@@ -574,7 +576,8 @@ public class NullnessTransfer
         oldExceptionalStores == null ? new HashMap<>() : new HashMap<>(oldExceptionalStores);
     boolean refined = false;
     for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
-      if (analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
+      if (!n.getInSource()
+          && analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
         continue;
       }
       NullnessStore exceptionalStore = newExceptionalStores.get(exceptionType);

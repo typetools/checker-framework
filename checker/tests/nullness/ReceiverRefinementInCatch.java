@@ -39,6 +39,38 @@ public class ReceiverRefinementInCatch {
     }
   }
 
+  // The invocation's RuntimeException edge reaches a handler for a narrower runtime exception, but
+  // that edge represents an exception thrown by read(), which ran only because r is non-null.
+  void narrowerRuntimeExceptionHandler(@Nullable ReceiverRefinementInCatch r) {
+    try {
+      // :: error: (dereference.of.nullable)
+      r.read();
+    } catch (IllegalArgumentException e) {
+      r.toString();
+    } catch (java.io.IOException e) {
+      r.toString();
+    }
+  }
+
+  // A null iterable causes a NullPointerException before iterator() runs.
+  void enhancedForNullIterable(java.util.@Nullable List<Object> list) {
+    try {
+      // :: error: (iterating.over.nullable)
+      for (Object o : list) {}
+    } catch (NullPointerException e) {
+      // :: error: (dereference.of.nullable)
+      list.size();
+    }
+  }
+
+  void throwNull() {
+    try {
+      // :: error: (throwing.nullable)
+      throw null;
+    } catch (NullPointerException e) {
+    }
+  }
+
   // An Error handler cannot catch the NullPointerException either.
   void errorHandler(@Nullable Object o) {
     try {

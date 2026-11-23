@@ -1230,7 +1230,15 @@ exception.  Exception types that would be rethrown to the same places (the
 same \code{catch} blocks, or the exit of the method) share a duplicate.
 Exception types that would be rethrown to different places get different
 duplicates, so that the analysis does not merge the stores of paths that
-never meet.
+never meet.  However, the number of duplicates can grow exponentially with
+the nesting depth of \code{finally} blocks in \code{finally} blocks.  To
+bound this growth, the separate duplicates are subject to a budget on the
+number of nodes they contribute to the CFG of a method.  (The first
+exceptional duplicate of each \code{finally} block does not count against
+the budget.)  Once the budget is exhausted, all the remaining exception types
+that reach a \code{finally} block share one duplicate, even if they would be
+rethrown to different places.  In that case, the analysis may merge the
+stores of paths that never meet, which may lead to false positive warnings.
 
 
 \subsection{AST to CFG Translation}
