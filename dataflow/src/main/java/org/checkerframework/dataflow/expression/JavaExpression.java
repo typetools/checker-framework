@@ -228,8 +228,8 @@ public abstract class JavaExpression {
    *
    * <p>A {@link MethodCall} whose method is not pure contains only itself: {@code a.m()} may
    * evaluate to an object that has nothing to do with {@code a}, so its result is not reached
-   * through {@code a}. Likewise, an access to a static field, such as {@code a.staticField}, contains
-   * only itself.
+   * through {@code a}. Likewise, an access to a static field, such as {@code a.staticField},
+   * contains only itself.
    *
    * @param provider how to get annotations
    * @param receiver a JavaExpression that might be the receiver of this
