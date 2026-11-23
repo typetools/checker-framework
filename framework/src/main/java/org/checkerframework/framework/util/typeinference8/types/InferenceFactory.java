@@ -1529,12 +1529,12 @@ public class InferenceFactory {
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
+    Map<TypeVariable, AnnotatedTypeMirror> instantiations = new HashMap<>();
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      // A copy, because the substitution below does not copy and can mutate what it substitutes.
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
+      instantiations.put(variable.getJavaType(), instantiation.getAnnotatedType());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does
@@ -1543,24 +1543,44 @@ public class InferenceFactory {
     List<AbstractType> subsTypeArgs = new ArrayList<>();
     for (AbstractType typeArg : typeArgs) {
       AnnotatedTypeMirror type = typeArg.getAnnotatedType();
-      TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
       AnnotatedTypeMirror subs;
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
-        AnnotatedTypeMirror upperBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getUpperBound());
-        AnnotatedTypeMirror lowerBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getLowerBound());
+        AnnotatedTypeMirror upperBound = substitute(map, instantiations, capTypeVar.getUpperBound());
+        AnnotatedTypeMirror lowerBound = substitute(map, instantiations, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
       } else {
-        subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
+        subs = substitute(map, instantiations, type);
       }
       subsTypeArgs.add(new ProperType(subs, context));
     }
     return subsTypeArgs;
+  }
+
+  /**
+   * Returns a copy of {@code type} in which every use of a variable in {@code instantiations} has
+   * been replaced by a copy of its instantiation, and then every use of a variable in {@code
+   * typeArgs} has been replaced by its type argument itself.
+   *
+   * <p>A use of a variable in {@code instantiations} that has an explicit primary annotation gets
+   * that annotation in place of the instantiation's, in that annotation's hierarchy (see {@link
+   * TypeVariableSubstitutor#substitute}). A use of a variable in {@code typeArgs} is
+   * not copied, so that every use of a fresh type variable is the same object.
+   *
+   * @param typeArgs a map from a variable to its type argument, which is not copied
+   * @param instantiations a map from a variable to its instantiation, which is copied
+   * @param type the type in which to substitute
+   * @return a copy of {@code type} with the variables substituted
+   */
+  private AnnotatedTypeMirror substitute(
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs,
+      Map<TypeVariable, AnnotatedTypeMirror> instantiations,
+      AnnotatedTypeMirror type) {
+    TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
+    AnnotatedTypeMirror withInstantiations =
+        instantiations.isEmpty() ? type : typeVarSubstitutor.substitute(instantiations, type);
+    return typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeArgs, withInstantiations);
   }
 }

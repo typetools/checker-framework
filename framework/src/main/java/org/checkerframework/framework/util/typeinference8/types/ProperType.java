@@ -563,6 +563,10 @@ public class ProperType extends AbstractType {
     if (origin == null) {
       return super.asSuper(superType);
     }
+    // TODO: If the origin cannot be viewed as `superType` but this type can, such as an origin `T[]`
+    // whose `T` is instantiated to `ArrayList<U>` and a `superType` of `List<String>[]`, then the
+    // result is computed from `type` and has no origin, so its ignored positions are compared as
+    // real annotations.  Fixing this requires translating the origin's positions to the result's.
     return getOrCompute(
         partCache().asSuper(),
         superType,

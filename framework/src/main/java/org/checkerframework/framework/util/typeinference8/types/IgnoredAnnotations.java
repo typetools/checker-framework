@@ -372,8 +372,9 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if, at each pair of corresponding positions of {@code atm1} and {@code atm2}, the
-   * primary annotations are each a subtype of the other.
+   * Returns true if, at each pair of corresponding positions of {@code atm1} and {@code atm2} and
+   * in each qualifier hierarchy, either neither position has a primary annotation, or both do and
+   * each is a subtype of the other.
    *
    * <p>Unlike a comparison by the type hierarchy, this compares the positions in enclosing types,
    * such as the type argument {@code A} of {@code Outer<A>.Inner<B>}.
@@ -391,11 +392,24 @@ final class IgnoredAnnotations {
         atm1,
         atm2,
         (a1, a2) -> {
-          Set<AnnotationMirror> annos1 = a1.getPrimaryAnnotations();
-          Set<AnnotationMirror> annos2 = a2.getPrimaryAnnotations();
-          return annos1.size() == annos2.size()
-              && qh.isSubtypeQualifiersOnly(annos1, annos2)
-              && qh.isSubtypeQualifiersOnly(annos2, annos1);
+          AnnotationMirrorSet annos1 = a1.getPrimaryAnnotations();
+          AnnotationMirrorSet annos2 = a2.getPrimaryAnnotations();
+          // Compare one hierarchy at a time: the two positions can have primary annotations in
+          // different hierarchies, such as two uses of a type variable.
+          for (AnnotationMirror top : qh.getTopAnnotations()) {
+            AnnotationMirror anno1 = qh.findAnnotationInHierarchy(annos1, top);
+            AnnotationMirror anno2 = qh.findAnnotationInHierarchy(annos2, top);
+            if (anno1 == null && anno2 == null) {
+              continue;
+            }
+            if (anno1 == null
+                || anno2 == null
+                || !qh.isSubtypeQualifiersOnly(anno1, anno2)
+                || !qh.isSubtypeQualifiersOnly(anno2, anno1)) {
+              return false;
+            }
+          }
+          return true;
         },
         types);
   }

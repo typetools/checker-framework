@@ -280,20 +280,21 @@ public final class InferenceType extends AbstractType {
    * ProperType#getOrigin}).
    *
    * @param instantiated variables, each of which has an instantiation
+   * @param instantiations the up-to-date instantiations of {@code instantiated}; a parallel list
    * @return true if this type contains a variable in {@code instantiated} whose instantiation
    *     ignores annotations or has an origin
    */
-  private boolean appliesIgnoredAnnotations(List<Variable> instantiated) {
+  private boolean appliesIgnoredAnnotations(
+      List<Variable> instantiated, List<ProperType> instantiations) {
     // Computed only if needed, because computing it traverses this type.
     Collection<Variable> variablesInThisType = null;
-    for (Variable alpha : instantiated) {
-      ProperType instantiation = alpha.getInstantiation();
-      if (instantiation != null
-          && (instantiation.ignoreAnnotations || instantiation.getOrigin() != null)) {
+    for (int i = 0; i < instantiated.size(); i++) {
+      ProperType instantiation = instantiations.get(i);
+      if (instantiation.ignoreAnnotations || instantiation.getOrigin() != null) {
         if (variablesInThisType == null) {
           variablesInThisType = getInferenceVariables();
         }
-        if (variablesInThisType.contains(alpha)) {
+        if (variablesInThisType.contains(instantiated.get(i))) {
           return true;
         }
       }
@@ -313,14 +314,22 @@ public final class InferenceType extends AbstractType {
   public AbstractType applyInstantiations() {
     List<TypeVariable> typeVariables = new ArrayList<>();
     List<TypeMirror> arguments = new ArrayList<>();
-    List<Variable> instantiations = new ArrayList<>();
+    List<Variable> instantiated = new ArrayList<>();
+    // The up-to-date instantiations of `instantiated`; a parallel list.
+    List<ProperType> instantiations = new ArrayList<>();
 
     for (Variable alpha : map.values()) {
-      ProperType instantiation = alpha.getInstantiation();
-      if (instantiation != null) {
+      ProperType storedInstantiation = alpha.getInstantiation();
+      if (storedInstantiation != null) {
+        // The stored instantiation may be out of date, if its origin depends on an instantiation
+        // that has changed since it was made; see ProperType#applyInstantiations.  Otherwise, a
+        // type made from this one could record that it is up to date even though it holds the
+        // stale annotations.
+        ProperType instantiation = storedInstantiation.applyInstantiations();
         typeVariables.add(alpha.getJavaType());
         arguments.add(instantiation.getJavaType());
-        instantiations.add(alpha);
+        instantiated.add(alpha);
+        instantiations.add(instantiation);
       }
     }
     if (typeVariables.isEmpty()) {
@@ -332,20 +341,17 @@ public final class InferenceType extends AbstractType {
 
     Map<TypeVariable, AnnotatedTypeMirror> mapping = new LinkedHashMap<>();
 
-    for (Variable alpha : instantiations) {
-      ProperType alphaInstantiation = alpha.getInstantiation();
-      assert alphaInstantiation != null
-          : "@AssumeAssertion(nullness): `instantiations` contains only instantiated variables";
-      AnnotatedTypeMirror instantiation = alphaInstantiation.getAnnotatedType();
+    for (int i = 0; i < instantiated.size(); i++) {
+      AnnotatedTypeMirror instantiation = instantiations.get(i).getAnnotatedType();
       context.typeFactory.initializeAtm(instantiation);
-      mapping.put(alpha.getJavaType(), instantiation);
+      mapping.put(instantiated.get(i).getJavaType(), instantiation);
     }
 
     AnnotatedTypeMirror newATM = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
-    if (appliesIgnoredAnnotations(instantiations)) {
+    if (appliesIgnoredAnnotations(instantiated, instantiations)) {
       if (!newAbstractType.isProper()) {
         // Only a proper type records an origin, so applying instantiations now would lose the
         // record of the ignored positions.  Leave the instantiations unapplied until the result is
