@@ -1738,6 +1738,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       if (paramDecl != null) {
         fromMemberTreeCache.remove(paramDecl);
       }
+      // The type of an expression in the lambda body, such as a use of `param` or a method
+      // invocation whose receiver is `param`, may have been cached by such a request too.  Which
+      // cached expressions depend on `param` is not recorded, so discard them all.
+      fromExpressionTreeCache.clear();
     }
   }
 
