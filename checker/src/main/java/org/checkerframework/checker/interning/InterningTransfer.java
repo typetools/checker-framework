@@ -1,6 +1,5 @@
 package org.checkerframework.checker.interning;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
@@ -53,8 +52,8 @@ public class InterningTransfer extends CFTransfer {
       TransferResult<CFValue, CFStore> res,
       Node firstNode,
       Node secondNode,
-      @Nullable CFValue firstValue,
-      @Nullable CFValue secondValue,
+      CFValue firstValue,
+      CFValue secondValue,
       boolean notEqualTo) {
     if (inVisitCase) {
       return res;
