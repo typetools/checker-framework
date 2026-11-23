@@ -57,6 +57,10 @@ boolean operator, `visitValueLiteral()`.  A subclass that overrides
 function of the lambda's result node; it uses the value that the result node
 already computed.
 
+Deprecated methods:
+
+* `TypesUtils.isNumeric()` => `isNumericPrimitive()`
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
