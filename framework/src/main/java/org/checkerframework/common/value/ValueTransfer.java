@@ -1361,8 +1361,18 @@ public class ValueTransfer extends CFTransfer {
       createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
     }
     createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
+    // Every comparison with NaN is false, so the else branch of a floating-point relational
+    // comparison does not imply the inverse comparison:  if d is NaN, then both i > d and i <= d
+    // are false.
+    boolean elseIsInverse =
+        op == ComparisonOperators.EQUAL
+            || op == ComparisonOperators.NOT_EQUAL
+            || !(TypesUtils.isFloatingPoint(leftNode.getType())
+                || TypesUtils.isFloatingPoint(rightNode.getType()));
+    if (elseIsInverse) {
+      createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
+      createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
+    }
 
     // TODO: Refine the type of the comparison.
     return null;
