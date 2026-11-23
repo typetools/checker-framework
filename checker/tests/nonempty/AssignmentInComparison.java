@@ -18,4 +18,35 @@ class AssignmentInComparison {
       @NonEmpty List<String> m = l;
     }
   }
+
+  // Not side-effect-free.
+  static List<String> clearAndReturn(List<String> l) {
+    l.clear();
+    return l;
+  }
+
+  // The call in the right operand might empty the list that `a` denotes, after the left operand
+  // reads `a`.  The qualifier that `a` had when it was read does not hold for `b`.
+  void callInRightOperandChangesLeftOperand(List<String> a) {
+    if (a.isEmpty()) {
+      return;
+    }
+    List<String> b;
+    if (a == (b = clearAndReturn(a))) {
+      // :: error: [assignment]
+      @NonEmpty List<String> m = b;
+    }
+  }
+
+  // A reassignment of `a` in the right operand does not change the list that `a` denoted when the
+  // left operand read it.
+  void reassignmentInRightOperand(List<String> a, List<String> c) {
+    if (a.isEmpty()) {
+      return;
+    }
+    List<String> b;
+    if (a == (b = (a = c))) {
+      @NonEmpty List<String> m = b;
+    }
+  }
 }

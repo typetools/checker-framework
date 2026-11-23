@@ -42,4 +42,29 @@ public class SameLenComparisonChangesOperand {
       }
     }
   }
+
+  static class Holder {
+    String text = "";
+  }
+
+  static Holder current = new Holder();
+
+  static class Swapper {
+    @Override
+    public String toString() {
+      current = new Holder();
+      return "";
+    }
+  }
+
+  // The `+=` evaluates `current` before it converts `sw` to a string, and that conversion
+  // reassigns `current`.  So the assignment stores into the `text` field of the old `current`.
+  void stringConversionInCompoundAssignmentReassignsReceiver(String peer, Swapper sw) {
+    if ((current.text += sw).length() == peer.length()) {
+      for (int k = 0; k < peer.length(); k++) {
+        // :: error: (argument)
+        current.text.charAt(k);
+      }
+    }
+  }
 }
