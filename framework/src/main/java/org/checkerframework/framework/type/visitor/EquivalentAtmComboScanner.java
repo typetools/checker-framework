@@ -70,17 +70,15 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       Iterable<? extends AnnotatedTypeMirror> types2,
       PARAM param) {
     RETURN_TYPE r = null;
-    boolean first = true;
 
     Iterator<? extends AnnotatedTypeMirror> tIter1 = types1.iterator();
     Iterator<? extends AnnotatedTypeMirror> tIter2 = types2.iterator();
 
-    while (tIter1.hasNext() && tIter2.hasNext()) {
-      AnnotatedTypeMirror type1 = tIter1.next();
-      AnnotatedTypeMirror type2 = tIter2.next();
-
-      r = first ? scan(type1, type2, param) : scanAndReduce(type1, type2, param, r);
-      first = false;
+    if (tIter1.hasNext() && tIter2.hasNext()) {
+      r = scan(tIter1.next(), tIter2.next(), param);
+      while (tIter1.hasNext() && tIter2.hasNext()) {
+        r = scanAndReduce(tIter1.next(), tIter2.next(), param, r);
+      }
     }
 
     return r;
