@@ -102,8 +102,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
           // The initializer is boxed or unboxed (JLS 5.2).
           if (initIsPrimitive) {
             // A primitive initializer is boxed to the component type if that is a boxed
-            // primitive, as in `new Byte[] {1}`.  A constant initializer is first narrowed to the
-            // primitive type of the component type, as in that example (JLS 5.2).
+            // primitive, as in `new Byte[] {1}`.  A constant initializer is first narrowed or
+            // widened to the primitive type of the component type, as in that example and in
+            // `new Short[] {(byte) 1}` (JLS 5.2).
             TypeKind initKind = annosTM.getKind();
             TypeKind boxKind =
                 TypesUtils.isBoxedPrimitive(componentTM)
@@ -111,10 +112,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                     : initKind;
             if (boxKind != initKind
                 && TypeKindUtils.isNumericPrimitive(initKind)
-                && TypeKindUtils.isNumericPrimitive(boxKind)
-                && TypeKindUtils.getPrimitiveConversionKind(initKind, boxKind)
-                    == TypeKindUtils.PrimitiveConversionKind.NARROWING) {
-              annos = atypeFactory.getNarrowedAnnotations(annos, initKind, boxKind);
+                && TypeKindUtils.isNumericPrimitive(boxKind)) {
+              switch (TypeKindUtils.getPrimitiveConversionKind(initKind, boxKind)) {
+                case NARROWING ->
+                    annos = atypeFactory.getNarrowedAnnotations(annos, initKind, boxKind);
+                case WIDENING ->
+                    annos = atypeFactory.getWidenedAnnotations(annos, initKind, boxKind);
+                case SAME -> {} // Nothing to do
+              }
             }
             annos = atypeFactory.getBoxedAnnotations(annos, boxKind);
           } else {
