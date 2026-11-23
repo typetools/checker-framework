@@ -75,7 +75,9 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
    * of {@code requiredType} is {@code variable} itself, is in the {@code @SameLen} annotation of
    * {@code currentType}, or has the same length as one of those sequences before the reassignment.
    * For example, if {@code b} is {@code @SameLen("a")} and {@code c} is {@code @SameLen("a")}, then
-   * after {@code a = c}, {@code b} is still {@code @SameLen("a")}.
+   * after {@code a = c}, {@code b} is still {@code @SameLen("a")}. This relaxation applies only to
+   * the primary annotation; the rest of the type, such as annotations on array components, must
+   * satisfy the default check.
    */
   @Override
   protected boolean isValidAfterReassignment(
@@ -110,6 +112,11 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
         return false;
       }
     }
-    return true;
+    // The primary annotation is valid.  Check the rest of the type, such as the annotations on
+    // array components, without relaxation.
+    AnnotatedTypeMirror relaxedCurrentType = currentType.deepCopy();
+    relaxedCurrentType.replaceAnnotation(requiredAnno);
+    return super.isValidAfterReassignment(
+        variable, relaxedCurrentType, requiredType, reassignmentTree);
   }
 }

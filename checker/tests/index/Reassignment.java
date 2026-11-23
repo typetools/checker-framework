@@ -51,6 +51,48 @@ public class Reassignment {
     f[i] = 0;
   }
 
+  // The refined type of `i` names the field `f`, which is reassigned.
+  void refinedFieldFact(int i, int[] c) {
+    if (i >= 0 && i < f.length) {
+      f = c;
+      // :: error: [array.access.unsafe.high.range]
+      f[i] = 0;
+    }
+  }
+
+  // The declared type of the outer array `matrix` is unaffected, but the declared type of its
+  // components names `a`.
+  void declaredNestedSameLen(
+      int[] a, int[] b, int[] c, int @SameLen("#3") [] @SameLen("#1") [] matrix) {
+    // :: error: [reassignment.invalidates.type]
+    a = b;
+  }
+
+  // A local variable declared in an earlier case of a switch expression is in scope.
+  int declaredInEarlierCaseOfSwitchExpression(int[] a, int[] c, int n) {
+    return switch (n) {
+      case 0:
+        @LTEqLengthOf("a") int i = a.length;
+        yield i;
+      default:
+        // :: error: [reassignment.invalidates.type]
+        a = c;
+        yield 0;
+    };
+  }
+
+  // A local variable declared in an earlier case of a switch statement is in scope.
+  void declaredInEarlierCaseOfSwitchStatement(int[] a, int[] c, int n) {
+    switch (n) {
+      case 0:
+        @LTEqLengthOf("a") int i = a.length;
+        break;
+      default:
+        // :: error: [reassignment.invalidates.type]
+        a = c;
+    }
+  }
+
   // The declared type of the local variable `i` names the local variable `a`.
   void declaredLocal(int[] a, int[] c) {
     if (a.length == 0) {
@@ -144,6 +186,17 @@ public class Reassignment {
     if (i < c.length) {
       a = c;
       a[i] = 0;
+    }
+  }
+
+  // No case declaration is in scope in the selector of a switch.
+  void reassignmentInSwitchSelector(int[] a, int[] c, int n) {
+    switch ((a = c).length) {
+      case 0:
+        @LTEqLengthOf("a") int i = a.length;
+        break;
+      default:
+        break;
     }
   }
 

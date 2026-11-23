@@ -3723,9 +3723,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (statements != null) {
           addVariablesBefore(statements, child, result);
         }
-      } else if (parent instanceof SwitchTree switchTree) {
-        // A local variable that is declared in an earlier case is in scope.
-        for (CaseTree caseTree : switchTree.getCases()) {
+      } else if ((parent instanceof SwitchTree || parent instanceof SwitchExpressionTree)
+          && child instanceof CaseTree) {
+        // A local variable that is declared in an earlier case is in scope.  No case declaration
+        // is in scope in the selector expression.
+        List<? extends CaseTree> cases =
+            parent instanceof SwitchTree switchTree
+                ? switchTree.getCases()
+                : ((SwitchExpressionTree) parent).getCases();
+        for (CaseTree caseTree : cases) {
           if (caseTree == child) {
             break;
           }
@@ -3743,7 +3749,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } else if (parent instanceof CatchTree catchTree) {
         result.add(catchTree.getParameter());
       } else if (parent instanceof TryTree tryTree) {
-        addVariablesBefore(tryTree.getResources(), child, result);
+        // A resource is in scope in the try body and in later resources, but not in a catch or
+        // finally block.
+        if (child == tryTree.getBlock() || tryTree.getResources().contains(child)) {
+          addVariablesBefore(tryTree.getResources(), child, result);
+        }
       }
       child = parent;
     }
