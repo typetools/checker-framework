@@ -68,10 +68,12 @@ public class AliasingTransfer extends CFTransfer {
       AssignmentNode n, TransferInput<CFValue, CFStore> in) {
     Node rhs = n.getExpression();
     Tree treeRhs = rhs.getTree();
-    AnnotatedTypeMirror rhsType = factory.getAnnotatedType(treeRhs);
 
-    if (rhsType.hasPrimaryAnnotation(Unique.class)
-        && (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
+    // An RHS without a tree, such as an unboxing call in a custom CFG, is conservatively treated
+    // as not @Unique.
+    if (treeRhs != null
+        && (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)
+        && factory.getAnnotatedType(treeRhs).hasPrimaryAnnotation(Unique.class)) {
       return super.visitAssignment(n, in); // Do normal refinement.
     }
     // Widen the type of the rhs if the RHS's declared type wasn't @Unique.
@@ -162,7 +164,12 @@ public class AliasingTransfer extends CFTransfer {
               + " is different from the"
               + " number of parameters for the method declaration: "
               + methodElement.getSimpleName();
-      CFStore store = in.getRegularStore();
+      // When `in` has two stores, getRegularStore() returns a new join, and the superclass
+      // recomputes that join from `in`.  So, clear values in each store that `in` keeps.
+      List<CFStore> stores =
+          in.containsTwoStores()
+              ? List.of(in.getThenStore(), in.getElseStore())
+              : List.of(in.getRegularStore());
 
       for (int i = 0; i < args.size(); i++) {
         Node arg = args.get(i);
@@ -170,7 +177,10 @@ public class AliasingTransfer extends CFTransfer {
         if (factory.getAnnotatedType(param).hasPrimaryAnnotation(LeakedToResult.class)) {
           // If argument can leak to result, and parent is not a
           // single statement, remove that node from store.
-          store.clearValue(JavaExpression.fromNode(arg));
+          JavaExpression argExpr = JavaExpression.fromNode(arg);
+          for (CFStore store : stores) {
+            store.clearValue(argExpr);
+          }
         }
       }
 
@@ -179,7 +189,10 @@ public class AliasingTransfer extends CFTransfer {
       AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
       AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
       if (receiverType != null && receiverType.hasPrimaryAnnotation(LeakedToResult.class)) {
-        store.clearValue(JavaExpression.fromNode(receiver));
+        JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+        for (CFStore store : stores) {
+          store.clearValue(receiverExpr);
+        }
       }
     }
     // If parent is a statement, processPostconditions will handle the pseudo-assignments.
