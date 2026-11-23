@@ -582,7 +582,7 @@ public final class PurityChecker {
     if (isSameOrOverrides(other, function, env) || isSameOrOverrides(function, other, env)) {
       return true;
     }
-    if (!function.getSimpleName().equals(other.getSimpleName())) {
+    if (!function.getSimpleName().contentEquals(other.getSimpleName())) {
       return false;
     }
     if (type.getKind() == TypeKind.TYPEVAR) {
