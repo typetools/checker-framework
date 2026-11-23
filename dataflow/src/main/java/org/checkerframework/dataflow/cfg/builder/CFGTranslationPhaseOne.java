@@ -1166,7 +1166,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if the node is a compile-time constant of type byte, short, char, or int, and
    *     varType is byte, short, char, Byte, Short, or Character
    */
-  protected boolean isConstantToByteShortOrChar(Node node, TypeMirror varType) {
+  protected boolean isNarrowableConstantConversion(Node node, TypeMirror varType) {
     TypeKind nodeKind = node.getType().getKind();
     boolean isNodeKindNarrowable =
         nodeKind == TypeKind.BYTE
@@ -1175,7 +1175,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             || nodeKind == TypeKind.INT;
     return isNodeKindNarrowable
         && TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
-        && isCompileTimeConstant(node);
+        && node.getTree() instanceof ExpressionTree expressionTree
+        && TreeUtils.isCompileTimeConstant(expressionTree);
   }
 
   /**
@@ -1185,31 +1186,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
    *
    * @param node a node producing a compile-time constant of type byte, short, char, or int
-   * @param varType the type to convert the constant to
+   * @param varType the type to convert the constant to: byte, short, char, Byte, Short, or
+   *     Character
    * @return a Node with the value converted to varType, which might be the input node
-   * @see #isConstantToByteShortOrChar
+   * @see #isNarrowableConstantConversion
    */
-  protected Node convertConstant(Node node, TypeMirror varType) {
+  protected Node convertNarrowableConstant(Node node, TypeMirror varType) {
     TypeMirror primitiveType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
     // If widen() changes the node, then narrowAndBox() only boxes it.
     return narrowAndBox(widen(node, primitiveType), varType);
-  }
-
-  /**
-   * Returns true if the node is a compile-time constant expression (JLS 15.29), such as {@code 3},
-   * {@code 1 + 2}, or a use of a constant variable.
-   *
-   * @param node a node
-   * @return true if the node is a compile-time constant expression
-   */
-  private static boolean isCompileTimeConstant(Node node) {
-    Tree tree = node.getTree();
-    if (tree == null) {
-      return false;
-    }
-    Type type = (Type) TreeUtils.typeOf(tree);
-    return type != null && type.constValue() != null;
   }
 
   /**
@@ -1250,8 +1236,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && isConstantToByteShortOrChar(node, varType)) {
-        node = convertConstant(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1263,8 +1249,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && isConstantToByteShortOrChar(node, varType)) {
-        node = convertConstant(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.
