@@ -58,8 +58,20 @@ public final class TypeKindUtils {
    *
    * @param typeKind a type kind
    * @return true if the argument is a primitive numeric type kind
+   * @deprecated use {@link #isNumericPrimitive}
    */
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeKind typeKind) {
+    return isNumericPrimitive(typeKind);
+  }
+
+  /**
+   * Returns true iff the argument is a primitive numeric type kind.
+   *
+   * @param typeKind a type kind
+   * @return true if the argument is a primitive numeric type kind
+   */
+  public static boolean isNumericPrimitive(TypeKind typeKind) {
     return switch (typeKind) {
       case BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
       default -> false;
@@ -125,7 +137,7 @@ public final class TypeKindUtils {
    * @return the type kind to which they are widened, when an operation is performed on them
    */
   public static TypeKind widenedNumericType(TypeKind a, TypeKind b) {
-    if (!isNumeric(a) || !isNumeric(b)) {
+    if (!isNumericPrimitive(a) || !isNumericPrimitive(b)) {
       return TypeKind.NONE;
     }
 
