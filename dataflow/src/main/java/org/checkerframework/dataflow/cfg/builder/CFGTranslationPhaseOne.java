@@ -1151,7 +1151,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if the node is a compile-time constant of type byte, short, char, or int, and
    *     varType is byte, short, char, Byte, Short, or Character
    */
-  protected boolean isConstantToByteShortOrChar(Node node, TypeMirror varType) {
+  protected boolean isNarrowableConstantConversion(Node node, TypeMirror varType) {
     TypeKind nodeKind = node.getType().getKind();
     boolean isNodeKindNarrowable =
         nodeKind == TypeKind.BYTE
@@ -1170,11 +1170,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
    *
    * @param node a node producing a compile-time constant of type byte, short, char, or int
-   * @param varType the type to convert the constant to
+   * @param varType the type to convert the constant to: byte, short, char, Byte, Short, or
+   *     Character
    * @return a Node with the value converted to varType, which might be the input node
-   * @see #isConstantToByteShortOrChar
+   * @see #isNarrowableConstantConversion
    */
-  protected Node convertConstant(Node node, TypeMirror varType) {
+  protected Node convertNarrowableConstant(Node node, TypeMirror varType) {
     TypeMirror primitiveType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
     // If widen() changes the node, then narrowAndBox() only boxes it.
@@ -1235,8 +1236,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && isConstantToByteShortOrChar(node, varType)) {
-        node = convertConstant(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1248,8 +1249,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && isConstantToByteShortOrChar(node, varType)) {
-        node = convertConstant(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.

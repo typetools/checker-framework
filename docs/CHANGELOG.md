@@ -19,10 +19,10 @@ New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
 Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
-`isConstantToByteShortOrChar()`.  New method
-`CFGTranslationPhaseOne.convertConstant()` converts a compile-time constant to
-`byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
-conversion does.
+`isNarrowableConstantConversion()`.  New method
+`CFGTranslationPhaseOne.convertNarrowableConstant()` converts a compile-time
+constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
+assignment conversion does.
 
 ### Closed issues
 
