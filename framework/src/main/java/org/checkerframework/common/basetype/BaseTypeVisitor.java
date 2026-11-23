@@ -3354,7 +3354,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private void inferFunctionalMethodPurity(
       ExecutableElement functionalMethod, EnumSet<PurityKind> implementationKinds, Tree tree) {
-    if (PurityUtils.sideEffectFreeImpliesDeterministic(functionalMethod.getReturnType())) {
+    if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
       implementationKinds.remove(PurityKind.DETERMINISTIC);
     }
     WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
