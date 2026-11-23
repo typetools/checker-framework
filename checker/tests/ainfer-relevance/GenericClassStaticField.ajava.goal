@@ -1,0 +1,32 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// Whole-program inference writes a postcondition about a static field of a generic class.  It must
+// name the field as `GenericClassStaticField.charSequenceField`, without the class's type
+// arguments:  the second (validation) pass of this test reports a parse error for an expression
+// such as `GenericClassStaticField<T>.charSequenceField`.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class GenericClassStaticField<T> {
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence charSequenceField;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "GenericClassStaticField.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    static void assignField() {
+        charSequenceField = getSibling1String();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useField() {
+        // :: warning: [argument]
+        expectsSibling1CharSequence(charSequenceField);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1CharSequence(CharSequence cs) {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    static String getSibling1String() {
+        return (String) "";
+    }
+}

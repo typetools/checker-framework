@@ -15,6 +15,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.Assert;
@@ -22,12 +23,16 @@ import org.junit.Test;
 
 /**
  * Tests that {@link JavaExpression#toString} parenthesizes an operand of a postfix operation, such
- * as the receiver of a method call or the array of an array access, when necessary.
+ * as the receiver of a method call or the array of an array access, when necessary, and that it
+ * prints a class name without type arguments.
  */
 public class JavaExpressionToStringTest {
 
   /** The type utilities. */
   private final Types types;
+
+  /** The element utilities. */
+  private final Elements elements;
 
   /** The type {@code String}. */
   private final TypeMirror stringType;
@@ -59,8 +64,9 @@ public class JavaExpressionToStringTest {
     javac.enterDone();
 
     types = env.getTypeUtils();
-    TypeElement stringElement = env.getElementUtils().getTypeElement("java.lang.String");
-    TypeElement integerElement = env.getElementUtils().getTypeElement("java.lang.Integer");
+    elements = env.getElementUtils();
+    TypeElement stringElement = elements.getTypeElement("java.lang.String");
+    TypeElement integerElement = elements.getTypeElement("java.lang.Integer");
     stringType = stringElement.asType();
     integerType = integerElement.asType();
     intType = types.getPrimitiveType(TypeKind.INT);
@@ -185,5 +191,25 @@ public class JavaExpressionToStringTest {
     Assert.assertEquals("new int[3][4]", creation.toString());
     ArrayAccess access = new ArrayAccess(intArrayType, creation, intLiteral(0));
     Assert.assertEquals("(new int[3][4])[0]", access.toString());
+  }
+
+  @Test
+  public void staticFieldAccessOfGenericClass() {
+    TypeElement arrayListElement = elements.getTypeElement("java.util.ArrayList");
+    // The receiver's type is `java.util.ArrayList<E>`.
+    FieldAccess access =
+        new FieldAccess(
+            new ClassName(arrayListElement.asType()),
+            getField(arrayListElement, "DEFAULT_CAPACITY"));
+    Assert.assertEquals("java.util.ArrayList.DEFAULT_CAPACITY", access.toString());
+  }
+
+  @Test
+  public void classNameOfInnerClassOfGenericClass() {
+    TypeElement keySetElement = elements.getTypeElement("java.util.HashMap.KeySet");
+    // The type is `java.util.HashMap<K,V>.KeySet`.
+    ClassName className = new ClassName(keySetElement.asType());
+    Assert.assertEquals("java.util.HashMap.KeySet", className.getTypeString());
+    Assert.assertEquals("java.util.HashMap.KeySet.class", className.toString());
   }
 }

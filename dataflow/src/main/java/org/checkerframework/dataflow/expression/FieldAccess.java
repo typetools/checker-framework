@@ -154,8 +154,8 @@ public class FieldAccess extends JavaExpression {
   @Override
   public String toString() {
     String receiverString =
-        (receiver instanceof ClassName)
-            ? receiver.getType().toString()
+        (receiver instanceof ClassName className)
+            ? className.getTypeString()
             : receiver.toStringAsPostfixOperand();
     if (Node.disambiguateOwner) {
       return receiverString + "." + field + "{owner=" + ((Symbol) field).owner + "}";
