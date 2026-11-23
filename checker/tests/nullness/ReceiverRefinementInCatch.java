@@ -39,6 +39,19 @@ public class ReceiverRefinementInCatch {
     }
   }
 
+  void run() {}
+
+  // A null receiver causes a NullPointerException, which a handler for IllegalStateException does
+  // not catch, even though the call's RuntimeException edge reaches that handler.
+  void uncheckedExceptionHandler(@Nullable ReceiverRefinementInCatch r) {
+    try {
+      // :: error: (dereference.of.nullable)
+      r.run();
+    } catch (IllegalStateException e) {
+      r.toString();
+    }
+  }
+
   // An Error handler cannot catch the NullPointerException either.
   void errorHandler(@Nullable Object o) {
     try {
@@ -114,6 +127,18 @@ public class ReceiverRefinementInCatch {
     a[i].sefAccept(--i);
     // :: error: (dereference.of.nullable)
     a[i].toString();
+  }
+
+  @org.checkerframework.dataflow.qual.SideEffectFree
+  static void sefUse(Object o, int x) {}
+
+  // A later argument reassigns a variable in the index of an earlier argument, so afterward
+  // a[i & 1] denotes a different array element.
+  void argumentReassignsIndexOfEarlierArgument(@Nullable Object[] a, int i) {
+    // :: error: (argument)
+    sefUse(a[i & 1], i = 1);
+    // :: error: (dereference.of.nullable)
+    a[i & 1].toString();
   }
 
   void argumentDoesNotReassignReceiver(@Nullable Object o, @Nullable Object other) {

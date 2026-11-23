@@ -3173,8 +3173,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
     TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
     AnnotatedDeclaredType dt = fromElement(typeElt).asUse();
-    // Replace, rather than add to, any annotations that `fromElement` gave the boxed type.
-    dt.replaceAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
+    // Discard any annotations that `fromElement` gave the boxed type, including those in
+    // hierarchies for which `getBoxedAnnotations` returns no annotation.
+    dt.clearPrimaryAnnotations();
+    dt.addAnnotations(getBoxedAnnotations(type.getPrimaryAnnotations(), type.getKind()));
     return dt;
   }
 

@@ -1506,6 +1506,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // type `T extends Integer`, needs no numeric conversion of its operands.
     boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
     TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
+
+    // If the operand is Boolean and the whole expression is boolean, as in `flag ? aBoolean :
+    // false`, then apply unboxing.
+    if (isNodeUnboxable && destType.getKind() == TypeKind.BOOLEAN) {
+      return unbox(node);
+    }
+
     if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(destType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isNodeUnboxable) {

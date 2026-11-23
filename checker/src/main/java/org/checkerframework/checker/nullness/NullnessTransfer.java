@@ -108,9 +108,6 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
-  /** The type {@code java.lang.NullPointerException}. */
-  private final TypeMirror nullPointerExceptionType;
-
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -142,14 +139,12 @@ public class NullnessTransfer
                 nullnessTypeFactory,
                 false);
 
+    // The assumption is on if the option is supplied without a value (as in
+    // `-AinvocationPreservesArgumentNullness`) or with the value `true`.  It is off if the option
+    // is absent or its value is `false`.
     nonNullAssumptionAfterInvocation =
-        !analysis
-            .getTypeFactory()
-            .getChecker()
-            .getBooleanOption("invocationPreservesArgumentNullness", true);
-
-    nullPointerExceptionType =
-        TypesUtils.typeFromClass(NullPointerException.class, analysis.getTypes(), elements);
+        checker.hasOption("invocationPreservesArgumentNullness")
+            && checker.getBooleanOption("invocationPreservesArgumentNullness", true);
   }
 
   /**
@@ -480,7 +475,8 @@ public class NullnessTransfer
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
       if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
-        JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
+        // Use the same expression that makeNonNull refines.
+        JavaExpression argExpr = JavaExpression.fromNode(n.getArgument(i));
         if ((nonNullAssumptionAfterInvocation
                 || isMethodSideEffectFree
                 || !argExpr.isAssignableByOtherCode())
@@ -514,22 +510,17 @@ public class NullnessTransfer
 
   /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
-   * on each exceptional successor whose exception type excludes {@code NullPointerException}, such
-   * as a handler for a checked exception that the invoked method declares. An exception of such a
-   * type comes from the invoked method, which the invocation entered only because the receiver is
-   * non-null.
-   *
-   * <p>The receiver remains unrefined on the other exceptional successors. That loses no precision
-   * for an invocation in source code, because its {@code NullPointerException} for a null receiver
-   * comes from its {@code MethodAccessNode}, and every handler that such an edge of {@code n}
-   * reaches also catches that {@code NullPointerException}. But it is necessary for a synthetic
-   * invocation, such as the {@code iterator()} call of an enhanced {@code for} loop, which can
-   * throw that {@code NullPointerException} itself.
+   * on each exceptional successor. Every exception that {@code n} throws comes from the invoked
+   * method, which the invocation entered only because the receiver is non-null. The {@code
+   * NullPointerException} for a null receiver comes from the target of {@code n} (a {@code
+   * MethodAccessNode}), both for an invocation in source code and for a synthetic invocation such
+   * as the {@code iterator()} call of an enhanced {@code for} loop. A handler that catches that
+   * {@code NullPointerException} receives the unrefined store from the {@code MethodAccessNode}.
    *
    * @param n a method invocation whose receiver should be refined
    * @param result the transfer result for {@code n}
    * @param storeBefore the store before {@code n}; is not side-effected
-   * @return a transfer result like {@code result}, with the receiver refined on some exceptional
+   * @return a transfer result like {@code result}, with the receiver refined on the exceptional
    *     successors
    */
   private TransferResult<NullnessValue, NullnessStore> refineReceiverOnExceptionalSuccessors(
@@ -545,9 +536,6 @@ public class NullnessTransfer
         oldExceptionalStores == null ? new HashMap<>() : new HashMap<>(oldExceptionalStores);
     boolean refined = false;
     for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
-      if (analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
-        continue;
-      }
       NullnessStore exceptionalStore = newExceptionalStores.get(exceptionType);
       NullnessStore refinedStore =
           (exceptionalStore == null ? storeBefore : exceptionalStore).copy();

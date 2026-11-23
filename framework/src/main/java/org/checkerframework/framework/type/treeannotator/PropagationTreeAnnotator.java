@@ -102,13 +102,21 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
           // The initializer is boxed or unboxed (JLS 5.2).
           if (initIsPrimitive) {
             // A primitive initializer is boxed to the component type if that is a boxed
-            // primitive, as in `new Byte[] {1}`.
-            annos =
-                atypeFactory.getBoxedAnnotations(
-                    annos,
-                    TypesUtils.isBoxedPrimitive(componentTM)
-                        ? atypeFactory.types.unboxedType(componentTM).getKind()
-                        : annosTM.getKind());
+            // primitive, as in `new Byte[] {1}`.  A constant initializer is first narrowed to the
+            // primitive type of the component type, as in that example (JLS 5.2).
+            TypeKind initKind = annosTM.getKind();
+            TypeKind boxKind =
+                TypesUtils.isBoxedPrimitive(componentTM)
+                    ? atypeFactory.types.unboxedType(componentTM).getKind()
+                    : initKind;
+            if (boxKind != initKind
+                && TypeKindUtils.isNumeric(initKind)
+                && TypeKindUtils.isNumeric(boxKind)
+                && TypeKindUtils.getPrimitiveConversionKind(initKind, boxKind)
+                    == TypeKindUtils.PrimitiveConversionKind.NARROWING) {
+              annos = atypeFactory.getNarrowedAnnotations(annos, initKind, boxKind);
+            }
+            annos = atypeFactory.getBoxedAnnotations(annos, boxKind);
           } else {
             // A boxed initializer is unboxed to its own primitive type, which might then be
             // widened to the component type, as in `new long[] {anInteger}` (JLS 5.1.8, 5.1.2).
@@ -360,6 +368,13 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                   exprType.getUnderlyingType(), atypeFactory.getProcessingEnv().getTypeUtils()));
       if (castKind != null) {
         if (exprKind != null) {
+          // A cast of a boxed primitive, or of a type variable whose bound is one, to a primitive
+          // type, such as `(int) anInteger` or `(long) anInteger`, unboxes the expression before
+          // any primitive conversion (JLS 5.5).
+          if (!TypesUtils.isPrimitive(exprType.getUnderlyingType())
+              && TypesUtils.isPrimitive(type.getUnderlyingType())) {
+            expressionAnnos = atypeFactory.getUnboxedAnnotations(expressionAnnos, exprKind);
+          }
           switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
             case WIDENING ->
                 expressionAnnos =
