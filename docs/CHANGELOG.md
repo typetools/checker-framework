@@ -24,6 +24,10 @@ Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
 constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
 assignment conversion does.
 
+Deprecated methods:
+
+* `TypesUtils.isNumeric()` => `isNumericPrimitive()`
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
