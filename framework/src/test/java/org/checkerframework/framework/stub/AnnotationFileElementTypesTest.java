@@ -183,28 +183,46 @@ public class AnnotationFileElementTypesTest {
         diagnostics("checker.jar/Foo.ajava", classpathDir));
   }
 
-  /** Tests that a named stub file whose name does not end with {@code .astub} is used. */
-  @Test
-  public void namedStubFileWithOtherName() throws IOException {
-    File stub = write(new File(tmp.getRoot(), "Foo.stub"), "package p;");
-    for (String diagnostic : diagnostics(stub.getPath())) {
+  /**
+   * Asserts that the compilation succeeded and that no annotation file was ignored.
+   *
+   * @param diagnostics the diagnostics that the compiler issued
+   */
+  private static void assertNotIgnoredOrFailed(List<String> diagnostics) {
+    for (String diagnostic : diagnostics) {
+      Assert.assertFalse(diagnostic, diagnostic.startsWith("ERROR"));
       Assert.assertFalse(diagnostic, diagnostic.startsWith("WARNING: Ignoring"));
     }
   }
 
-  /** Tests that a named ZIP archive does not yield a warning that it is being ignored. */
+  /**
+   * Contents of an annotation file that the parser warns about, so that a test can observe that the
+   * file was parsed.
+   */
+  private static final String UNKNOWN_CLASS_STUB = "package p; class NoSuchClass {}";
+
+  /** Tests that a named stub file whose name does not end with {@code .astub} is used. */
+  @Test
+  public void namedStubFileWithOtherName() throws IOException {
+    File stub = write(new File(tmp.getRoot(), "Foo.stub"), UNKNOWN_CLASS_STUB);
+    List<String> diagnostics = diagnostics(stub.getPath());
+    assertNotIgnoredOrFailed(diagnostics);
+    assertHasDiagnostic("WARNING: " + stub.getPath() + ":", diagnostics);
+  }
+
+  /** Tests that an annotation file in a named ZIP archive is used. */
   @Test
   public void namedZipArchive() throws IOException {
     File zip = new File(tmp.getRoot(), "stubs.zip");
     try (OutputStream os = Files.newOutputStream(zip.toPath());
         ZipOutputStream zos = new ZipOutputStream(os)) {
       zos.putNextEntry(new ZipEntry("A.astub"));
-      zos.write("package p;".getBytes(StandardCharsets.UTF_8));
+      zos.write(UNKNOWN_CLASS_STUB.getBytes(StandardCharsets.UTF_8));
       zos.closeEntry();
     }
-    for (String diagnostic : diagnostics(zip.getPath())) {
-      Assert.assertFalse(diagnostic, diagnostic.startsWith("WARNING: Ignoring"));
-    }
+    List<String> diagnostics = diagnostics(zip.getPath());
+    assertNotIgnoredOrFailed(diagnostics);
+    assertHasDiagnostic("WARNING: " + zip.getPath() + "!A.astub:", diagnostics);
   }
 
   /** Tests that an archive within a named directory yields a note. */
