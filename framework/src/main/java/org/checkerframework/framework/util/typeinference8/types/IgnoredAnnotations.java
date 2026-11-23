@@ -14,9 +14,11 @@ import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -429,8 +431,10 @@ final class IgnoredAnnotations {
    * {@code List} is {@code List<String>}. If both are array types, the same is done for their
    * component types; for example, the supertype of {@code ArrayList<String>[]} whose class is
    * {@code List[]} is {@code List<String>[]}. Returns {@code type} itself if they are not both
-   * declared types or both array types, if their erasures are the same, or if {@code type} has no
-   * such supertype that is a proper type.
+   * declared types or both array types, if their erasures are the same, if {@code type} has no
+   * such supertype that is a proper type, or if {@code type} is an array type that has an origin
+   * (see {@link ProperType#getOrigin}) but the supertype does not, because then the supertype has
+   * lost the record of the ignored positions of {@code type}.
    *
    * @param type a type
    * @param superType a type; need not be a supertype of {@code type}
@@ -445,7 +449,18 @@ final class IgnoredAnnotations {
       return type;
     }
     AbstractType asSuper = type.asSuper(superType);
-    return asSuper != null && asSuper.isProper() ? asSuper : type;
+    if (asSuper == null || !asSuper.isProper()) {
+      return type;
+    }
+    if (kind == TypeKind.ARRAY && type.getOrigin() != null && asSuper.getOrigin() == null) {
+      // The origin could not be viewed as `superType` -- for example, `T[]` cannot be viewed as
+      // `CharSequence[]` if T's bound is Object -- so `asSuper` was computed from the annotated
+      // type alone and has lost the record of its ignored positions.  Return `type` itself, whose
+      // ignored positions are known; #allCorrespondingPositionsMatch aligns component types of
+      // different classes.
+      return type;
+    }
+    return asSuper;
   }
 
   /**
@@ -827,9 +842,11 @@ final class IgnoredAnnotations {
       boolean keepBothIgnored,
       QualifierHierarchy qh,
       Types types) {
-    // The copies into each position, collected before any is made so that every annotation that is
-    // copied is read from the unmodified types.
+    // The copies into each position.  A position that is copied from can itself be an ignored
+    // position that is copied into, so each copy reads from a snapshot of its source, taken before
+    // any annotation is replaced; then the result does not depend on the order of the copies.
     IdentityHashMap<AnnotatedTypeMirror, List<Copy>> copies = new IdentityHashMap<>();
+    IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> snapshots = new IdentityHashMap<>();
     allCorrespondingPositionsMatch(
         atm1,
         atm2,
@@ -848,12 +865,12 @@ final class IgnoredAnnotations {
           if (!into1.isEmpty()) {
             copies
                 .computeIfAbsent(position1, k -> new ArrayList<>())
-                .add(new Copy(position2, into1));
+                .add(Copy.from(position2, into1, snapshots));
           }
           if (!into2.isEmpty()) {
             copies
                 .computeIfAbsent(position2, k -> new ArrayList<>())
-                .add(new Copy(position1, into2));
+                .add(Copy.from(position1, into2, snapshots));
           }
           return true;
         },
@@ -864,28 +881,76 @@ final class IgnoredAnnotations {
   }
 
   /**
+   * How the annotation copied into an ignored position must relate to the annotation of the
+   * source of a {@link Copy}.
+   */
+  private enum Direction {
+    /** The annotation must be that of the source, which is not a wildcard's bound. */
+    EQUAL,
+    /** The annotation must be above that of the source, which is a wildcard's lower bound. */
+    ABOVE,
+    /** The annotation must be below that of the source, which is a wildcard's upper bound. */
+    BELOW
+  }
+
+  /**
    * A copy of annotations into an ignored position, from a corresponding position of the other
    * type.
    *
-   * @param from the position whose annotations are copied; if it is a wildcard, the annotations of
-   *     its bound are copied (see {@link #boundOf})
+   * @param source a snapshot of the position whose annotations are copied, or of its bound (see
+   *     {@link #boundOf}) if it is a wildcard; it is not modified when annotations are replaced
+   * @param direction how the copied annotation relates to that of {@code source}
    * @param hierarchies the top annotations of the hierarchies in which to copy annotations
    */
-  private record Copy(AnnotatedTypeMirror from, AnnotationMirrorSet hierarchies) {}
+  private record Copy(
+      AnnotatedTypeMirror source, Direction direction, AnnotationMirrorSet hierarchies) {
+
+    /**
+     * Returns a copy of annotations from {@code from}, in the hierarchies of {@code hierarchies}.
+     *
+     * @param from the position whose annotations are copied; if it is a wildcard, the annotations
+     *     of its bound are copied (see {@link #boundOf})
+     * @param hierarchies the top annotations of the hierarchies in which to copy annotations
+     * @param snapshots a map from each position that is copied from to its snapshot, which is
+     *     shared by all copies from that position; side-effected by this method
+     * @return a copy of annotations from {@code from}
+     */
+    static Copy from(
+        AnnotatedTypeMirror from,
+        AnnotationMirrorSet hierarchies,
+        Map<AnnotatedTypeMirror, AnnotatedTypeMirror> snapshots) {
+      Direction direction;
+      if (from instanceof AnnotatedWildcardType wildcard) {
+        direction =
+            wildcard.getSuperBound().getKind() != TypeKind.NULL ? Direction.ABOVE : Direction.BELOW;
+      } else {
+        direction = Direction.EQUAL;
+      }
+      AnnotatedTypeMirror source =
+          snapshots.computeIfAbsent(boundOf(from), AnnotatedTypeMirror::deepCopy);
+      return new Copy(source, direction, hierarchies);
+    }
+  }
 
   /**
-   * Gives {@code target} the annotations of the positions of {@code copies}, in their hierarchies.
+   * Gives {@code target} the annotations of the sources of {@code copies}, in their hierarchies.
    * The result does not depend on the order of {@code copies}.
    *
-   * <p>In a hierarchy in which every copy is from the same type, {@code target} gets its primary
+   * <p>A wildcard and its bound both correspond to the same position (see {@link
+   * #allCorrespondingPositionsMatch}), so {@code target} can get two copies from the same source:
+   * one from the wildcard and one from its bound. Then the wildcard's direction is used, so the
+   * bound does not become a requirement that the annotation equal that of the bound.
+   *
+   * <p>In a hierarchy in which every copy is from the same source, {@code target} gets its primary
    * annotation as by {@link #copyPrimaryAnnotationInHierarchy}. Otherwise, the annotations that are
-   * copied are combined so that {@code target} satisfies every position it is copied from, if
-   * possible:
+   * copied are combined so that {@code target} satisfies every source, if possible, according to
+   * its {@link Direction}:
    *
    * <ul>
-   *   <li>a wildcard with a lower bound requires the annotation to be above that of its bound;
-   *   <li>any other wildcard requires the annotation to be below that of its bound;
-   *   <li>any other type requires the annotation to be that of the type.
+   *   <li>the bound of a wildcard with a lower bound requires the annotation to be above that of
+   *       the bound;
+   *   <li>the bound of any other wildcard requires the annotation to be below that of the bound;
+   *   <li>any other source requires the annotation to be that of the source.
    * </ul>
    *
    * <p>{@code target} gets the least upper bound of the annotations that it must be above, if there
@@ -899,39 +964,39 @@ final class IgnoredAnnotations {
    */
   private static void combineCopies(
       AnnotatedTypeMirror target, List<Copy> copies, QualifierHierarchy qh) {
-    if (copies.size() == 1) {
-      Copy copy = copies.get(0);
-      copyPrimaryAnnotationsInHierarchies(boundOf(copy.from()), target, copy.hierarchies());
-      return;
-    }
     for (AnnotationMirror top : qh.getTopAnnotations()) {
-      Set<AnnotatedTypeMirror> sources = Collections.newSetFromMap(new IdentityHashMap<>());
-      @Nullable AnnotationMirror lower = null;
-      @Nullable AnnotationMirror upper = null;
+      // The direction of each source.  A wildcard's direction overrides the EQUAL direction of a
+      // copy from its bound.
+      IdentityHashMap<AnnotatedTypeMirror, Direction> sources = new IdentityHashMap<>();
       for (Copy copy : copies) {
-        if (!copy.hierarchies().contains(top)) {
-          continue;
+        if (copy.hierarchies().contains(top)) {
+          sources.merge(
+              copy.source(), copy.direction(), (d1, d2) -> d1 == Direction.EQUAL ? d2 : d1);
         }
-        AnnotatedTypeMirror source = boundOf(copy.from());
-        sources.add(source);
-        AnnotationMirror anno = source.getAnnotationInHierarchy(top);
+      }
+      if (sources.isEmpty()) {
+        continue;
+      }
+      if (sources.size() == 1) {
+        copyPrimaryAnnotationInHierarchy(sources.keySet().iterator().next(), target, top);
+        continue;
+      }
+      AnnotationMirror lower = null;
+      AnnotationMirror upper = null;
+      for (Map.Entry<AnnotatedTypeMirror, Direction> entry : sources.entrySet()) {
+        AnnotationMirror anno = entry.getKey().getAnnotationInHierarchy(top);
         if (anno == null) {
           continue;
         }
-        boolean isWildcard = copy.from().getKind() == TypeKind.WILDCARD;
-        boolean hasLowerBound =
-            isWildcard
-                && ((AnnotatedWildcardType) copy.from()).getSuperBound().getKind() != TypeKind.NULL;
-        if (!isWildcard || hasLowerBound) {
+        Direction direction = entry.getValue();
+        if (direction != Direction.BELOW) {
           lower = lower == null ? anno : qh.leastUpperBoundQualifiersOnly(lower, anno);
         }
-        if (!isWildcard || !hasLowerBound) {
+        if (direction != Direction.ABOVE) {
           upper = upper == null ? anno : qh.greatestLowerBoundQualifiersOnly(upper, anno);
         }
       }
-      if (sources.size() == 1) {
-        copyPrimaryAnnotationInHierarchy(sources.iterator().next(), target, top);
-      } else if (lower != null) {
+      if (lower != null) {
         target.replaceAnnotation(lower);
       } else if (upper != null) {
         target.replaceAnnotation(upper);
@@ -953,11 +1018,13 @@ final class IgnoredAnnotations {
    *       and {@code Box<@A String>} correspond to {@code Box<@B String>}, and {@code @A String}
    *       corresponds to {@code @B String}.
    *   <li>Where the two types are declared types of different classes, one a subclass of the other,
-   *       a type argument of the subclass corresponds to a type argument of the superclass if the
-   *       superclass's type argument is that type parameter of the subclass (see {@link
-   *       #typeArgumentCorrespondence}). For example, given {@code class Flip<A, B> implements
-   *       Pair<B, A>}, in {@code Flip<@A String, @B String>} and {@code Pair<@C String, @D
-   *       String>}, {@code @A String} corresponds to {@code @D String}.
+   *       a type argument of the subclass corresponds to each position of the superclass's type
+   *       arguments at which the subclass's declaration of its supertype uses that type parameter
+   *       (see {@link #alignedTypeArgumentsMatch}). For example, given {@code class Flip<A, B>
+   *       implements Pair<B, A>}, in {@code Flip<@A String, @B String>} and {@code Pair<@C String,
+   *       @D String>}, {@code @A String} corresponds to {@code @D String}; and given {@code class
+   *       Wrap<A> implements Parent<List<A>>}, in {@code Wrap<@A String>} and {@code
+   *       Parent<List<@B String>>}, {@code @A String} corresponds to {@code @B String}.
    * </ul>
    *
    * @param atm1 a type
@@ -1066,10 +1133,14 @@ final class IgnoredAnnotations {
   /**
    * Returns true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
    * type arguments of {@code dt1} and {@code dt2}, which are declared types of different classes.
-   * If one class is a subclass of the other, then a type argument of the subclass corresponds to a
-   * type argument of the superclass if the superclass's type argument, in the subclass's
-   * declaration, is that type parameter of the subclass; see {@link #typeArgumentCorrespondence}.
-   * Otherwise, no type arguments correspond. Enclosing types never correspond.
+   * If one class is a subclass of the other, then a type argument of the subclass corresponds to
+   * each position of the superclass's type arguments at which the subclass's declaration of its
+   * supertype uses that type parameter of the subclass, at any depth; see {@link
+   * #occurrencesMatch}. For example, given {@code class Flip<A, B> implements Pair<B, A>}, the
+   * first type argument of {@code Flip} corresponds to the second type argument of {@code Pair};
+   * and given {@code class Wrap<A> implements Parent<List<A>>}, the type argument of {@code Wrap}
+   * corresponds to the type argument of the type argument of {@code Parent}. Otherwise, no type
+   * arguments correspond. Enclosing types never correspond.
    *
    * @param dt1 a declared type
    * @param dt2 a declared type of a different class than {@code dt1}
@@ -1095,26 +1166,27 @@ final class IgnoredAnnotations {
       // A raw type.
       return true;
     }
-    int[] subIndexes = typeArgumentCorrespondence(element1, element2, types);
-    boolean firstIsSubclass = subIndexes != null;
-    if (subIndexes == null) {
-      subIndexes = typeArgumentCorrespondence(element2, element1, types);
-      if (subIndexes == null) {
+    DeclaredType supertype = supertypeOfClass(element1, element2, types);
+    boolean firstIsSubclass = supertype != null;
+    if (supertype == null) {
+      supertype = supertypeOfClass(element2, element1, types);
+      if (supertype == null) {
         return true;
       }
     }
-    for (int superIndex = 0; superIndex < subIndexes.length; superIndex++) {
-      int subIndex = subIndexes[superIndex];
-      if (subIndex == -1) {
-        continue;
-      }
-      boolean matches =
-          firstIsSubclass
-              ? allCorrespondingPositionsMatch(
-                  args1.get(subIndex), args2.get(superIndex), test, visitedWildcards, types)
-              : allCorrespondingPositionsMatch(
-                  args1.get(superIndex), args2.get(subIndex), test, visitedWildcards, types);
-      if (!matches) {
+    TypeElement subclass = firstIsSubclass ? element1 : element2;
+    List<? extends AnnotatedTypeMirror> subArgs = firstIsSubclass ? args1 : args2;
+    List<? extends AnnotatedTypeMirror> superArgs = firstIsSubclass ? args2 : args1;
+    List<? extends TypeMirror> patterns = supertype.getTypeArguments();
+    if (patterns.size() != superArgs.size()) {
+      // The subclass's declaration of its supertype is raw.
+      return true;
+    }
+    SubclassArguments sub =
+        new SubclassArguments(subclass.getTypeParameters(), subArgs, firstIsSubclass);
+    Iterator<? extends AnnotatedTypeMirror> superIter = superArgs.iterator();
+    for (TypeMirror pattern : patterns) {
+      if (!occurrencesMatch(pattern, superIter.next(), sub, test, visitedWildcards, types)) {
         return false;
       }
     }
@@ -1122,45 +1194,121 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns, for each type parameter of {@code superclass}, the index of the type parameter of
-   * {@code subclass} that is its type argument in the supertype of {@code subclass} whose class is
-   * {@code superclass}, or -1 if that type argument is not a type parameter of {@code subclass}.
-   * For example, given {@code class Flip<A, B> implements Pair<B, A>}, the result for {@code Flip}
-   * and {@code Pair} is {@code [1, 0]}. Returns null if {@code superclass} is not a superclass or
-   * superinterface of {@code subclass}, or if that supertype is raw.
+   * The type arguments of the subclass in {@link #alignedTypeArgumentsMatch}.
    *
-   * @param subclass a class
-   * @param superclass a class
-   * @param types the type utilities
-   * @return the index in the type parameters of {@code subclass} of each type argument of the
-   *     supertype of {@code subclass} whose class is {@code superclass}, or null
+   * @param params the type parameters of the subclass
+   * @param args the type arguments of the subclass, one per element of {@code params}
+   * @param isFirst true if the subclass's type is the first of the two types being compared, so
+   *     that its positions are passed first to the test
    */
-  private static int @Nullable [] typeArgumentCorrespondence(
-      TypeElement subclass, TypeElement superclass, Types types) {
-    DeclaredType supertype = supertypeOfClass(subclass, superclass, types);
-    if (supertype == null) {
-      return null;
-    }
-    List<? extends TypeMirror> superArgs = supertype.getTypeArguments();
-    if (superArgs.size() != superclass.getTypeParameters().size()) {
-      return null;
-    }
-    List<? extends TypeParameterElement> subParams = subclass.getTypeParameters();
-    int[] result = new int[superArgs.size()];
-    for (int superIndex = 0; superIndex < superArgs.size(); superIndex++) {
-      result[superIndex] = -1;
-      TypeMirror superArg = superArgs.get(superIndex);
-      if (superArg.getKind() != TypeKind.TYPEVAR) {
-        continue;
-      }
-      for (int subIndex = 0; subIndex < subParams.size(); subIndex++) {
-        if (types.isSameType(superArg, subParams.get(subIndex).asType())) {
-          result[superIndex] = subIndex;
-          break;
+  private record SubclassArguments(
+      List<? extends TypeParameterElement> params,
+      List<? extends AnnotatedTypeMirror> args,
+      boolean isFirst) {}
+
+  /**
+   * Returns true if {@link #allCorrespondingPositionsMatch} holds for each type argument of the
+   * subclass and each position of {@code superPart} at which {@code pattern} uses the subclass's
+   * type parameter for that argument. {@code pattern} is part of the subclass's declaration of its
+   * supertype, such as {@code List<A>} in {@code class Wrap<A> implements Parent<List<A>>}, and
+   * {@code superPart} is the same part of the supertype being compared. Only positions where
+   * {@code pattern} and {@code superPart} have the same structure are matched; if {@code superPart}
+   * is a wildcard where {@code pattern} is not, its bound (see {@link #boundOf}) is used.
+   *
+   * @param pattern part of the subclass's declaration of its supertype
+   * @param superPart the corresponding part of the supertype being compared
+   * @param sub the type arguments of the subclass
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
+   *     been tested (see {@link #addPair})
+   * @param types the type utilities
+   * @return true if {@link #allCorrespondingPositionsMatch} holds for each pair of corresponding
+   *     positions
+   */
+  private static boolean occurrencesMatch(
+      TypeMirror pattern,
+      AnnotatedTypeMirror superPart,
+      SubclassArguments sub,
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
+      Types types) {
+    switch (pattern.getKind()) {
+      case TYPEVAR -> {
+        List<? extends TypeParameterElement> params = sub.params();
+        for (int i = 0; i < params.size(); i++) {
+          if (types.isSameType(pattern, params.get(i).asType())) {
+            AnnotatedTypeMirror subArg = sub.args().get(i);
+            return sub.isFirst()
+                ? allCorrespondingPositionsMatch(subArg, superPart, test, visitedWildcards, types)
+                : allCorrespondingPositionsMatch(superPart, subArg, test, visitedWildcards, types);
+          }
         }
+        // A type variable that is not a type parameter of the subclass, such as one of an
+        // enclosing class.
+        return true;
+      }
+      case DECLARED -> {
+        AnnotatedTypeMirror part = boundOf(superPart);
+        if (part.getKind() != TypeKind.DECLARED) {
+          return true;
+        }
+        DeclaredType patternDT = (DeclaredType) pattern;
+        AnnotatedDeclaredType partDT = (AnnotatedDeclaredType) part;
+        if (!types.isSameType(
+            types.erasure(patternDT), types.erasure(partDT.getUnderlyingType()))) {
+          return true;
+        }
+        List<? extends TypeMirror> patternArgs = patternDT.getTypeArguments();
+        List<? extends AnnotatedTypeMirror> partArgs = partDT.getTypeArguments();
+        if (patternArgs.size() == partArgs.size()) {
+          Iterator<? extends AnnotatedTypeMirror> partIter = partArgs.iterator();
+          for (TypeMirror patternArg : patternArgs) {
+            if (!occurrencesMatch(
+                patternArg, partIter.next(), sub, test, visitedWildcards, types)) {
+              return false;
+            }
+          }
+        }
+        TypeMirror patternEnclosing = patternDT.getEnclosingType();
+        AnnotatedDeclaredType partEnclosing = partDT.getEnclosingType();
+        return patternEnclosing.getKind() != TypeKind.DECLARED
+            || partEnclosing == null
+            || occurrencesMatch(
+                patternEnclosing, partEnclosing, sub, test, visitedWildcards, types);
+      }
+      case ARRAY -> {
+        AnnotatedTypeMirror part = boundOf(superPart);
+        return part.getKind() != TypeKind.ARRAY
+            || occurrencesMatch(
+                ((ArrayType) pattern).getComponentType(),
+                ((AnnotatedArrayType) part).getComponentType(),
+                sub,
+                test,
+                visitedWildcards,
+                types);
+      }
+      case WILDCARD -> {
+        if (!(superPart instanceof AnnotatedWildcardType partWT)) {
+          return true;
+        }
+        WildcardType patternWT = (WildcardType) pattern;
+        TypeMirror patternExtends = patternWT.getExtendsBound();
+        TypeMirror patternSuper = patternWT.getSuperBound();
+        if ((patternSuper != null) != (partWT.getSuperBound().getKind() != TypeKind.NULL)) {
+          // One wildcard has a lower bound and the other does not.
+          return true;
+        }
+        return (patternExtends == null
+                || occurrencesMatch(
+                    patternExtends, partWT.getExtendsBound(), sub, test, visitedWildcards, types))
+            && (patternSuper == null
+                || occurrencesMatch(
+                    patternSuper, partWT.getSuperBound(), sub, test, visitedWildcards, types));
+      }
+      default -> {
+        return true;
       }
     }
-    return result;
   }
 
   /**
