@@ -946,6 +946,11 @@ public abstract class CFAbstractTransfer<
    * the result of {@link #nodesWithValueOf nodesWithValueOf(secondNode)}, which omits each node
    * that might not have the value of {@code secondNode} when the comparison completes.
    *
+   * <p>This method does nothing if {@code firstValue} might not hold for the value of {@code
+   * firstNode} when the comparison completes. That is possible if side effects unrefine aliases
+   * (see {@link GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), as in {@code a == (b =
+   * clear(a))}.
+   *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
    * @param firstValue the abstract value that might be more precise
@@ -964,7 +969,9 @@ public abstract class CFAbstractTransfer<
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
-      if (!firstValue.equals(secondValue) && hasRefinableSide(secondNode)) {
+      if (!firstValue.equals(secondValue)
+          && hasRefinableSide(secondNode)
+          && !abstractValueMayChangeBeforeComparison(firstNode)) {
         // `firstValue` describes the value of `firstNode` when it was evaluated. If it mentions an
         // expression that might change before the comparison completes, as `arr` does in `limit
         // == (j = (arr = c).length)` if `limit` is `@LTLengthOf("arr")`, then it might not hold
@@ -981,6 +988,28 @@ public abstract class CFAbstractTransfer<
       }
     }
     return res;
+  }
+
+  /**
+   * Returns true if the abstract value that the given operand of a comparison had when it was
+   * evaluated might not hold for the value it denotes when the comparison completes. This is
+   * possible only if side effects unrefine aliases (see {@link
+   * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}): then a call that is evaluated after
+   * the operand and before the comparison completes might change the abstract value of the object
+   * that the operand denotes, as in {@code a == (b = clear(a))}. A write that only reassigns a
+   * variable, field, or array element that the operand reads does not matter, because it does not
+   * change the object that the operand evaluated to.
+   *
+   * @param node an operand of a comparison, possibly an assignment
+   * @return true if the abstract value of {@code node} might not hold for its value when the
+   *     comparison completes
+   */
+  private boolean abstractValueMayChangeBeforeComparison(Node node) {
+    if (!analysis.atypeFactory.sideEffectsUnrefineAliases
+        || !JavaExpression.fromNode(node).isModifiableByOtherCode()) {
+      return false;
+    }
+    return locationsWrittenUntilComparison(node).mayWriteAnyHeapLocation();
   }
 
   /**
@@ -1308,6 +1337,16 @@ public abstract class CFAbstractTransfer<
         && compoundAssignmentTree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
       written.addStringConversions(
           compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+    }
+    // The string conversion of a `+=` in `chain` (which calls `toString()`) happens after `rhs` is
+    // evaluated and after the receivers and indices of the targets are evaluated.
+    for (Node n : chain) {
+      if (n instanceof AssignmentNode a) {
+        Tree tree = a.getTree();
+        if (tree != null) {
+          written.addOwnWrites(tree);
+        }
+      }
     }
     // The sides that the result contains, in source order: `sides[i]` is the target of
     // `chain.get(i)` if that is an assignment, and `chain.get(i)` itself if that is a cast; and
@@ -1713,6 +1752,16 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
+     * Returns true if every non-final field and every array element might be written, as by a call
+     * to a method that is not side-effect-free.
+     *
+     * @return true if every non-final field and every array element might be written
+     */
+    boolean mayWriteAnyHeapLocation() {
+      return anyHeapLocation;
+    }
+
+    /**
      * Adds a write to the given location.
      *
      * @param target a location that is written
@@ -1887,7 +1936,8 @@ public abstract class CFAbstractTransfer<
      * A call to {@code String.length()} changes only if its receiver changes, because a {@code
      * String} is immutable. If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
-     * element also changes every expression whose abstract value other code can modify (see {@link
+     * element also changes {@code expr} itself (but not its subexpressions, such as a receiver or
+     * index) if other code can modify its abstract value (see {@link
      * JavaExpression#isModifiableByOtherCode}).
      *
      * @param expr an expression
@@ -1909,34 +1959,55 @@ public abstract class CFAbstractTransfer<
         // writes, so its abstract value is the one that was stored.
         return true;
       }
+      return mayChangeValue(expr, ignoreOwnLocation);
+    }
+
+    /**
+     * Returns true if writing these locations might change the value of {@code expr}, not counting
+     * a change to the abstract value of the object that {@code expr} denotes. This is like {@link
+     * #mayChange}, but it ignores {@link GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}.
+     *
+     * <p>This method checks the subexpressions of {@code expr}, such as a receiver or index. A
+     * write that changes only the abstract value of the object that a subexpression denotes does
+     * not change which object the subexpression denotes, so it does not change the value of {@code
+     * expr}. For example, a heap write does not change which location {@code h.list} denotes, even
+     * if the object that {@code h} denotes is mutable.
+     *
+     * @param expr an expression
+     * @param ignoreOwnLocation true if a write to the location that {@code expr} denotes does not
+     *     matter (see {@link #mayChange})
+     * @return true if evaluating {@code expr} after writing these locations might yield a different
+     *     value than evaluating it before
+     */
+    private boolean mayChangeValue(JavaExpression expr, boolean ignoreOwnLocation) {
       if (expr instanceof LocalVariable) {
         return !ignoreOwnLocation && locals.contains(expr);
       } else if (expr instanceof FieldAccess fa) {
-        return (!ignoreOwnLocation && mayWriteField(fa)) || mayChange(fa.getReceiver(), false);
+        return (!ignoreOwnLocation && mayWriteField(fa)) || mayChangeValue(fa.getReceiver(), false);
       } else if (expr instanceof ArrayAccess aa) {
         return (!ignoreOwnLocation && mayWriteArrayElement(aa))
-            || mayChange(aa.getArray(), false)
-            || mayChange(aa.getIndex(), false);
+            || mayChangeValue(aa.getArray(), false)
+            || mayChangeValue(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
         if (mc.getElement().equals(stringLength)) {
-          return mayChange(mc.getReceiver(), false);
+          return mayChangeValue(mc.getReceiver(), false);
         }
         if (anyHeapLocation
             || !fields.isEmpty()
             || !arrayElements.isEmpty()
-            || mayChange(mc.getReceiver(), false)) {
+            || mayChangeValue(mc.getReceiver(), false)) {
           return true;
         }
         for (JavaExpression arg : mc.getArguments()) {
-          if (mayChange(arg, false)) {
+          if (mayChangeValue(arg, false)) {
             return true;
           }
         }
         return false;
       } else if (expr instanceof UnaryOperation uo) {
-        return mayChange(uo.getOperand(), false);
+        return mayChangeValue(uo.getOperand(), false);
       } else if (expr instanceof BinaryOperation bo) {
-        return mayChange(bo.getLeft(), false) || mayChange(bo.getRight(), false);
+        return mayChangeValue(bo.getLeft(), false) || mayChangeValue(bo.getRight(), false);
       } else {
         // An Unknown or ArrayCreation might be changed.
         return !(expr instanceof ClassName
