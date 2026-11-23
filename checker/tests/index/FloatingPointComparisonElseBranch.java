@@ -29,7 +29,7 @@ public class FloatingPointComparisonElseBranch {
     }
   }
 
-  void greaterThanBoxed(int j, Double d) {
+  void greaterThanOrEqualBoxed(int j, Double d) {
     if (j >= d) {
     } else {
       // :: error: (assignment)
@@ -37,7 +37,32 @@ public class FloatingPointComparisonElseBranch {
     }
   }
 
-  void lessThan(int j, int m) {
+  void greaterThanOrEqualFloat(int j, float f) {
+    if (j >= f) {
+    } else {
+      // :: error: (assignment)
+      @LessThan("f") int k = j;
+    }
+  }
+
+  void lessThan(int j, double d) {
+    if (d < j) {
+    } else {
+      // `d` might be NaN, in which case `d < j` and `d >= j` are both false.
+      // :: error: (assignment)
+      @LessThan("d + 1") int k = j;
+    }
+  }
+
+  void lessThanOrEqual(int j, double d) {
+    if (d <= j) {
+    } else {
+      // :: error: (assignment)
+      @LessThan("d") int k = j;
+    }
+  }
+
+  void intGreaterThanOrEqual(int j, int m) {
     if (j >= m) {
     } else {
       @LessThan("m") int k = j;
