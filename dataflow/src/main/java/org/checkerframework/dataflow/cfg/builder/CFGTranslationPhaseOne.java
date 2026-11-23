@@ -287,12 +287,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private SwitchBuilder switchBuilder;
 
   /**
-   * The maximum number of nodes in extra exceptional copies of finally blocks, beyond which the
-   * remaining exception types that reach a finally block share one exceptional copy of that finally
-   * block. An exceptional copy of a finally block is a translation of the finally block that runs
-   * when an exception reaches the finally block, and that rethrows the exception after the finally
-   * block completes normally. An extra copy is one other than the first exceptional copy of a given
-   * finally block. See {@link #handleFinally}.
+   * The maximum number of nodes in extra exceptional copies of finally blocks. Once the extra
+   * copies contain this many nodes, the exception types that reach a finally block and do not yet
+   * have a copy share one exceptional copy of that finally block, so a finally block that the CFG
+   * builder translates after that point has only one exceptional copy. An exceptional copy of a
+   * finally block is a translation of the finally block that runs when an exception reaches the
+   * finally block, and that rethrows the exception after the finally block completes normally. An
+   * extra copy is one other than the first exceptional copy of a given finally block. See {@link
+   * #handleFinally}.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
@@ -386,9 +388,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The String type. */
   protected final TypeMirror stringType;
 
-  /** The Throwable type. */
-  protected final TypeMirror throwableType;
-
   /**
    * Supertypes of all unchecked exceptions. The size is 2 and the contents are {@code
    * RuntimeException} and {@code Error}.
@@ -466,7 +465,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     classFormatErrorType = maybeGetTypeMirror(ClassFormatError.class);
     noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
     stringType = getTypeMirror(String.class);
-    throwableType = getTypeMirror(Throwable.class);
 
     uncheckedExceptionTypes = new ArraySet<>(2);
     uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
@@ -2897,21 +2895,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // exception, thrown after the resource is closed, propagates out of the method.
     //
     // As a further optimization, to bound growth, once the copies beyond the first copy for each
-    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the remaining
-    // groups of each finally block share a single copy, which rethrows each of their exceptions.
+    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
+    // do not yet have a copy share a single copy, which rethrows each of their exceptions.  A
+    // finally block that the CFG builder translates after that point has a single exceptional
+    // copy, which all of its groups share, as if all of its exceptions went to the same places.
     List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
 
     for (int i = 0; i < groups.size(); i++) {
+      if (i < groups.size() - 1
+          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET) {
+        List<RethrowGroup> remainingGroups = groups.subList(i, groups.size());
+        RethrowGroup sharedGroup = RethrowGroup.merge(remainingGroups);
+        remainingGroups.clear();
+        groups.add(sharedGroup);
+      }
       RethrowGroup group = groups.get(i);
       boolean isExtraCopy = i > 0;
-      if (isExtraCopy
-          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET
-          && i < groups.size() - 1) {
-        List<RethrowGroup> remainingGroups = groups.subList(i, groups.size());
-        group = RethrowGroup.merge(remainingGroups);
-        remainingGroups.clear();
-        groups.add(group);
-      }
       int sizeBeforeCopy = nodeList.size();
 
       for (Label label : group.entryLabels()) {

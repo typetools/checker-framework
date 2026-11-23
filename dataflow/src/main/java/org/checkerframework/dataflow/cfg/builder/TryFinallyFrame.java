@@ -38,8 +38,11 @@ import org.plumelib.util.ArrayMap;
    * <p>The map contains few entries, usually only a handful, so it is an {@link ArrayMap}. The
    * types that reach a frame are {@code java.lang.RuntimeException} and {@code java.lang.Error},
    * which every invocation is recorded as possibly throwing; a few other unchecked types such as
-   * {@code java.lang.NullPointerException} and {@code java.lang.ArithmeticException}; and the
-   * checked exceptions in the {@code throws} clauses of the invoked methods and constructors.
+   * {@code java.lang.NullPointerException} and {@code java.lang.ArithmeticException}; the checked
+   * exceptions in the {@code throws} clauses of the invoked methods and constructors; and the
+   * static types of the expressions in {@code throw} statements, such as {@code
+   * java.io.IOException} for {@code throw new IOException()}. The copies of nested finally blocks
+   * rethrow types of these same kinds.
    */
   private final Map<TypeMirror, Label> exceptionLabels = new ArrayMap<>();
 

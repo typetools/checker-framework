@@ -61,7 +61,8 @@ import org.plumelib.util.ArrayMap;
   /**
    * Returns a new group that contains every type in the given groups.
    *
-   * @param groups groups for the same finally block, no two of which contain the same type
+   * @param groups a list of groups for the same finally block, no two of which contain the same
+   *     type
    * @return a new group that contains every type in {@code groups}, in the order of {@code groups}
    */
   /*package-private*/ static RethrowGroup merge(List<RethrowGroup> groups) {
