@@ -13,11 +13,13 @@ import javax.lang.model.type.TypeMirror;
   boolean isUnboxable();
 
   /**
-   * Returns true if this is numeric.
+   * Returns true if this is a primitive numeric type, or a type that unboxing conversion converts
+   * to one.
    *
-   * @return true if this is numeric
+   * @return true if this is a primitive numeric type, or a type that unboxing conversion converts
+   *     to one
    */
-  boolean isNumeric();
+  boolean isNumericOrBoxed();
 
   /**
    * Returns true if this is boolean.
