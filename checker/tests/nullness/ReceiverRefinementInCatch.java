@@ -52,6 +52,30 @@ public class ReceiverRefinementInCatch {
     }
   }
 
+  // The call's RuntimeException edge reaches a handler for a subtype of RuntimeException, but the
+  // NullPointerException for a null receiver does not.  So the receiver is non-null in that
+  // handler.
+  void runtimeExceptionSubtypeHandler(@Nullable Object o) {
+    try {
+      // :: error: (dereference.of.nullable)
+      o.toString();
+    } catch (IllegalArgumentException e) {
+      o.hashCode();
+    }
+  }
+
+  void runtimeExceptionSubtypeAndNullPointerExceptionHandlers(@Nullable Object o) {
+    try {
+      // :: error: (dereference.of.nullable)
+      o.toString();
+    } catch (IllegalArgumentException e) {
+      o.hashCode();
+    } catch (NullPointerException e) {
+      // :: error: (dereference.of.nullable)
+      o.hashCode();
+    }
+  }
+
   // An Error handler cannot catch the NullPointerException either.
   void errorHandler(@Nullable Object o) {
     try {

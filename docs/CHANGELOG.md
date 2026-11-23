@@ -11,6 +11,13 @@ The Interning Checker no longer treats a boxed primitive as `@Interned`, except
 for a boxed `boolean` or `byte`.  For example, it reports
 `@Interned Integer x = anInt;`.
 
+The Resource Leak Checker no longer ignores an exception that propagates out
+of a `finally` block, so it reports leaks that it formerly missed.  It also
+reports a false positive for a `finally` block that closes a resource only if
+a boolean variable records that the `try` block did not complete, as in
+`finally { if (!success) { c.close(); } }`, because it does not track the
+value of the boolean variable.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`

@@ -517,12 +517,14 @@ public class NullnessTransfer
 
   /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
-   * on each exceptional successor. Every exception that {@code n} throws comes from the invoked
-   * method, which the invocation entered only because the receiver is non-null. The {@code
-   * NullPointerException} for a null receiver comes from the target of {@code n} (a {@code
-   * MethodAccessNode}), both for an invocation in source code and for a synthetic invocation such
-   * as the {@code iterator()} call of an enhanced {@code for} loop. A handler that catches that
-   * {@code NullPointerException} receives the unrefined store from the {@code MethodAccessNode}.
+   * on each exceptional successor of {@code n}. An exception that {@code n} throws comes from the
+   * invoked method, which the invocation entered only because the receiver is non-null.
+   *
+   * <p>This is sound because the {@code NullPointerException} for a null receiver does not come
+   * from {@code n}, but from its {@code MethodAccessNode}, which precedes {@code n}. That is true
+   * both for an invocation in source code and for a synthetic invocation, such as the {@code
+   * iterator()} call of an enhanced {@code for} loop. A handler that catches that {@code
+   * NullPointerException} also receives the unrefined store from the {@code MethodAccessNode}.
    *
    * @param n a method invocation whose receiver should be refined
    * @param result the transfer result for {@code n}

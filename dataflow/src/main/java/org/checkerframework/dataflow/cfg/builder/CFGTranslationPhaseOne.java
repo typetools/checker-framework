@@ -3115,13 +3115,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // grows exponentially with the depth of the nesting of finally blocks in finally blocks, with
     // a base that grows with the number of copies per finally block.
     //
-    // As an optimization, two types share a copy if and only if the copy rethrows them to the same
-    // places:  the same catch blocks, or the exit, past any enclosing finally blocks.  The analysis
-    // merges the stores of the paths that reach a copy.  Types that go to different places get
-    // different copies, so that the analysis does not merge stores of paths that never meet.  For
-    // example, the Resource Leak Checker would otherwise report a leak when an exception thrown
-    // while a resource is open is caught by a catch block that closes the resource, and another
-    // exception, thrown after the resource is closed, propagates out of the method.
+    // As an optimization, until the budget described below is used up, two types share a copy if
+    // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
+    // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
+    // copy.  Types that go to different places get different copies, so that the analysis does not
+    // merge stores of paths that never meet.  For example, the Resource Leak Checker would
+    // otherwise report a leak when an exception thrown while a resource is open is caught by a
+    // catch block that closes the resource, and another exception, thrown after the resource is
+    // closed, propagates out of the method.
     //
     // As a further optimization, to bound growth, once the copies beyond the first copy for each
     // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
