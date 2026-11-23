@@ -328,14 +328,20 @@ public class AnnotationFileElementTypes {
             location,
             fileType,
             resource -> parseAnnotationFileResource(resource, parseType),
-            archive ->
+            skipped ->
                 checker.message(
                     Diagnostic.Kind.NOTE,
-                    "Not reading archive "
-                        + archive
-                        + ", which is within directory "
-                        + location
-                        + "; to read it, name the archive itself"));
+                    skipped.isDirectory()
+                        ? "Not reading directory "
+                            + skipped
+                            + ", which is within directory "
+                            + location
+                            + ", because it cannot be listed"
+                        : "Not reading archive "
+                            + skipped
+                            + ", which is within directory "
+                            + location
+                            + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top

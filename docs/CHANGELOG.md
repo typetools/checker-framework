@@ -9,8 +9,9 @@
 
 An annotation file that cannot be read yields a warning rather than a note.
 
-An archive within a directory that is named in the `-Astubs` or `-Aajava`
-command-line option is ignored, with a note.  Within a directory or archive,
+An archive, or a directory that cannot be listed, within a directory that is
+named in the `-Astubs` or `-Aajava` command-line option is ignored, with a
+note.  Within a directory or archive,
 hidden files and directories (whose names start with `.`), such as the
 `._Foo.astub` files that macOS creates, are ignored.
 

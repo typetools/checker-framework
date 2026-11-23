@@ -409,7 +409,7 @@ public class AnnotationFileUtil {
       return null;
     }
     List<AnnotationFileResource> resources = new ArrayList<>();
-    forEachAnnotationFile(file, fileType, resources::add, archive -> {});
+    forEachAnnotationFile(file, fileType, resources::add, skipped -> {});
     return resources;
   }
 
@@ -424,24 +424,25 @@ public class AnnotationFileUtil {
    * or entry within it is used if its name ends with that extension and no component of its path
    * within the directory or archive is hidden (see {@link #isHidden}). An example of a hidden file
    * is the {@code ._Foo.astub} metadata file that macOS adds to archives and to non-Mac file
-   * systems. An archive within a directory is not opened; it is passed to {@code
-   * ignoredArchiveAction} instead. If an archive cannot be opened or a directory cannot be listed,
-   * then {@code action} is passed a resource whose {@link AnnotationFileResource#getInputStream}
-   * throws an exception, so the client reports the error rather than treating the archive or
-   * directory as empty.
+   * systems. An archive within a directory is not opened, and a directory within a directory that
+   * cannot be listed is not searched; each is passed to {@code skippedAction} instead. If {@code
+   * location} is an archive that cannot be opened or a directory that cannot be listed, then {@code
+   * action} is passed a resource whose {@link AnnotationFileResource#getInputStream} throws an
+   * exception, so the client reports the error rather than treating the archive or directory as
+   * empty.
    *
    * @param location a file or directory that the user named
    * @param fileType type of annotation files to pass to {@code action}
    * @param action the operation to perform on each annotation file
-   * @param ignoredArchiveAction the operation to perform on each archive within the directory
-   *     {@code location}, which is not opened
+   * @param skippedAction the operation to perform on each file within the directory {@code
+   *     location} that is not read: an archive, or a directory that cannot be listed
    */
   public static void forEachAnnotationFile(
       File location,
       AnnotationFileType fileType,
       Consumer<AnnotationFileResource> action,
-      Consumer<File> ignoredArchiveAction) {
-    forEachAnnotationFile(location, fileType, true, action, ignoredArchiveAction);
+      Consumer<File> skippedAction) {
+    forEachAnnotationFile(location, fileType, true, action, skippedAction);
   }
 
   /**
@@ -569,31 +570,35 @@ public class AnnotationFileUtil {
    * @param fileType type of annotation files to pass to {@code action}
    * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)
    *     rather than being found by searching a directory. A hidden file or directory found by
-   *     searching is skipped, and an archive found by searching is passed to {@code
-   *     ignoredArchiveAction} rather than being opened.
+   *     searching is skipped, and an archive or a directory that cannot be listed found by
+   *     searching is passed to {@code skippedAction} rather than being read.
    * @param action the operation to perform on each annotation file
-   * @param ignoredArchiveAction the operation to perform on each archive found by searching a
-   *     directory
+   * @param skippedAction the operation to perform on each archive, and each directory that cannot
+   *     be listed, found by searching a directory
    */
   private static void forEachAnnotationFile(
       File location,
       AnnotationFileType fileType,
       boolean isUserSupplied,
       Consumer<AnnotationFileResource> action,
-      Consumer<File> ignoredArchiveAction) {
+      Consumer<File> skippedAction) {
     if (!isUserSupplied && isHidden(location.getName())) {
       return;
     }
     if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       if (directoryContents == null) {
-        action.accept(
-            unreadableResource(location.getPath(), new IOException("could not list directory")));
+        if (isUserSupplied) {
+          action.accept(
+              unreadableResource(location.getPath(), new IOException("could not list directory")));
+        } else {
+          skippedAction.accept(location);
+        }
         return;
       }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
-        forEachAnnotationFile(enclosed, fileType, false, action, ignoredArchiveAction);
+        forEachAnnotationFile(enclosed, fileType, false, action, skippedAction);
       }
     } else if (location.isFile()) {
       String name = location.getName();
@@ -603,7 +608,7 @@ public class AnnotationFileUtil {
           // before passing it, so an archive's entries need not all be in memory at once.
           forEachArchiveEntry(location, fileType, action);
         } else {
-          ignoredArchiveAction.accept(location);
+          skippedAction.accept(location);
         }
       } else if (hasAnnotationFileExtension(name, fileType)) {
         action.accept(new FileAnnotationFileResource(location));

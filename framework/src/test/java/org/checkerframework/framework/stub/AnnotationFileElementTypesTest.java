@@ -25,6 +25,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -172,6 +173,46 @@ public class AnnotationFileElementTypesTest {
       zos.closeEntry();
     }
     assertHasDiagnostic("NOTE: Not reading archive " + jar, diagnostics(dir.getPath()));
+  }
+
+  /** Tests that a named directory that cannot be listed yields a warning. */
+  @Test
+  public void unlistableDirectory() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    write(new File(dir, "A.astub"), "package p;");
+    // Making a directory unreadable has no effect for the root user.
+    Assume.assumeTrue(dir.setReadable(false));
+    try {
+      Assume.assumeTrue(dir.listFiles() == null);
+      assertHasDiagnostic(
+          "WARNING: Could not read annotation resource: " + dir.getPath() + ": ",
+          diagnostics(dir.getPath()));
+    } finally {
+      dir.setReadable(true);
+    }
+  }
+
+  /**
+   * Tests that a directory that cannot be listed, within a named directory, yields a note rather
+   * than a warning.
+   */
+  @Test
+  public void unlistableDirectoryInDirectory() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File sub = new File(dir, "sub");
+    write(new File(sub, "A.astub"), "package p;");
+    // Making a directory unreadable has no effect for the root user.
+    Assume.assumeTrue(sub.setReadable(false));
+    try {
+      Assume.assumeTrue(sub.listFiles() == null);
+      List<String> diagnostics = diagnostics(dir.getPath());
+      assertHasDiagnostic("NOTE: Not reading directory " + sub, diagnostics);
+      for (String diagnostic : diagnostics) {
+        Assert.assertFalse(diagnostic, diagnostic.startsWith("WARNING: Could not read"));
+      }
+    } finally {
+      sub.setReadable(true);
+    }
   }
 
   /** Tests that a named archive that cannot be opened yields a warning. */

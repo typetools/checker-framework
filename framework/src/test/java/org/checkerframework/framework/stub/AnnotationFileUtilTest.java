@@ -191,7 +191,7 @@ public class AnnotationFileUtilTest {
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
-  /** Tests that each archive within a directory is passed to the ignored-archive action. */
+  /** Tests that each archive within a directory is passed to the skipped action. */
   @Test
   public void archiveInDirectoryIsReported() throws IOException {
     File dir = tmp.newFolder("stubdir");
@@ -199,10 +199,38 @@ public class AnnotationFileUtilTest {
     File backup = writeZip(new File(dir, "backup.jar"), "A.astub");
     File lib = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
 
-    List<File> ignoredArchives = new ArrayList<>();
+    List<File> skipped = new ArrayList<>();
     AnnotationFileUtil.forEachAnnotationFile(
-        dir, AnnotationFileType.COMMAND_LINE_STUB, resource -> {}, ignoredArchives::add);
-    Assert.assertEquals(Arrays.asList(backup, lib), ignoredArchives);
+        dir, AnnotationFileType.COMMAND_LINE_STUB, resource -> {}, skipped::add);
+    Assert.assertEquals(Arrays.asList(backup, lib), skipped);
+  }
+
+  /**
+   * Tests that a directory that cannot be listed, within a named directory, is passed to the
+   * skipped action rather than to the action.
+   */
+  @Test
+  public void unlistableDirectoryInDirectoryIsReported() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File a = write(new File(dir, "A.astub"), "package p;");
+    File sub = new File(dir, "sub");
+    write(new File(sub, "B.astub"), "package p;");
+    // Making a directory unreadable has no effect for the root user.
+    Assume.assumeTrue(sub.setReadable(false));
+    try {
+      Assume.assumeTrue(sub.listFiles() == null);
+      List<String> used = new ArrayList<>();
+      List<File> skipped = new ArrayList<>();
+      AnnotationFileUtil.forEachAnnotationFile(
+          dir,
+          AnnotationFileType.COMMAND_LINE_STUB,
+          resource -> used.add(resource.getDescription()),
+          skipped::add);
+      Assert.assertEquals(Arrays.asList(a.getAbsolutePath()), used);
+      Assert.assertEquals(Arrays.asList(sub), skipped);
+    } finally {
+      sub.setReadable(true);
+    }
   }
 
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
