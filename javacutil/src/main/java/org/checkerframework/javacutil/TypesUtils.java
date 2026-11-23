@@ -520,7 +520,7 @@ public final class TypesUtils {
    * @return true if the argument is a primitive numeric type
    */
   public static boolean isNumericPrimitive(TypeMirror type) {
-    return TypeKindUtils.isNumeric(type.getKind());
+    return TypeKindUtils.isNumericPrimitive(type.getKind());
   }
 
   /** The fully-qualified names of the numeric boxed types. */
