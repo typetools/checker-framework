@@ -78,6 +78,46 @@ public class ReceiverReassignedInArgument {
     q.toString();
   }
 
+  // A toString() method that reassigns the field f.
+  class Mutator {
+    @Override
+    public String toString() {
+      f = null;
+      return "";
+    }
+  }
+
+  class SefToString {
+    @Override
+    @SideEffectFree
+    public String toString() {
+      return "";
+    }
+  }
+
+  // String concatenation implicitly invokes Mutator.toString(), which reassigns f.
+  void stringConcatenationInArgument(Mutator m) {
+    // :: error: (dereference.of.nullable)
+    f.sefTake("" + m);
+    // :: error: (dereference.of.nullable)
+    f.toString();
+  }
+
+  // `s += m` implicitly invokes Mutator.toString(), which reassigns f.
+  void stringCompoundAssignmentInArgument(Mutator m, String s) {
+    // :: error: (dereference.of.nullable)
+    f.sefTake(s += m);
+    // :: error: (dereference.of.nullable)
+    f.toString();
+  }
+
+  // String concatenation of an operand whose toString() is side-effect-free.
+  void sefStringConcatenationInArgument(SefToString o, int i) {
+    // :: error: (dereference.of.nullable)
+    f.sefTake("" + o + i);
+    f.toString();
+  }
+
   @Target(ElementType.TYPE_USE)
   @interface TypeUseAnno {
     int value();
