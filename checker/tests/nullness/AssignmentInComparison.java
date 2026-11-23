@@ -409,6 +409,9 @@ public class AssignmentInComparison {
     }
   }
 
+  // Side-effect-free, so that a test of an aliased write in an argument does not depend on the
+  // writes of the call.
+  @Pure
   static Object nonNull(@Nullable Object o) {
     return "";
   }
