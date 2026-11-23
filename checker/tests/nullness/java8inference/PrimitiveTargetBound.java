@@ -29,12 +29,12 @@ public class PrimitiveTargetBound {
   }
 
   void longTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     long x = getInteger();
   }
 
   void doubleTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     double x = getInteger();
   }
 

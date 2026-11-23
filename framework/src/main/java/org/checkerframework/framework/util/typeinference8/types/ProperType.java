@@ -957,6 +957,12 @@ public class ProperType extends AbstractType {
    * should be ignored. Otherwise, the copy's primary annotations are all from {@code annos}, so
    * they are not ignored.
    *
+   * <p>TODO: {@link AbstractType#ignoreAnnotations} applies to every hierarchy, so if the copy
+   * ignores annotations because {@code annos} do not cover every hierarchy, then the annotations
+   * from {@code annos} are ignored too. For example, they are not compared by {@link
+   * IgnoredAnnotations#noAnnotationsToCompare}. Tracking which hierarchies are ignored would fix
+   * this.
+   *
    * @param annos the primary annotations to use, at most one per hierarchy
    * @param forceIgnore true if the copy should ignore annotations even if {@code annos} cover every
    *     qualifier hierarchy
