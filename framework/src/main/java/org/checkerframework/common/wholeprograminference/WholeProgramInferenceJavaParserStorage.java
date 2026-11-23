@@ -127,8 +127,9 @@ public class WholeProgramInferenceJavaParserStorage
   private static final DataKey<Boolean> IS_DECLARATION_ANNOTATION = new DataKey<Boolean>() {};
 
   /**
-   * Marks a receiver parameter that whole-program inference added to a method declaration, as
-   * opposed to one that is written in the source code. Cloning a JavaParser node copies this mark.
+   * A key for JavaParser {@link Node} data. It marks a receiver parameter that whole-program
+   * inference added to a method declaration, as opposed to one that is written in the source code.
+   * Cloning a JavaParser node copies this mark.
    */
   private static final DataKey<Boolean> IS_ADDED_RECEIVER = new DataKey<Boolean>() {};
 
