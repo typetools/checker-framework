@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
@@ -374,6 +375,21 @@ public class Java8InferenceContext {
                 wt1.getExtendsBound(), wt2.getExtendsBound(), visitedWildcards)
             && enclosingTypesAreMutualSubtypes(
                 wt1.getSuperBound(), wt2.getSuperBound(), visitedWildcards);
+      }
+      case INTERSECTION -> {
+        List<AnnotatedTypeMirror> bounds1 = ((AnnotatedIntersectionType) type1).getBounds();
+        List<AnnotatedTypeMirror> bounds2 = ((AnnotatedIntersectionType) type2).getBounds();
+        if (bounds1.size() != bounds2.size()) {
+          return true;
+        }
+        for (int i = 0; i < bounds1.size(); i++) {
+          // A bound of an intersection is not an enclosing type, but it may contain one.  The
+          // bounds themselves are compared by areMutualSubtypes, where needed.
+          if (!enclosingTypesAreMutualSubtypes(bounds1.get(i), bounds2.get(i), visitedWildcards)) {
+            return false;
+          }
+        }
+        return true;
       }
       default -> {
         return true;

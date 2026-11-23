@@ -1533,12 +1533,19 @@ public class InferenceFactory {
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
+    // Each use of a variable in `instantiated` is replaced by its own copy of the instantiation,
+    // with the use's primary annotations, if any, replacing the instantiation's (see
+    // TypeVariableSubstitutor#substituteTypeVariable).  Copying also keeps the substitution from
+    // mutating the instantiation.  A use of a variable in `variables` is replaced by the fresh type
+    // variable itself, without copying, which keeps the identity links between fresh type variables
+    // whose bounds refer to one another.
+    List<TypeVariable> copiedTypeVars = new ArrayList<>(instantiated.size());
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      // A copy, because the substitution below does not copy and can mutate what it substitutes.
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      copiedTypeVars.add(variable.getJavaType());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does
@@ -1552,16 +1559,16 @@ public class InferenceFactory {
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
         AnnotatedTypeMirror upperBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getUpperBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getUpperBound());
         AnnotatedTypeMirror lowerBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getLowerBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
       } else {
-        subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
+        subs = typeVarSubstitutor.substituteCopyingSomeTypeArguments(map, copiedTypeVars, type);
       }
       subsTypeArgs.add(new ProperType(subs, context));
     }
