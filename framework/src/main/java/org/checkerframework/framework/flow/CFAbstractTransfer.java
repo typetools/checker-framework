@@ -1736,7 +1736,8 @@ public abstract class CFAbstractTransfer<
    * @param invocationNode a method call node or an object creation node
    * @param executableElement the method or constructor whose contracts are {@code postconditions}
    * @param invocationTree the tree for the method call or for the object creation; may be null for
-   *     a method call in a custom CFG. It is used only as the location of diagnostics.
+   *     a method call in a custom CFG. It is used only as the location of diagnostics; if it is
+   *     null, diagnostics are reported at {@code executableElement}.
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    * @param postconditions the postconditions
@@ -1790,13 +1791,15 @@ public abstract class CFAbstractTransfer<
         }
       } catch (JavaExpressionParseException e) {
         // report errors here
+        // A method call in a custom CFG might have no tree; then report at the method.
+        Object errorLocation = invocationTree != null ? invocationTree : executableElement;
         if (e.isFlowParseError()) {
           Object[] args = new Object[e.args.length + 1];
           args[0] = ElementUtils.getSimpleSignature(executableElement);
           System.arraycopy(e.args, 0, args, 1, e.args.length);
-          analysis.checker.reportError(invocationTree, "flowexpr.parse.error.postcondition", args);
+          analysis.checker.reportError(errorLocation, "flowexpr.parse.error.postcondition", args);
         } else {
-          analysis.checker.report(invocationTree, new DiagMessage(e));
+          analysis.checker.report(errorLocation, new DiagMessage(e));
         }
       }
     }

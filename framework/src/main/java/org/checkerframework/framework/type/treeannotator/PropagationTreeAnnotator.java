@@ -102,13 +102,26 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
           // The initializer is boxed or unboxed (JLS 5.2).
           if (initIsPrimitive) {
             // A primitive initializer is boxed to the component type if that is a boxed
-            // primitive, as in `new Byte[] {1}`.
-            annos =
-                atypeFactory.getBoxedAnnotations(
-                    annos,
-                    TypesUtils.isBoxedPrimitive(componentTM)
-                        ? atypeFactory.types.unboxedType(componentTM).getKind()
-                        : annosTM.getKind());
+            // primitive, as in `new Byte[] {1}`.  A constant initializer might first be
+            // converted to the component's primitive type, as the int constant 1 is narrowed to
+            // byte in `new Byte[] {1}` (JLS 5.2).
+            TypeKind initKind = annosTM.getKind();
+            TypeKind boxedKind =
+                TypesUtils.isBoxedPrimitive(componentTM)
+                    ? atypeFactory.types.unboxedType(componentTM).getKind()
+                    : initKind;
+            if (boxedKind != initKind
+                && TypeKindUtils.isNumericPrimitive(initKind)
+                && TypeKindUtils.isNumericPrimitive(boxedKind)) {
+              switch (TypeKindUtils.getPrimitiveConversionKind(initKind, boxedKind)) {
+                case WIDENING ->
+                    annos = atypeFactory.getWidenedAnnotations(annos, initKind, boxedKind);
+                case NARROWING ->
+                    annos = atypeFactory.getNarrowedAnnotations(annos, initKind, boxedKind);
+                case SAME -> {} // Nothing to do
+              }
+            }
+            annos = atypeFactory.getBoxedAnnotations(annos, boxedKind);
           } else {
             // A boxed initializer is unboxed to its own primitive type, which might then be
             // widened to the component type, as in `new long[] {anInteger}` (JLS 5.1.8, 5.1.2).
@@ -116,8 +129,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             TypeKind unboxedKind = unboxedKind(annosTM, componentTM);
             annos = atypeFactory.getUnboxedAnnotations(annos, unboxedKind);
             if (unboxedKind != componentKind
-                && TypeKindUtils.isNumeric(unboxedKind)
-                && TypeKindUtils.isNumeric(componentKind)
+                && TypeKindUtils.isNumericPrimitive(unboxedKind)
+                && TypeKindUtils.isNumericPrimitive(componentKind)
                 && TypeKindUtils.getPrimitiveConversionKind(unboxedKind, componentKind)
                     == TypeKindUtils.PrimitiveConversionKind.WIDENING) {
               annos = atypeFactory.getWidenedAnnotations(annos, unboxedKind, componentKind);

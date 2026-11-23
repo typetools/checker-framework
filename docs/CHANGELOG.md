@@ -37,12 +37,44 @@ qualifiers of the converted value, as adapted by the new methods
 qualifiers at boxing or unboxing should override those methods rather than
 `getBoxedType()` and `getUnboxedType()`.
 
-Renamed `CFGTranslationPhaseOne.conversionRequiresNarrowing()` to
-`isConstantToByteShortOrChar()`.  New method
-`CFGTranslationPhaseOne.convertConstant()` converts a compile-time constant to
-`byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as assignment
-conversion does.  Both methods assume that javac has accepted the conversion;
-neither checks whether the constant's value fits in the destination type.
+Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
+by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
+opposite order.  It returns true for any compile-time constant of type `byte`,
+`short`, `char`, or `int`, such as `1 + 2` or a use of a constant variable, not
+only for a literal.  New method
+`CFGTranslationPhaseOne.convertNarrowableConstant()` converts a compile-time
+constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
+assignment conversion does.  Both methods assume that javac has accepted the
+conversion; neither checks whether the constant's value fits in the destination
+type.  New method `TreeUtils.isCompileTimeConstant()` returns true if a tree is
+a constant expression.
+
+`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
+and else-store:  the result's then-store and else-store are both their least
+upper bound.  Use it when the input's then-store and else-store describe an
+earlier node, such as an operand.  New method
+`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
+then-store and else-store; use it when they describe the current node, as for a
+cast.
+
+These methods of `CFAbstractTransfer` no longer call `visitNode()`:
+`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
+`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
+`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call,
+when the input has a then-store and an else-store); for boolean operands,
+`visitBitwiseAnd()`, `visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`,
+and `visitNotEqual()`; and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+
+`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
+function of the lambda's result node; it uses the value that the result node
+already computed.
+
+Deprecated methods:
+
+* `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
+* `TypesUtils.isNumeric()` => `isNumericPrimitive()`
 
 ### Closed issues
 
@@ -83,28 +115,6 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
-
-`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
-and else-store:  the result's then-store and else-store are both their least
-upper bound.  Use it when the input's then-store and else-store describe an
-earlier node, such as an operand.  New method
-`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
-then-store and else-store; use it when they describe the current node, as for a
-cast.
-
-These methods of `CFAbstractTransfer` no longer call `visitNode()`:
-`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
-`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
-`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call,
-when the input has a then-store and an else-store); for boolean operands,
-`visitBitwiseAnd()`, `visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`,
-and `visitNotEqual()`; and, for a boolean literal that is the right operand of a
-boolean operator, `visitValueLiteral()`.  A subclass that overrides
-`visitNode()` may need to override them too.
-
-`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
-function of the lambda's result node; it uses the value that the result node
-already computed.
 
 Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
