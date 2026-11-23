@@ -1,10 +1,10 @@
 package org.checkerframework.framework.stub;
 
+import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,23 +30,6 @@ public class AnnotationFileElementTypesTest {
   @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
   /**
-   * Creates a file with the given contents.
-   *
-   * @param file the file to create
-   * @param contents the contents of the file
-   * @return {@code file}
-   * @throws IOException if the file cannot be written
-   */
-  private static File write(File file, String contents) throws IOException {
-    File parent = file.getParentFile();
-    if (parent != null) {
-      Files.createDirectories(parent.toPath());
-    }
-    Files.write(file.toPath(), contents.getBytes(StandardCharsets.UTF_8));
-    return file;
-  }
-
-  /**
    * Compiles a trivial class with the Value Checker and the given {@code -Astubs} command-line
    * option, and returns the compiler's diagnostics.
    *
@@ -56,12 +39,27 @@ public class AnnotationFileElementTypesTest {
    * @throws IOException if the source file cannot be written or the compiler cannot be run
    */
   private List<String> diagnostics(String stubs) throws IOException {
+    return diagnostics(stubs, "org.checkerframework.common.value.ValueChecker");
+  }
+
+  /**
+   * Compiles a trivial class with the given checker and the given {@code -Astubs} command-line
+   * option, and returns the compiler's diagnostics.
+   *
+   * @param stubs the argument to the {@code -Astubs} command-line option
+   * @param checker the fully-qualified name of a checker, such as
+   *     "org.checkerframework.common.value.ValueChecker"
+   * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
+   *     "WARNING: Ignoring Foo.stub: ..."
+   * @throws IOException if the source file cannot be written or the compiler cannot be run
+   */
+  private List<String> diagnostics(String stubs, String checker) throws IOException {
     File sourceFile = write(new File(tmp.getRoot(), "src/Test.java"), "class Test {}");
     File classes = tmp.newFolder();
     List<String> options =
         Arrays.asList(
             "-processor",
-            "org.checkerframework.common.value.ValueChecker",
+            checker,
             "-Astubs=" + stubs,
             "-ApermitMissingJdk",
             "-d",
@@ -84,26 +82,44 @@ public class AnnotationFileElementTypesTest {
   }
 
   /**
-   * Asserts that one of the given diagnostics starts with the given text.
+   * Asserts that exactly one of the given diagnostics contains the given text, and that that
+   * diagnostic is a warning.
    *
-   * @param prefix the expected start of a diagnostic, such as "WARNING: Ignoring"
+   * @param text the expected text of a diagnostic, such as "Could not read annotation resource"
    * @param diagnostics the diagnostics that the compiler issued
    */
-  private static void assertHasDiagnostic(String prefix, List<String> diagnostics) {
+  private static void assertOneWarning(String text, List<String> diagnostics) {
+    List<String> matching = new ArrayList<>();
     for (String diagnostic : diagnostics) {
-      if (diagnostic.startsWith(prefix)) {
-        return;
+      if (diagnostic.contains(text)) {
+        matching.add(diagnostic);
       }
     }
-    Assert.fail("No diagnostic starts with \"" + prefix + "\"; diagnostics: " + diagnostics);
+    Assert.assertEquals(
+        "Diagnostics that contain \"" + text + "\"; all diagnostics: " + diagnostics,
+        1,
+        matching.size());
+    Assert.assertTrue(matching.get(0), matching.get(0).startsWith("WARNING: "));
   }
 
-  /** Tests that a named archive that cannot be opened yields a warning. */
+  /** Tests that a named archive that cannot be opened yields one warning. */
   @Test
   public void corruptArchive() throws IOException {
     File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
-    assertHasDiagnostic(
-        "WARNING: Could not read annotation resource: " + jar.getPath(),
-        diagnostics(jar.getPath()));
+    assertOneWarning(
+        "Could not read annotation resource: " + jar.getPath() + ": ", diagnostics(jar.getPath()));
+  }
+
+  /**
+   * Tests that a compound checker, each of whose checkers reads the named archive, yields one
+   * warning about an archive that cannot be opened.
+   */
+  @Test
+  public void corruptArchiveCompoundChecker() throws IOException {
+    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
+    assertOneWarning(
+        "Could not read annotation resource: " + jar.getPath() + ": ",
+        diagnostics(
+            jar.getPath(), "org.checkerframework.framework.testchecker.compound.CompoundChecker"));
   }
 }
