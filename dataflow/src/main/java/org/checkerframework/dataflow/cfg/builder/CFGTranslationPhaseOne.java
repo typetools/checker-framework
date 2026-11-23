@@ -940,7 +940,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedType = TypesUtils.unboxedTypeOrSelf(type, types);
 
     boolean isBoolean = TypesUtils.isBooleanType(unboxedType);
-    boolean isNumeric = TypesUtils.isNumeric(unboxedType);
+    boolean isNumeric = TypesUtils.isNumericPrimitive(unboxedType);
 
     return new TreeInfo() {
       @Override
@@ -1154,11 +1154,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return node;
     }
 
-    boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
+    boolean isRightNumeric = TypesUtils.isNumericPrimitive(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
     boolean isRightUnboxable = TypesUtils.isUnboxable(nodeType, types);
     boolean isRightReference = nodeType instanceof ReferenceType;
-    boolean isLeftNumeric = TypesUtils.isNumeric(varType);
+    boolean isLeftNumeric = TypesUtils.isNumericPrimitive(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
     // boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
     boolean isLeftReference = varType instanceof ReferenceType;
@@ -1404,7 +1404,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // type `T extends Integer`, needs no numeric conversion of its operands.
     boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
     TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
-    if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(destType)) {
+    if (TypesUtils.isNumericPrimitive(unboxedNodeType) && TypesUtils.isNumericPrimitive(destType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isNodeUnboxable) {
           node = unbox(node);
