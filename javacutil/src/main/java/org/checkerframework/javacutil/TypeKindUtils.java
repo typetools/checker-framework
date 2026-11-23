@@ -60,7 +60,7 @@ public final class TypeKindUtils {
    * @return true if the argument is a primitive numeric type kind
    * @deprecated use {@link #isNumericPrimitive}
    */
-  @Deprecated(forRemoval = true, since = "4.4.1")
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeKind typeKind) {
     return isNumericPrimitive(typeKind);
   }

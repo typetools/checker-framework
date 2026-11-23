@@ -508,7 +508,7 @@ public final class TypesUtils {
    * @return true if the argument is a primitive numeric type
    * @deprecated use {@link #isNumericPrimitive}
    */
-  @Deprecated(forRemoval = true, since = "4.4.1")
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeMirror type) {
     return isNumericPrimitive(type);
   }
