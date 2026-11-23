@@ -59,6 +59,7 @@ already computed.
 
 Deprecated methods:
 
+* `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
 * `TypesUtils.isNumeric()` => `isNumericPrimitive()`
 
 ### Closed issues
