@@ -1133,7 +1133,8 @@ public class InferenceFactory {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
     IgnoredAnnotations.copyPrimaryAnnotations(
         atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(samePrimaryAnnotations, atm);
+    // Compare the enclosing types too, which the type hierarchy does not.
+    return context.areMutualSubtypesIncludingEnclosingTypes(samePrimaryAnnotations, atm);
   }
 
   /**
@@ -1218,7 +1219,10 @@ public class InferenceFactory {
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy(),
             context.modelTypes);
-    return context.areMutualSubtypes(compared.type1(), compared.type2());
+    // Compare the enclosing types too, which the type hierarchy does not.  Otherwise, an origin
+    // could be kept that, when instantiations are applied again, would replace the annotations of
+    // an enclosing type of the result by those of `properType`.
+    return context.areMutualSubtypesIncludingEnclosingTypes(compared.type1(), compared.type2());
   }
 
   /**
@@ -1546,8 +1550,10 @@ public class InferenceFactory {
       AnnotatedTypeMirror subs;
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
-        AnnotatedTypeMirror upperBound = substitute(map, instantiations, capTypeVar.getUpperBound());
-        AnnotatedTypeMirror lowerBound = substitute(map, instantiations, capTypeVar.getLowerBound());
+        AnnotatedTypeMirror upperBound =
+            substitute(map, instantiations, capTypeVar.getUpperBound());
+        AnnotatedTypeMirror lowerBound =
+            substitute(map, instantiations, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
@@ -1566,8 +1572,8 @@ public class InferenceFactory {
    *
    * <p>A use of a variable in {@code instantiations} that has an explicit primary annotation gets
    * that annotation in place of the instantiation's, in that annotation's hierarchy (see {@link
-   * TypeVariableSubstitutor#substitute}). A use of a variable in {@code typeArgs} is
-   * not copied, so that every use of a fresh type variable is the same object.
+   * TypeVariableSubstitutor#substitute}). A use of a variable in {@code typeArgs} is not copied, so
+   * that every use of a fresh type variable is the same object.
    *
    * @param typeArgs a map from a variable to its type argument, which is not copied
    * @param instantiations a map from a variable to its instantiation, which is copied
