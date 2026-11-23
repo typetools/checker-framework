@@ -12,6 +12,24 @@ class AssignmentInComparison {
     return new ArrayList<>();
   }
 
+  // Not side-effect-free.
+  @NonEmpty List<String> makeNonEmpty() {
+    List<String> result = new ArrayList<>();
+    result.add("x");
+    return result;
+  }
+
+  static class Holder {
+    List<String> list = new ArrayList<>();
+  }
+
+  // The call might change the abstract value of the object that `h` denotes, but `h` still denotes
+  // the same object, so the assignment refines `h.list`.
+  void callInRhsOfFieldAssignment(Holder h) {
+    h.list = makeNonEmpty();
+    @NonEmpty List<String> m = h.list;
+  }
+
   void callInRhs(@NonEmpty List<String> ne) {
     List<String> l;
     if ((l = newList()) == ne) {

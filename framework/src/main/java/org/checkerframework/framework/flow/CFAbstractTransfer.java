@@ -1642,7 +1642,8 @@ public abstract class CFAbstractTransfer<
      * A call to {@code String.length()} changes only if its receiver changes, because a {@code
      * String} is immutable. If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
-     * element also changes every expression whose abstract value other code can modify (see {@link
+     * element also changes {@code expr} itself (but not its subexpressions, such as a receiver or
+     * index) if other code can modify its abstract value (see {@link
      * JavaExpression#isModifiableByOtherCode}).
      *
      * @param expr an expression
@@ -1664,34 +1665,55 @@ public abstract class CFAbstractTransfer<
         // writes, so its abstract value is the one that was stored.
         return true;
       }
+      return mayChangeValue(expr, ignoreOwnLocation);
+    }
+
+    /**
+     * Returns true if writing these locations might change the value of {@code expr}, not counting
+     * a change to the abstract value of the object that {@code expr} denotes. This is like {@link
+     * #mayChange}, but it ignores {@link GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}.
+     *
+     * <p>This method checks the subexpressions of {@code expr}, such as a receiver or index. A
+     * write that changes only the abstract value of the object that a subexpression denotes does
+     * not change which object the subexpression denotes, so it does not change the value of {@code
+     * expr}. For example, a heap write does not change which location {@code h.list} denotes, even
+     * if the object that {@code h} denotes is mutable.
+     *
+     * @param expr an expression
+     * @param ignoreOwnLocation true if a write to the location that {@code expr} denotes does not
+     *     matter (see {@link #mayChange})
+     * @return true if evaluating {@code expr} after writing these locations might yield a different
+     *     value than evaluating it before
+     */
+    private boolean mayChangeValue(JavaExpression expr, boolean ignoreOwnLocation) {
       if (expr instanceof LocalVariable) {
         return !ignoreOwnLocation && locals.contains(expr);
       } else if (expr instanceof FieldAccess fa) {
-        return (!ignoreOwnLocation && mayWriteField(fa)) || mayChange(fa.getReceiver(), false);
+        return (!ignoreOwnLocation && mayWriteField(fa)) || mayChangeValue(fa.getReceiver(), false);
       } else if (expr instanceof ArrayAccess aa) {
         return (!ignoreOwnLocation && mayWriteArrayElement(aa))
-            || mayChange(aa.getArray(), false)
-            || mayChange(aa.getIndex(), false);
+            || mayChangeValue(aa.getArray(), false)
+            || mayChangeValue(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
         if (mc.getElement().equals(stringLength)) {
-          return mayChange(mc.getReceiver(), false);
+          return mayChangeValue(mc.getReceiver(), false);
         }
         if (anyHeapLocation
             || !fields.isEmpty()
             || !arrayElements.isEmpty()
-            || mayChange(mc.getReceiver(), false)) {
+            || mayChangeValue(mc.getReceiver(), false)) {
           return true;
         }
         for (JavaExpression arg : mc.getArguments()) {
-          if (mayChange(arg, false)) {
+          if (mayChangeValue(arg, false)) {
             return true;
           }
         }
         return false;
       } else if (expr instanceof UnaryOperation uo) {
-        return mayChange(uo.getOperand(), false);
+        return mayChangeValue(uo.getOperand(), false);
       } else if (expr instanceof BinaryOperation bo) {
-        return mayChange(bo.getLeft(), false) || mayChange(bo.getRight(), false);
+        return mayChangeValue(bo.getLeft(), false) || mayChangeValue(bo.getRight(), false);
       } else {
         // An Unknown or ArrayCreation might be changed.
         return !(expr instanceof ClassName
