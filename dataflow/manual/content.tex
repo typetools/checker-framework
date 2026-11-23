@@ -1224,9 +1224,12 @@ jump to the original target of the control flow statement.
 
 Likewise, an exception that the \code{try} block or a \code{catch} block
 throws causes execution of the \code{finally} block, which then rethrows the
-exception.  The Dataflow Framework models this behavior with further
-duplicates of the \code{finally} block, each of which ends by rethrowing the
-exception.  Exception types that would be rethrown to the same places (the
+exception if the \code{finally} block completes normally.  (If the
+\code{finally} block completes abruptly, for example by a \code{return} or
+\code{throw}, then that replaces the pending exception, which is not
+rethrown.)  The Dataflow Framework models this behavior with further
+duplicates of the \code{finally} block, each of which ends, if the
+\code{finally} block completes normally, by rethrowing the exception.  Exception types that would be rethrown to the same places (the
 same \code{catch} blocks, or the exit of the method) share a duplicate.
 Exception types that would be rethrown to different places get different
 duplicates, so that the analysis does not merge the stores of paths that
