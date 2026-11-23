@@ -430,6 +430,7 @@ public abstract class JavaExpression {
         || this instanceof FieldAccess
         || this instanceof MethodCall
         || this instanceof ArrayAccess
+        || this instanceof IteratedCollectionElement
         || this instanceof ThisReference
         || this instanceof SuperReference
         || this instanceof ClassName) {
