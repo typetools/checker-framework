@@ -5649,9 +5649,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       if (!castBounds.isEmpty()) {
         // The bounds' type arguments are the ones in the cast, so compare against the functional
-        // method as a member of the target type, whose type arguments are also the cast's.
+        // method as a member of the target type, whose type arguments are also the cast's.  Like
+        // javac, use the non-wildcard parameterization of each bound and of the target type.
         ExecutableType targetMethodType =
-            (ExecutableType) types.asMemberOf(targetType, functionalMethod);
+            (ExecutableType)
+                types.asMemberOf(
+                    TypesUtils.nonWildcardParameterization(targetType, env), functionalMethod);
         for (DeclaredType bound : castBounds) {
           for (TypeElement supertype :
               ElementUtils.getAllSupertypes((TypeElement) bound.asElement(), env)) {
@@ -5695,8 +5698,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * If the method reference is cast to an intersection type, returns the bounds of that type that
      * are class or interface types. Otherwise, returns an empty list.
      *
-     * @return the bounds of the intersection type that the method reference is cast to, or an empty
-     *     list
+     * <p>Each bound is replaced by its non-wildcard parameterization (JLS 9.9), as javac does when
+     * it determines which methods the method reference implements. For example, the bound {@code
+     * Open<? super Callback>} becomes {@code Open<Callback>}.
+     *
+     * @return the non-wildcard parameterizations of the bounds of the intersection type that the
+     *     method reference is cast to, or an empty list
      */
     private List<DeclaredType> intersectionCastBounds() {
       TreePath path = atypeFactory.getPath(overriderTree);
@@ -5712,7 +5719,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<DeclaredType> result = new ArrayList<>();
       for (TypeMirror bound : intersection.getBounds()) {
         if (bound.getKind() == TypeKind.DECLARED) {
-          result.add((DeclaredType) bound);
+          result.add(
+              TypesUtils.nonWildcardParameterization(
+                  (DeclaredType) bound, atypeFactory.getProcessingEnv()));
         }
       }
       return result;
