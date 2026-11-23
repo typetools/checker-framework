@@ -563,6 +563,11 @@ public class ProperType extends AbstractType {
     if (origin == null) {
       return super.asSuper(superType);
     }
+    // TODO: If the origin cannot be viewed as `superType` but this type can, such as an origin
+    // `T[]`
+    // whose `T` is instantiated to `ArrayList<U>` and a `superType` of `List<String>[]`, then the
+    // result is computed from `type` and has no origin, so its ignored positions are compared as
+    // real annotations.  Fixing this requires translating the origin's positions to the result's.
     return getOrCompute(
         partCache().asSuper(),
         superType,
@@ -938,21 +943,23 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns true if {@code a} and {@code b} have the same Java type, each is a subtype of the
-   * other, and they have the same primary annotations at every position, including the positions in
-   * enclosing types, which the type hierarchy does not compare. Unlike {@link
-   * AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not require the underlying
-   * Java types to be the same object, so it can compare types made by separate applications of
-   * instantiations. It compares only annotated types, not the other fields that {@link #equals}
-   * compares, such as {@link #origin}.
+   * other, as is each pair of their corresponding enclosing types (see {@link
+   * Java8InferenceContext#areMutualSubtypesIncludingEnclosingTypes}), and they have the same
+   * primary annotations at every position, including the positions in enclosing types, which the
+   * type hierarchy does not compare. Unlike {@link AnnotatedTypeMirror#equals}, which {@link
+   * #equals} uses, this does not require the underlying Java types to be the same object, so it can
+   * compare types made by separate applications of instantiations. It compares only annotated
+   * types, not the other fields that {@link #equals} compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type
    * @return true if {@code a} and {@code b} have the same Java type, each is a subtype of the
-   *     other, and they have the same primary annotations at every position
+   *     other, as is each pair of their corresponding enclosing types, and they have the same
+   *     primary annotations at every position
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
-        && context.areMutualSubtypes(a, b)
+        && context.areMutualSubtypesIncludingEnclosingTypes(a, b)
         && IgnoredAnnotations.samePrimaryAnnotationsAtEveryPosition(
             a, b, typeFactory.getQualifierHierarchy(), context.modelTypes);
   }
@@ -1024,6 +1031,12 @@ public class ProperType extends AbstractType {
     AnnotatedTypeMirror atm = type.deepCopy();
     atm.replaceAnnotations(annos);
     int numHierarchies = context.typeFactory.getQualifierHierarchy().getTopAnnotations().size();
+    // TODO: When `annos` cover some but not all hierarchies, the copy ignores its primary
+    // annotations in every hierarchy, including those of `annos`, which were written explicitly.
+    // For example, equality against another type then copies the other type's annotations in the
+    // hierarchies of `annos` too, hiding a mismatch there.  Fixing this requires
+    // AbstractType#ignoreAnnotations to record the hierarchies in which primary annotations are
+    // ignored, rather than being a single boolean.
     boolean ignore = forceIgnore || (ignoreAnnotations && annos.size() < numHierarchies);
     return withAnnotatedType(atm, ignore);
   }

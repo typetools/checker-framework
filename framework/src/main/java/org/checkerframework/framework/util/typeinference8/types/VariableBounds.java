@@ -205,22 +205,30 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type}.
+   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type},
+   * including in the annotations of their enclosing types.
    *
    * @param type the proper type to which this variable is instantiated; it must be a reference
    *     type, because an inference variable can only be instantiated to a reference type
+   * @return true if {@code instantiation} changed
    */
-  private void setInstantiation(ProperType type) {
+  private boolean setInstantiation(ProperType type) {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
     // ProperType#equals compares ignoreAnnotations, so an instantiation that ignores annotations is
-    // replaced by an otherwise-equal one that does not.
-    if (type.equals(instantiation)) {
+    // replaced by an otherwise-equal one that does not.  ProperType#equals does not compare
+    // enclosing types, so compare them separately; otherwise, a refreshed instantiation that
+    // differs only in the annotations of an enclosing type would be discarded.
+    if (instantiation != null
+        && type.equals(instantiation)
+        && context.enclosingTypesAreMutualSubtypes(
+            type.getAnnotatedType(), instantiation.getAnnotatedType())) {
       // Leave lastInstantiationChange unchanged; see its Javadoc.
-      return;
+      return false;
     }
     instantiation = type;
     lastInstantiationChange = instantiationChangeCounter.incrementAndGet();
+    return true;
   }
 
   /**
@@ -856,8 +864,9 @@ public class VariableBounds {
           refreshedInstantiation != null
               ? refreshedInstantiation
               : instantiation.applyInstantiations();
-      if (refreshed != instantiation) {
-        setInstantiation((ProperType) refreshed);
+      // Report progress only if the stored instantiation changes; otherwise, a refresh that yields
+      // a new but equal instantiation would report progress on every round of incorporation.
+      if (refreshed != instantiation && setInstantiation((ProperType) refreshed)) {
         changed = true;
       }
     }
