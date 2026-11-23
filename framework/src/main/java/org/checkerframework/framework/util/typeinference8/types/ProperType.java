@@ -886,19 +886,21 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns true if {@code a} and {@code b} have the same Java type and each is a subtype of the
-   * other. Unlike {@link AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not
-   * require the underlying Java types to be the same object, so it can compare types made by
-   * separate applications of instantiations. It compares only annotated types, not the other fields
-   * that {@link #equals} compares, such as {@link #origin}.
+   * other, as is each pair of their corresponding enclosing types (see {@link
+   * Java8InferenceContext#areMutualSubtypesIncludingEnclosingTypes}). Unlike {@link
+   * AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not require the underlying
+   * Java types to be the same object, so it can compare types made by separate applications of
+   * instantiations. It compares only annotated types, not the other fields that {@link #equals}
+   * compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type
    * @return true if {@code a} and {@code b} have the same Java type and each is a subtype of the
-   *     other
+   *     other, as is each pair of their corresponding enclosing types
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
-        && context.areMutualSubtypes(a, b);
+        && context.areMutualSubtypesIncludingEnclosingTypes(a, b);
   }
 
   /**
@@ -968,6 +970,12 @@ public class ProperType extends AbstractType {
     AnnotatedTypeMirror atm = type.deepCopy();
     atm.replaceAnnotations(annos);
     int numHierarchies = context.typeFactory.getQualifierHierarchy().getTopAnnotations().size();
+    // TODO: When `annos` cover some but not all hierarchies, the copy ignores its primary
+    // annotations in every hierarchy, including those of `annos`, which were written explicitly.
+    // For example, equality against another type then copies the other type's annotations in the
+    // hierarchies of `annos` too, hiding a mismatch there.  Fixing this requires
+    // AbstractType#ignoreAnnotations to record the hierarchies in which primary annotations are
+    // ignored, rather than being a single boolean.
     boolean ignore = forceIgnore || (ignoreAnnotations && annos.size() < numHierarchies);
     return withAnnotatedType(atm, ignore);
   }

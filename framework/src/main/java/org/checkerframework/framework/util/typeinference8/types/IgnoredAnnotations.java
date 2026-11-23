@@ -79,8 +79,9 @@ import org.checkerframework.javacutil.BugInCF;
  * annotations that cannot affect the result: for example, bottom for a subtype and top for a
  * supertype, or the annotations at the corresponding position of the other type. (An exception: in
  * a hierarchy in which both types ignore the annotations at a position, that position is not
- * replaced before a least upper bound or greatest lower bound, so that the result there combines
- * the annotations of both types.) The rest of each type is then compared or combined as usual.
+ * replaced before a least upper bound or greatest lower bound, so that a least upper bound there
+ * combines the annotations of both types; see {@link #replaceIgnoredForLubOrGlb}.) The rest of each
+ * type is then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
@@ -218,9 +219,16 @@ final class IgnoredAnnotations {
    *       the annotations of only one of the two positions are ignored (see {@link
    *       #replaceIgnoredWithCorresponding}), except that a type variable is returned itself, with
    *       no annotations replaced. In a hierarchy in which the annotations of both positions are
-   *       ignored, both are kept, so that the least upper bound or greatest lower bound combines
-   *       them and does not depend on the order of {@code type1} and {@code type2}.
+   *       ignored, both are kept, so that the least upper bound combines them and does not depend
+   *       on the order of {@code type1} and {@code type2}.
    * </ol>
+   *
+   * <p>TODO: The greatest lower bound does not combine the annotations at such a position. {@link
+   * org.checkerframework.framework.util.AnnotatedTypes#annotatedGLB} combines only the primary
+   * annotations and takes the rest from one of its arguments, so at a position whose annotations
+   * both types ignore, the result has the annotations of one type, which depends on the order of
+   * {@code type1} and {@code type2}. Fixing this requires replacing both positions by the greatest
+   * lower bound of their annotations here.
    *
    * <p>This method does not replace primary annotations that are ignored because of {@link
    * AbstractType#ignoreAnnotations}; the caller handles them.
@@ -431,10 +439,10 @@ final class IgnoredAnnotations {
    * {@code List} is {@code List<String>}. If both are array types, the same is done for their
    * component types; for example, the supertype of {@code ArrayList<String>[]} whose class is
    * {@code List[]} is {@code List<String>[]}. Returns {@code type} itself if they are not both
-   * declared types or both array types, if their erasures are the same, if {@code type} has no
-   * such supertype that is a proper type, or if {@code type} is an array type that has an origin
-   * (see {@link ProperType#getOrigin}) but the supertype does not, because then the supertype has
-   * lost the record of the ignored positions of {@code type}.
+   * declared types or both array types, if their erasures are the same, if {@code type} has no such
+   * supertype that is a proper type, or if {@code type} is an array type that has an origin (see
+   * {@link ProperType#getOrigin}) but the supertype does not, because then the supertype has lost
+   * the record of the ignored positions of {@code type}.
    *
    * @param type a type
    * @param superType a type; need not be a supertype of {@code type}
@@ -881,8 +889,8 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * How the annotation copied into an ignored position must relate to the annotation of the
-   * source of a {@link Copy}.
+   * How the annotation copied into an ignored position must relate to the annotation of the source
+   * of a {@link Copy}.
    */
   private enum Direction {
     /** The annotation must be that of the source, which is not a wildcard's bound. */
@@ -1021,9 +1029,9 @@ final class IgnoredAnnotations {
    *       a type argument of the subclass corresponds to each position of the superclass's type
    *       arguments at which the subclass's declaration of its supertype uses that type parameter
    *       (see {@link #alignedTypeArgumentsMatch}). For example, given {@code class Flip<A, B>
-   *       implements Pair<B, A>}, in {@code Flip<@A String, @B String>} and {@code Pair<@C String,
-   *       @D String>}, {@code @A String} corresponds to {@code @D String}; and given {@code class
-   *       Wrap<A> implements Parent<List<A>>}, in {@code Wrap<@A String>} and {@code
+   *       implements Pair<B, A>}, in {@code Flip<@A String, @B String>} and {@code Pair<@C
+   *       String, @D String>}, {@code @A String} corresponds to {@code @D String}; and given {@code
+   *       class Wrap<A> implements Parent<List<A>>}, in {@code Wrap<@A String>} and {@code
    *       Parent<List<@B String>>}, {@code @A String} corresponds to {@code @B String}.
    * </ul>
    *
@@ -1211,9 +1219,9 @@ final class IgnoredAnnotations {
    * subclass and each position of {@code superPart} at which {@code pattern} uses the subclass's
    * type parameter for that argument. {@code pattern} is part of the subclass's declaration of its
    * supertype, such as {@code List<A>} in {@code class Wrap<A> implements Parent<List<A>>}, and
-   * {@code superPart} is the same part of the supertype being compared. Only positions where
-   * {@code pattern} and {@code superPart} have the same structure are matched; if {@code superPart}
-   * is a wildcard where {@code pattern} is not, its bound (see {@link #boundOf}) is used.
+   * {@code superPart} is the same part of the supertype being compared. Only positions where {@code
+   * pattern} and {@code superPart} have the same structure are matched; if {@code superPart} is a
+   * wildcard where {@code pattern} is not, its bound (see {@link #boundOf}) is used.
    *
    * @param pattern part of the subclass's declaration of its supertype
    * @param superPart the corresponding part of the supertype being compared
