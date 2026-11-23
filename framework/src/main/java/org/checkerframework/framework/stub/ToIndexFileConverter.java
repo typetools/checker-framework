@@ -1052,13 +1052,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         .computeIfAbsent(
             declaration,
             d -> {
-              Map<String, TypeDeclaration<?>> memberTypes = new HashMap<>();
+              Map<String, TypeDeclaration<?>> nestedTypes = new HashMap<>();
               for (BodyDeclaration<?> member : d.getMembers()) {
-                if (member instanceof TypeDeclaration<?> memberType) {
-                  memberTypes.putIfAbsent(memberType.getNameAsString(), memberType);
+                if (member instanceof TypeDeclaration<?> nestedType) {
+                  nestedTypes.putIfAbsent(nestedType.getNameAsString(), nestedType);
                 }
               }
-              return memberTypes;
+              return nestedTypes;
             })
         .get(identifier);
   }
@@ -1179,9 +1179,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (start == identifiers.length) {
       return qualifiedStubBinaryName(declaration);
     }
-    TypeDeclaration<?> member = memberTypeDeclaration(declaration, identifiers[start]);
-    if (member != null) {
-      return memberBinaryName(member, identifiers, start + 1);
+    TypeDeclaration<?> nestedType = memberTypeDeclaration(declaration, identifiers[start]);
+    if (nestedType != null) {
+      return memberBinaryName(nestedType, identifiers, start + 1);
     }
     Object inherited = inheritedMemberType(declaration, identifiers[start]);
     if (inherited instanceof TypeDeclaration<?> inheritedDecl) {
@@ -1211,13 +1211,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private static String classMemberBinaryName(Class<?> clazz, String[] identifiers, int start) {
     for (int i = start; i < identifiers.length; i++) {
-      Class<?> member = classMemberType(clazz, identifiers[i]);
-      if (member == null) {
+      Class<?> nestedType = classMemberType(clazz, identifiers[i]);
+      if (nestedType == null) {
         return clazz.getName()
             + "$"
             + String.join("$", Arrays.copyOfRange(identifiers, i, identifiers.length));
       }
-      clazz = member;
+      clazz = nestedType;
     }
     return clazz.getName();
   }
@@ -1229,8 +1229,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static final String MIXED_PACKAGES = "<mixed packages>";
 
   /**
-   * Returns the non-private member type named {@code identifier} that a class on the classpath
-   * declares or inherits.
+   * Returns the member type named {@code identifier} that a class on the classpath declares or
+   * inherits. The result can be a private member type that the class declares.
    *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
@@ -1245,9 +1245,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Returns the member type named {@code identifier} that a class on the classpath declares or
    * inherits, and that is inherited by the subclasses of {@code clazz} along an inheritance path.
    *
+   * <p>An <em>inheritance path</em> is a sequence of types, each a direct supertype of the one
+   * before it, that starts at the type whose member type is sought and ends at a type that declares
+   * the member type. For example, if {@code Sub extends Middle}, {@code Middle extends Base}, and
+   * {@code Base} declares {@code Inner}, then {@code Sub}, {@code Middle}, {@code Base} is an
+   * inheritance path for {@code Sub.Inner}. The subclasses of {@code clazz} along the path are the
+   * types that precede {@code clazz} on it.
+   *
    * <p>A class inherits a member type of a supertype only if the member type is not private and is
    * accessible in the class (JLS 8.5). Therefore, a package-private member type is inherited along
-   * an inheritance path only if every class on the path is in the member type's package.
+   * an inheritance path only if every class on the path is in the member type's package. A member
+   * type that {@code clazz} or one of its superclasses declares hides every member type of the same
+   * name in that class's supertypes, even if the declared member type is not inherited along the
+   * path. (Every member type of an interface is inherited, because it is implicitly public.)
+   *
+   * <p>If {@code subclassPackage} is null, then the result can be a member type, even a private
+   * one, that {@code clazz} declares, because no subclass needs to inherit it.
    *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
@@ -1279,13 +1292,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       try {
         String cPackage = c.getPackageName();
         boolean packagePrivateInherited = pathPackage == null || pathPackage.equals(cPackage);
-        for (Class<?> member : c.getDeclaredClasses()) {
-          // A private member type is not inherited.  A private member type that `clazz` itself
-          // declares is skipped too, but the caller's fallback yields the same binary name.
-          if (member.getSimpleName().equals(identifier)
-              && isInheritedMemberType(c, member, packagePrivateInherited)) {
-            return member;
+        Class<?> nestedType = declaredMemberType(c, identifier);
+        if (nestedType != null) {
+          if (pathPackage == null
+              || isInheritedMemberType(c, nestedType, packagePrivateInherited)) {
+            return nestedType;
           }
+          // A member type that `c` declares hides every member type of the same name in the
+          // supertypes of `c`, even if it is not inherited (JLS 8.5).
+          continue;
         }
         String nextPathPackage = packagePrivateInherited ? cPackage : MIXED_PACKAGES;
         Class<?> superclass = c.getSuperclass();
@@ -1305,22 +1320,40 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the member type named {@code identifier} that a class on the classpath declares,
+   * whether or not it is inherited.
+   *
+   * @param c a class on the classpath
+   * @param identifier the simple name of a member type
+   * @return the member type named {@code identifier} that {@code c} declares, or null if there is
+   *     none
+   */
+  private static @Nullable Class<?> declaredMemberType(Class<?> c, String identifier) {
+    for (Class<?> nestedType : c.getDeclaredClasses()) {
+      if (nestedType.getSimpleName().equals(identifier)) {
+        return nestedType;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns true if a member type of a class on the classpath is inherited along an inheritance
    * path.
    *
    * @param c a class on the classpath
-   * @param member a member type that {@code c} declares
+   * @param nestedType a member type that {@code c} declares
    * @param packagePrivateInherited whether a package-private member type of {@code c} is inherited
    *     along the inheritance path
-   * @return true if {@code member} is inherited along the inheritance path
+   * @return true if {@code nestedType} is inherited along the inheritance path
    */
   private static boolean isInheritedMemberType(
-      Class<?> c, Class<?> member, boolean packagePrivateInherited) {
+      Class<?> c, Class<?> nestedType, boolean packagePrivateInherited) {
     if (c.isInterface()) {
       // A member type of an interface is implicitly public.
       return true;
     }
-    int modifiers = member.getModifiers();
+    int modifiers = nestedType.getModifiers();
     if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
       return false;
     }
@@ -1347,18 +1380,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (ClassOrInterfaceType supertype : supertypes(declaration)) {
         Object superDecl = resolveSupertype(supertype);
         if (superDecl instanceof TypeDeclaration<?> superTypeDecl) {
-          TypeDeclaration<?> member = memberTypeDeclaration(superTypeDecl, identifier);
-          if (member != null && !member.isPrivate()) {
-            return member;
+          TypeDeclaration<?> nestedType = memberTypeDeclaration(superTypeDecl, identifier);
+          if (nestedType != null) {
+            // A private member type is not inherited, but it hides every member type of the same
+            // name in the supertypes of `superTypeDecl` (JLS 8.5).
+            if (!nestedType.isPrivate()) {
+              return nestedType;
+            }
+            continue;
           }
           Object inherited = inheritedMemberType(superTypeDecl, identifier);
           if (inherited != null) {
             return inherited;
           }
         } else if (superDecl instanceof Class<?> superClass) {
-          Class<?> member = classMemberType(superClass, identifier, stubPackage());
-          if (member != null) {
-            return member;
+          Class<?> nestedType = classMemberType(superClass, identifier, stubPackage());
+          if (nestedType != null) {
+            return nestedType;
           }
         }
       }
