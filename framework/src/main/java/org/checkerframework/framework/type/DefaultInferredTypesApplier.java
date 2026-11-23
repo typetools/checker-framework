@@ -46,17 +46,17 @@ public class DefaultInferredTypesApplier {
     if (inferredSet == null) {
       return;
     }
-    // Dataflow might infer a wildcard that extends a type variable for types that are actually
-    // type variables.  Use the type variable instead.  Likewise, use the type variable that bounds
-    // the wildcard of a captured type variable, such as `U` for the type of `list.get(0)` where
-    // `list` is a `List<? extends U>`, because a captured type variable has no declaration from
-    // which to read the upper bound's annotations.
     while (true) {
+      // Dataflow might infer a wildcard that extends a type variable for types that are actually
+      // type variables.  Use the type variable instead.
       if (inferredTypeMirror.getKind() == TypeKind.WILDCARD
           && ((WildcardType) inferredTypeMirror).getExtendsBound() != null) {
         inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
         continue;
       }
+      // Use the type variable that bounds the wildcard of a captured type variable, such as `U`
+      // for the type of `list.get(0)` where `list` is a `List<? extends U>`, because a captured
+      // type variable has no declaration from which to read the upper bound's annotations.
       if (inferredTypeMirror.getKind() == TypeKind.TYPEVAR) {
         WildcardType capturedWildcard =
             TypesUtils.getCapturedWildcard((TypeVariable) inferredTypeMirror);
