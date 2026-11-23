@@ -46,11 +46,27 @@
 31 -> 32 EACH_TO_EACH
 31 -> 1 RuntimeException
 31 -> 1 Error
-35 -> 36 EACH_TO_EACH
-35 -> 1 RuntimeException
-35 -> 1 Error
+35 -> 39 THEN_TO_BOTH
+35 -> 45 ELSE_TO_BOTH
 32 -> 34 EACH_TO_EACH
-36 -> 0 EACH_TO_EACH
+39 -> 40 EACH_TO_EACH
+45 -> 46 EACH_TO_EACH
+40 -> 41 EACH_TO_EACH
+40 -> 1 ClassCastException
+46 -> 47 EACH_TO_EACH
+46 -> 1 RuntimeException
+46 -> 1 Error
+41 -> 42 EACH_TO_EACH
+47 -> 49 EACH_TO_EACH
+42 -> 43 EACH_TO_EACH
+42 -> 1 RuntimeException
+42 -> 1 Error
+49 -> 50 EACH_TO_EACH
+43 -> 49 EACH_TO_EACH
+50 -> 51 EACH_TO_EACH
+50 -> 1 RuntimeException
+50 -> 1 Error
+51 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -93,12 +109,15 @@ AnalysisResult#0
 After:   reaching definitions = none
 
 1:
-Process order: 32
-TransferInput#148
+Process order: 42
+TransferInput#201
 Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
 ~~~~~~~~~
 <exceptional-exit>
 
@@ -350,16 +369,20 @@ b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
 }, switchExpressionVar=switchExpr#num1}   [ Assignment ]
-4   [ IntegerLiteral ]
-NarrowingConversion(4, byte)   [ NarrowingConversion ]
-Byte   [ ClassName ]
-Byte.valueOf   [ MethodAccess ]
+s3   [ VariableDeclaration ]
+switch#num2   [ VariableDeclaration ]
+switch#num2   [ LocalVariable ]
+x   [ LocalVariable ]
+switch#num2 = x   [ Assignment ]
+switchExpr#num3   [ VariableDeclaration ]
+0   [ IntegerLiteral ]
+case 0:   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
 After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
 
 31:
 Process order: 26
@@ -373,19 +396,13 @@ After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1,
 
 35:
 Process order: 29
-TransferInput#143
+TransferInput#147
 Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
 ~~~~~~~~~
-Byte.valueOf(NarrowingConversion(4, byte))   [ MethodInvocation ]
-~~~~~~~~~
-AnalysisResult#0
-After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
-case 0 -> yield Byte.valueOf(2);
-default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+ConditionalBlock: then: 39, else: 45
 
 32:
 Process order: 27
@@ -397,13 +414,204 @@ switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte))   [ Assignmen
 AnalysisResult#0
 After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)) }
 
-36:
+39:
 Process order: 30
-TransferInput#146
+TransferInput#149
 Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+switchExpr#num3   [ LocalVariable ]
+1   [ IntegerLiteral ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+
+45:
+Process order: 35
+TransferInput#150
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+switchExpr#num3   [ LocalVariable ]
+2   [ IntegerLiteral ]
+NarrowingConversion(2, short)   [ NarrowingConversion ]
+Short   [ ClassName ]
+Short.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+
+40:
+Process order: 31
+TransferInput#154
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+(byte)1   [ TypeCast ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+
+46:
+Process order: 36
+TransferInput#179
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+Short.valueOf(NarrowingConversion(2, short))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+
+41:
+Process order: 32
+TransferInput#157
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+WideningConversion((byte)1, short)   [ WideningConversion ]
+Short   [ ClassName ]
+Short.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+
+47:
+Process order: 37
+TransferInput#182
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short))   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)) }
+
+42:
+Process order: 33
+TransferInput#164
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+Short.valueOf(WideningConversion((byte)1, short))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+
+49:
+Process order: 38
+TransferInput#187
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)) }
+~~~~~~~~~
+switchExpr#num3   [ LocalVariable ]
+SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3}   [ SwitchExpression ]
+s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3}   [ Assignment ]
+4   [ IntegerLiteral ]
+NarrowingConversion(4, byte)   [ NarrowingConversion ]
+Byte   [ ClassName ]
+Byte.valueOf   [ MethodAccess ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
+
+43:
+Process order: 34
+TransferInput#167
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x }
+~~~~~~~~~
+switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short))   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)) }
+
+50:
+Process order: 39
+TransferInput#196
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
+~~~~~~~~~
+Byte.valueOf(NarrowingConversion(4, byte))   [ MethodInvocation ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
+
+51:
+Process order: 40
+TransferInput#199
+Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Byte.valueOf(2);
+default -> yield Byte.valueOf((char)3);
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
 ~~~~~~~~~
 return Byte.valueOf(NarrowingConversion(4, byte))   [ Return ]
 ~~~~~~~~~
@@ -411,14 +619,20 @@ AnalysisResult#0
 After:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
 
 0:
-Process order: 31
-TransferInput#152
+Process order: 41
+TransferInput#205
 Before:   reaching definitions = { s1 = Short.valueOf(WideningConversion((byte)1, short)), s2 = Short.valueOf(WideningConversion(Test.BYTE_CONSTANT, short)), b = Byte.valueOf(NarrowingConversion((char)1, byte)), c = Character.valueOf(NarrowingConversion((byte)1, char)), switch#num0 = x, switchExpr#num1 = Byte.valueOf(NarrowingConversion((char)3, byte)), switchExpr#num1 = Byte.valueOf(NarrowingConversion(2, byte)), b2 = SwitchExpressionNode{switchExpressionTree=switch (x) {
 case 0 -> yield Byte.valueOf(2);
 default -> yield Byte.valueOf((char)3);
-}, switchExpressionVar=switchExpr#num1} }
+}, switchExpressionVar=switchExpr#num1}, switch#num2 = x, switchExpr#num3 = Short.valueOf(NarrowingConversion(2, short)), switchExpr#num3 = Short.valueOf(WideningConversion((byte)1, short)), s3 = SwitchExpressionNode{switchExpressionTree=switch (x) {
+case 0 -> yield Short.valueOf((byte)1);
+default -> yield Short.valueOf(2);
+}, switchExpressionVar=switchExpr#num3} }
 ~~~~~~~~~
 <exit>

@@ -14,6 +14,11 @@ public class Test {
           case 0 -> 2;
           default -> (char) 3;
         };
+    Short s3 =
+        switch (x) {
+          case 0 -> (byte) 1;
+          default -> 2;
+        };
     return 4;
   }
 }
