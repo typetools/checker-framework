@@ -876,6 +876,33 @@ public class VariableBounds {
   }
 
   /**
+   * Returns the variables contained in the origins (see {@link ProperType#getOrigin}) of the proper
+   * bounds of this variable, including its instantiation. {@link #getVariablesContainedInBounds}
+   * omits them, because a proper type has no inference variables. They are the variables whose
+   * instantiations were applied to make those bounds, so refining such an instantiation can change
+   * the annotations at an ignored position of a bound.
+   *
+   * @return the variables contained in the origins of the proper bounds of this variable
+   */
+  public Set<Variable> getVariablesContainedInBoundOrigins() {
+    Set<Variable> contained = new LinkedHashSet<>();
+    for (Set<AbstractType> boundList : bounds.values()) {
+      for (AbstractType bound : boundList) {
+        InferenceType origin = bound.getOrigin();
+        if (origin != null) {
+          contained.addAll(origin.getInferenceVariables());
+        }
+      }
+    }
+    ProperType instantiation = getInstantiation();
+    InferenceType instantiationOrigin = instantiation == null ? null : instantiation.getOrigin();
+    if (instantiationOrigin != null) {
+      contained.addAll(instantiationOrigin.getInferenceVariables());
+    }
+    return contained;
+  }
+
+  /**
    * Returns the instantiation of this variable, or null if this variable has no instantiation.
    *
    * @return the instantiation of this variable, or null

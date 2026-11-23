@@ -90,7 +90,10 @@ final class IgnoredAnnotations {
    *   <li>If the primary annotations of {@code sup} are ignored, then they are replaced with top
    *       annotations.
    *   <li>Ignored annotations elsewhere in either type are replaced with the annotations at the
-   *       corresponding position in the other type.
+   *       corresponding position in the other type. If {@code sub} is a type variable and {@code
+   *       sup} is not, then the ignored annotations of {@code sup} are replaced with those at the
+   *       corresponding position of the upper bound of {@code sub}, which the subtype check
+   *       compares with {@code sup}.
    * </ul>
    *
    * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
@@ -128,6 +131,23 @@ final class IgnoredAnnotations {
           ignoredPositions(subAsSuper, subATM, qh),
           ignoredPositions(upToDateSup, supATM, qh),
           false);
+      if (upToDateSup.getOrigin() != null
+          && isTypeVariable(upToDateSub)
+          && !isTypeVariable(upToDateSup)) {
+        // The subtype check compares the upper bound of `sub` with `sup`, so the positions within
+        // `sup` correspond to those of that bound, not of `sub`.  Give the ignored positions of
+        // `sup` the annotations of the bound.  `subATM` is unchanged, so the type variable keeps
+        // its own qualifiers.
+        AbstractType subBoundAsSuper =
+            asSuper(upperBoundIfTypeVariable(upToDateSub), upToDateSup.getJavaType(), types);
+        AnnotatedTypeMirror subBoundATM = subBoundAsSuper.getAnnotatedType().deepCopy();
+        replaceIgnoredWithCorresponding(
+            supATM,
+            subBoundATM,
+            ignoredPositions(upToDateSup, supATM, qh),
+            ignoredPositions(subBoundAsSuper, subBoundATM, qh),
+            false);
+      }
     }
     if (upToDateSub.ignoreAnnotations) {
       subATM.replaceAnnotations(qh.getBottomAnnotations());

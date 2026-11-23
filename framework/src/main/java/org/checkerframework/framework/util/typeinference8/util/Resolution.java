@@ -82,19 +82,22 @@ public final class Resolution {
 
     // Any variable on which `originalAs` depends may have an instantiation that ignores
     // annotations: one resolved below, or one that incorporation already gave an instantiation.
-    List<Variable> withDependencies = new ArrayList<>(dependencies.get(originalAs));
+    Set<Variable> withDependencies = dependencies.get(originalAs);
 
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return resolveIgnoredAnnotations(withDependencies, boundSet, context);
+      return resolveIgnoredAnnotations(
+          withOriginVariables(withDependencies, dependencies), boundSet, context);
     }
 
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return resolveIgnoredAnnotations(withDependencies, boundSet, context);
+    // Resolution can make instantiations that have origins, so find the origin variables afterward.
+    return resolveIgnoredAnnotations(
+        withOriginVariables(withDependencies, dependencies), boundSet, context);
   }
 
   /**
@@ -119,14 +122,16 @@ public final class Resolution {
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
     // Resolving `a` can also resolve the variables on which it depends, and give any of them an
     // instantiation that ignores annotations.
-    return resolveIgnoredAnnotations(new ArrayList<>(dependencies.get(a)), boundSet, context);
+    return resolveIgnoredAnnotations(
+        withOriginVariables(dependencies.get(a), dependencies), boundSet, context);
   }
 
   /**
    * Returns {@code vars} and the variables on which they depend, if a variable of {@code boundSet}
    * has an instantiation that ignores annotations (see {@link AbstractType#ignoreAnnotations});
-   * otherwise, returns {@code vars}. Computing the dependencies has the side effect described in
-   * {@link BoundSet#getDependencies(Collection)}.
+   * otherwise, returns {@code vars}. The variables on which they depend include those that {@link
+   * #withOriginVariables} adds. Computing the dependencies has the side effect described in {@link
+   * BoundSet#getDependencies(Collection)}.
    *
    * @param vars variables of {@code boundSet}
    * @param boundSet a bound set
@@ -138,10 +143,45 @@ public final class Resolution {
     for (Variable var : boundSet.getInstantiatedVariables()) {
       ProperType instantiation = var.getInstantiation();
       if (instantiation != null && instantiation.ignoreAnnotations) {
-        return new ArrayList<>(boundSet.getDependencies().get(vars));
+        Dependencies dependencies = boundSet.getDependencies();
+        return withOriginVariables(dependencies.get(vars), dependencies);
       }
     }
     return vars;
+  }
+
+  /**
+   * Returns {@code vars}, together with the variables in the origins (see {@link
+   * VariableBounds#getVariablesContainedInBoundOrigins}) of the proper bounds of each variable in
+   * the result, and the dependencies of those variables, transitively.
+   *
+   * <p>{@link BoundSet#getDependencies} omits the variables in the origin of a proper bound,
+   * because a proper type contains no inference variables. Refining the instantiation of such a
+   * variable (see {@link #resolveIgnoredAnnotations}) can change the annotations at an ignored
+   * position of the bound, so this method includes them. This method does not change {@link
+   * BoundSet#getDependencies}, which also determines the order of resolution: every variable in
+   * such an origin already has an instantiation, so it does not affect that order.
+   *
+   * @param vars variables
+   * @param dependencies the dependencies between variables
+   * @return {@code vars}, together with the variables in the origins of the proper bounds of the
+   *     result, and their dependencies
+   */
+  private static List<Variable> withOriginVariables(
+      Collection<Variable> vars, Dependencies dependencies) {
+    LinkedHashSet<Variable> result = new LinkedHashSet<>(vars);
+    Queue<Variable> worklist = new ArrayDeque<>(result);
+    while (!worklist.isEmpty()) {
+      Variable var = worklist.remove();
+      for (Variable originVar : var.getBounds().getVariablesContainedInBoundOrigins()) {
+        for (Variable dep : dependencies.get(originVar)) {
+          if (result.add(dep)) {
+            worklist.add(dep);
+          }
+        }
+      }
+    }
+    return new ArrayList<>(result);
   }
 
   /**
