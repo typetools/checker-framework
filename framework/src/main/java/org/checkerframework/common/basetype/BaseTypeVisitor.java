@@ -3640,7 +3640,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(reassignmentTree);
     for (VariableTree declTree : localVariablesInScope(path)) {
-      VariableElement varElt = TreeUtils.elementFromDeclaration(declTree);
+      VariableElement varElt = TreeUtils.variableElementFromTree(declTree);
       if (target instanceof LocalVariable targetLocal && targetLocal.getElement().equals(varElt)) {
         continue;
       }
@@ -3649,10 +3649,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       AnnotatedTypeMirror currentType = declaredType.deepCopy();
-      CFAbstractValue<?> currentValue =
-          store == null ? null : store.getValue(new LocalVariable(varElt));
-      if (currentValue != null) {
-        currentType.replaceAnnotations(currentValue.getAnnotations());
+      if (store != null) {
+        @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
+        CFAbstractValue<?> currentValue = store.getValue(new LocalVariable(varElt));
+        if (currentValue != null) {
+          currentType.replaceAnnotations(currentValue.getAnnotations());
+        }
       }
       AnnotatedTypeMirror requiredType =
           value == null ? null : dependentTypesHelper.substitute(declaredType, target, value, path);
@@ -3704,6 +3706,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param path a path to a tree in a method body
    * @return the declarations of the local variables and formal parameters in scope at {@code path}
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private List<VariableTree> localVariablesInScope(TreePath path) {
     List<VariableTree> result = new ArrayList<>();
     Tree child = path.getLeaf();
@@ -3768,6 +3771,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *     {@code trees}
    * @param result the list to which to add variable declarations
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private static void addVariablesBefore(
       List<? extends Tree> trees, @Nullable Tree stop, List<VariableTree> result) {
     for (Tree tree : trees) {
