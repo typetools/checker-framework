@@ -944,6 +944,11 @@ public abstract class CFAbstractTransfer<
    * secondNode}. The result omits each node that might not have the value of {@code secondNode}
    * when the comparison completes; do not insert the new type for such a node.
    *
+   * <p>This method does nothing if {@code firstValue} might not hold for the value of {@code
+   * firstNode} when the comparison completes. That is possible if side effects unrefine aliases
+   * (see {@link GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), as in {@code a == (b =
+   * clear(a))}.
+   *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
    * @param firstValue the abstract value that might be more precise
@@ -962,7 +967,7 @@ public abstract class CFAbstractTransfer<
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
-      if (!firstValue.equals(secondValue)) {
+      if (!firstValue.equals(secondValue) && !abstractValueMayChangeBeforeComparison(firstNode)) {
         // `firstValue` describes the value of `firstNode` when it was evaluated. If it mentions an
         // expression that might change before the comparison completes, as `arr` does in `limit
         // == (j = (arr = c).length)` if `limit` is `@LTLengthOf("arr")`, then it might not hold
@@ -994,6 +999,28 @@ public abstract class CFAbstractTransfer<
       }
     }
     return res;
+  }
+
+  /**
+   * Returns true if the abstract value that the given operand of a comparison had when it was
+   * evaluated might not hold for the value it denotes when the comparison completes. This is
+   * possible only if side effects unrefine aliases (see {@link
+   * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}): then a call that is evaluated after
+   * the operand and before the comparison completes might change the abstract value of the object
+   * that the operand denotes, as in {@code a == (b = clear(a))}. A write that only reassigns a
+   * variable, field, or array element that the operand reads does not matter, because it does not
+   * change the object that the operand evaluated to.
+   *
+   * @param node an operand of a comparison, possibly an assignment
+   * @return true if the abstract value of {@code node} might not hold for its value when the
+   *     comparison completes
+   */
+  private boolean abstractValueMayChangeBeforeComparison(Node node) {
+    if (!analysis.atypeFactory.sideEffectsUnrefineAliases
+        || !JavaExpression.fromNode(node).isModifiableByOtherCode()) {
+      return false;
+    }
+    return locationsWrittenUntilComparison(node).mayWriteAnyHeapLocation();
   }
 
   /**
@@ -1161,6 +1188,14 @@ public abstract class CFAbstractTransfer<
     ExpressionTree rhsTree = rhsTree(last);
     if (rhsTree != null) {
       written.scan(rhsTree, null);
+    }
+    // The string conversion of a `+=` in `chain` (which calls `toString()`) happens after `rhs` is
+    // evaluated and after the receivers and indices of the targets are evaluated.
+    for (AssignmentNode a : chain) {
+      Tree tree = a.getTree();
+      if (tree != null) {
+        written.addOwnWrites(tree);
+      }
     }
     // The sides that the result contains, in source order: `sides[i]` is the target of
     // `chain.get(i)`, and `sides[chain.size()]` is `rhs`. An element is null if the result omits
@@ -1467,6 +1502,16 @@ public abstract class CFAbstractTransfer<
      */
     boolean isEmpty() {
       return locals.isEmpty() && fields.isEmpty() && arrayElements.isEmpty() && !anyHeapLocation;
+    }
+
+    /**
+     * Returns true if every non-final field and every array element might be written, as by a call
+     * to a method that is not side-effect-free.
+     *
+     * @return true if every non-final field and every array element might be written
+     */
+    boolean mayWriteAnyHeapLocation() {
+      return anyHeapLocation;
     }
 
     /**
