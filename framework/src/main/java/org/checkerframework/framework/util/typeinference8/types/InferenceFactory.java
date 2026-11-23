@@ -1133,7 +1133,8 @@ public class InferenceFactory {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
     IgnoredAnnotations.copyPrimaryAnnotations(
         atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(samePrimaryAnnotations, atm);
+    // Compare the enclosing types too, which the type hierarchy does not.
+    return context.areMutualSubtypesIncludingEnclosingTypes(samePrimaryAnnotations, atm);
   }
 
   /**
@@ -1217,7 +1218,10 @@ public class InferenceFactory {
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(compared.type1(), compared.type2());
+    // Compare the enclosing types too, which the type hierarchy does not.  Otherwise, an origin
+    // could be kept that, when instantiations are applied again, would replace the annotations of
+    // an enclosing type of the result by those of `properType`.
+    return context.areMutualSubtypesIncludingEnclosingTypes(compared.type1(), compared.type2());
   }
 
   /**

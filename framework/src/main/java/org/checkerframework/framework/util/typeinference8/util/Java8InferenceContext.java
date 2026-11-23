@@ -7,6 +7,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
@@ -276,6 +280,105 @@ public class Java8InferenceContext {
   public boolean areMutualSubtypes(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
     return typeHierarchy.isSubtype(type1, type2) && typeHierarchy.isSubtype(type2, type1);
+  }
+
+  /**
+   * Returns true if {@link #areMutualSubtypes} holds for {@code type1} and {@code type2}, and also
+   * for each pair of corresponding enclosing types within them. The type hierarchy does not compare
+   * enclosing types, so {@link #areMutualSubtypes} alone does not notice that {@code
+   * Outer<@NonNull String>.Inner} and {@code Outer<@Nullable String>.Inner} differ.
+   *
+   * <p>Use this method to decide whether two types that should be interchangeable have the same
+   * annotations everywhere, rather than to check a constraint.
+   *
+   * @param type1 an annotated type
+   * @param type2 an annotated type
+   * @return true if {@code type1} and {@code type2} are mutual subtypes and so are their
+   *     corresponding enclosing types
+   */
+  public boolean areMutualSubtypesIncludingEnclosingTypes(
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    return areMutualSubtypes(type1, type2) && enclosingTypesAreMutualSubtypes(type1, type2);
+  }
+
+  /**
+   * Returns true if each pair of corresponding enclosing types within {@code type1} and {@code
+   * type2} are mutual subtypes. Unlike {@link #areMutualSubtypesIncludingEnclosingTypes}, this does
+   * not compare the rest of the two types.
+   *
+   * @param type1 an annotated type
+   * @param type2 an annotated type
+   * @return true if each pair of corresponding enclosing types are mutual subtypes
+   */
+  public boolean enclosingTypesAreMutualSubtypes(
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    return enclosingTypesAreMutualSubtypes(type1, type2, new IdentityHashMap<>());
+  }
+
+  /**
+   * Returns true if each pair of corresponding enclosing types within {@code type1} and {@code
+   * type2} are mutual subtypes. Positions correspond only where the two types have the same
+   * structure; elsewhere, nothing is compared.
+   *
+   * @param type1 an annotated type
+   * @param type2 an annotated type
+   * @param visitedWildcards the wildcards of {@code type1} that have been visited. The type
+   *     argument of a raw type can be a wildcard that is reachable from its own bound, so stopping
+   *     at a visited wildcard ensures termination.
+   * @return true if each pair of corresponding enclosing types are mutual subtypes
+   */
+  private boolean enclosingTypesAreMutualSubtypes(
+      AnnotatedTypeMirror type1,
+      AnnotatedTypeMirror type2,
+      IdentityHashMap<AnnotatedTypeMirror, Boolean> visitedWildcards) {
+    if (type1.getKind() != type2.getKind()) {
+      return true;
+    }
+    switch (type1.getKind()) {
+      case DECLARED -> {
+        AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) type1;
+        AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) type2;
+        AnnotatedDeclaredType enclosing1 = dt1.getEnclosingType();
+        AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
+        if (enclosing1 != null
+            && enclosing2 != null
+            && !(areMutualSubtypes(enclosing1, enclosing2)
+                && enclosingTypesAreMutualSubtypes(enclosing1, enclosing2, visitedWildcards))) {
+          return false;
+        }
+        List<AnnotatedTypeMirror> args1 = dt1.getTypeArguments();
+        List<AnnotatedTypeMirror> args2 = dt2.getTypeArguments();
+        if (args1.size() != args2.size()) {
+          return true;
+        }
+        for (int i = 0; i < args1.size(); i++) {
+          if (!enclosingTypesAreMutualSubtypes(args1.get(i), args2.get(i), visitedWildcards)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      case ARRAY -> {
+        return enclosingTypesAreMutualSubtypes(
+            ((AnnotatedArrayType) type1).getComponentType(),
+            ((AnnotatedArrayType) type2).getComponentType(),
+            visitedWildcards);
+      }
+      case WILDCARD -> {
+        if (visitedWildcards.put(type1, Boolean.TRUE) != null) {
+          return true;
+        }
+        AnnotatedWildcardType wt1 = (AnnotatedWildcardType) type1;
+        AnnotatedWildcardType wt2 = (AnnotatedWildcardType) type2;
+        return enclosingTypesAreMutualSubtypes(
+                wt1.getExtendsBound(), wt2.getExtendsBound(), visitedWildcards)
+            && enclosingTypesAreMutualSubtypes(
+                wt1.getSuperBound(), wt2.getSuperBound(), visitedWildcards);
+      }
+      default -> {
+        return true;
+      }
+    }
   }
 
   /**
