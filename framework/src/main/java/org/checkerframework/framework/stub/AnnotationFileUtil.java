@@ -500,18 +500,14 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Passes each annotation file of type {@code fileType} at the given file system location to
-   * {@code action}. Passes the files in a directory in order of their names, and the entries in an
-   * archive in the order that the archive stores them. Passes an archive entry while its archive is
-   * open, and reads the entry's contents just before passing it, so an archive's entries need not
-   * all be in memory at once.
+   * Runs {@code action} on each annotation file of type {@code fileType} at the given file system
+   * location. Passes the files under a directory in order of their names, and the entries in an
+   * archive in the order that the archive stores them.
    *
-   * <p>If {@code location} is a stub file or ajava file, passes it to {@code action}. If {@code
-   * location} is a jarfile, passes all annotation files (of type {@code fileType}) contained in it.
-   * If {@code location} is a directory, recurses on all files contained in it. If {@code location}
-   * is a jarfile that cannot be opened or a directory that cannot be listed, passes a resource
-   * whose {@link AnnotationFileResource#getInputStream} throws an exception, so the client reports
-   * the error rather than treating {@code location} as empty.
+   * <p>If {@code location} is a directory, recurses on all files contained in it. If {@code
+   * location} is a jarfile that cannot be opened or a directory that cannot be listed, passes a
+   * resource whose {@link AnnotationFileResource#getInputStream} throws an exception, so the client
+   * reports the error rather than treating {@code location} as empty.
    *
    * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory
    * @param fileType type of annotation files to pass to {@code action}
@@ -522,6 +518,8 @@ public class AnnotationFileUtil {
     if (isAnnotationFile(location, fileType)) {
       action.accept(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
+      // Passes an archive entry while its archive is open, and reads the entry's contents just
+      // before passing it, so an archive's entries need not all be in memory at once.
       forEachArchiveEntry(location, fileType, action);
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
@@ -538,8 +536,8 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Passes each annotation file of type {@code fileType} in the given archive to {@code action},
-   * while the archive is open.
+   * Opens the given archive, passes each annotation file of type {@code fileType} in it to {@code
+   * action}, and closes the archive.
    *
    * @param archive a JAR or ZIP archive
    * @param fileType type of annotation files to pass to {@code action}
