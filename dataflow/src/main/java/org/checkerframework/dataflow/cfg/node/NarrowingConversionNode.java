@@ -15,7 +15,10 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <p>A {@link NarrowingConversionNode} does not correspond to any tree node in the parsed AST. It
  * is introduced when a value of some primitive type appears in a context that requires a different
- * primitive with fewer bits of precision.
+ * primitive type to which the value's type does not widen. Usually the required type has fewer bits
+ * of precision, as in {@code byte b = 1;}. The node also represents a conversion between char and
+ * short, which have the same size, as in {@code short s = 'a';}, and the widening and narrowing
+ * primitive conversion from byte to char (JLS 5.1.4), as in {@code char c = (byte) 1;}.
  */
 public class NarrowingConversionNode extends Node {
 
