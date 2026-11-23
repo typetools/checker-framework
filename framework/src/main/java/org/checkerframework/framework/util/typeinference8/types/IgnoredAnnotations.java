@@ -70,8 +70,9 @@ import org.checkerframework.javacutil.BugInCF;
  * annotations that cannot affect the result: for example, bottom for a subtype and top for a
  * supertype, or the annotations at the corresponding position of the other type. (An exception: in
  * a hierarchy in which both types ignore the annotations at a position, that position is not
- * replaced before a least upper bound or greatest lower bound, so that the result there combines
- * the annotations of both types.) The rest of each type is then compared or combined as usual.
+ * replaced before a least upper bound or greatest lower bound, so that a least upper bound there
+ * combines the annotations of both types; see {@link #replaceIgnoredForLubOrGlb}.) The rest of each
+ * type is then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
@@ -204,9 +205,16 @@ final class IgnoredAnnotations {
    *       the annotations of only one of the two positions are ignored (see {@link
    *       #replaceIgnoredWithCorresponding}), except that a type variable is returned itself, with
    *       no annotations replaced. In a hierarchy in which the annotations of both positions are
-   *       ignored, both are kept, so that the least upper bound or greatest lower bound combines
-   *       them and does not depend on the order of {@code type1} and {@code type2}.
+   *       ignored, both are kept, so that the least upper bound combines them and does not depend
+   *       on the order of {@code type1} and {@code type2}.
    * </ol>
+   *
+   * <p>TODO: The greatest lower bound does not combine the annotations at such a position. {@link
+   * org.checkerframework.framework.util.AnnotatedTypes#annotatedGLB} combines only the primary
+   * annotations and takes the rest from one of its arguments, so at a position whose annotations
+   * both types ignore, the result has the annotations of one type, which depends on the order of
+   * {@code type1} and {@code type2}. Fixing this requires replacing both positions by the greatest
+   * lower bound of their annotations here.
    *
    * <p>This method does not replace primary annotations that are ignored because of {@link
    * AbstractType#ignoreAnnotations}; the caller handles them.
