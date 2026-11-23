@@ -18,6 +18,9 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+New method `TypeVariableSubstitutor.substituteCopyingSomeTypeArguments()`
+copies the type arguments of only some type variables.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

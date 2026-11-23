@@ -214,6 +214,19 @@ public abstract class AbstractType {
   }
 
   /**
+   * Returns the inference variables that the origin of this type contains (see {@link
+   * #getOrigin}), or the empty collection if this type has no origin. Unlike {@link
+   * #getInferenceVariables}, which is empty for a proper type, this reports the variables whose
+   * instantiations determine the ignored positions of a proper type (see {@link
+   * IgnoredAnnotations}).
+   *
+   * @return the inference variables that the origin of this type contains
+   */
+  public Collection<Variable> getOriginInferenceVariables() {
+    return Collections.emptyList();
+  }
+
+  /**
    * Returns true if this type is java.lang.Object.
    *
    * @return true if this type is java.lang.Object
