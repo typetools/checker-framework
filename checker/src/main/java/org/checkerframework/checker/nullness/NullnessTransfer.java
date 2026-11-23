@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -52,6 +53,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -108,6 +110,9 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
+  /** The method {@code Object.toString()}. */
+  private final ExecutableElement objectToString;
+
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -145,6 +150,8 @@ public class NullnessTransfer
     nonNullAssumptionAfterInvocation =
         checker.hasOption("invocationPreservesArgumentNullness")
             && checker.getBooleanOption("invocationPreservesArgumentNullness", true);
+
+    objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
   }
 
   /**
@@ -594,7 +601,22 @@ public class NullnessTransfer
 
           @Override
           public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            return assignsReceiver(tree.getVariable()) || super.visitCompoundAssignment(tree, p);
+            // `s += o`, for a String variable s, implicitly invokes o.toString().
+            return assignsReceiver(tree.getVariable())
+                || (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
+                    && TypesUtils.isString(TreeUtils.typeOf(tree.getVariable()))
+                    && stringConversionMayHaveSideEffect(tree.getExpression()))
+                || super.visitCompoundAssignment(tree, p);
+          }
+
+          // String concatenation implicitly invokes toString() on an operand that is not a String.
+          @Override
+          public Boolean visitBinary(BinaryTree tree, Void p) {
+            return (tree.getKind() == Tree.Kind.PLUS
+                    && TypesUtils.isString(TreeUtils.typeOf(tree))
+                    && (stringConversionMayHaveSideEffect(tree.getLeftOperand())
+                        || stringConversionMayHaveSideEffect(tree.getRightOperand())))
+                || super.visitBinary(tree, p);
           }
 
           @Override
@@ -688,6 +710,42 @@ public class NullnessTransfer
               }
             }
             return false;
+          }
+
+          /*
+           * Returns true if converting the given expression to a string, as string concatenation
+           * does, might reassign the receiver by invoking a toString() method.  Does not examine
+           * the subexpressions of the operand; scan visits them.
+           *
+           * @param operand an operand of string concatenation
+           * @return true if converting {@code operand} to a string might reassign the receiver
+           */
+          private boolean stringConversionMayHaveSideEffect(ExpressionTree operand) {
+            TypeMirror type = TreeUtils.typeOf(operand);
+            if (type.getKind().isPrimitive()
+                || type.getKind() == TypeKind.NULL
+                || TypesUtils.isString(type)) {
+              return false;
+            }
+            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+            if (typeElement == null) {
+              // For example, an array type.
+              return mayHaveSideEffect(objectToString);
+            }
+            // As for an explicit invocation, use the toString() methods of the static type.
+            // getAllMethodsIn also returns overridden methods, which is conservative.
+            boolean foundToString = false;
+            for (ExecutableElement m :
+                ElementUtils.getAllMethodsIn(typeElement, nullnessTypeFactory.getElementUtils())) {
+              if (m.getSimpleName().contentEquals("toString") && m.getParameters().isEmpty()) {
+                foundToString = true;
+                if (mayHaveSideEffect(m)) {
+                  return true;
+                }
+              }
+            }
+            // An interface need not declare or inherit a toString() method.
+            return !foundToString && mayHaveSideEffect(objectToString);
           }
 
           /*

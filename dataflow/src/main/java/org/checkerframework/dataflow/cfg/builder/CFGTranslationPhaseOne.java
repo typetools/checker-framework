@@ -293,15 +293,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
-   * The maximum number of nodes in extra exceptional copies of finally blocks, beyond which the
-   * exceptions that reach a finally block share one copy. An extra copy is one other than the first
-   * exceptional copy of a given finally block. See {@link #handleFinally}.
+   * The maximum number of nodes in extra exceptional copies of finally blocks. Once the extra
+   * copies contain this many nodes, the exception types that reach a finally block and do not yet
+   * have a copy share one exceptional copy of that finally block, so a finally block that the CFG
+   * builder translates after that point has only one exceptional copy. An exceptional copy of a
+   * finally block is a translation of the finally block that runs when an exception reaches the
+   * finally block, and that rethrows the exception after the finally block completes normally. An
+   * extra copy is one other than the first exceptional copy of a given finally block. See {@link
+   * #handleFinally}.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
   /**
-   * The number of nodes in extra exceptional copies of finally blocks so far. Nodes in nested extra
-   * copies are counted more than once.
+   * The number of nodes in extra exceptional copies of finally blocks so far. A node is counted
+   * once for each extra copy that contains it, so a node in an extra copy that is nested within
+   * another extra copy is counted more than once.
    */
   private int extraExceptionalFinallyNodes = 0;
 
@@ -3101,42 +3107,45 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    // For each type of exception that reaches the finally block, a copy of the finally block
-    // rethrows that type after the finally block completes normally.  Two types share a copy if
-    // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
-    // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
-    // copy.  Types that go to different places get different copies, so that the analysis does
-    // not merge stores of paths that never meet.  For example, the Resource Leak Checker would
-    // otherwise report a leak when an exception thrown while a resource is open is caught by a
-    // catch block that closes the resource, and another exception, thrown after the resource is
-    // closed, propagates out of the method.  Types that go to the same places share a copy, because
-    // the analysis merges their stores there anyway.  The number of copies grows exponentially with
-    // the depth of the nesting of finally blocks in finally blocks, with a base that grows with the
-    // number of copies per finally block.  A copy for each type would make the base much larger.
-    // To bound that growth, once the copies beyond the first copy for each finally block have
-    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the remaining groups of each
-    // finally block share a single copy, which rethrows each of their exceptions.
-    List<Map<TypeMirror, Label>> groups = new ArrayList<>(exceptionGroups(exceptionalFinallyFrame));
+    // `groups` partitions the types of the exceptions that reach the finally block.  For each
+    // group, a copy of the finally block starts at the group's entry labels, which exceptions of
+    // the group's types jump to when they reach the finally block, and the copy rethrows the
+    // group's types after the finally block completes normally.  Types that go to the same places
+    // share a copy, because the analysis merges their stores there anyway.  The number of copies
+    // grows exponentially with the depth of the nesting of finally blocks in finally blocks, with
+    // a base that grows with the number of copies per finally block.
+    //
+    // As an optimization, two types share a copy if and only if the copy rethrows them to the same
+    // places:  the same catch blocks, or the exit, past any enclosing finally blocks.  The analysis
+    // merges the stores of the paths that reach a copy.  Types that go to different places get
+    // different copies, so that the analysis does not merge stores of paths that never meet.  For
+    // example, the Resource Leak Checker would otherwise report a leak when an exception thrown
+    // while a resource is open is caught by a catch block that closes the resource, and another
+    // exception, thrown after the resource is closed, propagates out of the method.
+    //
+    // As a further optimization, to bound growth, once the copies beyond the first copy for each
+    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
+    // do not yet have a copy share a single copy, which rethrows each of their exceptions.  A
+    // finally block that the CFG builder translates after that point has a single exceptional
+    // copy, which all of its groups share, as if all of its exceptions went to the same places.
+    List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
+
     for (int i = 0; i < groups.size(); i++) {
-      Map<TypeMirror, Label> group = groups.get(i);
-      boolean isExtraCopy = i > 0;
-      if (isExtraCopy
-          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET
-          && i < groups.size() - 1) {
-        Map<TypeMirror, Label> sharedGroup = new ArrayMap<>();
-        for (Map<TypeMirror, Label> remainingGroup : groups.subList(i, groups.size())) {
-          sharedGroup.putAll(remainingGroup);
-        }
-        groups.subList(i, groups.size()).clear();
+      if (i < groups.size() - 1
+          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET) {
+        List<RethrowGroup> remainingGroups = groups.subList(i, groups.size());
+        RethrowGroup sharedGroup = RethrowGroup.merge(remainingGroups);
+        remainingGroups.clear();
         groups.add(sharedGroup);
-        group = sharedGroup;
       }
+      RethrowGroup group = groups.get(i);
+      boolean isExtraCopy = i > 0;
       int sizeBeforeCopy = nodeList.size();
 
-      for (Label label : group.values()) {
+      for (Label label : group.entryLabels()) {
         addLabelForNextNode(label);
       }
-      String exceptionsString = group.keySet().toString();
+      String exceptionsString = group.types().toString();
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3146,7 +3155,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      exceptionalFinallyBlockCFGGenerator.accept(Collections.unmodifiableSet(group.keySet()));
+      exceptionalFinallyBlockCFGGenerator.accept(group.types());
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithExceptions(
@@ -3157,12 +3166,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
-              Collections.unmodifiableSet(group.keySet()));
+              group.types());
 
       throwing.setTerminatesExecution(true);
 
       if (isExtraCopy) {
-        // This overcounts the nodes of a nested extra copy, which is conservative.
+        // The inner `handleFinally` already counted the nodes of any extra copy nested in this
+        // one, so this counts them again, which is conservative.
         extraExceptionalFinallyNodes += nodeList.size() - sizeBeforeCopy;
       }
     }
@@ -3293,17 +3303,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * TryStack#possibleLabelsPastFinally} returns the same set of labels for each of them.
    *
    * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
-   * @return the groups, in the order that the first type of each group reaches {@code frame} (see
-   *     {@link TryFinallyFrame#getExceptionLabels}); each group maps each of its types to the
-   *     type's label in {@code frame}. Empty if no exception reaches {@code frame}.
+   * @return the groups, in a deterministic order: the order in which the first type of each group
+   *     reaches {@code frame} (see {@link TryFinallyFrame#getExceptionLabels}); the entry label of
+   *     each type is its label in {@code frame}. Empty if no exception reaches {@code frame}.
    */
-  private Collection<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
-    Map<Set<Label>, Map<TypeMirror, Label>> groups = new LinkedHashMap<>();
+  private Collection<RethrowGroup> rethrowGroups(TryFinallyFrame frame) {
+    Map<Set<Label>, RethrowGroup> groups = new LinkedHashMap<>();
     for (Map.Entry<TypeMirror, Label> entry : frame.getExceptionLabels().entrySet()) {
       TypeMirror type = entry.getKey();
       groups
-          .computeIfAbsent(tryStack.possibleLabelsPastFinally(type), labels -> new ArrayMap<>())
-          .put(type, entry.getValue());
+          .computeIfAbsent(tryStack.possibleLabelsPastFinally(type), labels -> new RethrowGroup())
+          .add(type, entry.getValue());
     }
     return groups.values();
   }
