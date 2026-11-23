@@ -930,7 +930,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
 
     boolean bool = TypesUtils.isBooleanType(type);
-    boolean numeric = TypesUtils.isNumeric(unboxedType);
+    boolean numeric = TypesUtils.isNumericPrimitive(unboxedType);
 
     return new TreeInfo() {
       @Override
@@ -1016,7 +1016,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (TypesUtils.isBoxedPrimitive(type)) {
       type = types.unboxedType(type);
     }
-    return TypesUtils.isNumeric(type);
+    return TypesUtils.isNumericPrimitive(type);
   }
 
   /**
@@ -1173,11 +1173,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return node;
     }
 
-    boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
+    boolean isRightNumeric = TypesUtils.isNumericPrimitive(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
     boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
     boolean isRightReference = nodeType instanceof ReferenceType;
-    boolean isLeftNumeric = TypesUtils.isNumeric(varType);
+    boolean isLeftNumeric = TypesUtils.isNumericPrimitive(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
     // boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
     boolean isLeftReference = varType instanceof ReferenceType;
@@ -1423,7 +1423,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedNodeType = isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
     TypeMirror unboxedDestType =
         TypesUtils.isBoxedPrimitive(destType) ? types.unboxedType(destType) : destType;
-    if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
+    if (TypesUtils.isNumericPrimitive(unboxedNodeType)
+        && TypesUtils.isNumericPrimitive(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isBoxedPrimitive) {
           node = unbox(node);
