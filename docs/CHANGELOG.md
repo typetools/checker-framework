@@ -53,6 +53,7 @@ In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` t
 
 Deprecated methods:
 
+* `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
 * `TypesUtils.isNumeric()` => `isNumericPrimitive()`
 
 ### Closed issues

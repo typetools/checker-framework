@@ -3316,13 +3316,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeKind exprKind = exprType.getKind();
     TypeKind widenedKind = widenedType.getKind();
 
-    if (!TypeKindUtils.isNumeric(widenedKind)) {
+    if (!TypeKindUtils.isNumericPrimitive(widenedKind)) {
       // The target type is not a numeric primitive, so primitive widening is not applicable.
       return exprType;
     }
 
     AnnotatedPrimitiveType exprPrimitiveType;
-    if (TypeKindUtils.isNumeric(exprKind)) {
+    if (TypeKindUtils.isNumericPrimitive(exprKind)) {
       exprPrimitiveType = (AnnotatedPrimitiveType) exprType;
     } else if (TypesUtils.isNumericAfterUnboxing(exprType.getUnderlyingType(), types)) {
       exprPrimitiveType = applyUnboxing(exprType);
@@ -3490,7 +3490,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     TypeKind promotedKind =
         TypeKindUtils.widenedNumericType(numericTypeKind(left), numericTypeKind(right));
-    if (!TypeKindUtils.isNumeric(promotedKind)) {
+    if (!TypeKindUtils.isNumericPrimitive(promotedKind)) {
       if (TypesUtils.isBooleanAfterUnboxing(left.getUnderlyingType(), types)
           && TypesUtils.isBooleanAfterUnboxing(right.getUnderlyingType(), types)) {
         // A boolean equality (JLS 15.21.2), logical (JLS 15.22.2), or conditional (JLS 15.23,
@@ -3514,7 +3514,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private TypeKind numericTypeKind(AnnotatedTypeMirror type) {
     TypeKind kind = TypesUtils.unboxedTypeOrSelf(type.getUnderlyingType(), types).getKind();
-    return TypeKindUtils.isNumeric(kind) ? kind : TypeKind.NONE;
+    return TypeKindUtils.isNumericPrimitive(kind) ? kind : TypeKind.NONE;
   }
 
   /**
@@ -3528,7 +3528,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedTypeMirror unaryNumericPromotion(AnnotatedTypeMirror type) {
     // Unary numeric promotion is binary numeric promotion with an int operand.
     TypeKind promotedKind = TypeKindUtils.widenedNumericType(numericTypeKind(type), TypeKind.INT);
-    return TypeKindUtils.isNumeric(promotedKind) ? promoteNumeric(type, promotedKind) : type;
+    return TypeKindUtils.isNumericPrimitive(promotedKind)
+        ? promoteNumeric(type, promotedKind)
+        : type;
   }
 
   /**

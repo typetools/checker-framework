@@ -110,8 +110,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                     ? atypeFactory.types.unboxedType(componentTM).getKind()
                     : initKind;
             if (boxKind != initKind
-                && TypeKindUtils.isNumeric(initKind)
-                && TypeKindUtils.isNumeric(boxKind)
+                && TypeKindUtils.isNumericPrimitive(initKind)
+                && TypeKindUtils.isNumericPrimitive(boxKind)
                 && TypeKindUtils.getPrimitiveConversionKind(initKind, boxKind)
                     == TypeKindUtils.PrimitiveConversionKind.NARROWING) {
               annos = atypeFactory.getNarrowedAnnotations(annos, initKind, boxKind);
@@ -124,8 +124,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             TypeKind unboxedKind = unboxedKind(annosTM, componentTM);
             annos = atypeFactory.getUnboxedAnnotations(annos, unboxedKind);
             if (unboxedKind != componentKind
-                && TypeKindUtils.isNumeric(unboxedKind)
-                && TypeKindUtils.isNumeric(componentKind)
+                && TypeKindUtils.isNumericPrimitive(unboxedKind)
+                && TypeKindUtils.isNumericPrimitive(componentKind)
                 && TypeKindUtils.getPrimitiveConversionKind(unboxedKind, componentKind)
                     == TypeKindUtils.PrimitiveConversionKind.WIDENING) {
               annos = atypeFactory.getWidenedAnnotations(annos, unboxedKind, componentKind);
