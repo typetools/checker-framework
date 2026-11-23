@@ -110,9 +110,6 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
-  /** The type {@code java.lang.NullPointerException}. */
-  private final TypeMirror nullPointerExceptionType;
-
   /** The method {@code Object.toString()}. */
   private final ExecutableElement objectToString;
 
@@ -152,9 +149,6 @@ public class NullnessTransfer
             .getTypeFactory()
             .getChecker()
             .getBooleanOption("invocationPreservesArgumentNullness", true);
-
-    nullPointerExceptionType =
-        TypesUtils.typeFromClass(NullPointerException.class, analysis.getTypes(), elements);
 
     objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
   }
@@ -521,22 +515,19 @@ public class NullnessTransfer
 
   /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
-   * on each exceptional successor whose exception type excludes {@code NullPointerException}, such
-   * as a handler for a checked exception that the invoked method declares. An exception of such a
-   * type comes from the invoked method, which the invocation entered only because the receiver is
-   * non-null.
+   * on each exceptional successor of {@code n}. An exception that {@code n} throws comes from the
+   * invoked method, which the invocation entered only because the receiver is non-null.
    *
-   * <p>The receiver remains unrefined on the other exceptional successors. That loses no precision
-   * for an invocation in source code, because its {@code NullPointerException} for a null receiver
-   * comes from its {@code MethodAccessNode}, and every handler that such an edge of {@code n}
-   * reaches also catches that {@code NullPointerException}. But it is necessary for a synthetic
-   * invocation, such as the {@code iterator()} call of an enhanced {@code for} loop, which can
-   * throw that {@code NullPointerException} itself.
+   * <p>This is sound because the {@code NullPointerException} for a null receiver does not come
+   * from {@code n}, but from its {@code MethodAccessNode}, which precedes {@code n}. That is true
+   * both for an invocation in source code and for a synthetic invocation, such as the {@code
+   * iterator()} call of an enhanced {@code for} loop. A handler that catches that {@code
+   * NullPointerException} also receives the unrefined store from the {@code MethodAccessNode}.
    *
    * @param n a method invocation whose receiver should be refined
    * @param result the transfer result for {@code n}
    * @param storeBefore the store before {@code n}; is not side-effected
-   * @return a transfer result like {@code result}, with the receiver refined on some exceptional
+   * @return a transfer result like {@code result}, with the receiver refined on the exceptional
    *     successors
    */
   private TransferResult<NullnessValue, NullnessStore> refineReceiverOnExceptionalSuccessors(
@@ -552,9 +543,6 @@ public class NullnessTransfer
         oldExceptionalStores == null ? new HashMap<>() : new HashMap<>(oldExceptionalStores);
     boolean refined = false;
     for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
-      if (analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
-        continue;
-      }
       NullnessStore exceptionalStore = newExceptionalStores.get(exceptionType);
       NullnessStore refinedStore =
           (exceptionalStore == null ? storeBefore : exceptionalStore).copy();
