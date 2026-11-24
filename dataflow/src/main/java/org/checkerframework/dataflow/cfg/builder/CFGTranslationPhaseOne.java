@@ -1031,7 +1031,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (!TypesUtils.isString(node.getType())) {
       Node converted = new StringConversionNode(node.getTree(), node, stringType);
       addToImplicitlyConvertedLookupMap(converted);
-      insertNodeAfter(converted, node);
+      TypeMirror type = node.getType();
+      if (type.getKind().isPrimitive()
+          || type.getKind() == TypeKind.NULL
+          || TypesUtils.isBoxedPrimitive(type)) {
+        insertNodeAfter(converted, node);
+      } else {
+        // The conversion may invoke an arbitrary toString() method, which may throw.
+        insertNodeWithExceptionsAfter(converted, uncheckedExceptionTypes, node);
+      }
       return converted;
     } else {
       return node;
@@ -3570,8 +3578,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    if (exception.getKind() == TypeKind.NULL) {
+      // `throw null` throws a NullPointerException (JLS 14.18).  The null type must not reach
+      // TryCatchFrame.possibleLabels, which requires a declared type or a type variable.
+      exception = nullPointerExceptionType;
+    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
-    NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
+    NodeWithExceptionsHolder exNode;
+    if (exception.getKind() == TypeKind.NULL) {
+      // `throw null` throws a NullPointerException (JLS 14.18).
+      exNode = extendWithNodeWithException(throwsNode, nullPointerExceptionType);
+    } else if (mayBeNull(expression)) {
+      // Throwing null throws a NullPointerException instead (JLS 14.18).
+      Set<TypeMirror> causes = new ArraySet<>(2);
+      causes.add(exception);
+      causes.add(nullPointerExceptionType);
+      exNode = extendWithNodeWithExceptions(throwsNode, causes);
+    } else {
+      exNode = extendWithNodeWithException(throwsNode, exception);
+    }
     exNode.setTerminatesExecution(true);
     return throwsNode;
   }
