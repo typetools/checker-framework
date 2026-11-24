@@ -28,6 +28,9 @@ Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
 variable or intersection type whose upper bound unboxes to a numeric primitive,
 such as `T extends Integer`.
 
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
