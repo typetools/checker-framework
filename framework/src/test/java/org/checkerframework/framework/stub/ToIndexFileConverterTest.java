@@ -1118,7 +1118,33 @@ public class ToIndexFileConverterTest {
 
   /**
    * The supertype of a supertype in another compilation unit of the stub file is resolved using
-   * that compilation unit's package and imports, not those of the subtype's compilation unit.
+   * that compilation unit's package, not that of the subtype's compilation unit. Neither {@code
+   * Parent} is imported, and {@code p.Parent} is declared in a different compilation unit than
+   * {@code Base}, so only the package determines which {@code Parent} {@code Base} extends.
+   */
+  @Test
+  public void testSupertypeOfSupertypeUsesItsCompilationUnitsPackage() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Parent {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends p.Base {",
+            "  void m(Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base extends Parent {}",
+            "package p;",
+            "public class Parent {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lp/Parent$Inner;)V");
+  }
+
+  /**
+   * The supertype of a supertype in another compilation unit of the stub file is resolved using
+   * that compilation unit's imports.
    */
   @Test
   public void testSupertypeOfSupertypeUsesItsCompilationUnitsImports() throws Exception {
@@ -1174,6 +1200,55 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
     // `E` inherits no member type `Inner`, so `Inner` is not resolved to `p.Base.Inner`.
     assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
+  }
+
+  /**
+   * A package-private member type that a supertype inherits within its own package is not
+   * inherited by a subtype in another package, so the search continues to a member type, of a later
+   * supertype, that the subtype does inherit. Within the package, the package-private member type
+   * is inherited.
+   */
+  @Test
+  public void testInaccessibleMemberTypeInheritedThroughIntermediateStubSupertype()
+      throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "public interface I {",
+            "  class N {}",
+            "}",
+            "class C extends p.B {",
+            "  void m(N x) {}",
+            "}",
+            "package p;",
+            "class A {",
+            "  static class N {}",
+            "}",
+            "public class B extends A implements q.I {}",
+            "class E extends A {}",
+            "class F extends E {",
+            "  void m(N x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$N;)V");
+    assertMethod(jaif, "F", "m(Lp/A$N;)V");
+  }
+
+  /**
+   * An import on demand of the member types of a class on the classpath makes available the member
+   * types that the class declares and the ones that it inherits.
+   */
+  @Test
+  public void testOnDemandImportOfClasspathTypeMembers() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.AbstractMap.*;",
+            "class C {",
+            "  void m(Entry e) {}",
+            "  void n(SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
   }
 
   /** A method's JVML descriptor uses the binary name of an inherited member type. */
