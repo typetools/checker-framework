@@ -482,8 +482,9 @@ Each stub path entry is a stub file (ending with
 \<.astub>), a directory, or an archive (ending with \<.jar> or \<.zip>).
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
-\code{.astub}, with two exceptions.  First, an archive within a directory
-is not read; the Checker Framework issues a note about it.  Second, a
+\code{.astub}, with two exceptions.  First, an archive within a directory is
+not read, nor is a directory within a directory that cannot be listed; the
+Checker Framework issues a note about each.  Second, a
 hidden file or directory (one whose name starts with ``\<.>'') within a
 directory or archive is not read; an example is the \<.\_Foo.astub>
 metadata file that macOS adds to archives and to non-Mac file systems.
