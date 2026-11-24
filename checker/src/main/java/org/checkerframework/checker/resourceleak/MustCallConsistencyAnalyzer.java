@@ -748,6 +748,8 @@ public class MustCallConsistencyAnalyzer {
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node) {
 
+    // The path is null for an artificial tree, such as the invocation of iterator() that an
+    // enhanced for loop desugars to.
     TreePath currentPath = cmAtf.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
@@ -767,7 +769,8 @@ public class MustCallConsistencyAnalyzer {
     // Special case for invocations of CreatesMustCallFor("this") methods in the constructor.
     if (missing.size() == 1) {
       JavaExpression expression = missing.get(0);
-      if (expression instanceof ThisReference && TreePathUtil.inConstructor(currentPath)) {
+      if (expression instanceof ThisReference
+          && (currentPath == null || TreePathUtil.inConstructor(currentPath))) {
         return;
       }
     }
@@ -803,11 +806,12 @@ public class MustCallConsistencyAnalyzer {
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
    * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
-   *     annotation {@code expression} came
+   *     annotation {@code expression} came, or null if the invocation is an artificial tree that
+   *     the CFG builder created
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
-      Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
+      Set<Obligation> obligations, JavaExpression expression, @Nullable TreePath invocationPath) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
@@ -850,7 +854,8 @@ public class MustCallConsistencyAnalyzer {
 
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
     // annotations, but that should be rare.
-    MethodTree callerMethodTree = TreePathUtil.enclosingMethod(invocationPath);
+    MethodTree callerMethodTree =
+        invocationPath == null ? null : TreePathUtil.enclosingMethod(invocationPath);
     if (callerMethodTree == null) {
       return false;
     }
