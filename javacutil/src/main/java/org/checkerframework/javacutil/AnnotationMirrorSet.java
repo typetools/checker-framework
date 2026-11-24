@@ -8,7 +8,6 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
-import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.KeyFor;
@@ -146,8 +145,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
-  public @PolyOwningCollection Iterator<@KeyFor("this") AnnotationMirror> iterator(
-      @PolyOwningCollection AnnotationMirrorSet this) {
+  public Iterator<@KeyFor("this") AnnotationMirror> iterator() {
     return shadowSet.iterator();
   }
 

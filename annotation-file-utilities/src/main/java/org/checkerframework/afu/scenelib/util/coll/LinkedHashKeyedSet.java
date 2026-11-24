@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
-import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
@@ -69,8 +68,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public @PolyOwningCollection Iterator<V> iterator(
-      @PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
+  public Iterator<V> iterator() {
     return new KeyedSetIterator();
   }
 
