@@ -12,6 +12,9 @@
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
 
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
