@@ -77,6 +77,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -3334,35 +3335,76 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     if (infer) {
-      // A lambda implements the functional interface method, so it constrains that method's
-      // purity just as an overriding method does; see the treatment of overridden methods in
-      // `checkPurityAnnotations`.
       EnumSet<PurityKind> lambdaKinds =
           purityForInference(
                   Collections.singletonList(body), TreePathUtil.enclosingMethod(getCurrentPath()))
               .getKinds()
               .clone();
-      if (PurityUtils.sideEffectFreeImpliesDeterministic(functionalMethod.getReturnType())) {
-        lambdaKinds.remove(PurityKind.DETERMINISTIC);
-      }
-      // Do not infer a kind that would newly constrain the arguments at call sites.
-      lambdaKinds = kindsSafeToInfer(functionalMethod, lambdaKinds);
-      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-      if (wpi == null) {
-        throw new BugInCF("No WPI while inferring purity of " + tree);
-      }
-      inferPurityAnno(lambdaKinds, wpi, functionalMethod);
-      for (ExecutableElement overriddenElt :
-          ElementUtils.getOverriddenMethods(functionalMethod, types)) {
-        inferPurityAnno(kindsSafeToInfer(overriddenElt, lambdaKinds), wpi, overriddenElt);
-      }
+      inferFunctionalMethodPurity(functionalMethod, lambdaKinds, tree);
+    }
+  }
+
+  /**
+   * Records in whole-program inference the purity of the given functional interface method, and of
+   * each method that it overrides, as constrained by a lambda or a method reference that implements
+   * it. Whole-program inference lubs the recorded purity with the purity that it already has for
+   * each method. The lambda or method reference constrains the functional method's purity just as
+   * an overriding method does; see the treatment of overridden methods in {@link
+   * #checkPurityAnnotations}.
+   *
+   * @param functionalMethod a functional interface method
+   * @param implementationKinds the purity kinds of a lambda or a method reference that implements
+   *     {@code functionalMethod}; this method modifies it
+   * @param tree the lambda or method reference; used for diagnostics
+   */
+  private void inferFunctionalMethodPurity(
+      ExecutableElement functionalMethod, EnumSet<PurityKind> implementationKinds, Tree tree) {
+    if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
+      implementationKinds.remove(PurityKind.DETERMINISTIC);
+    }
+    WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+    if (wpi == null) {
+      throw new BugInCF("No WPI while inferring purity of " + tree);
+    }
+    // Do not infer a kind that would newly constrain the arguments at call sites.
+    implementationKinds = kindsSafeToInfer(functionalMethod, implementationKinds);
+    inferPurityAnno(implementationKinds, wpi, functionalMethod);
+    for (ExecutableElement overriddenElt :
+        ElementUtils.getOverriddenMethods(functionalMethod, types)) {
+      // A call to the overridden method may pass an argument that a call to `functionalMethod`
+      // may not, so the kinds that are safe to infer depend on the method.
+      inferPurityAnno(kindsSafeToInfer(overriddenElt, implementationKinds), wpi, overriddenElt);
     }
   }
 
   @Override
   public Void visitMemberReference(MemberReferenceTree tree, Void p) {
     this.checkMethodReferenceAsOverride(tree, p);
+    if (infer) {
+      inferMethodReferencePurity(tree);
+    }
     return super.visitMemberReference(tree, p);
+  }
+
+  /**
+   * Records in whole-program inference the purity of the functional interface method that the given
+   * method reference implements, as constrained by the purity annotations of the referenced method.
+   * This is the analogue, for a method reference, of the inference that {@link #checkLambdaPurity}
+   * performs for a lambda.
+   *
+   * <p>This method does not depend on {@link #checkMethodReferenceAsOverride}, which skips some
+   * method references. Inference must account for every method reference, or else it could infer
+   * that the functional interface method is purer than one of its implementations.
+   *
+   * @param tree a method reference
+   */
+  private void inferMethodReferencePurity(MemberReferenceTree tree) {
+    ExecutableElement functionalMethod =
+        TreeUtils.findFunction(tree, atypeFactory.getProcessingEnv());
+    ExecutableElement referencedMethod = TreeUtils.elementFromUse(tree);
+    // Like `purityForInference`, ignore the -Aassume* command-line options.
+    inferFunctionalMethodPurity(
+        functionalMethod, PurityUtils.getPurityKinds(atypeFactory, referencedMethod), tree);
   }
 
   /**
@@ -3766,29 +3808,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Returns true if the cast from {@code exprType} to {@code castType} is safe, taking into account
    * the qualifiers on type arguments and array components. A type variable stands for its upper
    * bound, and a primitive {@code exprType} cast to a reference type stands for its boxed type.
-   * This method returns:
+   *
+   * <p>If {@code castType} is an intersection, this method returns whether the cast to every bound
+   * of {@code castType} is safe, because the value must have the type of every bound. Otherwise,
+   * the <em>expression bounds</em> are the bounds of {@code exprType} if it is an intersection, and
+   * {@code exprType} itself otherwise; the value has the type of every expression bound. This
+   * method returns true if all of the following hold:
    *
    * <ul>
-   *   <li>if {@code castType} is an intersection, whether the cast to every bound of {@code
-   *       castType} is safe, because the value must have the type of every bound.
-   *   <li>otherwise, if {@code exprType} is an intersection, whether the cast from some bound of
-   *       {@code exprType} is safe, because the value has the type of every bound.
-   *   <li>false, if the Java cast is unchecked (JLS 5.1.6.2), because the run-time check does not
-   *       verify its type arguments.
-   *   <li>for an upcast (the Java type of {@code exprType} is a subtype of the Java type of {@code
-   *       castType}), whether {@code exprType} is a subtype of {@code castType}, and, if {@code
-   *       exprType} is raw, whether {@link #uncheckedTypeArgumentsContainAllPermittedTypes} holds.
-   *   <li>for a downcast (the erasure of {@code castType} is a subtype of the erasure of {@code
-   *       exprType}), whether {@code exprType} is a subtype of the supertype of {@code castType}
-   *       that has the same erasure as {@code exprType}, and whether {@link
-   *       #uncheckedTypeArgumentsContainAllPermittedTypes} holds. For example, a cast from {@code
-   *       Collection<@Nullable String>} to {@code List<@NonNull String>} is unsafe, because {@code
-   *       Collection<@Nullable String>} is not a subtype of {@code Collection<@NonNull String>}.
-   *   <li>otherwise, when the Java types are unrelated (as in a cast between two unrelated
-   *       interfaces), whether {@link #uncheckedTypeArgumentsContainAllPermittedTypes} and {@link
-   *       #isSidecastSafeIncludingTypeArguments} hold. The primary qualifiers are not compared in
-   *       this case.
+   *   <li>The Java cast from some expression bound is checked (JLS 5.1.6.2). The run-time check of
+   *       an unchecked cast does not verify its type arguments.
+   *   <li>Every expression bound whose Java type is a subtype of the Java type of {@code castType}
+   *       (an upcast) is a subtype of {@code castType}.
+   *   <li>Every expression bound whose erasure is a supertype of the erasure of {@code castType} (a
+   *       downcast) is a subtype of the supertype of {@code castType} that has the same erasure as
+   *       the expression bound. For example, a cast from {@code Collection<@Nullable String>} to
+   *       {@code List<@NonNull String>} is unsafe, because {@code Collection<@Nullable String>} is
+   *       not a subtype of {@code Collection<@NonNull String>}.
+   *   <li>For every other expression bound, whose Java type is unrelated to that of {@code
+   *       castType} (as in a cast between two unrelated interfaces), {@link
+   *       #isSidecastSafeIncludingTypeArguments} holds.
+   *   <li>{@link #uncheckedTypeArgumentsContainAllPermittedTypes} holds.
    * </ul>
+   *
+   * <p>The primary qualifiers of an expression bound whose Java type is unrelated to that of {@code
+   * castType} (as in a cast between two unrelated interfaces) are not compared.
    *
    * @param castType annotated type of the cast, without capture conversion
    * @param exprType annotated type of the casted expression
@@ -3814,37 +3858,45 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       return true;
     }
-    if (exprType.getKind() == TypeKind.INTERSECTION) {
-      for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) exprType).getBounds()) {
-        if (isCastSafeIncludingElementTypes(castType, bound)) {
-          return true;
-        }
-      }
-      return false;
-    }
     if (exprType.getKind().isPrimitive() && !castType.getKind().isPrimitive()) {
       exprType = atypeFactory.getBoxedType((AnnotatedPrimitiveType) exprType);
     }
+    List<? extends AnnotatedTypeMirror> exprBounds =
+        exprType.getKind() == TypeKind.INTERSECTION
+            ? ((AnnotatedIntersectionType) exprType).getBounds()
+            : Collections.singletonList(exprType);
     TypeMirror castTM = castType.getUnderlyingType();
-    TypeMirror exprTM = exprType.getUnderlyingType();
-    if (TypesUtils.isUncheckedCast(exprTM, castTM, atypeFactory.getProcessingEnv())) {
+    boolean isUncheckedFromEveryBound = true;
+    for (AnnotatedTypeMirror exprBound : exprBounds) {
+      if (!TypesUtils.isUncheckedCast(
+          exprBound.getUnderlyingType(), castTM, atypeFactory.getProcessingEnv())) {
+        isUncheckedFromEveryBound = false;
+        break;
+      }
+    }
+    if (isUncheckedFromEveryBound) {
       return false;
     }
-    if (types.isSubtype(exprTM, castTM)) {
-      return typeHierarchy.isSubtype(exprType, castType)
-          && uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
+    for (AnnotatedTypeMirror exprBound : exprBounds) {
+      TypeMirror exprBoundTM = exprBound.getUnderlyingType();
+      if (types.isSubtype(exprBoundTM, castTM)) {
+        if (!typeHierarchy.isSubtype(exprBound, castType)) {
+          return false;
+        }
+      } else if (TypesUtils.isErasedSubtype(castTM, exprBoundTM, types)) {
+        // TypeHierarchy#isSubtype requires the Java type of its first argument to be a subtype of
+        // the Java type of its second argument, so compare exprBound to the supertype of castType
+        // that has the same erasure as exprBound.
+        AnnotatedTypeMirror castTypeAsExprBound =
+            AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprBound);
+        if (!typeHierarchy.isSubtype(exprBound, castTypeAsExprBound)) {
+          return false;
+        }
+      } else if (!isSidecastSafeIncludingTypeArguments(castType, exprBound)) {
+        return false;
+      }
     }
-    if (TypesUtils.isErasedSubtype(castTM, exprTM, types)) {
-      // TypeHierarchy#isSubtype requires the Java type of its first argument to be a subtype of
-      // the Java type of its second argument, so compare exprType to the supertype of castType
-      // that has the same erasure as exprType.
-      AnnotatedTypeMirror castTypeAsExprType =
-          AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprType);
-      return typeHierarchy.isSubtype(exprType, castTypeAsExprType)
-          && uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM);
-    }
-    return uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprTM)
-        && isSidecastSafeIncludingTypeArguments(castType, exprType);
+    return uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprType.getUnderlyingType());
   }
 
   /**
@@ -3953,31 +4005,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * unchecked type arguments: in a cast from {@code Object} to {@code List<?>}, the type argument
    * of {@code List} is unchecked.
    *
-   * <p>Every type argument is unchecked if {@code exprTM} is raw. Otherwise, a type argument of
-   * {@code castType} is checked if:
+   * <p>If {@code exprTM} is an intersection, a type argument is checked if some bound of {@code
+   * exprTM} checks it; otherwise, it is checked if {@code exprTM} checks it. A raw type checks no
+   * type argument. A non-raw type {@code S} checks a type argument of {@code castType} if:
    *
    * <ul>
-   *   <li>the erasure of {@code exprTM} is a subtype of the erasure of {@code castType}, or
+   *   <li>the erasure of {@code S} is a subtype of the erasure of {@code castType}, or
    *   <li>its type parameter appears in the supertype of the generic class of {@code castType} that
-   *       has the same erasure as {@code exprTM}. For example, in a cast from {@code
-   *       Collection<String>} to {@code List<?>}, the type argument of {@code List} is checked,
-   *       because the supertype of {@code List<E>} that has the same erasure as {@code
-   *       Collection<String>} is {@code Collection<E>}. In a cast from {@code Object} or {@code
-   *       Runnable} to {@code List<?>}, it is unchecked.
+   *       has the same erasure as {@code S}. For example, in a cast from {@code Collection<String>}
+   *       to {@code List<?>}, the type argument of {@code List} is checked, because the supertype
+   *       of {@code List<E>} that has the same erasure as {@code Collection<String>} is {@code
+   *       Collection<E>}. In a cast from {@code Object} or {@code Runnable} to {@code List<?>}, it
+   *       is unchecked.
    *   <li>the Java types are unrelated (a sidecast), and its type parameter appears in a generic
-   *       supertype G of the generic class of {@code castType} such that the erasure of {@code
-   *       exprTM} is a subtype of the erasure of G. A class has only one parameterization of G, so
-   *       {@code exprTM} determines the type argument. For example, if {@code A<T>} and {@code
-   *       B<T>} both extend {@code Iterable<T>}, then in a cast from {@code A<String>} to {@code
-   *       B<?>}, the type argument of {@code B} is checked. {@link
-   *       #isSidecastSafeIncludingTypeArguments} compares such type arguments.
+   *       supertype G of the generic class of {@code castType} such that the erasure of {@code S}
+   *       is a subtype of the erasure of G. A class has only one parameterization of G, so {@code
+   *       S} determines the type argument. For example, if {@code A<T>} and {@code B<T>} both
+   *       extend {@code Iterable<T>}, then in a cast from {@code A<String>} to {@code B<?>}, the
+   *       type argument of {@code B} is checked. {@link #isSidecastSafeIncludingTypeArguments}
+   *       compares such type arguments.
    * </ul>
    *
    * <p>For example, a cast from {@code Object} or from a raw {@code List} to {@code List<?
    * extends @NonNull Object>} is unsafe.
    *
    * @param castType annotated type of the cast, without capture conversion
-   * @param exprTM the Java type of the casted expression
+   * @param exprTM the Java type of the casted expression, which may be an intersection
    * @return true if every unchecked type argument of {@code castType} contains every type that its
    *     type parameter permits
    */
@@ -4005,20 +4058,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (castDeclaredType.isUnderlyingTypeRaw()) {
       return true;
     }
-    boolean isExprRaw = ((Type) exprTM).isRaw();
-    if (!isExprRaw
-        && TypesUtils.isErasedSubtype(exprTM, castDeclaredType.getUnderlyingType(), types)) {
-      // The supertype of exprTM whose class is that of castType fixes every type argument, so
-      // every type argument is checked.
-      return true;
-    }
+    List<? extends TypeMirror> exprBoundTMs =
+        exprTM.getKind() == TypeKind.INTERSECTION
+            ? ((IntersectionType) exprTM).getBounds()
+            : Collections.singletonList(exprTM);
     TypeElement castElement = (TypeElement) castDeclaredType.getUnderlyingType().asElement();
     // The generic class of castType, such as List<E>.
     DeclaredType genericCastType = (DeclaredType) castElement.asType();
-    // The supertypes of genericCastType whose type arguments exprTM determines, such as
-    // Collection<E>; empty if exprTM is raw.
-    List<Type> determinedSupertypes =
-        isExprRaw ? Collections.emptyList() : determinedSupertypes(genericCastType, exprTM);
+    // The supertypes of genericCastType whose type arguments a non-raw bound of exprTM determines,
+    // such as Collection<E>.
+    List<Type> determinedSupertypes = new ArrayList<>();
+    for (TypeMirror exprBoundTM : exprBoundTMs) {
+      if (((Type) exprBoundTM).isRaw()) {
+        continue;
+      }
+      if (TypesUtils.isErasedSubtype(exprBoundTM, castDeclaredType.getUnderlyingType(), types)) {
+        // The supertype of exprBoundTM whose class is that of castType fixes every type argument,
+        // so every type argument is checked.
+        return true;
+      }
+      determinedSupertypes.addAll(determinedSupertypes(genericCastType, exprBoundTM));
+    }
     // Examine the type arguments of castType and of each of its enclosing types, such as the type
     // argument of Outer<?> in Outer<?>.Inner.  genericLevel is the generic class of castLevel, with
     // the declared bounds of its type parameters.
@@ -4034,10 +4094,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       for (int i = 0; i < typeParameters.size(); i++) {
         AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) typeParameters.get(i);
-        Type typeParameterType = (Type) typeParameter.getUnderlyingType();
-        if (determinedSupertypes.stream().anyMatch(s -> s.contains(typeParameterType))) {
-          // The type parameter appears in a supertype that exprTM determines, so this type
-          // argument is checked; isCastSafeIncludingElementTypes compared it with exprType.
+        Type typeParameterTM = (Type) typeParameter.getUnderlyingType();
+        if (determinedSupertypes.stream().anyMatch(t -> t.contains(typeParameterTM))) {
+          // The type parameter appears in a supertype that a bound of exprTM determines, so this
+          // type argument is checked; isCastSafeIncludingElementTypes compared it with that bound.
           continue;
         }
         // The run-time check of a cast verifies only the class of the value, so in place of an
@@ -4404,7 +4464,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TypeMirror throwTM = throwType.getUnderlyingType();
     Set<? extends AnnotationMirror> required = getThrowUpperBoundAnnotations();
     switch (throwType.getKind()) {
-      case NULL, DECLARED, TYPEVAR, WILDCARD -> {
+      case NULL, DECLARED, TYPEVAR, WILDCARD, INTERSECTION -> {
         if (!typeHierarchy.isSubtypeShallowEffective(throwType, required)) {
           AnnotationMirrorSet found = throwType.getAnnotations();
           checker.reportError(tree.getExpression(), "throw", found, required);
@@ -5651,9 +5711,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
      * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
+     *
+     * <p>Under {@code -Ainfer}, reports no error. {@link
+     * BaseTypeVisitor#inferMethodReferencePurity} instead uses the method reference to infer the
+     * purity of the functional interface method.
      */
     private void checkMethodReferencePurity() {
-      if (!checkPurityAnnotations) {
+      // Do not report errors while inferring.  The purity annotations on the functional interface
+      // method may have been written by inference, which has not yet taken this method reference
+      // into account.  The annotations are checked when the inference output is type-checked.
+      if (!checkPurityAnnotations || infer) {
         return;
       }
       EnumSet<PurityKind> superPurity =
