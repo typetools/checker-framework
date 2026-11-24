@@ -1,6 +1,7 @@
 package org.checkerframework.common.value;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -558,18 +559,20 @@ public class ValueTransfer extends CFTransfer {
    * Gets a value checker annotation relevant for an array or a string.
    *
    * @param arrayOrStringNode the node whose annotation to return
-   * @return the value checker annotation for the array or string
+   * @return the value checker annotation for the array or string, or null if there is none (or if
+   *     the node has no tree)
    */
-  private AnnotationMirror getArrayOrStringAnnotation(Node arrayOrStringNode) {
-    AnnotationMirror arrayOrStringAnno =
-        atypeFactory.getAnnotationMirror(arrayOrStringNode.getTree(), StringVal.class);
+  private @Nullable AnnotationMirror getArrayOrStringAnnotation(Node arrayOrStringNode) {
+    Tree tree = arrayOrStringNode.getTree();
+    if (tree == null) {
+      return null;
+    }
+    AnnotationMirror arrayOrStringAnno = atypeFactory.getAnnotationMirror(tree, StringVal.class);
     if (arrayOrStringAnno == null) {
-      arrayOrStringAnno =
-          atypeFactory.getAnnotationMirror(arrayOrStringNode.getTree(), ArrayLen.class);
+      arrayOrStringAnno = atypeFactory.getAnnotationMirror(tree, ArrayLen.class);
     }
     if (arrayOrStringAnno == null) {
-      arrayOrStringAnno =
-          atypeFactory.getAnnotationMirror(arrayOrStringNode.getTree(), ArrayLenRange.class);
+      arrayOrStringAnno = atypeFactory.getAnnotationMirror(tree, ArrayLenRange.class);
     }
 
     return arrayOrStringAnno;
