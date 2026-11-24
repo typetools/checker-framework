@@ -47,7 +47,6 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
-import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -189,7 +188,7 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   @Override
-  public @PolyOwningCollection Iterator<Insertion> iterator(@PolyOwningCollection Insertions this) {
+  public Iterator<Insertion> iterator() {
     return new Iterator<>() {
       private Iterator<Map<String, Set<Insertion>>> miter = store.values().iterator();
       // These two fields are initially empty iterators, but are set the first time that hasNext is

@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -633,9 +634,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private AnnotationMirror createMustCallImpl(List<String> methodList) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MustCall.class);
-    String[] methodArray = methodList.toArray(new String[0]);
-    Arrays.sort(methodArray);
-    builder.setValue("value", methodArray);
+    builder.setValue("value", new TreeSet<>(methodList).toArray());
     return builder.build();
   }
 

@@ -193,15 +193,6 @@ public class CollectionOwnershipVisitor
       AnnotatedExecutableType overriddenMethodType,
       AnnotatedDeclaredType overriddenType,
       AnnotatedTypeMirror overriddenReturnType) {
-    // A @PolyOwningCollection return never owns its elements, so an override may return
-    // @NotOwningCollection.
-    AnnotatedTypeMirror effectiveOverriddenReturnType = overriddenReturnType;
-    if (overriddenReturnType.hasPrimaryAnnotation(atypeFactory.POLY)
-        && overriderReturnType.hasPrimaryAnnotation(atypeFactory.NOTOWNINGCOLLECTION)
-        && atypeFactory.isResourceCollection(overriderReturnType.getUnderlyingType())) {
-      effectiveOverriddenReturnType = overriddenReturnType.deepCopy();
-      effectiveOverriddenReturnType.replaceAnnotation(atypeFactory.NOTOWNINGCOLLECTION);
-    }
     return new CollectionOwnershipOverrideChecker(
         overriderTree,
         overriderMethodType,
@@ -209,16 +200,16 @@ public class CollectionOwnershipVisitor
         overriderReturnType,
         overriddenMethodType,
         overriddenType,
-        effectiveOverriddenReturnType);
+        overriddenReturnType);
   }
 
   /**
    * An override checker that does not check the receiver of an overriding method whose receiver
    * type is not a collection (see {@link ResourceLeakUtils#isCollection}), such as a user-defined
-   * class that implements {@code Iterator<String>}. No value of such a type is a resource
-   * collection, so the collection ownership qualifier of the overridden method's receiver, such as
-   * the {@code @PolyOwningCollection} receiver of {@link Iterable#iterator()}, does not constrain
-   * the overrider.
+   * class that overrides {@code toString()}. No value of such a type is a resource collection, so
+   * the collection ownership qualifier of the overridden method's receiver, such as the
+   * {@code @NotOwningCollection} receiver of {@link Object#toString()}, does not constrain the
+   * overrider.
    */
   private class CollectionOwnershipOverrideChecker extends OverrideChecker {
 

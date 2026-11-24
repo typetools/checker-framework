@@ -62,7 +62,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
-import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.plumelib.util.ArraysP;
 
 /** A path through the AST. */
@@ -289,7 +288,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
 
   // TODO: replace w/ skip list?
   @Override
-  public @PolyOwningCollection Iterator<ASTEntry> iterator(@PolyOwningCollection ASTPath this) {
+  public Iterator<ASTEntry> iterator() {
     ImmutableStack<ASTEntry> s = this;
     int n = size();
     ASTEntry[] a = new ASTEntry[n];
