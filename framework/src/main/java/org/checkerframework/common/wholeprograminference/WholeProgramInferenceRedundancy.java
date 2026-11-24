@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * location has that qualifier even when no annotation is written there. Whole-program inference
  * omits redundant qualifiers from the files that it writes.
  */
-/*package-private*/ final class WholeProgramInferenceDefaults {
+/*package-private*/ final class WholeProgramInferenceRedundancy {
 
   /** The type factory whose qualifiers and defaults are used. */
   private final AnnotatedTypeFactory atypeFactory;
@@ -33,11 +33,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
   private final Map<Element, @Nullable AnnotatedTypeMirror> defaultedTypes = new HashMap<>();
 
   /**
-   * Creates a new WholeProgramInferenceDefaults.
+   * Creates a new WholeProgramInferenceRedundancy.
    *
    * @param atypeFactory a type factory, whose qualifiers and defaults are used
    */
-  /*package-private*/ WholeProgramInferenceDefaults(AnnotatedTypeFactory atypeFactory) {
+  /*package-private*/ WholeProgramInferenceRedundancy(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
   }
 
