@@ -3459,8 +3459,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * </ul>
    *
    * A type variable whose bound is a boxed primitive, such as {@code T} where {@code T extends
-   * Integer}, is treated like its bound: it is unboxed, using the annotations of its bound. Operands
-   * to which no promotion applies are returned unchanged.
+   * Integer}, is treated like its bound: it is unboxed, using the annotations of its bound.
+   * Operands to which no promotion applies are returned unchanged.
    *
    * @param operator the operator of a binary operation or compound assignment
    * @param left the type of the operation's left argument
