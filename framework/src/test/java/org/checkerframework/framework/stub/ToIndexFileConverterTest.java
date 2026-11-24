@@ -1203,8 +1203,8 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A package-private member type that a supertype inherits within its own package is not
-   * inherited by a subtype in another package, so the search continues to a member type, of a later
+   * A package-private member type that a supertype inherits within its own package is not inherited
+   * by a subtype in another package, so the search continues to a member type, of a later
    * supertype, that the subtype does inherit. Within the package, the package-private member type
    * is inherited.
    */
