@@ -250,7 +250,7 @@ public class AnnotationFileElementTypes {
             AnnotationFileType.BUILTIN_STUB);
       }
     } catch (IOException e) {
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.WARNING,
           "Could not read annotation resource from "
               + checkerClass
@@ -300,7 +300,7 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.WARNING, "Could not read ajava file: " + ajavaPath + ": " + e);
     } finally {
       parsing = false;
@@ -423,14 +423,20 @@ public class AnnotationFileElementTypes {
             location,
             fileType,
             resource -> parseAnnotationFileResource(resource, parseType),
-            archive ->
-                checker.message(
+            skipped ->
+                checker.messageOnce(
                     Diagnostic.Kind.NOTE,
-                    "Not reading archive "
-                        + archive
-                        + ", which is within directory "
-                        + location
-                        + "; to read it, name the archive itself"));
+                    skipped.isDirectory()
+                        ? "Not reading directory "
+                            + skipped
+                            + ", which is within directory "
+                            + location
+                            + ", because it cannot be listed"
+                        : "Not reading archive "
+                            + skipped
+                            + ", which is within directory "
+                            + location
+                            + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top
@@ -542,7 +548,7 @@ public class AnnotationFileElementTypes {
     } catch (IOException e) {
       factory
           .getChecker()
-          .message(
+          .messageOnce(
               Diagnostic.Kind.WARNING,
               "Could not read annotation resource: " + resource.getDescription() + ": " + e);
       return;
@@ -578,7 +584,7 @@ public class AnnotationFileElementTypes {
     } else {
       reason = ": the name of an ajava file must end with .ajava";
     }
-    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
+    factory.getChecker().messageOnce(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**
