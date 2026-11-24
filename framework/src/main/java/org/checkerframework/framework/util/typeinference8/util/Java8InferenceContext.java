@@ -6,6 +6,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -324,15 +325,17 @@ public class Java8InferenceContext {
    *
    * @param type1 an annotated type
    * @param type2 an annotated type
-   * @param visitedWildcards the wildcards of {@code type1} that have been visited. The type
-   *     argument of a raw type can be a wildcard that is reachable from its own bound, so stopping
-   *     at a visited wildcard ensures termination.
+   * @param visitedWildcards maps each wildcard of {@code type1} that has been visited to the
+   *     wildcards of {@code type2} that it has been compared against. The type argument of a raw
+   *     type can be a wildcard that is reachable from its own bound, so stopping at a visited pair
+   *     of wildcards ensures termination. A wildcard of {@code type1} that is reused at several
+   *     positions is still compared against each distinct wildcard of {@code type2}.
    * @return true if each pair of corresponding enclosing types are mutual subtypes
    */
   private boolean enclosingTypesAreMutualSubtypes(
       AnnotatedTypeMirror type1,
       AnnotatedTypeMirror type2,
-      IdentityHashMap<AnnotatedTypeMirror, Boolean> visitedWildcards) {
+      IdentityHashMap<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards) {
     if (type1.getKind() != type2.getKind()) {
       return true;
     }
@@ -367,7 +370,9 @@ public class Java8InferenceContext {
             visitedWildcards);
       }
       case WILDCARD -> {
-        if (visitedWildcards.put(type1, Boolean.TRUE) != null) {
+        if (!visitedWildcards
+            .computeIfAbsent(type1, k -> Collections.newSetFromMap(new IdentityHashMap<>()))
+            .add(type2)) {
           return true;
         }
         AnnotatedWildcardType wt1 = (AnnotatedWildcardType) type1;

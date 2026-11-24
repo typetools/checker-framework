@@ -860,7 +860,7 @@ public class VariableBounds {
             refreshedInstantiation = newBound;
           }
           boundListChanged = true;
-          if (!boundList.contains(newBound)) {
+          if (!boundList.contains(newBound) || enclosingTypesDiffer(bound, newBound)) {
             changed = true;
             if (bound.isProper()) {
               if (refreshedKinds == null || refreshedBounds == null) {
@@ -914,6 +914,23 @@ public class VariableBounds {
       setInstantiationFromEqualBounds();
     }
     return changed;
+  }
+
+  /**
+   * Returns true if {@code oldBound} and {@code newBound} are both proper types and some pair of
+   * their corresponding enclosing types are not mutual subtypes. {@link ProperType#equals} does not
+   * compare enclosing types, so a refreshed bound that differs from the old one only in the
+   * annotations of an enclosing type is equal to it.
+   *
+   * @param oldBound a bound of this variable
+   * @param newBound the result of applying instantiations to {@code oldBound}
+   * @return true if the enclosing types of the two proper bounds differ
+   */
+  private boolean enclosingTypesDiffer(AbstractType oldBound, AbstractType newBound) {
+    return oldBound.isProper()
+        && newBound.isProper()
+        && !context.enclosingTypesAreMutualSubtypes(
+            oldBound.getAnnotatedType(), newBound.getAnnotatedType());
   }
 
   /**
