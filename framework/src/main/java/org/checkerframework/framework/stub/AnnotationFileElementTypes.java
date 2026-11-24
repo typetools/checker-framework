@@ -240,7 +240,7 @@ public class AnnotationFileElementTypes {
             AnnotationFileType.BUILTIN_STUB);
       }
     } catch (IOException e) {
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.WARNING,
           "Could not read annotation resource from "
               + checkerClass
@@ -290,7 +290,7 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.WARNING, "Could not read ajava file: " + ajavaPath + ": " + e);
     } finally {
       parsing = false;
@@ -446,7 +446,7 @@ public class AnnotationFileElementTypes {
     } catch (IOException e) {
       factory
           .getChecker()
-          .message(
+          .messageOnce(
               Diagnostic.Kind.WARNING,
               "Could not read annotation resource: " + resource.getDescription() + ": " + e);
       return;
