@@ -748,9 +748,9 @@ public class MustCallConsistencyAnalyzer {
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node) {
 
-    // The path is null for an artificial tree, such as the invocation of iterator() that an
-    // enhanced for loop desugars to.
-    TreePath currentPath = cmAtf.getPath(node.getTree());
+    // For an artificial invocation, such as the invocation of iterator() that an enhanced for loop
+    // desugars to, this is the path to the source code construct that the invocation implements.
+    TreePath currentPath = node.getTreePath();
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             node, cmAtf, cmAtf);
@@ -769,8 +769,7 @@ public class MustCallConsistencyAnalyzer {
     // Special case for invocations of CreatesMustCallFor("this") methods in the constructor.
     if (missing.size() == 1) {
       JavaExpression expression = missing.get(0);
-      if (expression instanceof ThisReference
-          && (currentPath == null || TreePathUtil.inConstructor(currentPath))) {
+      if (expression instanceof ThisReference && TreePathUtil.inConstructor(currentPath)) {
         return;
       }
     }
@@ -806,12 +805,13 @@ public class MustCallConsistencyAnalyzer {
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
    * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
-   *     annotation {@code expression} came, or null if the invocation is an artificial tree that
-   *     the CFG builder created
+   *     annotation {@code expression} came; for an artificial invocation, such as the invocation of
+   *     iterator() that an enhanced for loop desugars to, the path to the source code construct
+   *     that the invocation implements
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
-      Set<Obligation> obligations, JavaExpression expression, @Nullable TreePath invocationPath) {
+      Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
@@ -854,8 +854,7 @@ public class MustCallConsistencyAnalyzer {
 
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
     // annotations, but that should be rare.
-    MethodTree callerMethodTree =
-        invocationPath == null ? null : TreePathUtil.enclosingMethod(invocationPath);
+    MethodTree callerMethodTree = TreePathUtil.enclosingMethod(invocationPath);
     if (callerMethodTree == null) {
       return false;
     }
@@ -1542,6 +1541,15 @@ public class MustCallConsistencyAnalyzer {
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
     TreePath currentPath = cmAtf.getPath(node.getTree());
+    if (currentPath == null) {
+      // The assignment is an artificial tree, as for a postfix increment such as `f++`.  Use the
+      // path to the increment, which is the parent of the left-hand side.
+      TreePath lhsPath = cmAtf.getPath(lhs.getTree());
+      if (lhsPath == null) {
+        throw new BugInCF("no path to the left-hand side of " + node);
+      }
+      currentPath = lhsPath.getParentPath();
+    }
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
 
     if (enclosingMethodTree == null) {
