@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import java.io.ByteArrayInputStream;
@@ -585,6 +586,31 @@ public class ToIndexFileConverterTest {
     lines.add("interface B" + depth + " {}");
     String jaif = convert(lines.toArray(new String[0]));
     assertMethod(jaif, "MyClass", "myMethod(Lp/A" + depth + "$Member;Ljava/lang/String;)V");
+  }
+
+  /**
+   * Searching for a member type in a deep hierarchy of interfaces whose supertypes form diamonds,
+   * and whose deepest interfaces extend the first one, takes time that is not exponential in the
+   * depth of the hierarchy, even though every path leads back to a type whose search is in
+   * progress. Such cyclic inheritance is illegal.
+   */
+  @Test(timeout = 60_000)
+  public void testInheritedMemberTypeInCyclicDiamondHierarchy() throws Exception {
+    int depth = 30;
+    List<String> lines = new ArrayList<>();
+    lines.add("package p;");
+    lines.add("class MyClass implements A0 {");
+    lines.add("  void myMethod(String s) {}");
+    lines.add("}");
+    for (int i = 0; i < depth; i++) {
+      String supertypes = "A" + (i + 1) + ", B" + (i + 1);
+      lines.add("interface A" + i + " extends " + supertypes + " {}");
+      lines.add("interface B" + i + " extends " + supertypes + " {}");
+    }
+    lines.add("interface A" + depth + " extends A0 {}");
+    lines.add("interface B" + depth + " extends A0 {}");
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/String;)V");
   }
 
   /**
@@ -1249,6 +1275,104 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
     assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * Via an import on demand of a package, a qualified name whose first identifier names a top-level
+   * type of the package on the classpath can name a member type that the top-level type inherits.
+   */
+  @Test
+  public void testOnDemandImportOfPackageWithInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "class C {",
+            "  void m(AbstractMap.Entry e) {}",
+            "  void n(AbstractMap.SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * An import on demand of the member types of a type makes available the accessible member types
+   * that the type inherits. An inherited member type that is inaccessible to the import does not
+   * hide one, from a later supertype, that is accessible.
+   */
+  @Test
+  public void testOnDemandImportOfInheritedMemberTypeSkipsInaccessibleOne() throws Exception {
+    String[] pkgP = {
+      "package p;",
+      "public class Base {",
+      "  static class N {}",
+      "}",
+      "public class ProtectedBase {",
+      "  protected static class N {}",
+      "}",
+      "public interface I {",
+      "  class N {}",
+      "}",
+      "public class Sub extends Base implements I {}",
+      "public class ProtectedSub extends ProtectedBase implements I {}"
+    };
+    List<String> lines = new ArrayList<>();
+    lines.add("package q;");
+    lines.add("import p.Sub.*;");
+    lines.add("class C {");
+    lines.add("  void m(N x) {}");
+    lines.add("}");
+    lines.addAll(Arrays.asList(pkgP));
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "C", "m(Lp/I$N;)V");
+
+    // A protected member type is not accessible to an import in another package.
+    lines.set(1, "import p.ProtectedSub.*;");
+    jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "C", "m(Lp/I$N;)V");
+
+    // In the package of `Base`, its package-private member type is accessible.
+    lines.set(0, "package p;");
+    lines.set(1, "import p.Sub.*;");
+    jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "C", "m(Lp/Base$N;)V");
+  }
+
+  /**
+   * A member type that a classpath type declares is inherited even if the stub file declares the
+   * type and omits the member type.
+   */
+  @Test
+  public void testInheritedClasspathMemberTypeOmittedByStub() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "abstract class C extends java.util.AbstractMap {",
+            "  void m(SimpleEntry x) {}",
+            "  void n(C.SimpleEntry x) {}",
+            "  void o(Entry x) {}",
+            "}",
+            "package java.util;",
+            "public abstract class AbstractMap<K, V> implements Map<K, V> {}");
+    assertMethod(jaif, "C", "m(Ljava/util/AbstractMap$SimpleEntry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+    assertMethod(jaif, "C", "o(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A detached type declaration, which is in no compilation unit, is in the package that the
+   * converter's constructor received.
+   */
+  @Test
+  public void testDetachedDeclarationUsesConstructorPackage() {
+    AScene scene = new AScene();
+    ToIndexFileConverter detachedConverter =
+        new ToIndexFileConverter(
+            StaticJavaParser.parsePackageDeclaration("package p;"), Collections.emptyList(), scene);
+    TypeDeclaration<?> decl =
+        StaticJavaParser.parseTypeDeclaration("class C { class N {} void m(N x) {} }");
+    decl.accept(detachedConverter, scene.classes.getVivify("p.C"));
+    Assert.assertNotNull(scene.classes.get("p.C").methods.get("m(Lp/C$N;)V"));
   }
 
   /** A method's JVML descriptor uses the binary name of an inherited member type. */
