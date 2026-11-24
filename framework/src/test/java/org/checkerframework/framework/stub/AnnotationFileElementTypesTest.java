@@ -96,6 +96,7 @@ public class AnnotationFileElementTypesTest {
    * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
    *     "WARNING: Ignoring Foo.stub: ..."
    * @throws IOException if the source file cannot be written or the compiler cannot be run
+   * @throws AssertionError if the compilation fails
    */
   private List<String> diagnostics(
       String checker, @Nullable ClassLoader checkerLoader, String... checkerOptions)
@@ -117,6 +118,7 @@ public class AnnotationFileElementTypesTest {
             System.getProperty("java.class.path")));
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
+    boolean success;
     try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
       Iterable<? extends JavaFileObject> javaFiles = fileManager.getJavaFileObjects(sourceFile);
       JavaCompiler.CompilationTask task =
@@ -128,7 +130,7 @@ public class AnnotationFileElementTypesTest {
             (Processor) checkerLoader.loadClass(checker).getDeclaredConstructor().newInstance();
         task.setProcessors(Collections.singletonList(processor));
       }
-      task.call();
+      success = task.call();
     } catch (UncheckedIOException e) {
       throw e.getCause();
     } catch (ReflectiveOperationException e) {
@@ -138,6 +140,9 @@ public class AnnotationFileElementTypesTest {
     for (Diagnostic<? extends JavaFileObject> diagnostic : collector.getDiagnostics()) {
       result.add(diagnostic.getKind() + ": " + diagnostic.getMessage(Locale.ROOT));
     }
+    // No test expects the compilation to fail, so a failure indicates a problem that the expected
+    // diagnostics might otherwise mask.
+    Assert.assertTrue("Compilation failed; diagnostics: " + result, success);
     return result;
   }
 
