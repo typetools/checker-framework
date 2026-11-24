@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
+import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -47,7 +48,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>This class omits step 1, because javac has already checked that the matched type is checked
  *       cast convertible to the raw record class.
  *   <li>If the bound set contains the bound false, this class throws {@link BugInCF} rather than
- *       failing, because javac accepted the record pattern.
+ *       failing, because javac accepted the record pattern. An exception is a nested record pattern
+ *       that no value of its matched type can match; see {@link #createImpossibleMatchResult}.
  *   <li>Inference fails if the qualifier bounds cannot be satisfied, or if two proper equal bounds
  *       of an inference variable have different qualifiers. JLS 18.5.5 has no qualifiers.
  * </ul>
@@ -181,6 +183,36 @@ public class RecordPatternTypeInference {
   }
 
   /**
+   * Returns true if the record pattern is nested in another record pattern.
+   *
+   * @return true if the record pattern is nested in another record pattern
+   */
+  private boolean isNested() {
+    return TreeUtils.isDeconstructionPatternTree(pathToPattern.getParentPath().getLeaf());
+  }
+
+  /**
+   * Returns the result of inference for a nested record pattern that no value of {@code
+   * matchedType} can match.
+   *
+   * <p>javac checks a nested record pattern against the type of the record component in the Java
+   * type of the enclosing record pattern. The matched type of a nested record pattern is the type
+   * of the record component in the inferred type of the enclosing record pattern, which can be more
+   * specific. For example, if {@code record Outer<T>(T value) implements Supplier<T>} and {@code
+   * record Inner<U>(U value)}, and a {@code Supplier<ArrayList<String>>} is matched against {@code
+   * Outer<?>(Inner(var x))}, then javac checks {@code Inner} against the capture of {@code ?}, but
+   * the matched type of {@code Inner(var x)} is {@code ArrayList<String>}. No {@code ArrayList} is
+   * an {@code Inner}, so the nested record pattern never matches, and any type for it is sound.
+   * Like javac, this method uses the Java type of the record pattern.
+   *
+   * @param matchedType the type of the values that are matched against the record pattern
+   * @return the result of inference
+   */
+  private Result createImpossibleMatchResult(AnnotatedTypeMirror matchedType) {
+    return createResult(matchedType, null, typeFactory.getDefaultRecordPatternType(pattern));
+  }
+
+  /**
    * Infers the annotated type of the record pattern, whose record class is {@code record}.
    *
    * @param record the record class of the record pattern; must be generic
@@ -220,6 +252,9 @@ public class RecordPatternTypeInference {
     for (AnnotatedDeclaredType capturedType : capturedTypes) {
       AbstractType rPrime = recordType.asSuper(capturedType.getUnderlyingType());
       if (rPrime == null) {
+        if (isNested()) {
+          return createImpossibleMatchResult(matchedType);
+        }
         // javac checked that the matched type is castable to the record class, which is final, so
         // the record class is a subtype of every parameterized type that bounds the matched type.
         throw new BugInCF(
@@ -230,9 +265,19 @@ public class RecordPatternTypeInference {
       ConstraintSet constraints =
           new ConstraintSet(
               new Typing("Record pattern " + pattern, tPrime, rPrime, Kind.TYPE_EQUALITY));
-      boundSet.incorporateToFixedPoint(constraints.reduce(context));
+      try {
+        boundSet.incorporateToFixedPoint(constraints.reduce(context));
+      } catch (FalseBoundException ex) {
+        if (isNested()) {
+          return createImpossibleMatchResult(matchedType);
+        }
+        throw ex;
+      }
     }
     if (boundSet.containsFalse()) {
+      if (isNested()) {
+        return createImpossibleMatchResult(matchedType);
+      }
       // javac accepted the record pattern, so a false bound is a bug in the Checker Framework.
       throw new BugInCF(
           "Record pattern inference produced the false bound for %s",

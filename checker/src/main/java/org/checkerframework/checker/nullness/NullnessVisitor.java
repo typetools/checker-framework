@@ -474,7 +474,9 @@ public class NullnessVisitor
    * @return a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}
    */
   private AnnotatedTypeMirror withNonNull(AnnotatedTypeMirror type) {
-    AnnotatedTypeMirror copy = type.shallowCopy();
+    // Not `shallowCopy`, which shares the bounds of an intersection type: replacing the primary
+    // annotation of an intersection type also replaces the annotations of its bounds.
+    AnnotatedTypeMirror copy = type.deepCopy();
     copy.replaceAnnotation(NONNULL);
     return copy;
   }

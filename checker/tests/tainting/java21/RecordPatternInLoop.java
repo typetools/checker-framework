@@ -65,6 +65,8 @@ public class RecordPatternInLoop {
       if (h instanceof ListHolder(var l)) {
         // :: error: [assignment]
         List<@Untainted String> y = l;
+        // TODO: false negative; see https://github.com/typetools/checker-framework/issues/602
+        @Untainted String z = l.get(0);
       }
       h = t;
     }

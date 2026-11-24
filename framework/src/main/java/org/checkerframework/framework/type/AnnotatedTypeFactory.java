@@ -572,13 +572,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Compares two types by their primary annotations and the primary annotations of the types nested
-   * in them (type arguments, array component types, and bounds), but not by their underlying types.
+   * in them (type arguments, enclosing types, array component types, and bounds), but not by their
+   * underlying types.
    */
   private static final EqualityAtmComparer ANNOTATION_EQUALITY_COMPARER =
       new EqualityAtmComparer() {
         @Override
         protected boolean compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
           return arePrimaryAnnosEqual(type1, type2);
+        }
+
+        // `EquivalentAtmComboScanner#visitDeclared_Declared` scans only the type arguments.
+        @Override
+        public Boolean visitDeclared_Declared(
+            AnnotatedDeclaredType type1, AnnotatedDeclaredType type2, Void p) {
+          if (visited.contains(type1, type2)) {
+            return visited.getResult(type1, type2);
+          }
+          Boolean result = super.visitDeclared_Declared(type1, type2, p);
+          AnnotatedDeclaredType enclosingType1 = type1.getEnclosingType();
+          AnnotatedDeclaredType enclosingType2 = type2.getEnclosingType();
+          if (enclosingType1 == null || enclosingType2 == null) {
+            return reduce(result, enclosingType1 == null && enclosingType2 == null);
+          }
+          return reduce(result, scan(enclosingType1, enclosingType2, p));
         }
       };
 
