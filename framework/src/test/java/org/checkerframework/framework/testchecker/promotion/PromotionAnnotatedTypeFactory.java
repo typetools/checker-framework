@@ -5,8 +5,6 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.testchecker.promotion.qual.Promoted;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
@@ -28,10 +26,9 @@ public class PromotionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {
-    AnnotatedPrimitiveType result = super.getUnboxedType(type);
-    result.replaceAnnotation(PROMOTED);
-    return result;
+  public AnnotationMirrorSet getUnboxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    return AnnotationMirrorSet.singleton(PROMOTED);
   }
 
   @Override

@@ -152,4 +152,34 @@ public class BinaryOperandPromotion {
     // :: error: [promoted.right]
     a >>= b;
   }
+
+  // A type variable whose bound is a boxed primitive is unboxed like its bound.
+  <T extends Integer> void typeVarArithmetic(T a, int b) {
+    // :: error: [promoted.left]
+    int r = a + b;
+  }
+
+  <T extends Character> void typeVarShift(T a, int b) {
+    // :: error: [promoted.left]
+    int r = a << b;
+  }
+
+  <T extends Integer> void shiftByTypeVar(long a, T b) {
+    // :: error: [promoted.right]
+    long r = a >> b;
+  }
+
+  <T extends Integer> void typeVarNumericEquality(T a, int b) {
+    // :: error: [promoted.left]
+    boolean r = a == b;
+  }
+
+  <T extends Integer> void typeVarReferenceEquality(T a, T b) {
+    boolean r = a == b;
+  }
+
+  <T extends Boolean> void typeVarBooleanAnd(T a, boolean b) {
+    // :: error: [promoted.left]
+    boolean r = a & b;
+  }
 }
