@@ -82,6 +82,37 @@ public class PurityMethodRef {
     PlainFunc f = PurityMethodRef::myMethod;
   }
 
+  /**
+   * Inherits two functional methods, {@code SefFunc.doNothing} and {@code PlainFunc.doNothing},
+   * neither of which overrides the other.
+   */
+  @FunctionalInterface
+  interface SefFirstFunc extends SefFunc, PlainFunc {}
+
+  /** Like {@link SefFirstFunc}, but with its superinterfaces in the other order. */
+  @FunctionalInterface
+  interface PlainFirstFunc extends PlainFunc, SefFunc {}
+
+  void inheritedFunctionalMethods() {
+    // A call through SefFunc.doNothing can run the reference.
+    // :: error: [purity.methodref]
+    SefFirstFunc f1 = PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    PlainFirstFunc f2 = PurityMethodRef::myMethod;
+    SefFirstFunc f3 = PurityMethodRef::mySideEffectFreeMethod;
+    PlainFirstFunc f4 = PurityMethodRef::mySideEffectFreeMethod;
+  }
+
+  void intersectionCast() {
+    // A call through SefFunc.doNothing can run the reference.
+    // :: error: [purity.methodref]
+    Object f1 = (PlainFunc & SefFunc) PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    Object f2 = (SefFunc & PlainFunc) PurityMethodRef::myMethod;
+    Object f3 = (PlainFunc & SefFunc) PurityMethodRef::mySideEffectFreeMethod;
+    Object f4 = (PlainFunc & java.io.Serializable) PurityMethodRef::myMethod;
+  }
+
   @FunctionalInterface
   interface PureRunnable {
     @Pure
