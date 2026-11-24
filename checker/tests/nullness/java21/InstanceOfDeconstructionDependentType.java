@@ -74,7 +74,13 @@ public class InstanceOfDeconstructionDependentType {
     }
   }
 
-  KeyedMap current = new KeyedMap(Map.of(), "");
+  // A constructor call such as `new KeyedMap(Map.of(), "")` would be illegal, because "" is not a
+  // key for the map.
+  static KeyedMap getKeyedMap() {
+    throw new Error();
+  }
+
+  KeyedMap current = getKeyedMap();
 
   void nonFinalFieldReceiver(KeyedMap other) {
     if (this.current instanceof KeyedMap(var mm, String k)) {
@@ -85,7 +91,7 @@ public class InstanceOfDeconstructionDependentType {
     }
   }
 
-  final KeyedMap finalCurrent = new KeyedMap(Map.of(), "");
+  final KeyedMap finalCurrent = getKeyedMap();
 
   void finalFieldReceiver() {
     if (this.finalCurrent instanceof KeyedMap(var mm, String k)) {
