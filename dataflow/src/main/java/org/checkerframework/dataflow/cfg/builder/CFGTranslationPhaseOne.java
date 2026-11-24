@@ -2428,7 +2428,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+      Node selectorExprNode = scan(selectorExprTree, null);
+      // If the switch has a `case null` label, a null selector does not throw a
+      // NullPointerException, so do not unbox the selector.  Unboxing would insert a synthetic
+      // method invocation on the selector, which would make dataflow treat the selector as non-null
+      // and would make case refinement apply to the invocation rather than to the selector.
+      if (!hasNullCaseLabel()) {
+        selectorExprNode = unbox(selectorExprNode);
+      }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
@@ -2436,6 +2443,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
       extendWithNode(selectorExprAssignment);
+    }
+
+    /**
+     * Returns true if some case of the switch has a {@code null} label.
+     *
+     * @return true if some case of the switch has a {@code null} label
+     */
+    private boolean hasNullCaseLabel() {
+      for (CaseTree caseTree : caseTrees) {
+        for (ExpressionTree expr : caseTree.getExpressions()) {
+          if (TreeUtils.withoutParens(expr).getKind() == Tree.Kind.NULL_LITERAL) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     /**
