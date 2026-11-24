@@ -62,8 +62,8 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
    * @param types1 a sequence of types
    * @param types2 a sequence of types
    * @param param the visitor param
-   * @return the reduction of the results of scanning each pair of corresponding elements, or null
-   *     if there are no such pairs
+   * @return null if there are no such pairs; otherwise, the results of scanning each pair of
+   *     corresponding elements, combined with {@link #reduce} (the combination can be null)
    */
   protected RETURN_TYPE scan(
       Iterable<? extends AnnotatedTypeMirror> types1,
