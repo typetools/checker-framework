@@ -1982,26 +1982,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if code that a call to {@code method} runs might rely on the purity that {@link
-   * PurityChecker#functionalParameterPurity} computes for the argument to {@code parameter}.
+   * Returns true if the purity annotations of {@code method}, or of code that a call to {@code
+   * method} runs, might hold only if the argument to {@code parameter} has the purity that {@link
+   * PurityChecker#functionalParameterPurity} computes.
+   *
+   * <p>The Purity Checker verifies {@code method}'s body, and the body of every override of {@code
+   * method}, under the assumption that the argument to {@code parameter} has that purity. For
+   * example, in the body of a {@code @SideEffectFree} method, a call {@code f.apply(s)} to a
+   * parameter {@code f} of type {@code Function} is treated as side-effect-free. A use of {@code
+   * parameter} <em>relies on</em> the assumption if it might run the argument's implementation of
+   * {@code parameterFunction}, so that an argument that lacks the purity might make the verified
+   * annotations false. Calling {@code parameterFunction} on the parameter relies on the assumption,
+   * as does passing the parameter to another method, which might call it.
    *
    * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
-   * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
-   * operand of a binary operator such as {@code ==}, as the destination or the value of an
-   * assignment, as the value of a variable initializer or of a return statement, or as the receiver
-   * of a call to a method other than {@code parameterFunction} and its overrides, such as {@code
-   * hashCode}. An override of {@code method} can rely on the purity that {@code method} promises of
-   * its arguments.
+   * and no use of {@code parameter} in that body relies on the assumption: the body uses {@code
+   * parameter} only as an operand of a binary operator such as {@code ==}, as the destination or
+   * the value of an assignment, as the value of a variable initializer or of a return statement, or
+   * as the receiver of a call to a method other than {@code parameterFunction} and its overrides,
+   * such as {@code hashCode}. The result is true for a method that can be overridden, because the
+   * body of an override that the checker does not see might rely on the assumption.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
-   * use that might rely on the purity.
+   * use that relies on the assumption.
    *
    * @param method a method or constructor
    * @param parameter a functional-interface parameter of {@code method}
    * @param parameterFunction the functional method of {@code parameter}'s type
-   * @return true if code that a call to {@code method} runs might rely on the purity of the
-   *     argument to {@code parameter}
+   * @return true if the purity annotations of {@code method}, or of code that a call to {@code
+   *     method} runs, might hold only if the argument to {@code parameter} has the computed purity
    */
   private boolean mightRelyOnFunctionalParameter(
       ExecutableElement method, VariableElement parameter, ExecutableElement parameterFunction) {
@@ -2026,8 +2036,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Scans code for a use of a functional-interface parameter that might rely on the purity of the
-   * argument; see {@link #mightRelyOnFunctionalParameter}.
+   * Determines whether a method body contains a use of a functional-interface parameter that relies
+   * on the purity of the argument, in the sense of {@link #mightRelyOnFunctionalParameter}.
+   *
+   * <p>To use it, call {@code scan(body, null)} on a fresh scanner, and then read {@link #found}.
+   * Scanning has no other effect, and the visit methods return null. Scanning stops early once
+   * {@link #found} is true.
    */
   private static class FunctionalParameterUseScanner extends TreeScanner<Void, Void> {
 
@@ -2040,7 +2054,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The processing environment. */
     private final ProcessingEnvironment env;
 
-    /** True if a use that might rely on the purity of the argument has been found. */
+    /** True if a use that relies on the purity of the argument has been found. */
     boolean found = false;
 
     /**
@@ -2090,8 +2104,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>The body might not have been attributed yet, as when it is in a top-level class that javac
      * has not yet processed. An identifier that has no element is treated as a use of {@link
-     * #parameter} if it has the same name. Such a use can rely on the purity of the argument, even
-     * if it is in a context that {@link #isParameter} would otherwise exempt.
+     * #parameter} if it has the same name. Such a use is treated as relying on the purity of the
+     * argument, even if it is in a context that {@link #isParameter} would otherwise exempt.
      */
     @Override
     public Void visitIdentifier(IdentifierTree tree, Void p) {
