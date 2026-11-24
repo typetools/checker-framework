@@ -1599,7 +1599,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the set of qualifiers that are the upper bounds for a use of the type. The result
-   * contains exactly one qualifier in each type hierarchy.
+   * contains exactly one qualifier in each type hierarchy. An overriding method must also return
+   * exactly one qualifier in each type hierarchy.
    *
    * @param type a type whose upper bounds to obtain
    * @return the set of qualifiers that are the upper bounds for a use of the type

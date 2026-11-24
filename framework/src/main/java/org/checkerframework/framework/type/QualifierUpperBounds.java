@@ -109,8 +109,9 @@ public class QualifierUpperBounds {
   /**
    * Returns the set of qualifiers that are the upper bounds for a use of the type. The result
    * contains exactly one qualifier in each type hierarchy. In a hierarchy in which no bound is
-   * specified for the type (by an annotation on its declaration, by {@link UpperBoundFor}, or by
-   * {@link AnnotatedTypeFactory#getDefaultTypeDeclarationBounds}), the bound is top.
+   * specified for the type (by {@link #getAnnotationFromElement}, which by default returns the
+   * annotations on the type's declaration; by {@link UpperBoundFor}; or by {@link
+   * AnnotatedTypeFactory#getDefaultTypeDeclarationBounds}), the bound is top.
    *
    * @param type the TypeMirror
    * @return the set of qualifiers that are the upper bounds for a use of the type
@@ -159,10 +160,6 @@ public class QualifierUpperBounds {
     AnnotationMirrorSet limitedAnnos = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annos) {
       AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
-      if (bound == null) {
-        throw new BugInCF(
-            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
-      }
       limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
     }
     return limitedAnnos;

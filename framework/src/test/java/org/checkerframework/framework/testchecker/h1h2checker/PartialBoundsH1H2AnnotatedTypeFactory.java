@@ -11,6 +11,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  */
 public class PartialBoundsH1H2AnnotatedTypeFactory extends H1H2AnnotatedTypeFactory {
 
+  /** The default qualifier upper bounds for a type declaration: {@code @H1Top} alone. */
+  private final AnnotationMirrorSet defaultTypeDeclarationBounds;
+
   /**
    * Creates a new PartialBoundsH1H2AnnotatedTypeFactory.
    *
@@ -18,10 +21,12 @@ public class PartialBoundsH1H2AnnotatedTypeFactory extends H1H2AnnotatedTypeFact
    */
   public PartialBoundsH1H2AnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
+    defaultTypeDeclarationBounds =
+        AnnotationMirrorSet.singleton(AnnotationBuilder.fromClass(elements, H1Top.class));
   }
 
   @Override
   protected AnnotationMirrorSet getDefaultTypeDeclarationBounds() {
-    return AnnotationMirrorSet.singleton(AnnotationBuilder.fromClass(elements, H1Top.class));
+    return defaultTypeDeclarationBounds;
   }
 }
