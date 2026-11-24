@@ -495,7 +495,7 @@ public class AnnotationFileElementTypes {
     } else {
       reason = ": the name of an ajava file must end with .ajava";
     }
-    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
+    factory.getChecker().messageOnce(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**

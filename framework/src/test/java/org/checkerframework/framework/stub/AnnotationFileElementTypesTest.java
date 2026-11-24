@@ -239,6 +239,21 @@ public class AnnotationFileElementTypesTest {
   }
 
   /**
+   * Tests that a compound checker, each of whose checkers reads the named file, yields one warning
+   * about a named file whose name does not suit its file type.
+   */
+  @Test
+  public void unusableNamedFileCompoundChecker() throws IOException {
+    File ajava = write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
+    assertOneWarning(
+        "Ignoring " + ajava.getPath() + ", which is an ajava file; supply it via -Aajava",
+        diagnostics(
+            "org.checkerframework.framework.testchecker.compound.CompoundChecker",
+            null,
+            "-Astubs=" + ajava.getPath()));
+  }
+
+  /**
    * Tests that a named classpath annotation file whose name does not suit its file type yields a
    * warning.
    */
