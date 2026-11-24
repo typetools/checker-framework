@@ -3415,6 +3415,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    if (exception.getKind() == TypeKind.NULL) {
+      // `throw null` throws a NullPointerException (JLS 14.18).  The null type must not reach
+      // TryCatchFrame.possibleLabels, which requires a declared type or a type variable.
+      exception = nullPointerExceptionType;
+    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
     NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
     exNode.setTerminatesExecution(true);
