@@ -146,7 +146,7 @@ public class FieldAccess extends JavaExpression {
       return true;
     }
     // A static field is not reached through its receiver, even if the receiver is written as an
-    // expression such as `a` in `a.staticField`: its value does not depend on the receiver.
+    // expression such as `a` in `a.staticField`.
     return !isStatic() && receiver.containsAsReceiver(provider, other);
   }
 
