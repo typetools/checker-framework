@@ -1466,8 +1466,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * If {@code prefix} names a package, and the first identifier of {@code className} names a
    * top-level type of that package on the classpath that is accessible to an import on demand in
    * {@code cu}, returns the binary name of the type that {@code className} names. Each later
-   * identifier names a member type, declared or inherited. Otherwise returns null. For example,
-   * via {@code import java.util.*;}, {@code AbstractMap.Entry} names {@code java.util.Map$Entry}.
+   * identifier names a member type, declared or inherited. Otherwise returns null. For example, via
+   * {@code import java.util.*;}, {@code AbstractMap.Entry} names {@code java.util.Map$Entry}.
    *
    * @param prefix the name of the package or type that the import on demand imports from
    * @param className the class name, in which a {@code .} separates a nested class from its
@@ -1597,8 +1597,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Returns the package of an inheritance path, as for the {@code subclassPackage} argument of
    * {@link #classMemberType(Class, String, String, boolean)}, for the member types that an import
    * on demand in {@code cu} imports from a type. A package-private or protected member type is
-   * accessible to the import only if it is in the import's package, so the import acts as the
-   * first subtype along the path.
+   * accessible to the import only if it is in the import's package, so the import acts as the first
+   * subtype along the path.
    *
    * @param typePackage the package of the type that the import on demand imports from
    * @param cu the stub file's compilation unit in which the import is written, or null for the
@@ -1778,8 +1778,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * <p>If {@code forImport} is true, then the member type must also be accessible to an import on
    * demand whose package is {@code subclassPackage}: a protected member type counts only if it is
-   * in that package. An inaccessible member type that a class declares still hides the member
-   * types of the same name in that class's supertypes.
+   * in that package. An inaccessible member type that a class declares still hides the member types
+   * of the same name in that class's supertypes.
    *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
