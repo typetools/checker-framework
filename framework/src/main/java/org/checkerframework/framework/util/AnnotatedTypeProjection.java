@@ -66,8 +66,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *       the upward projection of T again, this class uses the erasure of T's leftmost bound as the
  *       inner projection.
  *   <li>Where JLS 4.10.5 gives a wildcard {@code ? extends U} whose bound U is an intersection
- *       type, this class gives {@code ?}, because the bound of a wildcard cannot be an intersection
- *       type.
+ *       type, this class gives {@code ?} in an upward projection, and the downward projection is
+ *       undefined, because the bound of a wildcard cannot be an intersection type.
  *   <li>Where JLS 4.10.5 gives a wildcard {@code ? super L} whose bound L is an intersection type,
  *       this class gives {@code ?} in an upward projection, and the downward projection is
  *       undefined, for the same reason.
@@ -270,7 +270,10 @@ public final class AnnotatedTypeProjection {
             AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typeArg;
             if (wildcard.getUnderlyingType().getSuperBound() == null) {
               AnnotatedTypeMirror upperBound = downward(wildcard.getExtendsBound());
-              if (upperBound == null) {
+              if (upperBound == null || upperBound.getKind() == TypeKind.INTERSECTION) {
+                // `createWildcard` would widen `? extends A & B` to `?`, which is not a subtype of
+                // the original type argument, so the downward projection is undefined.  See the
+                // class Javadoc.
                 return null;
               }
               typeArgs.add(createWildcard(upperBound, null, true));

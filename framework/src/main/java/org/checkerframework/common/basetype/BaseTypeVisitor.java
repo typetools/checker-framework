@@ -3815,9 +3815,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
 
     TypeKind castTypeKind = castType.getKind();
-    if (castTypeKind == TypeKind.DECLARED) {
+    if (castTypeKind == TypeKind.DECLARED
+        && (!checkCastElementType || isCastSafeIncludingElementTypes(castType, exprType))) {
       // Don't issue an error if the annotations are equivalent to the qualifier upper bound
-      // of the type.
+      // of the type (and, with -AcheckCastElementType, the element types are safe).
       AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
       AnnotationMirrorSet bounds =
           atypeFactory.getTypeDeclarationBounds(castDeclared.getUnderlyingType());
