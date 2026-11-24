@@ -5,6 +5,10 @@
 // infer @Pure for that superinterface's method.  If inference ignored the impure lambda or method
 // reference for either method, then the validation run would report purity.methodref or
 // purity.call.
+//
+// Each group of interfaces is used once, with its superinterfaces in one order, so that whichever
+// superinterface's method javac chooses as the functional method, some group has a superinterface
+// method that is not the functional method.
 
 public class PurityInferenceInheritedFunctionalMethod {
 
@@ -15,41 +19,61 @@ public class PurityInferenceInheritedFunctionalMethod {
     return null;
   }
 
-  interface RefA {
+  interface RefA1 {
     Object run();
   }
 
-  interface RefB {
+  interface RefB1 {
     Object run();
   }
 
-  interface RefAB extends RefA, RefB {}
+  interface RefA1B1 extends RefA1, RefB1 {}
 
-  interface RefBA extends RefB, RefA {}
+  interface RefA2 {
+    Object run();
+  }
+
+  interface RefB2 {
+    Object run();
+  }
+
+  interface RefB2A2 extends RefB2, RefA2 {}
 
   void methodReferences() {
-    RefA a = () -> null;
-    RefB b = () -> null;
-    RefAB ab = this::impure;
-    RefBA ba = this::impure;
+    RefA1 a1 = () -> null;
+    RefB1 b1 = () -> null;
+    RefA1B1 a1b1 = this::impure;
+    RefA2 a2 = () -> null;
+    RefB2 b2 = () -> null;
+    RefB2A2 b2a2 = this::impure;
   }
 
-  interface LambdaA {
+  interface LambdaA1 {
     Object run();
   }
 
-  interface LambdaB {
+  interface LambdaB1 {
     Object run();
   }
 
-  interface LambdaAB extends LambdaA, LambdaB {}
+  interface LambdaA1B1 extends LambdaA1, LambdaB1 {}
 
-  interface LambdaBA extends LambdaB, LambdaA {}
+  interface LambdaA2 {
+    Object run();
+  }
+
+  interface LambdaB2 {
+    Object run();
+  }
+
+  interface LambdaB2A2 extends LambdaB2, LambdaA2 {}
 
   void lambdas() {
-    LambdaA a = () -> null;
-    LambdaB b = () -> null;
-    LambdaAB ab = () -> impure();
-    LambdaBA ba = () -> impure();
+    LambdaA1 a1 = () -> null;
+    LambdaB1 b1 = () -> null;
+    LambdaA1B1 a1b1 = () -> impure();
+    LambdaA2 a2 = () -> null;
+    LambdaB2 b2 = () -> null;
+    LambdaB2A2 b2a2 = () -> impure();
   }
 }
