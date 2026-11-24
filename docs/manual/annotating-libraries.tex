@@ -484,8 +484,9 @@ ends with \<.astub>; it may have any other name, except that its name must
 not end with \<.ajava>.
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
-\code{.astub}, with two exceptions.  First, an archive within a directory
-is not read; the Checker Framework issues a note about it.  Second, a
+\code{.astub}, with two exceptions.  First, an archive within a directory is
+not read, nor is a directory within a directory that cannot be listed; the
+Checker Framework issues a note about each.  Second, a
 hidden file or directory (one whose name starts with ``\<.>'') within a
 directory or archive is not read; an example is the \<.\_Foo.astub>
 metadata file that macOS adds to archives and to non-Mac file systems.
