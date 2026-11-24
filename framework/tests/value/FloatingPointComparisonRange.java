@@ -55,6 +55,57 @@ public class FloatingPointComparisonRange {
     }
   }
 
+  void lessThanPositiveInfinity(@IntRange(from = 0, to = Long.MAX_VALUE) long l) {
+    double d = Double.POSITIVE_INFINITY;
+    if (l < d) {
+      // `l` might be Long.MAX_VALUE.
+      // :: error: (assignment)
+      @IntRange(from = 0, to = Long.MAX_VALUE - 1) long m = l;
+    }
+  }
+
+  void notEqualPositiveInfinity(@IntRange(from = 0, to = Long.MAX_VALUE) long l) {
+    double d = Double.POSITIVE_INFINITY;
+    if (l != d) {
+      // `l` might be Long.MAX_VALUE.
+      // :: error: (assignment)
+      @IntRange(from = 0, to = Long.MAX_VALUE - 1) long m = l;
+    }
+  }
+
+  void greaterThanNegativeInfinity(@IntRange(from = Long.MIN_VALUE, to = 0) long l) {
+    double d = Double.NEGATIVE_INFINITY;
+    if (l > d) {
+      // `l` might be Long.MIN_VALUE.
+      // :: error: (assignment)
+      @IntRange(from = Long.MIN_VALUE + 1, to = 0) long m = l;
+    }
+  }
+
+  void lessThanBeyondLong(
+      @IntRange(from = 0, to = Long.MAX_VALUE) long l, @DoubleVal(1e19) double d) {
+    if (l < d) {
+      // `l` might be Long.MAX_VALUE.
+      // :: error: (assignment)
+      @IntRange(from = 0, to = Long.MAX_VALUE - 1) long m = l;
+    }
+  }
+
+  void lessThanUnknown(@IntRange(from = 0, to = Long.MAX_VALUE) long l, double d) {
+    if (l < d) {
+      // `l` might be Long.MAX_VALUE, if `d` is infinite.
+      // :: error: (assignment)
+      @IntRange(from = 0, to = Long.MAX_VALUE - 1) long m = l;
+    }
+  }
+
+  void greaterThanIntegralFloatingOperand(@IntRange(from = 0, to = 10) double d) {
+    if (d > 5) {
+      // Every value of `d` is an integer.
+      @IntRange(from = 6, to = 10) double e = d;
+    }
+  }
+
   void lessThanFloatingOperand(@IntRange(from = 0, to = 100) int i, double d) {
     if (d < i) {
       if (d > 99.2) {
