@@ -103,6 +103,16 @@ public class PurityMethodRef {
     PlainFirstFunc f4 = PurityMethodRef::mySideEffectFreeMethod;
   }
 
+  void intersectionCast() {
+    // A call through SefFunc.doNothing can run the reference.
+    // :: error: [purity.methodref]
+    Object f1 = (PlainFunc & SefFunc) PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    Object f2 = (SefFunc & PlainFunc) PurityMethodRef::myMethod;
+    Object f3 = (PlainFunc & SefFunc) PurityMethodRef::mySideEffectFreeMethod;
+    Object f4 = (PlainFunc & java.io.Serializable) PurityMethodRef::myMethod;
+  }
+
   @FunctionalInterface
   interface PureRunnable {
     @Pure
