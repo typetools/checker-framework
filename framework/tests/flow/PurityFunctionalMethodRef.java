@@ -322,10 +322,11 @@ public class PurityFunctionalMethodRef {
     Object b = (Applier & UnannotatedApplier) PurityFunctionalMethodRef::applyStatic;
     // :: error: [purity.methodref.functional.parameter]
     Object c = (UnannotatedApplier & Applier) PurityFunctionalMethodRef::applyStatic;
-    // A call through UnannotatedGenericApplier.apply can run the reference.
-    // :: error: [purity.methodref.functional.parameter]
+    // A call through UnannotatedGenericApplier.apply can run the reference.  The methodref.param
+    // error is because the FlowTestChecker's lower bound of the wildcard is @Bottom.
     Object d =
-        (Applier & UnannotatedGenericApplier<? super Function<String, Integer>>)
+        (UnannotatedGenericApplier<? super Function<String, Integer>> & java.io.Serializable)
+            // :: error: [methodref.param] :: error: [purity.methodref.functional.parameter]
             PurityFunctionalMethodRef::applyStatic;
   }
 
