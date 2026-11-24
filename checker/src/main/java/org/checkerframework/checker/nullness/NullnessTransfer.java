@@ -732,6 +732,10 @@ public class NullnessTransfer
            * @return true if converting {@code operand} to a string might reassign the receiver
            */
           private boolean stringConversionMayHaveSideEffect(ExpressionTree operand) {
+            // Shortcut:  mayHaveSideEffect would return false for every toString() method.
+            if (!receiverMayChangeByOtherCode || nonNullAssumptionAfterInvocation) {
+              return false;
+            }
             TypeMirror type = TreeUtils.typeOf(operand);
             if (type.getKind().isPrimitive()
                 || type.getKind() == TypeKind.NULL
