@@ -422,14 +422,41 @@ public class ValueTransfer extends CFTransfer {
       List<Long> values = atypeFactory.getIntValues(val);
       range = ValueCheckerUtils.getRangeFromValues(values);
     } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
-      List<Double> values = atypeFactory.getDoubleValues(val);
-      range = ValueCheckerUtils.getRangeFromValues(values);
+      range = getRangeFromDoubleValues(atypeFactory.getDoubleValues(val));
     } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       return Range.NOTHING;
     } else {
       range = Range.EVERYTHING;
     }
     return NumberUtils.castRange(node.getType(), range);
+  }
+
+  /**
+   * Returns the smallest range of integers that contains every value in the given list, or {@link
+   * Range#EVERYTHING} if the list contains NaN. For example, the range for the list {@code [-0.5,
+   * 2.0]} is {@code [-1, 2]}.
+   *
+   * <p>No range of integers contains NaN, and a range that omitted NaN would make refinements
+   * unsound: if {@code d} is NaN, then {@code i != d} is true even if {@code i} equals every other
+   * value of {@code d}.
+   *
+   * @param values a list of floating-point values
+   * @return the smallest range of integers that contains every value in {@code values}
+   */
+  private static Range getRangeFromDoubleValues(List<Double> values) {
+    if (values.isEmpty()) {
+      return Range.NOTHING;
+    }
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    for (double value : values) {
+      if (Double.isNaN(value)) {
+        return Range.EVERYTHING;
+      }
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    }
+    return Range.create((long) Math.floor(min), (long) Math.ceil(max));
   }
 
   /**
@@ -1386,11 +1413,18 @@ public class ValueTransfer extends CFTransfer {
    * Takes a range and creates the appropriate annotation from it, then combines that annotation
    * with the existing annotation on the node. The resulting annotation is inserted into the store.
    *
+   * <p>Does nothing if the node's value has a floating-point type, because a range of integers does
+   * not contain a floating-point value that lies between two integers, such as 99.5. The operand of
+   * a widening conversion, such as an int that is compared to a double, is refined.
+   *
    * @param store the store
    * @param range the range to create an annotation for
    * @param node the node whose existing annotation to refine
    */
   private void createAnnotationFromRangeAndAddToStore(CFStore store, Range range, Node node) {
+    if (TypesUtils.isFloatingPoint(JavaExpression.fromNode(node).getType())) {
+      return;
+    }
     AnnotationMirror anno = atypeFactory.createIntRangeAnnotation(range);
     addAnnotationToStore(store, anno, node);
   }
