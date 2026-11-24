@@ -39,11 +39,11 @@ public class EnumMemberTypeShadows {
             }
 
             @org.checkerframework.dataflow.qual.SideEffectFree
-            void expectsSibling1(Nested this, EnumDesc f) {
+            void expectsSibling1(EnumDesc f) {
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            EnumDesc getSibling1(Nested this) {
+            EnumDesc getSibling1() {
                 return null;
             }
         }
