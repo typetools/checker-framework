@@ -718,7 +718,7 @@ public class QualifierDefaults {
    * @param annotationScope the element that the conservative default might apply to
    * @return true if the conservative default applies to the given element
    */
-  public boolean applyConservativeDefaults(Element annotationScope) {
+  public boolean applyConservativeDefaults(@Nullable Element annotationScope) {
     if (annotationScope == null) {
       return false;
     }
@@ -773,7 +773,7 @@ public class QualifierDefaults {
    *     inference)
    * @checker_framework.manual #annotating-libraries Annotating libraries
    */
-  private void applyDefaultsElement(Element annotationScope, AnnotatedTypeMirror type) {
+  private void applyDefaultsElement(@Nullable Element annotationScope, AnnotatedTypeMirror type) {
     DefaultSet defaults = defaultsAt(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
@@ -806,7 +806,7 @@ public class QualifierDefaults {
    */
   protected DefaultApplierElement createDefaultApplierElement(
       AnnotatedTypeFactory atypeFactory,
-      Element annotationScope,
+      @Nullable Element annotationScope,
       AnnotatedTypeMirror type,
       boolean applyToTypeVar) {
     return new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
@@ -819,7 +819,7 @@ public class QualifierDefaults {
     protected final AnnotatedTypeFactory atypeFactory;
 
     /** The scope of the default. */
-    protected final Element scope;
+    protected final @Nullable Element scope;
 
     /** The type to which to apply the default. */
     protected final AnnotatedTypeMirror type;
@@ -843,9 +843,10 @@ public class QualifierDefaults {
     */
     private final AnnotatedTypeVariable defaultableTypeVar;
 
+    @SuppressWarnings("nullness:initialization.fields.uninitialized") // applyDefault sets location
     public DefaultApplierElement(
         AnnotatedTypeFactory atypeFactory,
-        Element scope,
+        @Nullable Element scope,
         AnnotatedTypeMirror type,
         boolean applyToTypeVar) {
       this.atypeFactory = atypeFactory;
