@@ -271,9 +271,9 @@ public final class AnnotatedTypeProjection {
             if (wildcard.getUnderlyingType().getSuperBound() == null) {
               AnnotatedTypeMirror upperBound = downward(wildcard.getExtendsBound());
               if (upperBound == null || upperBound.getKind() == TypeKind.INTERSECTION) {
-                // `createWildcard` would widen `? extends A & B` to `?`, which is not a subtype of
-                // the original type argument, so the downward projection is undefined.  See the
-                // class Javadoc.
+                // `createWildcard` would widen `? extends A & B` to `?`, which is a supertype, not
+                // a subtype, of the original type argument, so the downward projection is
+                // undefined.  See the class Javadoc.
                 return null;
               }
               typeArgs.add(createWildcard(upperBound, null, true));
