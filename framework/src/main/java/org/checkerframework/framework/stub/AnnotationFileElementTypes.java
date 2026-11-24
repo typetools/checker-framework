@@ -329,7 +329,7 @@ public class AnnotationFileElementTypes {
             fileType,
             resource -> parseAnnotationFileResource(resource, parseType),
             skipped ->
-                checker.message(
+                checker.messageOnce(
                     Diagnostic.Kind.NOTE,
                     skipped.isDirectory()
                         ? "Not reading directory "

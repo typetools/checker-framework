@@ -241,6 +241,33 @@ public class AnnotationFileElementTypesTest {
     assertHasDiagnostic("NOTE: Not reading archive " + jar, diagnostics(dir.getPath()));
   }
 
+  /**
+   * Tests that a compound checker, each of whose checkers searches the named directory, yields one
+   * note about an archive within the directory.
+   */
+  @Test
+  public void archiveInDirectoryCompoundChecker() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File jar = new File(dir, "lib.jar");
+    try (OutputStream os = Files.newOutputStream(jar.toPath());
+        ZipOutputStream zos = new ZipOutputStream(os)) {
+      zos.putNextEntry(new ZipEntry("A.astub"));
+      zos.closeEntry();
+    }
+    List<String> diagnostics =
+        diagnostics(
+            "org.checkerframework.framework.testchecker.compound.CompoundChecker",
+            null,
+            "-Astubs=" + dir.getPath());
+    int count = 0;
+    for (String diagnostic : diagnostics) {
+      if (diagnostic.startsWith("NOTE: Not reading archive " + jar)) {
+        count++;
+      }
+    }
+    Assert.assertEquals(diagnostics.toString(), 1, count);
+  }
+
   /** Tests that a named directory that cannot be listed yields a warning. */
   @Test
   public void unlistableDirectory() throws IOException {
