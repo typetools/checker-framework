@@ -87,7 +87,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * annotation lists {@code this}. Modifying such a variable's value is covered by the annotation.
    * Assignments are the only aliasing that checking of {@code @SideEffectsOnly} considers.
    */
-  protected final List<LocalVariable> coveredLocals;
+  protected final List<LocalVariable> sideEffectsOnlyLocals;
 
   /** The checker to use. */
   protected final BaseTypeChecker checker;
@@ -122,8 +122,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       localAssignments.scan(tree, null);
     }
     this.freshLocals = freshLocals(localAssignments);
-    this.coveredLocals =
-        coveredLocals(localAssignments, sideEffectsOnlyExpressions, checker.getTypeFactory());
+    this.sideEffectsOnlyLocals =
+        sideEffectsOnlyLocals(
+            localAssignments, sideEffectsOnlyExpressions, checker.getTypeFactory());
     this.assumeSideEffectFree = assumeSideEffectFree;
     this.assumePureGetters = assumePureGetters;
   }
@@ -907,14 +908,17 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /**
    * Returns true if the given expression is listed in the {@link SideEffectsOnly} annotation or is
    * reached through one of the listed expressions or through a local variable in {@link
-   * #coveredLocals}.
+   * #sideEffectsOnlyLocals}.
    *
    * @param expr the expression to look for
    * @return true if the given expression is covered by the {@link SideEffectsOnly} annotation
    */
   protected boolean isCoveredByAnnotation(JavaExpression expr) {
     return isCovered(
-        expr, sideEffectsOnlyExpressionsFromAnnotation, coveredLocals, checker.getTypeFactory());
+        expr,
+        sideEffectsOnlyExpressionsFromAnnotation,
+        sideEffectsOnlyLocals,
+        checker.getTypeFactory());
   }
 
   /**
@@ -923,7 +927,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * @param expr the expression to look for
    * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
-   * @param coveredLocals local variables that hold the value of an expression that {@code
+   * @param sideEffectsOnlyLocals local variables that hold the value of an expression that {@code
    *     seOnlyExpressions} covers
    * @param atypeFactory the type factory, for determining which methods are side-effect-free
    * @return true if the given expression is covered by the given expressions or local variables
@@ -931,15 +935,15 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   private static boolean isCovered(
       JavaExpression expr,
       List<JavaExpression> seOnlyExpressions,
-      List<LocalVariable> coveredLocals,
+      List<LocalVariable> sideEffectsOnlyLocals,
       AnnotatedTypeFactory atypeFactory) {
     for (JavaExpression seOnlyExpression : seOnlyExpressions) {
       if (expr.containsAsReceiver(atypeFactory, seOnlyExpression)) {
         return true;
       }
     }
-    for (LocalVariable coveredLocal : coveredLocals) {
-      if (expr.containsAsReceiver(atypeFactory, coveredLocal)) {
+    for (LocalVariable sideEffectsOnlyLocal : sideEffectsOnlyLocals) {
+      if (expr.containsAsReceiver(atypeFactory, sideEffectsOnlyLocal)) {
         return true;
       }
     }
@@ -965,7 +969,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @return the local variables that always hold the value of an expression that {@code
    *     seOnlyExpressions} covers
    */
-  private static List<LocalVariable> coveredLocals(
+  private static List<LocalVariable> sideEffectsOnlyLocals(
       LocalAssignmentScanner localAssignments,
       List<JavaExpression> seOnlyExpressions,
       AnnotatedTypeFactory atypeFactory) {
