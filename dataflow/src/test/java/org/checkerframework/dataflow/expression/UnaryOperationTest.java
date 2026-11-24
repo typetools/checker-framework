@@ -17,6 +17,9 @@ import org.junit.Test;
 /** Tests {@link UnaryOperation}. */
 public class UnaryOperationTest {
 
+  /** The processing environment. */
+  private final ProcessingEnvironment env;
+
   /** The type utilities. */
   private final Types types;
 
@@ -26,7 +29,7 @@ public class UnaryOperationTest {
     Options options = Options.instance(context);
     options.put(Option.SOURCE, "8");
     options.put(Option.TARGET, "8");
-    ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
+    env = JavacProcessingEnvironment.instance(context);
     JavaCompiler javac = JavaCompiler.instance(context);
     javac.initModules(List.nil());
     javac.enterDone();
@@ -42,5 +45,15 @@ public class UnaryOperationTest {
     UnaryOperation negation =
         new UnaryOperation(intType, Tree.Kind.UNARY_MINUS, new ValueLiteral(byteType, (byte) 5));
     Assert.assertEquals(TypeKind.INT, negation.getType().getKind());
+  }
+
+  /** A parsed unary operation has the type that unary numeric promotion gives it. */
+  @Test
+  public void parsedTypeIsPromotedType() throws JavaExpressionParseException {
+    // Unary numeric promotion:  the bitwise complement of a char is an int.
+    JavaExpression complement =
+        JavaExpressionParseUtil.parse("~'a'", null, null, null, null, null, env);
+    Assert.assertTrue(complement instanceof UnaryOperation);
+    Assert.assertEquals(TypeKind.INT, complement.getType().getKind());
   }
 }
