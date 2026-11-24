@@ -167,7 +167,6 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.AssertMethod;
@@ -951,11 +950,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
 
     boolean bool = TypesUtils.isBooleanType(type);
-    boolean numeric = TypesUtils.isNumeric(unboxedType);
+    boolean numeric = TypesUtils.isNumericPrimitive(unboxedType);
 
     return new TreeInfo() {
       @Override
-      public boolean isNumeric() {
+      public boolean isNumericOrBoxed() {
         return numeric;
       }
 
@@ -1037,7 +1036,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (TypesUtils.isBoxedPrimitive(type)) {
       type = types.unboxedType(type);
     }
-    return TypesUtils.isNumeric(type);
+    return TypesUtils.isNumericPrimitive(type);
   }
 
   /**
@@ -1115,17 +1114,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Performs narrowing conversion on the input node to make it match the destination type.
+   * Performs narrowing conversion (JLS 5.1.3), or the widening and narrowing conversion from byte
+   * to char (JLS 5.1.4), on the input node to make it match the destination type. Does nothing if
+   * the conversion from the type of the node to the destination type is an identity or widening
+   * conversion.
    *
    * @param node a node producing a value of numeric primitive type
-   * @param destType the type to narrow the value to
+   * @param destType the numeric primitive type to narrow the value to
    * @return a Node with the value narrowed to the destType, which might be the input node
    */
   protected Node narrow(Node node, TypeMirror destType) {
-    // For narrowing conversion, see JLS 5.1.3
-    assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
-        : "narrowing must be applied to primitive types";
-    if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
+    assert TypesUtils.isNumericPrimitive(node.getType()) && TypesUtils.isNumericPrimitive(destType)
+        : "narrowing must be applied to numeric primitive types";
+    // Test `!types.isSubtype(node.getType(), destType)` (that is, "not a widening conversion"),
+    // not `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a supertype
+    // of byte and short, but a constant char can be narrowed to byte or short (and a constant
+    // byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between distinct
+    // numeric primitive types that is not a widening conversion is a narrowing conversion (or,
+    // for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
+      // The conversion from the type of node to destType is a narrowing conversion (or, for byte
+      // to char, a widening and narrowing conversion).
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
@@ -1152,24 +1161,47 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if a conversion from the type of the node to varType requires narrowing.
+   * Returns true if the node is a compile-time constant of type byte, short, char, or int, and
+   * varType is byte, short, char, Byte, Short, or Character. Assignment conversion converts such a
+   * constant to the primitive type of varType, even by a narrowing conversion, before boxing it if
+   * varType is a boxed type (JLS 5.2), as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code
+   * Short s = (byte) 1;}.
    *
-   * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return true if this conversion requires narrowing to succeed
+   * @param varType the type of a variable (or general LHS) to be converted to
+   * @return true if the node is a compile-time constant of type byte, short, char, or int, and
+   *     varType is byte, short, char, Byte, Short, or Character
    */
-  protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
-    // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
+  protected boolean isNarrowableConstantConversion(Node node, TypeMirror varType) {
+    TypeKind nodeKind = node.getType().getKind();
+    boolean isNodeKindNarrowable =
+        nodeKind == TypeKind.BYTE
+            || nodeKind == TypeKind.SHORT
+            || nodeKind == TypeKind.CHAR
+            || nodeKind == TypeKind.INT;
+    return isNodeKindNarrowable
+        && TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
+        && node.getTree() instanceof ExpressionTree expressionTree
+        && TreeUtils.isCompileTimeConstant(expressionTree);
+  }
+
+  /**
+   * Converts the given compile-time constant to the given type, which is byte, short, char, Byte,
+   * Short, or Character, as assignment conversion does (JLS 5.2). The conversion widens or narrows
+   * the constant to the primitive type of varType, then boxes it if varType is a boxed type. For
+   * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
+   *
+   * @param node a node producing a compile-time constant of type byte, short, char, or int
+   * @param varType the type to convert the constant to: byte, short, char, Byte, Short, or
+   *     Character
+   * @return a Node with the value converted to varType, which might be the input node
+   * @see #isNarrowableConstantConversion
+   */
+  protected Node convertNarrowableConstant(Node node, TypeMirror varType) {
+    TypeMirror primitiveType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+    // If widen() changes the node, then narrowAndBox() only boxes it.
+    return narrowAndBox(widen(node, primitiveType), varType);
   }
 
   /**
@@ -1194,11 +1226,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return node;
     }
 
-    boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
+    boolean isRightNumeric = TypesUtils.isNumericPrimitive(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
     boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
     boolean isRightReference = nodeType instanceof ReferenceType;
-    boolean isLeftNumeric = TypesUtils.isNumeric(varType);
+    boolean isLeftNumeric = TypesUtils.isNumericPrimitive(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
     // boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
     boolean isLeftReference = varType instanceof ReferenceType;
@@ -1210,8 +1242,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrowAndBox(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1223,8 +1255,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrow(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.
@@ -1444,7 +1476,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedNodeType = isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
     TypeMirror unboxedDestType =
         TypesUtils.isBoxedPrimitive(destType) ? types.unboxedType(destType) : destType;
-    if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
+    if (TypesUtils.isNumericPrimitive(unboxedNodeType)
+        && TypesUtils.isNumericPrimitive(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isBoxedPrimitive) {
           node = unbox(node);
@@ -3468,6 +3501,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitThrow(ThrowTree tree, Void p) {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
+    if (exception.getKind() == TypeKind.NULL) {
+      // `throw null` throws a NullPointerException (JLS 14.18).
+      exception = nullPointerExceptionType;
+    }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
     NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
     exNode.setTerminatesExecution(true);
@@ -4421,8 +4458,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node left = scan(leftTree, p);
         Node right = scan(rightTree, p);
 
-        if (leftInfo.isNumeric()
-            && rightInfo.isNumeric()
+        if (leftInfo.isNumericOrBoxed()
+            && rightInfo.isNumericOrBoxed()
             && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =
