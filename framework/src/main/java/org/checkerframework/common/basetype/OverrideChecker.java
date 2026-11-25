@@ -571,6 +571,8 @@ public class OverrideChecker {
     // These act like a traditional override
     if (methodRefKind == MemberReferenceKind.UNBOUND) {
       AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
+      assert overriderReceiver != null
+          : "@AssumeAssertion(nullness): an unbound method reference refers to an instance method";
       AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
       boolean success = visitor.typeHierarchy.isSubtype(overriddenReceiver, overriderReceiver);
       if (!success) {
@@ -598,6 +600,8 @@ public class OverrideChecker {
         receiverArg = visitor.atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
 
         AnnotatedTypeMirror selfType = visitor.atypeFactory.getSelfType(memberTree);
+        assert selfType != null
+            : "@AssumeAssertion(nullness): a method reference that uses super is within a class";
         receiverArg.replaceAnnotations(selfType.getPrimaryAnnotations());
         break;
       case BOUND:
@@ -616,9 +620,14 @@ public class OverrideChecker {
         // enclosing type or "this" has an enclosing type that is that type.
         receiverDecl = overrider.getReceiverType();
         receiverArg = visitor.atypeFactory.getSelfType(memberTree);
+        assert receiverDecl != null && receiverArg != null
+            : "@AssumeAssertion(nullness): an inner class constructor has a receiver, and its"
+                + " method reference is within a class";
         while (!TypesUtils.isErasedSubtype(
             receiverArg.getUnderlyingType(), receiverDecl.getUnderlyingType(), types)) {
           receiverArg = ((AnnotatedDeclaredType) receiverArg).getEnclosingType();
+          assert receiverArg != null
+              : "@AssumeAssertion(nullness): JLS 15.13.1 requires an enclosing type to exist";
         }
 
         break;
@@ -630,6 +639,8 @@ public class OverrideChecker {
         // These don't have receivers
         return true;
     }
+    assert receiverDecl != null
+        : "@AssumeAssertion(nullness): each remaining kind refers to a method with a receiver";
 
     boolean success = visitor.typeHierarchy.isSubtype(receiverArg, receiverDecl);
     if (!success) {
@@ -654,6 +665,8 @@ public class OverrideChecker {
   protected boolean checkReceiverOverride() {
     AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
     AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
+    assert overriderReceiver != null && overriddenReceiver != null
+        : "@AssumeAssertion(nullness): only an instance method overrides another method";
     // Check the receiver type.
     // Just check primary annotations rather than using `isSubtype()`.  `isSubtype()` requires its
     // arguments to be actual subtypes with respect to the JLS, but an overrider receiver is not a
@@ -844,6 +857,15 @@ public class OverrideChecker {
     return result;
   }
 
+  /**
+   * Issues an error about the parameter at {@code index} if it is not valid. If {@code
+   * -Ashowchecks} is passed, also prints a message about the check.
+   *
+   * @param success true if the parameter at {@code index} is valid
+   * @param index the index of the parameter that was checked
+   * @param overriderParams the parameter types of the overriding method
+   * @param overriddenParams the parameter types of the overridden method
+   */
   private void checkParametersMsg(
       boolean success,
       int index,
@@ -1049,11 +1071,14 @@ public class OverrideChecker {
           overriderAnno = strongRelevantAnnos;
         }
 
+        MethodTree methodTree = visitor.methodTree;
+        assert methodTree != null
+            : "@AssumeAssertion(nullness): contracts are checked only for a method declaration";
         visitor.checker.reportError(
-            visitor.methodTree,
+            methodTree,
             messageKey,
             jexpr,
-            visitor.methodTree.getName(),
+            methodTree.getName(),
             overriddenTypeString,
             overriddenAnno,
             overriderTypeString,
@@ -1089,6 +1114,8 @@ public class OverrideChecker {
     // where the contract was defined.  For example, methodTree might be an overriding
     // definition, and the contract might be for a superclass.
     MethodTree methodTree = visitor.methodTree;
+    assert methodTree != null
+        : "@AssumeAssertion(nullness): contracts are checked only for a method declaration";
 
     StringToJavaExpression stringToJavaExpr =
         expression -> {
