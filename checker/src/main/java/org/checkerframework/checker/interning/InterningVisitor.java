@@ -27,10 +27,12 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
@@ -112,6 +114,37 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     TypeMirror type = TreeUtils.typeOf(tree);
     return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
+  }
+
+  /**
+   * If {@code valueExpTree} is a constant whose boxing conversion to {@code varType} yields a
+   * cached object, as in {@code @Interned Integer i = 5;}, checks the boxed value as @Interned.
+   * Otherwise, behaves like the overridden method.
+   */
+  @Override
+  protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      ExpressionTree valueExpTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    TypeMirror valueTM = TreeUtils.typeOf(valueExpTree);
+    if (valueTM.getKind().isPrimitive()
+        && !varType.getKind().isPrimitive()
+        && !shouldSkipUses(valueExpTree)) {
+      // The assignment boxes the value.  A constant is narrowed first if the variable's type is a
+      // boxed primitive of a narrower type, as in `Byte b = 1;` (JLS 5.2).
+      TypeMirror varTM = varType.getUnderlyingType();
+      TypeMirror primitiveTM =
+          TypesUtils.isBoxedPrimitive(varTM) ? types.unboxedType(varTM) : valueTM;
+      if (atypeFactory.isCachedWhenBoxed(valueExpTree, primitiveTM.getKind())) {
+        AnnotatedTypeMirror boxedType =
+            AnnotatedTypeMirror.createType(
+                types.boxedClass((PrimitiveType) primitiveTM).asType(), atypeFactory, false);
+        boxedType.addAnnotation(INTERNED);
+        return commonAssignmentCheck(varType, boxedType, valueExpTree, errorKey, extraArgs);
+      }
+    }
+    return super.commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
   }
 
   /** Checks comparison operators, == and !=, for INTERNING violations. */

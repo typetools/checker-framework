@@ -22,16 +22,16 @@ public class ConstantNarrowingToByte {
   }
 
   void narrowToShort() {
-    // A boxed short is not interned.
+    // A boxed short outside the range -128 to 127 is not interned.
     // :: error: [assignment]
-    @Interned Short s = (char) 1;
+    @Interned Short s = (char) 1000;
+    @Interned Short s2 = (char) 1;
   }
 
   void widenToShort() {
     // Assignment conversion widens a constant byte to short before boxing it, so the value is boxed
-    // by Short.valueOf(), not by Byte.valueOf().
+    // by Short.valueOf(), not by Byte.valueOf().  Short.valueOf() caches every byte value.
     Short s = (byte) 1;
-    // :: error: [assignment]
     @Interned Object o = s;
   }
 }

@@ -43,11 +43,10 @@ public class MethodInvocation {
   void internedCharacterParametersClient() {
     // :: error: [argument]
     internedCharacterParameter('\u00E4'); // lowercase a with umlaut
-    // :: error: [argument]
+    // Boxing a char from '\u0000' to '\u007f' yields a cached object.
     internedCharacterParameter('a');
-    // :: error: [argument]
     internedCharacterParameter(Character.valueOf('a'));
     // :: error: [argument]
-    internedCharacterParameter(Character.valueOf('a'));
+    internedCharacterParameter(Character.valueOf('\u00E4'));
   }
 }

@@ -2,13 +2,18 @@ package org.checkerframework.checker.interning;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -35,6 +40,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An {@link AnnotatedTypeFactory} that accounts for the properties of the Interned type system.
@@ -216,6 +222,20 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      // A call such as `Integer.valueOf(5)` returns a cached, interned object.  Because javac
+      // implements a boxing conversion by such a call, this also handles the boxing conversions
+      // that the CFG makes explicit.
+      ExecutableElement method = TreeUtils.elementFromUse(tree);
+      if (isPrimitiveValueOf(method)
+          && isCachedWhenBoxed(
+              tree.getArguments().get(0), types.unboxedType(method.getReturnType()).getKind())) {
+        type.replaceAnnotation(INTERNED);
+      }
+      return super.visitMethodInvocation(tree, type);
+    }
+
+    @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
       Element e = TreeUtils.elementFromUse(tree);
       if (atypeFactory.getDeclAnnotation(e, FindDistinct.class) != null) {
@@ -279,6 +299,53 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationMirrorSet annos, TypeKind primitiveKind) {
     boolean everyValueCached = primitiveKind == TypeKind.BOOLEAN || primitiveKind == TypeKind.BYTE;
     return replaceInterningAnnotation(annos, everyValueCached ? INTERNED : TOP);
+  }
+
+  /**
+   * Returns true if {@code method} is the {@code valueOf} method of a boxed primitive whose formal
+   * parameter is a primitive, such as {@code Integer.valueOf(int)}. Returns false for {@code
+   * Integer.valueOf(String)}.
+   *
+   * @param method a method
+   * @return true if {@code method} is the {@code valueOf} method of a boxed primitive whose formal
+   *     parameter is a primitive
+   */
+  private static boolean isPrimitiveValueOf(ExecutableElement method) {
+    return method.getSimpleName().contentEquals("valueOf")
+        && method.getModifiers().contains(Modifier.STATIC)
+        && method.getParameters().size() == 1
+        && method.getParameters().get(0).asType().getKind().isPrimitive()
+        && TypesUtils.isBoxedPrimitive(method.getReturnType());
+  }
+
+  /**
+   * Returns true if {@code tree} is a constant expression (JLS 15.29) whose every boxing conversion
+   * to the boxed primitive of {@code boxedKind} yields the same object (JLS 5.1.7). That is the
+   * case if the constant is {@code true}, {@code false}, a {@code byte}, a {@code char} from {@code
+   * '\u0000'} to {@code '\u007f'}, or a {@code short}, {@code int}, or {@code long} from -128 to
+   * 127. For example, returns true for {@code 5} and {@code int}, because every boxing of {@code 5}
+   * to {@code Integer} yields the same object, and returns false for {@code 1000} and {@code int}.
+   *
+   * @param tree an expression of primitive type
+   * @param boxedKind the primitive type whose boxed primitive {@code tree} is converted to, such as
+   *     {@code int} for {@code Integer}; it differs from the type of {@code tree} when a constant
+   *     is narrowed before it is boxed, as in {@code Byte b = 1;}
+   * @return true if {@code tree} is a constant expression whose every boxing conversion to the
+   *     boxed primitive of {@code boxedKind} yields the same object
+   */
+  public boolean isCachedWhenBoxed(ExpressionTree tree, TypeKind boxedKind) {
+    Type type = (Type) TreeUtils.typeOf(tree);
+    // javac represents a constant of type boolean, byte, char, short, or int as an Integer.
+    if (type == null || !(type.constValue() instanceof Number value)) {
+      return false;
+    }
+    long longValue = value.longValue();
+    return switch (boxedKind) {
+      case BOOLEAN, BYTE -> true;
+      case CHAR -> 0 <= longValue && longValue <= 0x7f;
+      case SHORT, INT, LONG -> -128 <= longValue && longValue <= 127;
+      default -> false;
+    };
   }
 
   /**

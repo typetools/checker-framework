@@ -399,15 +399,18 @@ subclasses and superclasses of the given class.
 % There is no point to linking to the Javadoc for the valueOf methods,
 % which don't discuss interning.
 
-The Interning Checker conservatively assumes that boxing a \<char>,
-\<short>, \<int>, or \<long> value yields a non-interned value, whether
-the boxing is done by autoboxing or by a call to the \<valueOf> method of
-\<Character>, \<Short>, \<Integer>, or \<Long>.  In fact, boxing
-sometimes yields an interned value and sometimes a non-interned value,
-depending on the run-time value (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS
-\S5.1.7}).  For example, the Interning Checker reports an error for
-\<@Interned Integer i = 5;>, even though every boxing of 5 yields the same
-object.  If you know that the value being boxed implies that the result is
+Boxing a \<char>, \<short>, \<int>, or \<long> value, whether by
+autoboxing or by a call to the \<valueOf> method of \<Character>,
+\<Short>, \<Integer>, or \<Long>, sometimes yields an interned value and
+sometimes a non-interned value, depending on the run-time value
+(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS
+\S5.1.7}).  Every boxing of a \<char> from \<'\textbackslash u0000'> to
+\<'\textbackslash u007f'>, or of an integer from -128 to 127, yields the
+same object.  The Interning Checker treats the boxing of such a value as
+interned only if the value is a constant expression, as in
+\<@Interned Integer i = 5;>.  It conservatively assumes that the boxing of
+any other value, as in \<@Interned Integer i = n;>, yields a non-interned
+value.  If you know that the value being boxed implies that the result is
 interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper
 and lower bounds on char, short, int, and long values so that it can more

@@ -28,12 +28,12 @@ public class Creation {
 
   public @Interned Object read_data_1() {
     // :: error: [return]
-    return Integer.valueOf(22);
+    return Integer.valueOf(2222);
   }
 
   public @Interned Integer read_data_2() {
     // :: error: [return]
-    return Integer.valueOf(22);
+    return Integer.valueOf(2222);
   }
 
   public @Interned Object read_data_3() {
