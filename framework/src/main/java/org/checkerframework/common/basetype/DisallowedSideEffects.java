@@ -68,7 +68,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   /**
    * List of expressions specified as annotation arguments in the {@link SideEffectsOnly} annotation
-   * of the method being checked.
+   * of the method being checked, with every use of {@code super} replaced by {@code this}, as in
+   * {@link #expressionFromTree}.
    */
   protected final List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
@@ -104,7 +105,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       BaseTypeChecker checker,
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
-    this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
+    List<JavaExpression> fromAnnotation = new ArrayList<>(sideEffectsOnlyExpressions.size());
+    for (JavaExpression expr : sideEffectsOnlyExpressions) {
+      fromAnnotation.add(JavaExpression.superToThis(expr));
+    }
+    this.sideEffectsOnlyExpressionsFromAnnotation = fromAnnotation;
     this.checker = checker;
     LocalAssignmentScanner localAssignments = new LocalAssignmentScanner();
     for (Tree tree : checkedCode) {
@@ -296,8 +301,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   /**
    * Returns the JavaExpression for the given tree, with every use of {@code super} replaced by
    * {@code this}. {@code super.f} and {@code this.f} are the same location, so they must be
-   * compared alike against the {@link SideEffectsOnly} annotation, which cannot mention {@code
-   * super}.
+   * compared alike against the {@link SideEffectsOnly} annotation, whose expressions are rewritten
+   * the same way. A {@link FieldAccess} stores the field that it refers to, so rewriting {@code
+   * super.f} as {@code this.f} does not change which field it denotes, even if a field of the
+   * current class hides {@code f}.
    *
    * @param tree an expression tree
    * @return the JavaExpression for the tree, written in terms of {@code this} rather than {@code
