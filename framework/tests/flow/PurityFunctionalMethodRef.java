@@ -182,6 +182,23 @@ public class PurityFunctionalMethodRef {
     UnannotatedApplier e = PurityFunctionalMethodRef::passStatic;
   }
 
+  static class SuperReferences extends PurityFunctionalMethodRef {
+    @Override
+    @SideEffectFree
+    int ignoreOverridable(Function<String, Integer> f, String s) {
+      return applyStatic(f, s);
+    }
+
+    void superReferences() {
+      // A `super` method reference runs PurityFunctionalMethodRef.ignoreOverridable itself, not
+      // an override of it, and that body does not rely on the purity of f.
+      UnannotatedApplier a = super::ignoreOverridable;
+      // This reference runs the override, which relies on the purity of f.
+      // :: error: [purity.methodref.functional.parameter]
+      UnannotatedApplier b = this::ignoreOverridable;
+    }
+  }
+
   /** A subinterface that redeclares {@code Function.apply}, with no purity annotation. */
   @FunctionalInterface
   interface PlainFunction extends Function<String, Integer> {

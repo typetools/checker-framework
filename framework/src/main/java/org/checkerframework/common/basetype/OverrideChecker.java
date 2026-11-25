@@ -434,6 +434,10 @@ public class OverrideChecker {
       return;
     }
     int offset = methodRefParameterOffset();
+    // A `super` method reference runs the referenced method itself, not an override of it.
+    boolean isSuperReference =
+        MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+            == MemberReferenceKind.SUPER;
     List<? extends VariableElement> params = referenced.getParameters();
     for (int i = 0; i < params.size(); i++) {
       ExecutableElement parameterFunction =
@@ -471,7 +475,7 @@ public class OverrideChecker {
         if (!provided.containsAll(assumed)) {
           // The error message names the first declaration whose calls lack the guarantee.
           if (visitor.mightRelyOnFunctionalParameter(
-              referenced, params.get(i), parameterFunction)) {
+              referenced, params.get(i), parameterFunction, isSuperReference)) {
             visitor.reportErrorOnce(
                 overriderTree,
                 "purity.methodref.functional.parameter",
@@ -488,33 +492,14 @@ public class OverrideChecker {
   }
 
   /**
-   * Returns the methods through which a call can run the referenced method (see {@link
-   * BaseTypeVisitor#methodsThatRun}), each with the type through which such a call is made. That
-   * type is the functional interface type that the method reference implements, unless the method
-   * is in the hierarchy of another bound of an intersection cast; then it is that bound.
+   * Returns the methods through which a call can run the referenced method, each with the type
+   * through which such a call is made; see {@link BaseTypeVisitor#callableDeclarationsThatRun}.
    *
    * @return the methods through which a call can run the referenced method, starting with the
    *     functional interface method
    */
   private List<CallableDeclaration> methodsThatRunReference() {
-    DeclaredType targetType = overriddenType.getUnderlyingType();
-    List<DeclaredType> castBounds = visitor.intersectionCastBounds(overriderTree);
-    List<CallableDeclaration> result = new ArrayList<>();
-    for (ExecutableElement method :
-        visitor.methodsThatRun(overriderTree, overridden.getElement())) {
-      TypeMirror erasedOwner = types.erasure(method.getEnclosingElement().asType());
-      DeclaredType receiverType = targetType;
-      if (!types.isSubtype(types.erasure(targetType), erasedOwner)) {
-        for (DeclaredType bound : castBounds) {
-          if (types.isSubtype(types.erasure(bound), erasedOwner)) {
-            receiverType = bound;
-            break;
-          }
-        }
-      }
-      result.add(new CallableDeclaration(method, receiverType));
-    }
-    return result;
+    return visitor.callableDeclarationsThatRun(overriderTree, overridden.getElement());
   }
 
   /**
@@ -714,6 +699,10 @@ public class OverrideChecker {
               usesVarargsArray[0] = true;
               return new Unknown(parameter.getType());
             }
+            // The referenced method's parameter holds the interface method's argument throughout
+            // the referenced method's body:  `BaseTypeVisitor.checkSideEffectsOnlyAnnotation`
+            // requires that a parameter that its `@SideEffectsOnly` annotation names is
+            // effectively final.
             return superParameters.get(parameter.getIndex() - 1 + shift);
           }
 

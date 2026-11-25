@@ -1413,6 +1413,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checker.reportError(tree, "purity.impure.sideeffectsonly", st);
             return;
           }
+          // `#n` permits effects on the caller's argument.  The body is checked, and a method
+          // reference is translated (in `OverrideChecker.atFunctionalInterfaceMethod`), as if the
+          // parameter holds that argument throughout the body.  Reassigning the parameter would
+          // make it denote another object, whose modification `#n` does not permit.
+          checkParametersAreEffectivelyFinal(tree, exprJe);
           seOnlyExpressions.add(exprJe);
         } catch (JavaExpressionParseException ex) {
           // This diagnostic is about parsing the expression in order to check the method body
@@ -2005,13 +2010,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * annotations false. Calling {@code parameterFunction} on the parameter relies on the assumption,
    * as does passing the parameter to another method, which might call it.
    *
-   * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
-   * and no use of {@code parameter} in that body relies on the assumption: the body uses {@code
-   * parameter} only as an operand of a binary operator such as {@code ==}, as the destination or
-   * the value of an assignment, as the value of a variable initializer or of a return statement, or
-   * as the receiver of a call to a method other than {@code parameterFunction} and its overrides,
-   * such as {@code hashCode}. The result is true for a method that can be overridden, because the
-   * body of an override that the checker does not see might rely on the assumption.
+   * <p>The result is false only if the call runs {@code method}'s own body, its body is in source
+   * code, and no use of {@code parameter} in that body relies on the assumption: the body uses
+   * {@code parameter} only as an operand of a binary operator such as {@code ==}, as the
+   * destination or the value of an assignment, as the value of a variable initializer or of a
+   * return statement, or as the receiver of a call to a method other than {@code
+   * parameterFunction} and its overrides, such as {@code hashCode}. The call runs {@code method}'s
+   * own body if {@code method} cannot be overridden, or if the call is through a {@code super}
+   * method reference such as {@code super::m}, which is not dispatched dynamically (JLS 15.13.3).
+   * Otherwise the result is true, because the body of an override that the checker does not see
+   * might rely on the assumption.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
@@ -2020,12 +2028,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param method a method or constructor
    * @param parameter a functional-interface parameter of {@code method}
    * @param parameterFunction the functional method of {@code parameter}'s type
+   * @param isSuperReference true if the call is through a {@code super} method reference, which
+   *     runs {@code method} itself rather than an override of it
    * @return true if the purity annotations of {@code method}, or of code that a call to {@code
    *     method} runs, might hold only if the argument to {@code parameter} has the computed purity
    */
   boolean mightRelyOnFunctionalParameter(
-      ExecutableElement method, VariableElement parameter, ExecutableElement parameterFunction) {
-    if (isOverridable(method)) {
+      ExecutableElement method,
+      VariableElement parameter,
+      ExecutableElement parameterFunction,
+      boolean isSuperReference) {
+    if (!isSuperReference && isOverridable(method)) {
       return true;
     }
     if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
@@ -3712,8 +3725,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     List<DeclaredType> castBounds = intersectionCastBounds(tree);
     TypeElement owner = (TypeElement) functionalMethod.getEnclosingElement();
     TypeMirror erasedOwner = types.erasure(owner.asType());
-    // The type that the functional method is a member of.  Its type arguments matter only for an
-    // intersection cast, in which case they are the cast's.
+    // The type that the functional method is a member of, through which a call runs `tree`.  For an
+    // intersection cast, its type arguments are the cast's.  Like each bound of an intersection
+    // cast, it has no wildcard type argument (JLS 9.9), so that the types of its methods' parameters
+    // contain no wildcard either.
     DeclaredType targetType = null;
     for (DeclaredType bound : castBounds) {
       if (types.isSubtype(types.erasure(bound), erasedOwner)) {
@@ -3726,7 +3741,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       targetType =
           treeType instanceof DeclaredType declaredTreeType
                   && types.isSubtype(types.erasure(declaredTreeType), erasedOwner)
-              ? declaredTreeType
+              ? TypesUtils.nonWildcardParameterization(declaredTreeType, env)
               : (DeclaredType) owner.asType();
     }
 
