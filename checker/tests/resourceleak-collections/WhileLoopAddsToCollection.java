@@ -24,6 +24,19 @@ class WhileLoopAddsToCollection {
     }
   }
 
+  void addThroughParenthesizedReceiverInIteratorLoop() {
+    List<Resource> list = new CopyOnWriteArrayList<>();
+    list.add(new Resource());
+    Iterator<Resource> it = list.iterator();
+    while (it.hasNext()) {
+      Resource r = it.next();
+      r.close();
+      r.flush();
+      // :: error: unfulfilled.collection.obligations
+      (list).add(new Resource());
+    }
+  }
+
   @InheritableMustCall("close")
   static class Refill {
     @OwningCollection List<Resource> resources = new ArrayList<>();

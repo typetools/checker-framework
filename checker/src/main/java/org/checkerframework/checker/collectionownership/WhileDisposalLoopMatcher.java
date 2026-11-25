@@ -27,8 +27,10 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -576,7 +578,7 @@ final class WhileDisposalLoopMatcher {
       return false;
     }
 
-    ExpressionTree receiver = memberSelectTree.getExpression();
+    ExpressionTree receiver = TreeUtils.withoutParens(memberSelectTree.getExpression());
     Name receiverName = CollectionOwnershipUtils.getNameFromExpressionTree(receiver);
     if (receiverName == null || receiverName != headerVarName) {
       return false;
@@ -1022,14 +1024,16 @@ final class WhileDisposalLoopMatcher {
   /**
    * The blocks of one CFG copy of a matched while loop.
    *
-   * @param updateBlock the loop-update block: the target of the loop's back edge
-   * @param blocks the blocks of the natural loop
+   * @param updateBlock the loop-update block: the target of the loop's back edges
+   * @param blocks the blocks of the loop
    */
   private record LoopBlocks(Block updateBlock, Set<Block> blocks) {}
 
   /**
-   * Chooses the loop-update block and the blocks of a matched while loop by selecting the smallest
-   * natural loop that contains both the body entry and the loop conditional.
+   * Chooses the loop-update block and the blocks of a matched while loop. The loop is the smallest
+   * one that contains both the body entry and the loop conditional, where a loop is the union of
+   * the natural loops of all the back edges to the same target. A {@code continue} statement gives
+   * a {@code while} loop a back edge whose natural loop omits the rest of the body.
    *
    * @param bodyEntryBlock the loop body entry block
    * @param conditionalBlock the loop conditional block
@@ -1040,27 +1044,25 @@ final class WhileDisposalLoopMatcher {
       Block bodyEntryBlock,
       ConditionalBlock conditionalBlock,
       WhileLoopResolutionCache whileLoopCache) {
-    LoopBlocks bestLoop = null;
-    int bestLoopSize = Integer.MAX_VALUE;
-
+    // Map from the target of back edges to the union of their natural loops.
+    Map<Block, Set<Block>> loopsByTarget = new LinkedHashMap<>();
     for (WhileLoopResolutionCache.BackEdge backEdge : whileLoopCache.getBackEdges()) {
-      Set<Block> naturalLoop = whileLoopCache.getNaturalLoopForBackEdge(backEdge);
-
-      if (!naturalLoop.contains(bodyEntryBlock)) {
-        continue;
-      }
-      if (!naturalLoop.contains(conditionalBlock)) {
-        continue;
-      }
-
-      // Prefer the smallest natural loop containing both the body entry and the conditional block,
-      // which most closely matches the while loop being resolved.
-      if (naturalLoop.size() < bestLoopSize) {
-        bestLoopSize = naturalLoop.size();
-        bestLoop = new LoopBlocks(backEdge.targetBlock, naturalLoop);
-      }
+      loopsByTarget
+          .computeIfAbsent(backEdge.targetBlock, k -> new HashSet<>())
+          .addAll(whileLoopCache.getNaturalLoopForBackEdge(backEdge));
     }
 
+    LoopBlocks bestLoop = null;
+    for (Map.Entry<Block, Set<Block>> entry : loopsByTarget.entrySet()) {
+      Set<Block> loop = entry.getValue();
+      if (!loop.contains(bodyEntryBlock) || !loop.contains(conditionalBlock)) {
+        continue;
+      }
+      // Prefer the smallest loop, which most closely matches the while loop being resolved.
+      if (bestLoop == null || loop.size() < bestLoop.blocks().size()) {
+        bestLoop = new LoopBlocks(entry.getKey(), loop);
+      }
+    }
     return bestLoop;
   }
 

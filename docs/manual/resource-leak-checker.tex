@@ -806,9 +806,20 @@ The call to \<next()> or to the removal method must not be in a loop nested
 within the loop body, even one that runs only once.
 The loop body must not assign to the iterator or collection variable in the
 loop condition.  The body may use that variable only as the receiver of a
-method call:  of \<next()> or the removal method, or of a method that neither
-advances the iterator nor removes elements, such as \<hasNext()> or
-\<peek()>.  In particular, the body must not pass the variable as an argument,
+call to one of these methods:
+\begin{itemize}
+  \item in an iterator loop:  \<next()> or \<hasNext()>.  (\<remove()> is not
+    permitted on an iterator over a resource collection; see
+    Section \ref{resource-leak-collections-iterators}.)
+  \item in a loop that empties the collection:  the removal method,
+    \<contains>, \<containsAll>, \<element>, \<getFirst>, \<getLast>,
+    \<isEmpty>, \<peek>, \<peekFirst>, \<peekLast>, \<size>, or a method that
+    inserts into the collection, such as \<add>.
+\end{itemize}
+\noindent
+A call to any other method, even one that only reads the variable, such as
+\<toString()>, prevents the checker from recognizing the loop.
+The body must not pass the variable as an argument,
 even to a method that only reads it, and must not assign it to another
 variable.  The body of an iterator loop must not add elements to the
 collection or replace its elements, because the iterator might not visit the

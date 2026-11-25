@@ -3685,6 +3685,13 @@ public class MustCallConsistencyAnalyzer {
     worklist.add(loopBodyEntry);
     visited.add(loopBodyEntry);
     Set<Block> loopRegion = computeLoopRegion(loopBodyEntryBlock, loopUpdateBlock);
+    // A path that reaches the end of the loop body from a block that the extraction of the element
+    // cannot reach, as through a `continue` statement before `it.next()` in a `while` loop, takes
+    // no
+    // element from the collection, so it does not affect whether the loop disposes of the elements.
+    Block extractionBlock = disposalLoopInfo.iteratedElementNode().getBlock();
+    Set<Block> reachableFromExtraction =
+        extractionBlock == null ? loopRegion : reachableWithinRegion(extractionBlock, loopRegion);
 
     // The methods that the loop body definitely calls on the iterated element: the least upper
     // bound of the element's Called Methods types over the paths that reach the end of the loop
@@ -3723,6 +3730,9 @@ public class MustCallConsistencyAnalyzer {
           continue;
         }
         if (isLastBlockOfBody) {
+          if (!reachableFromExtraction.contains(currentBlock)) {
+            continue;
+          }
           AnnotationMirror calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(
                   currentBlock, disposalLoopInfo, obligations, loopUpdateBlock);
@@ -3836,6 +3846,32 @@ public class MustCallConsistencyAnalyzer {
     forward.retainAll(canReachUpdate);
     forward.remove(update);
     return forward;
+  }
+
+  /**
+   * Returns the blocks of {@code region} that {@code start} reaches along edges within {@code
+   * region}, using {@link #getSuccessorsExceptIgnoredExceptions(Block)}. The result includes {@code
+   * start}.
+   *
+   * @param start a block
+   * @param region the blocks that a path is permitted to pass through
+   * @return {@code start} and the blocks of {@code region} that it reaches within {@code region}
+   */
+  private Set<Block> reachableWithinRegion(Block start, Set<Block> region) {
+    Set<Block> result = new HashSet<>();
+    Deque<Block> worklist = new ArrayDeque<>();
+    result.add(start);
+    worklist.add(start);
+    while (!worklist.isEmpty()) {
+      Block block = worklist.remove();
+      for (SuccessorAndExceptionType succ : getSuccessorsExceptIgnoredExceptions(block)) {
+        Block successor = succ.successor();
+        if (region.contains(successor) && result.add(successor)) {
+          worklist.add(successor);
+        }
+      }
+    }
+    return result;
   }
 
   /**
