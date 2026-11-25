@@ -32,7 +32,7 @@ public class NotInheritedThroughOtherPackage extends Middle {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    CharBuffer getSibling1CharBuffer(NotInheritedThroughOtherPackage this) {
+    CharBuffer getSibling1CharBuffer() {
         return null;
     }
 }
