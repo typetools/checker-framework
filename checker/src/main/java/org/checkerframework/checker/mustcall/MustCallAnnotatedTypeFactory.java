@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -495,7 +496,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       ExecutableElement declaration, AnnotatedExecutableType type) {
     List<AnnotatedTypeMirror> paramTypes = type.getParameterTypes();
     List<? extends AnnotatedTypeMirror> coParamTypes = null;
-    // The type variables of the invoked method that are the element type of a borrowed parameter.
+    // The type variables of the invoked method that are the element type of a borrowed parameter,
+    // or transitively the upper bound of one.
     Set<Element> elementTypeVariables = new HashSet<>();
     for (int i = 0; i < paramTypes.size(); i++) {
       AnnotatedTypeMirror elementType =
@@ -534,15 +536,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         }
       }
       if (elementType instanceof AnnotatedTypeVariable typeVariable) {
-        TypeVariable underlying = typeVariable.getUnderlyingType();
-        TypeMirror bound = underlying.getUpperBound();
-        // Only a type variable of the invoked method, and only if its bound is not written.
-        if (declaration.getTypeParameters().contains(underlying.asElement())
-            && TypesUtils.isObject(bound)
-            && !AnnotationUtils.containsSameByClass(bound.getAnnotationMirrors(), MustCall.class)
-            && !ResourceLeakUtils.hasManualMustCallUnknownAnno(bound)) {
-          elementTypeVariables.add(underlying.asElement());
-        }
+        elementTypeVariables.addAll(
+            typeVariablesBoundedByUnannotatedObject(typeVariable.getUnderlyingType(), declaration));
       }
     }
     if (elementTypeVariables.isEmpty()) {
@@ -559,6 +554,40 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               return null;
             })
         .visit(type);
+  }
+
+  /**
+   * Returns the given type variable and the type variables that are, transitively, its upper bound,
+   * if they are all type parameters of the given method and the last one's upper bound is {@code
+   * Object} with no written must-call annotation. Otherwise, returns the empty list. For example,
+   * for {@code U} in {@code <T, U extends T>}, returns {@code U} and {@code T}; for {@code U} in
+   * {@code <T extends @MustCall("close") Object, U extends T>} or in {@code <T, U
+   * extends @MustCall("close") T>}, returns the empty list.
+   *
+   * @param typeVariable a type variable
+   * @param method a method that might declare {@code typeVariable}
+   * @return {@code typeVariable} and the type variables that are, transitively, its upper bound, or
+   *     the empty list
+   */
+  private static List<Element> typeVariablesBoundedByUnannotatedObject(
+      TypeVariable typeVariable, ExecutableElement method) {
+    List<Element> result = new ArrayList<>();
+    while (method.getTypeParameters().contains(typeVariable.asElement())) {
+      result.add(typeVariable.asElement());
+      TypeMirror bound = typeVariable.getUpperBound();
+      if (AnnotationUtils.containsSameByClass(bound.getAnnotationMirrors(), MustCall.class)
+          || ResourceLeakUtils.hasManualMustCallUnknownAnno(bound)) {
+        break;
+      }
+      if (TypesUtils.isObject(bound)) {
+        return result;
+      }
+      if (!(bound instanceof TypeVariable boundTypeVariable)) {
+        break;
+      }
+      typeVariable = boundTypeVariable;
+    }
+    return Collections.emptyList();
   }
 
   @Override

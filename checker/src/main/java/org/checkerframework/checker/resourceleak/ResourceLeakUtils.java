@@ -388,9 +388,12 @@ public final class ResourceLeakUtils {
    */
   public static @Nullable List<String> getMcValues(
       TypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
-    // Replace a type variable or wildcard with its upper bound, until the type is neither or the
-    // bound is annotated, as in `T extends @MustCall("close") R`.
-    while (type instanceof TypeVariable || type instanceof WildcardType) {
+    // Replace a type variable or wildcard with its upper bound, until the type is neither or is
+    // annotated, as the use `@MustCall("close") T` and the bound in `T extends @MustCall("close")
+    // R` are.
+    while ((type instanceof TypeVariable || type instanceof WildcardType)
+        && !AnnotationUtils.containsSameByClass(type.getAnnotationMirrors(), MustCall.class)
+        && !hasManualMustCallUnknownAnno(type)) {
       if (type instanceof TypeVariable typeVariable) {
         type = typeVariable.getUpperBound();
       } else {
@@ -399,10 +402,6 @@ public final class ResourceLeakUtils {
       if (type == null) {
         // There is no upper bound, as for a wildcard with no extends clause.
         return null;
-      }
-      if (AnnotationUtils.containsSameByClass(type.getAnnotationMirrors(), MustCall.class)
-          || hasManualMustCallUnknownAnno(type)) {
-        break;
       }
     }
 

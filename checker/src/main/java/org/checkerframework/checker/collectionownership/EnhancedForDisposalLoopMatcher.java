@@ -27,7 +27,6 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
 /** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
@@ -83,8 +82,7 @@ final class EnhancedForDisposalLoopMatcher {
     // If the body reassigns the collection variable, the loop still iterates over the original
     // collection, but after the loop the variable refers to a different collection.
     Element collectionElement =
-        CollectionOwnershipUtils.getElementFromExpressionTree(
-            TreeUtils.withoutParens(tree.getExpression()));
+        CollectionOwnershipUtils.getElementFromExpressionTree(tree.getExpression());
     if (collectionElement != null && assignsTo(tree.getStatement(), collectionElement)) {
       return Set.of();
     }
@@ -134,8 +132,7 @@ final class EnhancedForDisposalLoopMatcher {
    * @return true if {@code body} might insert into or replace elements of {@code collection}
    */
   private boolean mutatesIteratedCollection(StatementTree body, ExpressionTree collection) {
-    Name collectionName =
-        CollectionOwnershipUtils.getNameFromExpressionTree(TreeUtils.withoutParens(collection));
+    Name collectionName = CollectionOwnershipUtils.getNameFromExpressionTree(collection);
     boolean isFieldOfThis =
         CollectionOwnershipUtils.isOwningCollectionFieldOfThis(collection, coAtf);
     @Nullable Boolean result =

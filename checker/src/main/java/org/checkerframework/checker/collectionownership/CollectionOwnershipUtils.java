@@ -3,6 +3,7 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -72,6 +73,9 @@ public final class CollectionOwnershipUtils {
    */
   static @Nullable Element getElementFromExpressionTree(ExpressionTree expr) {
     switch (expr.getKind()) {
+      case PARENTHESIZED -> {
+        return getElementFromExpressionTree(((ParenthesizedTree) expr).getExpression());
+      }
       case IDENTIFIER -> {
         return TreeUtils.elementFromUse(expr);
       }
@@ -108,6 +112,9 @@ public final class CollectionOwnershipUtils {
    */
   static @Nullable Name getNameFromExpressionTree(ExpressionTree expr) {
     switch (expr.getKind()) {
+      case PARENTHESIZED -> {
+        return getNameFromExpressionTree(((ParenthesizedTree) expr).getExpression());
+      }
       case IDENTIFIER -> {
         return ((com.sun.source.tree.IdentifierTree) expr).getName();
       }
