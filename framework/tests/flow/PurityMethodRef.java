@@ -103,6 +103,88 @@ public class PurityMethodRef {
     PlainFirstFunc f4 = PurityMethodRef::mySideEffectFreeMethod;
   }
 
+  void intersectionCast() {
+    // A call through SefFunc.doNothing can run the reference.
+    // :: error: [purity.methodref]
+    Object f1 = (PlainFunc & SefFunc) PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    Object f2 = (SefFunc & PlainFunc) PurityMethodRef::myMethod;
+    Object f3 = (PlainFunc & SefFunc) PurityMethodRef::mySideEffectFreeMethod;
+    Object f4 = (PlainFunc & java.io.Serializable) PurityMethodRef::myMethod;
+    // The first bound is not a functional interface.
+    // :: error: [purity.methodref]
+    Object f5 = (java.io.Serializable & SefFunc) PurityMethodRef::myMethod;
+  }
+
+  @FunctionalInterface
+  interface GenSefFunc<T> {
+    @SideEffectFree
+    T doNothing();
+  }
+
+  @FunctionalInterface
+  interface GenPlainFunc<T> {
+    T doNothing();
+  }
+
+  @FunctionalInterface
+  interface GenPlainFirstFunc<T> extends GenPlainFunc<T>, GenSefFunc<T> {}
+
+  void genericSuperinterfaces() {
+    // :: error: [purity.methodref]
+    GenPlainFirstFunc<String> f1 = PurityMethodRef::myMethod;
+    GenPlainFirstFunc<String> f2 = PurityMethodRef::mySideEffectFreeMethod;
+    // A bound with a wildcard type argument, which javac replaces by its non-wildcard
+    // parameterization.  javac rejects such a bound when another bound is a functional interface.
+    // :: error: [purity.methodref]
+    Object f3 = (java.io.Serializable & GenSefFunc<? extends String>) PurityMethodRef::myMethod;
+    Object f4 =
+        (java.io.Serializable & GenSefFunc<? extends String>)
+            PurityMethodRef::mySideEffectFreeMethod;
+    Object f5 = (java.io.Serializable & GenPlainFunc<? extends String>) PurityMethodRef::myMethod;
+  }
+
+  /** Inherits {@code SefFunc.doNothing} and {@code PureFunc.doNothing}, which differ in purity. */
+  @FunctionalInterface
+  interface SefAndPureFunc extends SefFunc, PureFunc {}
+
+  /** Inherits {@code SefFunc.doNothing} and {@code DetFunc.doNothing}, which differ in purity. */
+  @FunctionalInterface
+  interface SefAndDetFunc extends SefFunc, DetFunc {}
+
+  /**
+   * The errors together name every purity kind that the referenced method lacks, and no error names
+   * only kinds that another error names.
+   */
+  void differentPurities() {
+    // One error, for PureFunc.doNothing, which requires everything that SefFunc.doNothing does.
+    // :: error: [purity.methodref]
+    SefAndPureFunc f1 = PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    SefAndPureFunc f2 = PurityMethodRef::mySideEffectFreeMethod;
+    SefAndPureFunc f3 = PurityMethodRef::myPureMethod;
+    // Two errors, one for each declaration.
+    // :: error: [purity.methodref]
+    // :: error: [purity.methodref]
+    SefAndDetFunc f4 = PurityMethodRef::myMethod;
+    // :: error: [purity.methodref]
+    SefAndDetFunc f5 = PurityMethodRef::myDeterministicMethod;
+  }
+
+  /**
+   * A functional interface whose method is named {@code clone}. {@code Object.clone} is protected,
+   * so it does not prevent {@code Copier} from being a functional interface.
+   */
+  @FunctionalInterface
+  interface Copier {
+    Object clone();
+  }
+
+  /** {@code Object.clone} is {@code @SideEffectFree}, but it does not constrain the reference. */
+  void cloneMethod() {
+    Copier c = PurityMethodRef::myMethod;
+  }
+
   @FunctionalInterface
   interface PureRunnable {
     @Pure
