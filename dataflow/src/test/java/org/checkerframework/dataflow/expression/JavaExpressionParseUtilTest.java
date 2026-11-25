@@ -7,6 +7,8 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class JavaExpressionParseUtilTest {
@@ -49,5 +51,26 @@ public class JavaExpressionParseUtilTest {
   @Test
   public void m() {
     parse("1");
+  }
+
+  /** The negation of a floating-point literal is folded into a literal. */
+  @Test
+  public void negateFloatingPointLiteral() {
+    JavaExpression negation = parse("-1.5");
+    Assert.assertTrue(negation instanceof ValueLiteral);
+    Assert.assertEquals(TypeKind.DOUBLE, negation.getType().getKind());
+    Assert.assertEquals(-1.5, ((ValueLiteral) negation).getValue());
+
+    negation = parse("-1.5f");
+    Assert.assertTrue(negation instanceof ValueLiteral);
+    Assert.assertEquals(TypeKind.FLOAT, negation.getType().getKind());
+    Assert.assertEquals(-1.5f, ((ValueLiteral) negation).getValue());
+  }
+
+  /** The negation of a non-numeric literal is not folded. */
+  @Test
+  public void negateNonNumericLiteral() {
+    Assert.assertTrue(parse("-true") instanceof UnaryOperation);
+    Assert.assertTrue(parse("-\"s\"") instanceof UnaryOperation);
   }
 }
