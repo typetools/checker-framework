@@ -198,7 +198,13 @@ public class AliasingTransfer extends CFTransfer {
               + " is different from the"
               + " number of parameters for the method declaration: "
               + methodElement.getSimpleName();
-      CFStore store = in.getRegularStore();
+      // Clear values in the stores that super.visitMethodInvocation reads.  If `in` has a
+      // then-store and an else-store, then `in.getRegularStore()` returns a new store each time,
+      // so clearing a value in it would have no effect.
+      List<CFStore> stores =
+          in.containsTwoStores()
+              ? List.of(in.getThenStore(), in.getElseStore())
+              : List.of(in.getRegularStore());
 
       for (int i = 0; i < args.size(); i++) {
         Node arg = args.get(i);
@@ -206,7 +212,10 @@ public class AliasingTransfer extends CFTransfer {
         if (factory.getAnnotatedType(param).hasPrimaryAnnotation(LeakedToResult.class)) {
           // If argument can leak to result, and parent is not a
           // single statement, remove that node from store.
-          store.clearValue(JavaExpression.fromNode(arg));
+          JavaExpression argExpr = JavaExpression.fromNode(arg);
+          for (CFStore store : stores) {
+            store.clearValue(argExpr);
+          }
         }
       }
 
@@ -215,7 +224,10 @@ public class AliasingTransfer extends CFTransfer {
       AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
       AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
       if (receiverType != null && receiverType.hasPrimaryAnnotation(LeakedToResult.class)) {
-        store.clearValue(JavaExpression.fromNode(receiver));
+        JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+        for (CFStore store : stores) {
+          store.clearValue(receiverExpr);
+        }
       }
     }
     // If parent is a statement, processPostconditions will handle the pseudo-assignments.
