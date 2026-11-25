@@ -7,6 +7,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1185,7 +1186,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitAssignment(AssignmentTree node, Void aVoid) {
-      record(TreeUtils.elementFromTree(node.getVariable()), node.getExpression());
+      record(assignedVariable(node.getVariable()), node.getExpression());
       return super.visitAssignment(node, aVoid);
     }
 
@@ -1194,11 +1195,28 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // The only compound assignment that applies to a reference type is `+=` on a String.  Its
       // result is a fresh String, but a String cannot be modified, so nothing is gained by
       // treating the variable as fresh or as in `sideEffectsOnlyLocals`.
-      VariableElement local = localVariable(TreeUtils.elementFromTree(node.getVariable()));
+      VariableElement local = localVariable(assignedVariable(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
       }
       return super.visitCompoundAssignment(node, aVoid);
+    }
+
+    /**
+     * Returns the variable that an assignment to the given target changes, if the target is a
+     * variable itself, and null otherwise. For example, this returns null for an array access
+     * such as {@code a[0]}: assigning to it changes an element of the array, not the variable
+     * {@code a}. ({@link TreeUtils#elementFromTree} would return the element for {@code a}.)
+     *
+     * @param target the left-hand side of an assignment
+     * @return the variable that the assignment changes, or null if it changes no variable
+     */
+    private static @Nullable Element assignedVariable(ExpressionTree target) {
+      ExpressionTree stripped = TreeUtils.withoutParens(target);
+      if (stripped instanceof IdentifierTree) {
+        return TreeUtils.elementFromTree(stripped);
+      }
+      return null;
     }
 
     /**

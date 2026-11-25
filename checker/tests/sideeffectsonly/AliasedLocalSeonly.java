@@ -178,4 +178,38 @@ public class AliasedLocalSeonly {
     this.covered = new ArrayList<>();
     alias.add(1);
   }
+
+  Object[] coveredArray = new Object[1];
+
+  static Object uncoveredObject = new Object();
+
+  @SideEffectsOnly("#1")
+  static void modifyArray(Object[] a) {
+    a[0] = null;
+  }
+
+  @SideEffectsOnly("this")
+  void arrayElementWriteKeepsAlias() {
+    // Assigning to an element of `alias` does not assign to `alias` itself, so `alias` remains an
+    // alias of `this.coveredArray`.
+    Object[] alias = this.coveredArray;
+    alias[0] = uncoveredObject;
+    modifyArray(alias);
+  }
+
+  void arrayElementWriteIsNotAliasing() {
+    Object[] captured = new Object[1];
+    class Local {
+      Object field = new Object();
+
+      @SideEffectsOnly("this")
+      void m() {
+        // Assigning to an element of `captured` does not make `captured` an alias of `this.field`.
+        // :: error: (purity.incorrect.sideeffectsonly)
+        captured[0] = this.field;
+        // :: error: (purity.incorrect.sideeffectsonly)
+        modifyArray(captured);
+      }
+    }
+  }
 }
