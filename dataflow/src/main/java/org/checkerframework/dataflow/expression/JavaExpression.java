@@ -644,7 +644,14 @@ public abstract class JavaExpression {
         return fromTree(((ParenthesizedTree) tree).getExpression());
       }
       case UNARY_PLUS -> {
-        return fromTree(((UnaryTree) tree).getExpression());
+        JavaExpression operand = fromTree(((UnaryTree) tree).getExpression());
+        TypeMirror type = TreeUtils.typeOf(tree);
+        // The type of a unary plus is primitive, so it is the same as the operand's type if their
+        // kinds are the same.  Otherwise, unary numeric promotion changes the type, as for a byte.
+        if (type.getKind() == operand.getType().getKind()) {
+          return operand;
+        }
+        return new UnaryOperation(type, tree.getKind(), operand);
       }
       case BITWISE_COMPLEMENT,
           LOGICAL_COMPLEMENT,

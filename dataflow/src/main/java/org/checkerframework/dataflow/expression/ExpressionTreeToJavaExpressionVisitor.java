@@ -858,11 +858,14 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   public JavaExpression visitUnary(UnaryTree exprTree, Void unused) {
     Tree.Kind treeKind = exprTree.getKind();
     JavaExpression operand = exprTree.getExpression().accept(this, null);
-    // This eliminates + and performs constant-folding for -; it could also do so for other
-    // operations.
+    TypeMirror type = unaryOperationType(treeKind, operand.getType());
+    // This eliminates + when it does not change the type and performs constant-folding for -; it
+    // could also do so for other operations.
     switch (treeKind) {
       case UNARY_PLUS -> {
-        return operand;
+        if (types.isSameType(type, operand.getType())) {
+          return operand;
+        }
       }
       case UNARY_MINUS -> {
         if (operand instanceof ValueLiteral valueLiteral) {
@@ -875,11 +878,11 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       }
       default -> {} // No optimization for this operand
     }
-    return new UnaryOperation(unaryOperationType(treeKind, operand.getType()), treeKind, operand);
+    return new UnaryOperation(type, treeKind, operand);
   }
 
   /**
-   * Returns the type of a unary operation of the given kind whose operand has the given type.
+   * Returns the type of the unary operation of the given kind whose operand has the given type.
    *
    * @param operationKind a unary operation's kind, such as {@code Tree.Kind.UNARY_MINUS}
    * @param operandType the type of the operation's operand

@@ -7,6 +7,8 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class JavaExpressionParseUtilTest {
@@ -49,5 +51,24 @@ public class JavaExpressionParseUtilTest {
   @Test
   public void m() {
     parse("1");
+  }
+
+  /** A parsed unary operation has the type that unary numeric promotion gives it. */
+  @Test
+  public void unaryOperationPromotedType() {
+    // Unary numeric promotion:  the bitwise complement of a char is an int.
+    JavaExpression complement = parse("~'a'");
+    Assert.assertTrue(complement instanceof UnaryOperation);
+    Assert.assertEquals(TypeKind.INT, complement.getType().getKind());
+
+    // Unary numeric promotion:  the unary plus of a char is an int.
+    JavaExpression plus = parse("+'a'");
+    Assert.assertTrue(plus instanceof UnaryOperation);
+    Assert.assertEquals(TypeKind.INT, plus.getType().getKind());
+
+    // A unary plus that does not change the type is eliminated.
+    JavaExpression plusInt = parse("+1");
+    Assert.assertTrue(plusInt instanceof ValueLiteral);
+    Assert.assertEquals(TypeKind.INT, plusInt.getType().getKind());
   }
 }
