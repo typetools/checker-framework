@@ -3,6 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
@@ -282,6 +284,20 @@ public class OverrideChecker {
     // treated like a lambda whose body calls the referenced method.  Like such a call, a
     // side-effect-free referenced method that returns void is deterministic.
     EnumSet<PurityKind> subPurity = visitor.implementationPurityKinds(overrider.getElement());
+    // `f::get`, where `f` is a functional-interface parameter of the enclosing method, denotes the
+    // code that the caller of that method was required to check, as in `checkFunctionalArgument`.
+    // The guarantee is empty for any other qualifier, such as a local variable or a reassigned
+    // parameter.
+    TreePath referencePath = visitor.atypeFactory.getPath(overriderTree);
+    if (referencePath != null) {
+      subPurity.addAll(
+          PurityChecker.functionalParameterCallPurity(
+              visitor.atypeFactory,
+              ((MemberReferenceTree) overriderTree).getQualifierExpression(),
+              overrider.getElement(),
+              TreePathUtil.enclosingMethod(referencePath),
+              visitor.atypeFactory.getProcessingEnv()));
+    }
     // The methods to report, each paired with the purity kinds that it requires and the
     // referenced method lacks.  No element's kinds are a subset of another element's kinds.
     Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();

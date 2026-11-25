@@ -1970,14 +1970,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 env));
       }
     } else {
-      ExecutableElement argFunction =
-          PurityChecker.implementationOf(TreeUtils.typeOf(argument), paramFunction, env);
-      if (argFunction == null) {
+      List<ExecutableElement> argFunctions =
+          PurityChecker.implementationsOf(TreeUtils.typeOf(argument), paramFunction, env);
+      if (argFunctions.isEmpty()) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
         return;
       }
-      argKinds = implementationPurityKinds(argFunction);
+      // The code that the argument runs has the purity of every method that it implements.
+      argKinds = EnumSet.noneOf(PurityKind.class);
+      for (ExecutableElement implemented : argFunctions) {
+        argKinds.addAll(implementationPurityKinds(implemented));
+      }
+      ExecutableElement argFunction = argFunctions.get(0);
       // If the argument is a functional-interface parameter of the enclosing method, the caller
       // of that method was required to check the code that argFunction runs.
       argKinds.addAll(

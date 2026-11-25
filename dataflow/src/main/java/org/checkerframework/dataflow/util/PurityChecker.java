@@ -400,8 +400,8 @@ public final class PurityChecker {
    * arguments against {@code declaration}'s purity annotation only if the declared type of the
    * parameter is a functional interface, however. The call checks the argument's implementation of
    * that type's functional method, which is also its implementation of {@code parameterFunction} if
-   * the two methods are override-equivalent in {@code parameterType}, even if they are not in the
-   * declared type.
+   * every object of type {@code parameterType} implements the two methods with the same method (see
+   * {@link #isSameImplementation}), even if not every object of the declared type does.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method that a call might invoke
@@ -427,7 +427,8 @@ public final class PurityChecker {
     }
     // The call checks the argument's implementation of the functional method of the parameter's
     // declared type.  Every argument has type `parameterType`, so compare the two methods there:
-    // they can share an implementation in `parameterType` even if they do not in the declared type.
+    // every object of `parameterType` might implement both with one method even if not every
+    // object of the declared type does.
     ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
     if (declarationFunction != null
         && isSameImplementation(declarationFunction, parameterFunction, parameterType, env)) {
@@ -435,8 +436,8 @@ public final class PurityChecker {
       result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
       PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
     }
-    ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
-    if (implementation != null) {
+    for (ExecutableElement implementation :
+        implementationsOf(parameterType, parameterFunction, env)) {
       result.addAll(PurityUtils.getPurityKinds(annoProvider, implementation));
       PurityUtils.addDeterminismOfVoidCall(result, implementation.getReturnType());
     }
@@ -550,6 +551,60 @@ public final class PurityChecker {
   }
 
   /**
+   * Returns the methods whose purity annotations every object of type {@code type} satisfies with
+   * its implementation of the functional method {@code paramFunction}. The purity that the object's
+   * implementation has is the union of those methods' purity kinds. The result is empty if {@code
+   * type} has no implementation of {@code paramFunction}.
+   *
+   * <p>The first element of the result is {@link #implementationOf}. If that method is abstract, the
+   * result also contains every other abstract method of {@code type} that each object implements
+   * with the same method; see {@link #isSameImplementation}. For example, in {@code interface Both
+   * extends Getter, SefGetter}, every implementation of {@code Getter.get} also implements {@code
+   * SefGetter.get}, so it has the purity that {@code SefGetter.get}'s annotations promise, even if
+   * {@code Getter.get} has no purity annotation. The code that implements both methods, whether a
+   * lambda, a method reference, or a method of a class, is checked against every method that it
+   * implements.
+   *
+   * @param type a type, such as the type of an argument or of a formal parameter
+   * @param paramFunction a functional interface's functional method, such as {@code Function.apply}
+   * @param env the processing environment
+   * @return the methods whose purity every implementation of {@code paramFunction} in an object of
+   *     type {@code type} has; empty if {@code type} does not implement {@code paramFunction}
+   */
+  public static List<ExecutableElement> implementationsOf(
+      TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
+    ExecutableElement implementation = implementationOf(type, paramFunction, env);
+    if (implementation == null) {
+      return Collections.emptyList();
+    }
+    if (!implementation.getModifiers().contains(Modifier.ABSTRACT)) {
+      // The implementation is what runs, unless an override of it does.
+      return Collections.singletonList(implementation);
+    }
+    List<ExecutableElement> result = new ArrayList<>(2);
+    result.add(implementation);
+    if (type.getKind() == TypeKind.TYPEVAR) {
+      type = TypesUtils.upperBound(type);
+    }
+    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
+      return result;
+    }
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) {
+      return result;
+    }
+    for (ExecutableElement method :
+        ElementFilter.methodsIn(env.getElementUtils().getAllMembers(typeElement))) {
+      if (method.getModifiers().contains(Modifier.ABSTRACT)
+          && !result.contains(method)
+          && isSameImplementation(method, implementation, type, env)) {
+        result.add(method);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Returns true if {@code method} is {@code other} or overrides it.
    *
    * @param method a method
@@ -573,6 +628,20 @@ public final class PurityChecker {
    * <p>If {@code type} is an intersection type, or a type variable whose upper bound is one, the
    * methods can come from different bounds, as {@code A.get} and {@code B.get} in {@code A & B}.
    *
+   * <p>Override-equivalence as members of {@code type} itself does not suffice, because the class
+   * of an object determines which method implements each one, and the class can be generic. Given
+   * {@code class Split<X> implements Generic<X>, Specific}, where {@code Generic<T>} declares {@code
+   * apply(T)} and {@code Specific} declares {@code apply(String)}, the two methods have the same
+   * signature as members of {@code Split<String>}, but {@code Split} can implement them with two
+   * different methods, {@code apply(X)} and {@code apply(String)}. Therefore, if {@code type} is a
+   * class or interface type, this method compares the two methods as members of the generic
+   * declaration of that class or interface, in terms of its own type parameters: every class whose
+   * objects have type {@code type} is a subtype of that declaration, and sees the two methods as a
+   * substitution instance of how the declaration sees them. If {@code type} is an intersection type,
+   * a class that implements every bound need not be a subtype of any one declaration; then the two
+   * methods must also have the same erased parameter types, because no class can declare two
+   * methods with the same name and erasure (JLS 8.4.8.3).
+   *
    * @param function a method of {@code type}, such as its functional method
    * @param other another method
    * @param type the type of the argument to a functional-interface parameter
@@ -594,16 +663,24 @@ public final class PurityChecker {
     if (type.getKind() == TypeKind.TYPEVAR) {
       type = TypesUtils.upperBound(type);
     }
+    Types types = env.getTypeUtils();
     List<? extends TypeMirror> bounds;
     if (type.getKind() == TypeKind.DECLARED) {
-      bounds = Collections.singletonList(type);
+      TypeElement typeElement = TypesUtils.getTypeElement(type);
+      if (typeElement == null) {
+        return false;
+      }
+      // The type of the declaration, in terms of its own type parameters.
+      bounds = Collections.singletonList(typeElement.asType());
     } else if (type.getKind() == TypeKind.INTERSECTION) {
+      if (!haveSameErasedParameterTypes(function, other, types)) {
+        return false;
+      }
       // An object of an intersection type has every bound's methods, as members of one type.
       bounds = ((IntersectionType) type).getBounds();
     } else {
       return false;
     }
-    Types types = env.getTypeUtils();
     ExecutableType functionType = memberType(bounds, function, types);
     ExecutableType otherType = memberType(bounds, other, types);
     if (functionType == null || otherType == null) {
@@ -612,6 +689,31 @@ public final class PurityChecker {
     }
     return types.isSubsignature(functionType, otherType)
         || types.isSubsignature(otherType, functionType);
+  }
+
+  /**
+   * Returns true if the two methods' formal parameters have the same erased types, so that no
+   * class can implement them with two different methods.
+   *
+   * @param method a method
+   * @param other another method
+   * @param types the type utilities
+   * @return true if the methods' parameter types have the same erasures
+   */
+  private static boolean haveSameErasedParameterTypes(
+      ExecutableElement method, ExecutableElement other, Types types) {
+    List<? extends VariableElement> params = method.getParameters();
+    List<? extends VariableElement> otherParams = other.getParameters();
+    if (params.size() != otherParams.size()) {
+      return false;
+    }
+    for (int i = 0; i < params.size(); i++) {
+      if (!types.isSameType(
+          types.erasure(params.get(i).asType()), types.erasure(otherParams.get(i).asType()))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
