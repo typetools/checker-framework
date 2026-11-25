@@ -9,7 +9,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
@@ -63,7 +62,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
@@ -1994,26 +1992,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if code that a call to {@code method} runs might rely on the purity that {@link
-   * PurityChecker#functionalParameterPurity} computes for the argument to {@code parameter}.
+   * Returns true if the purity annotations of {@code method}, or of code that a call to {@code
+   * method} runs, might hold only if the argument to {@code parameter} has the purity that {@link
+   * PurityChecker#functionalParameterPurity} computes.
+   *
+   * <p>The Purity Checker verifies {@code method}'s body, and the body of every override of {@code
+   * method}, under the assumption that the argument to {@code parameter} has that purity. For
+   * example, in the body of a {@code @SideEffectFree} method, a call {@code f.apply(s)} to a
+   * parameter {@code f} of type {@code Function} is treated as side-effect-free. A use of {@code
+   * parameter} <em>relies on</em> the assumption if it might run the argument's implementation of
+   * {@code parameterFunction}, so that an argument that lacks the purity might make the verified
+   * annotations false. Calling {@code parameterFunction} on the parameter relies on the assumption,
+   * as does passing the parameter to another method, which might call it.
    *
    * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
-   * and that body uses {@code parameter} only in ways that rely on no purity of the argument: as an
-   * operand of a binary operator such as {@code ==}, as the destination or the value of an
-   * assignment, as the value of a variable initializer or of a return statement, or as the receiver
-   * of a call to a method other than {@code parameterFunction} and its overrides, such as {@code
-   * hashCode}. An override of {@code method} can rely on the purity that {@code method} promises of
-   * its arguments.
+   * and no use of {@code parameter} in that body relies on the assumption: the body uses {@code
+   * parameter} only as an operand of a binary operator such as {@code ==}, as the destination or
+   * the value of an assignment, as the value of a variable initializer or of a return statement, or
+   * as the receiver of a call to a method other than {@code parameterFunction} and its overrides,
+   * such as {@code hashCode}. The result is true for a method that can be overridden, because the
+   * body of an override that the checker does not see might rely on the assumption.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
-   * use that might rely on the purity.
+   * use that relies on the assumption.
    *
    * @param method a method or constructor
    * @param parameter a functional-interface parameter of {@code method}
    * @param parameterFunction the functional method of {@code parameter}'s type
-   * @return true if code that a call to {@code method} runs might rely on the purity of the
-   *     argument to {@code parameter}
+   * @return true if the purity annotations of {@code method}, or of code that a call to {@code
+   *     method} runs, might hold only if the argument to {@code parameter} has the computed purity
    */
   boolean mightRelyOnFunctionalParameter(
       ExecutableElement method, VariableElement parameter, ExecutableElement parameterFunction) {
@@ -2200,139 +2208,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         default -> scan(tree.getExpression(), p);
       }
       return null;
-    }
-  }
-
-  /**
-   * Scans code for a use of a functional-interface parameter that might rely on the purity of the
-   * argument; see {@link #mightRelyOnFunctionalParameter}.
-   */
-  private static class FunctionalParameterUseScanner extends TreeScanner<Void, Void> {
-
-    /** The parameter whose uses are sought. */
-    private final VariableElement parameter;
-
-    /** The functional method of the type of {@link #parameter}. */
-    private final ExecutableElement parameterFunction;
-
-    /** The processing environment. */
-    private final ProcessingEnvironment env;
-
-    /** True if a use that might rely on the purity of the argument has been found. */
-    boolean found = false;
-
-    /**
-     * Creates a scanner for uses of {@code parameter}.
-     *
-     * @param parameter a functional-interface parameter
-     * @param parameterFunction the functional method of {@code parameter}'s type
-     * @param env the processing environment
-     */
-    FunctionalParameterUseScanner(
-        VariableElement parameter, ExecutableElement parameterFunction, ProcessingEnvironment env) {
-      this.parameter = parameter;
-      this.parameterFunction = parameterFunction;
-      this.env = env;
-    }
-
-    @Override
-    public Void scan(@Nullable Tree tree, Void p) {
-      return found ? null : super.scan(tree, p);
-    }
-
-    /**
-     * Scans {@code tree}, unless it is {@link #parameter} itself.
-     *
-     * @param tree an expression, or null
-     */
-    private void scanUnlessParameter(@Nullable ExpressionTree tree) {
-      if (!isParameter(tree)) {
-        scan(tree, null);
-      }
-    }
-
-    /**
-     * Returns true if {@code tree} is a use of {@link #parameter}, possibly in parentheses.
-     *
-     * @param tree an expression, or null
-     * @return true if {@code tree} is a use of {@link #parameter}
-     */
-    private boolean isParameter(@Nullable ExpressionTree tree) {
-      return tree != null
-          && TreeUtils.withoutParens(tree) instanceof IdentifierTree identifier
-          && Objects.equals(parameter, TreeUtils.elementFromTree(identifier));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>The body might not have been attributed yet, as when it is in a top-level class that javac
-     * has not yet processed. An identifier that has no element is treated as a use of {@link
-     * #parameter} if it has the same name. Such a use can rely on the purity of the argument, even
-     * if it is in a context that {@link #isParameter} would otherwise exempt.
-     */
-    @Override
-    public Void visitIdentifier(IdentifierTree tree, Void p) {
-      Element elt = TreeUtils.elementFromTree(tree);
-      if (elt == null
-          ? tree.getName().contentEquals(parameter.getSimpleName())
-          : parameter.equals(elt)) {
-        found = true;
-      }
-      return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>Overwriting a variable does not read it, so a destination that is a bare identifier is not
-     * a use. That is so whether or not the body has been attributed, so the identifier's element is
-     * not consulted. A compound destination, such as an array access, is scanned, because its
-     * subexpressions are evaluated.
-     */
-    @Override
-    public Void visitAssignment(AssignmentTree tree, Void p) {
-      if (!(TreeUtils.withoutParens(tree.getVariable()) instanceof IdentifierTree)) {
-        scan(tree.getVariable(), p);
-      }
-      scanUnlessParameter(tree.getExpression());
-      return null;
-    }
-
-    @Override
-    public Void visitVariable(VariableTree tree, Void p) {
-      scan(tree.getModifiers(), p);
-      scan(tree.getType(), p);
-      scanUnlessParameter(tree.getInitializer());
-      return null;
-    }
-
-    @Override
-    public Void visitReturn(ReturnTree tree, Void p) {
-      scanUnlessParameter(tree.getExpression());
-      return null;
-    }
-
-    @Override
-    public Void visitBinary(BinaryTree tree, Void p) {
-      // A reference is an operand only of == or !=, or of a string concatenation, which calls
-      // toString rather than the functional method.
-      scanUnlessParameter(tree.getLeftOperand());
-      scanUnlessParameter(tree.getRightOperand());
-      return null;
-    }
-
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-      if (tree.getMethodSelect() instanceof MemberSelectTree select
-          && isParameter(select.getExpression())
-          && !PurityChecker.isSameOrOverrides(
-              TreeUtils.elementFromUse(tree), parameterFunction, env)) {
-        scan(tree.getTypeArguments(), p);
-        scan(tree.getArguments(), p);
-        return null;
-      }
-      return super.visitMethodInvocation(tree, p);
     }
   }
 
@@ -3812,8 +3687,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param functionalMethod the functional interface method that {@code tree} implements
    * @return the methods through which a call can run {@code tree}, starting with {@code
    *     functionalMethod}
+   * @see #callableDeclarationsThatRun
    */
   List<ExecutableElement> methodsThatRun(Tree tree, ExecutableElement functionalMethod) {
+    return callableDeclarationsThatRun(tree, functionalMethod).stream()
+        .map(CallableDeclaration::declaration)
+        .toList();
+  }
+
+  /**
+   * Returns the methods that {@link #methodsThatRun} returns, each together with the type through
+   * which a call to it can run the given lambda or method reference: the type that declares or
+   * inherits the functional interface method, or, for a method of another bound of an intersection
+   * cast, that bound.
+   *
+   * @param tree a lambda or a method reference
+   * @param functionalMethod the functional interface method that {@code tree} implements
+   * @return the methods through which a call can run {@code tree}, starting with {@code
+   *     functionalMethod}, each with the type through which such a call is made
+   */
+  List<CallableDeclaration> callableDeclarationsThatRun(
+      Tree tree, ExecutableElement functionalMethod) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     List<DeclaredType> castBounds = intersectionCastBounds(tree);
     TypeElement owner = (TypeElement) functionalMethod.getEnclosingElement();
@@ -3836,8 +3730,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               : (DeclaredType) owner.asType();
     }
 
-    List<ExecutableElement> result = new ArrayList<>();
-    result.add(functionalMethod);
+    List<CallableDeclaration> result = new ArrayList<>();
+    result.add(new CallableDeclaration(functionalMethod, targetType));
     TypeElement functionalInterface = (TypeElement) targetType.asElement();
     // Use the functional interface's declared type, whose type arguments are its own type
     // variables, so that a wildcard in the type of `tree` does not matter.
@@ -3854,7 +3748,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!method.equals(functionalMethod)
             && isOverrideEquivalent(
                 method, interfaceType, functionalMethod, functionalMethodType)) {
-          result.add(method);
+          result.add(new CallableDeclaration(method, targetType));
         }
       }
     }
@@ -3875,7 +3769,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           for (ExecutableElement method :
               ElementFilter.methodsIn(supertype.getEnclosedElements())) {
             if (isOverrideEquivalent(method, bound, functionalMethod, targetMethodType)) {
-              result.add(method);
+              result.add(new CallableDeclaration(method, bound));
             }
           }
         }

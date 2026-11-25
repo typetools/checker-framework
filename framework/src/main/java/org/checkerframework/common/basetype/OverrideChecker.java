@@ -294,7 +294,9 @@ public class OverrideChecker {
   /**
    * Checks that the referenced method is at least as pure as each method through which a call can
    * run it: the functional interface method that the method reference implements, and the other
-   * methods that {@link BaseTypeVisitor#methodsThatRun} returns.
+   * methods that {@link BaseTypeVisitor#methodsThatRun} returns. Also checks the purity that the
+   * referenced method assumes of its functional-interface arguments; see {@link
+   * #checkMethodReferenceFunctionalParameters}.
    *
    * <p>Reports an error for each of those methods that requires a purity kind that the referenced
    * method lacks, except a method whose missing kinds are among those of another reported method.
