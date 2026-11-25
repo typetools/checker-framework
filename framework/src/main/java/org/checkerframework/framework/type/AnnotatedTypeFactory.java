@@ -3184,9 +3184,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * boxing an {@code int}, the Interning Checker returns {@code @UnknownInterned}, because a boxed
    * {@code Integer} need not be interned.
    *
-   * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}, with each
-   * qualifier that is not a subtype of the qualifier upper bound of the boxed primitive type
-   * replaced by that bound (see {@link QualifierUpperBounds#limitToBound}).
+   * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
    *
    * <p>An override must not side-effect {@code annos}, which might be unmodifiable or might be
    * owned by an abstract value. To return different annotations, copy {@code annos} first.
@@ -3198,8 +3196,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public AnnotationMirrorSet getBoxedAnnotations(
       AnnotationMirrorSet annos, TypeKind primitiveKind) {
-    return qualifierUpperBounds.limitToBound(
-        types.boxedClass(types.getPrimitiveType(primitiveKind)).asType(), annos);
+    return annos;
   }
 
   /**
@@ -3249,11 +3246,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * adapted from {@code annos}, for an unboxing conversion (JLS 5.1.8). For example, the Interning
    * Checker returns {@code @Interned}, because every primitive value is interned.
    *
-   * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}, with each
-   * qualifier that is not a subtype of the qualifier upper bound of the primitive type replaced by
-   * that bound (see {@link QualifierUpperBounds#limitToBound}). For example, the Lock Checker
-   * unboxes {@code @GuardedBy("lock") Integer} to {@code @GuardedBy({}) int}, because an {@code
-   * int} is a copy that no lock guards.
+   * <p>In the {@code AnnotatedTypeFactory} implementation, the result is {@code annos}.
    *
    * <p>An override must not side-effect {@code annos}, which might be unmodifiable or might be
    * owned by an abstract value. To return different annotations, copy {@code annos} first.
@@ -3266,7 +3259,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public AnnotationMirrorSet getUnboxedAnnotations(
       AnnotationMirrorSet annos, TypeKind primitiveKind) {
-    return qualifierUpperBounds.limitToBound(types.getPrimitiveType(primitiveKind), annos);
+    return annos;
   }
 
   /**
