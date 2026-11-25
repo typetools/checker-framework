@@ -1,8 +1,7 @@
 // Test that a method reference is checked against the purity annotations on the functional
 // interface method that it implements.  This is the method-reference analog of
-// PurityLambdaSam.java; the check is performed by
-// BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity, which treats the referenced method as
-// an override of the functional method.
+// PurityLambdaSam.java; the check is performed by OverrideChecker#checkMethodReferencePurity,
+// which treats the referenced method as an override of the functional method.
 //
 // This test lives here, rather than in all-systems, because the check requires
 // -AcheckPurityAnnotations, which the all-systems suite is not run with.  That purity annotations
@@ -81,5 +80,26 @@ public class PurityMethodRef {
   /** An unannotated functional method promises nothing, so it constrains nothing. */
   void unconstrained() {
     PlainFunc f = PurityMethodRef::myMethod;
+  }
+
+  @FunctionalInterface
+  interface PureRunnable {
+    @Pure
+    // :: warning: [purity.deterministic.void.method]
+    void run();
+  }
+
+  @SideEffectFree
+  static void mySideEffectFreeVoidMethod() {}
+
+  @Deterministic
+  // :: warning: [purity.deterministic.void.method]
+  static void myDeterministicVoidMethod() {}
+
+  /** A side-effect-free method that returns void is deterministic. */
+  void voidMethods() {
+    PureRunnable r1 = PurityMethodRef::mySideEffectFreeVoidMethod;
+    // :: error: [purity.methodref]
+    PureRunnable r2 = PurityMethodRef::myDeterministicVoidMethod;
   }
 }

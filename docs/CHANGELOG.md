@@ -9,6 +9,39 @@
 
 ### Changes for type system implementers
 
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
+New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
+of a block.
+
+Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
+by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
+opposite order.  It returns true for any compile-time constant of type `byte`,
+`short`, `char`, or `int`, such as `1 + 2` or a use of a constant variable, not
+only for a literal.  New method
+`CFGTranslationPhaseOne.convertNarrowableConstant()` converts a compile-time
+constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
+assignment conversion does.  New method `TreeUtils.isCompileTimeConstant()`
+returns true if a tree is a constant expression.
+
+`BaseTypeVisitor.OverrideChecker` is now a top-level class,
+`org.checkerframework.common.basetype.OverrideChecker`.  Its constructor takes a
+new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
+inner class of a visitor can pass the visitor, as in
+`super(MyVisitor.this, overriderTree, ...)`.
+
+Deprecated methods:
+
+* `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
+* `TypesUtils.isNumeric()` => `isNumericPrimitive()`
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
