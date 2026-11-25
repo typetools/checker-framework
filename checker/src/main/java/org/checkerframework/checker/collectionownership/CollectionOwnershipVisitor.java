@@ -94,52 +94,50 @@ public class CollectionOwnershipVisitor
     if (tree.getArguments().isEmpty()) {
       return;
     }
-    CollectionOwnershipStore storeBefore = atypeFactory.getStoreBefore(tree);
-    CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType receiverType =
-        getCoTypeAtTree(receiverTree, storeBefore);
-    if (receiverType == null) {
+    // The receiver is borrowed if it is @NotOwningCollection either where it is evaluated or where
+    // the call occurs.  The two can differ if an argument reassigns the receiver variable, as in
+    // `x.add((x = y).size(), r)`.
+    boolean receiverIsBorrowed =
+        getCoTypeAtTree(receiverTree, atypeFactory.getStoreAfter(receiverTree))
+                == CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType
+                    .NotOwningCollection
+            || getCoTypeAtTree(receiverTree, atypeFactory.getStoreBefore(tree))
+                == CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType
+                    .NotOwningCollection;
+    // Owning receivers are handled by CO analysis.
+    if (!receiverIsBorrowed) {
       return;
     }
     ExpressionTree insertedArgumentTree = atypeFactory.getInsertedArgumentTree(tree);
     if (insertedArgumentTree == null) {
       return;
     }
-    CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind insertedArgumentKind =
-        atypeFactory.getCollectionMutatorArgumentKind(insertedArgumentTree);
-    String methodName = methodElement.getSimpleName().toString();
-    switch (receiverType) {
-      case NotOwningCollection -> {
-        if (insertedArgumentKind
-            != CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
-                .DEFINITELY_NON_OWNING) {
-          checker.reportError(
-              insertedArgumentTree,
-              "illegal.collection.mutator.owning.insert.into.notowning",
-              methodName,
-              TreeUtils.toStringTruncated(insertedArgumentTree, 60));
-        }
-      }
-      default -> {
-        // Owning receivers are handled by CO analysis; bottom and other cases are intentionally
-        // ignored here.
-      }
+    if (atypeFactory.getCollectionMutatorArgumentKind(methodElement, insertedArgumentTree)
+        != CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
+            .DEFINITELY_NON_OWNING) {
+      checker.reportError(
+          insertedArgumentTree,
+          "illegal.collection.mutator.owning.insert.into.notowning",
+          methodElement.getSimpleName().toString(),
+          TreeUtils.toStringTruncated(insertedArgumentTree, 60));
     }
   }
 
   /**
-   * Returns the flow-sensitive collection-ownership qualifier for the given expression, or its
-   * declared qualifier if the store has no value for it.
+   * Returns the flow-sensitive collection-ownership qualifier that the given expression has in the
+   * given store, or its declared qualifier if the store has no value for it.
    *
    * @param expr an expression tree
-   * @param storeBefore the store before {@code expr}
+   * @param store a store at a program point where {@code expr} is in scope, or null if none is
+   *     available
    * @return the collection-ownership qualifier for {@code expr}, or {@code null} if it has none
    */
   private CollectionOwnershipAnnotatedTypeFactory.@Nullable CollectionOwnershipType getCoTypeAtTree(
-      ExpressionTree expr, @Nullable CollectionOwnershipStore storeBefore) {
-    if (storeBefore != null) {
+      ExpressionTree expr, @Nullable CollectionOwnershipStore store) {
+    if (store != null) {
       JavaExpression je = JavaExpression.fromTree(expr);
       if (CFAbstractStore.canInsertJavaExpression(je)) {
-        CFValue v = storeBefore.getValue(je);
+        CFValue v = store.getValue(je);
         if (v != null) {
           return atypeFactory.getCoType(v.getAnnotations());
         }
@@ -387,7 +385,7 @@ public class CollectionOwnershipVisitor
 
     RLCCalledMethodsAnnotatedTypeFactory rlAtf =
         ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory);
-    Element enclosingElement = fieldElement.getEnclosingElement();
+    TypeElement enclosingElement = (TypeElement) fieldElement.getEnclosingElement();
     List<String> enclosingMustCallValues = rlAtf.getMustCallValues(enclosingElement);
 
     String error;
@@ -404,16 +402,17 @@ public class CollectionOwnershipVisitor
     } else {
       // A @MustCall value is a method name, and a call to any overload with that name satisfies
       // the obligation.  So a must-call method destructs the field only if every overload with
-      // its name in the class is annotated @CollectionFieldDestructor for the field.
-      List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
+      // its name in the class, declared or inherited, is annotated @CollectionFieldDestructor for
+      // the field.  getAllMembers omits a method that the class overrides.
+      List<? extends Element> membersOfEnclosingClass = elements.getAllMembers(enclosingElement);
       for (String mustCallMethodName : enclosingMustCallValues) {
         boolean hasOverload = false;
         boolean allOverloadsDestructField = true;
-        for (Element siblingElement : siblingsOfOwningField) {
-          if (siblingElement.getKind() == ElementKind.METHOD
-              && siblingElement.getSimpleName().contentEquals(mustCallMethodName)) {
+        for (Element member : membersOfEnclosingClass) {
+          if (member.getKind() == ElementKind.METHOD
+              && member.getSimpleName().contentEquals(mustCallMethodName)) {
             hasOverload = true;
-            if (!destructsField((ExecutableElement) siblingElement, fieldElement)) {
+            if (!destructsField((ExecutableElement) member, fieldElement)) {
               allOverloadsDestructField = false;
               break;
             }

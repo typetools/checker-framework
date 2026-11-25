@@ -1144,7 +1144,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     inserted = removeCastsAndGetTmpVarIfPresent(inserted);
-    if (coAtf.getCollectionMutatorArgumentKind(inserted.getTree())
+    if (coAtf.getCollectionMutatorArgumentKind(node.getTarget().getMethod(), inserted.getTree())
         == CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
             .BULK_RESOURCE_COLLECTION) {
       // Bulk op (addAll/putAll etc).
