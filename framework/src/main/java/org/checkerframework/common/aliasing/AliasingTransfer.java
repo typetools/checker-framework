@@ -6,10 +6,10 @@ import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -58,24 +58,66 @@ public class AliasingTransfer extends CFTransfer {
   }
 
   /**
-   * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and is
-   * a method invocation or a new class instance.
+   * Case 1: For every assignment, the LHS is refined if the RHS has type {@code @Unique} and is a
+   * method or constructor invocation. Otherwise, neither the LHS nor the RHS keeps a refinement,
+   * nor does any expression that depends on the LHS or might alias it; see {@link
+   * #processCommonAssignment}.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitAssignment(
       AssignmentNode n, TransferInput<CFValue, CFStore> in) {
-    Node rhs = n.getExpression();
-    Tree treeRhs = rhs.getTree();
-    AnnotatedTypeMirror rhsType = factory.getAnnotatedType(treeRhs);
-
-    if (rhsType.hasPrimaryAnnotation(Unique.class)
-        && (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
-      return super.visitAssignment(n, in); // Do normal refinement.
+    TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
+    if (!isFreshUnique(n.getExpression())) {
+      // The value of the assignment expression is an alias of the RHS. The store cannot represent
+      // the assignment expression (which has a side effect), so processCommonAssignment did not
+      // widen it. Discard the RHS's value, which super.visitAssignment computed before the
+      // assignment.
+      result.setResultValue(null);
     }
-    // Widen the type of the rhs if the RHS's declared type wasn't @Unique.
-    JavaExpression rhsExpr = JavaExpression.fromNode(rhs);
-    in.getRegularStore().clearValue(rhsExpr);
-    return new RegularTransferResult<>(null, in.getRegularStore());
+    return result;
+  }
+
+  /**
+   * If the RHS is not a fresh {@code @Unique} expression, widens the LHS and the RHS, which are
+   * aliases of one another, in the store. Widening the LHS also removes the refinements of
+   * expressions in the store that depend on the LHS or that might alias it, such as {@code x.f}
+   * after an assignment to {@code x}. The value of the assignment expression is also an alias, but
+   * the store cannot represent it; {@link #visitAssignment} discards that value.
+   */
+  @Override
+  protected void processCommonAssignment(
+      TransferInput<CFValue, CFStore> in,
+      AssignmentNode assignment,
+      Node lhs,
+      Node rhs,
+      CFStore store,
+      @Nullable CFValue rhsValue) {
+    if (isFreshUnique(rhs)) {
+      super.processCommonAssignment(in, assignment, lhs, rhs, store, rhsValue);
+      return;
+    }
+    store.updateForAssignment(lhs, null);
+    // updateForAssignment(lhs, null) does not remove the value of a local variable LHS.
+    store.clearValue(JavaExpression.fromNode(lhs));
+    store.clearValue(JavaExpression.fromNode(rhs));
+  }
+
+  /**
+   * Returns true if {@code rhs} is a method or constructor invocation whose type is
+   * {@code @Unique}.
+   *
+   * <p>If this method returns true, then each evaluation of {@code rhs} yields a new object that
+   * nothing else references. Thus, the store does not represent the expression.
+   *
+   * @param rhs the right-hand side of an assignment
+   * @return true if {@code rhs} is a fresh {@code @Unique} expression
+   */
+  private boolean isFreshUnique(Node rhs) {
+    if (!(rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
+      return false;
+    }
+    Tree rhsTree = rhs.getTree();
+    return rhsTree != null && factory.getAnnotatedType(rhsTree).hasPrimaryAnnotation(Unique.class);
   }
 
   /**
