@@ -71,4 +71,18 @@ public class JavaExpressionParseUtilTest {
     Assert.assertTrue(plusInt instanceof ValueLiteral);
     Assert.assertEquals(TypeKind.INT, plusInt.getType().getKind());
   }
+
+  /** A parsed binary operation has the type that binary numeric promotion gives it. */
+  @Test
+  public void binaryOperationPromotedType() {
+    // Binary numeric promotion:  the sum of two chars is an int.
+    Assert.assertEquals(TypeKind.INT, parse("'a' + 'b'").getType().getKind());
+    Assert.assertEquals(TypeKind.LONG, parse("1 + 2L").getType().getKind());
+    Assert.assertEquals(TypeKind.DOUBLE, parse("1L * 2.0").getType().getKind());
+    Assert.assertEquals(TypeKind.BOOLEAN, parse("'a' < 2.0").getType().getKind());
+    // The type of a shift is the promoted type of its left operand.
+    Assert.assertEquals(TypeKind.INT, parse("1 << 2L").getType().getKind());
+    Assert.assertEquals(TypeKind.INT, parse("'a' >> 1").getType().getKind());
+    Assert.assertEquals(TypeKind.LONG, parse("1L >>> 2").getType().getKind());
+  }
 }
