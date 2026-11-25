@@ -10,6 +10,6 @@ public class CastWithoutBound {
   }
 
   void arrayInitializer(@H1S1 @H2S1 Object o) {
-    Object[] a = new Object[] {o};
+    Object @H1S1 [] a = new Object[] {o};
   }
 }

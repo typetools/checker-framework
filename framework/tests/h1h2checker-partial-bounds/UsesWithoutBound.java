@@ -8,7 +8,8 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.H2S2;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H2Top;
 
 // The default qualifier upper bound of a type has no qualifier in the H2 hierarchy, so a use of a
-// type whose declaration has no H2 qualifier can have any H2 qualifier.
+// type whose declaration has no H2 qualifier can have any H2 qualifier.  In the H1 hierarchy, the
+// default qualifier upper bound is @H1S1.
 public class UsesWithoutBound {
 
   @H2S1 UsesWithoutBound field1;
@@ -30,8 +31,8 @@ public class UsesWithoutBound {
     UsesWithoutBound local4 = new UsesWithoutBound();
     // :: error: [assignment]
     @H2S1 UsesWithoutBound local5 = p2;
-    Object[] local6 = new Object[] {p1, p2};
-    int @H2S1 [] local7 = new int @H2S1 [] {1, 2};
+    Object @H1S1 [] local6 = new Object[] {p1, p2};
+    int @H1S1 @H2S1 [] local7 = new int @H2S1 [] {1, 2};
   }
 
   void casts(@H2S1 Object o, @H2Top Object top) {
@@ -44,8 +45,12 @@ public class UsesWithoutBound {
     @H2S1 int i = (@H2S1 int) primitive1;
   }
 
+  // The default qualifier upper bound in the H1 hierarchy is enforced.
+  // :: error: [annotations.on.use]
+  void invalidH1(@H1Top UsesWithoutBound p) {}
+
   void getClass(@H2S1 UsesWithoutBound p) {
-    Class<?> c = p.getClass();
+    Class<? extends @H1S1 Object> c = p.getClass();
   }
 
   void anonymous() {
@@ -70,7 +75,7 @@ class NoBoundSub2 extends @H2S1 UsesWithoutBound implements @H2S2 Runnable {
 }
 
 // The H1 bound is still enforced.
-@SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
+@SuppressWarnings("super.invocation")
 @H1S1 class H1Bounded {
   void uses(@H1S1 @H2S1 H1Bounded p1, @H1S1 @H2Top H1Bounded p2) {}
 
@@ -79,7 +84,7 @@ class NoBoundSub2 extends @H2S1 UsesWithoutBound implements @H2S2 Runnable {
 }
 
 // An H2 bound that is written on a declaration is still enforced.
-@SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
+@SuppressWarnings("super.invocation")
 @H2S1 class H2Bounded {
   void uses(@H2S1 H2Bounded p1, @H2Bot H2Bounded p2) {}
 
@@ -99,5 +104,5 @@ enum NoBoundEnum {
 
 interface NoBoundInterface {}
 
-@SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
+@SuppressWarnings("super.invocation")
 @H2S1 class ImplementsNoBound implements NoBoundInterface {}

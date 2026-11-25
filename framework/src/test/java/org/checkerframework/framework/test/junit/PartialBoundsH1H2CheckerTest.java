@@ -15,7 +15,13 @@ public class PartialBoundsH1H2CheckerTest extends CheckerFrameworkPerDirectoryTe
    * @param testFiles the files containing test code, which will be type-checked
    */
   public PartialBoundsH1H2CheckerTest(List<File> testFiles) {
-    super(testFiles, PartialBoundsH1H2Checker.class, "h1h2checker-partial-bounds");
+    super(
+        testFiles,
+        PartialBoundsH1H2Checker.class,
+        "h1h2checker-partial-bounds",
+        // The default qualifier in the H1 hierarchy is not top, so every constructor's type
+        // would be reported.
+        "-AsuppressWarnings=inconsistent.constructor.type");
   }
 
   @Parameters
