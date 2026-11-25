@@ -3353,10 +3353,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * method. The lambda or method reference constrains each method's purity just as an overriding
    * method does; see the treatment of overridden methods in {@link #checkPurityAnnotations}.
    *
-   * <p>Records no kind that would newly constrain the arguments at call sites of any of the methods
-   * (see {@link #kindsSafeToInfer}), because one of the methods can override another one and
-   * inherit its purity annotations.
-   *
    * @param methods the methods through which a call can run {@code tree}, as {@link
    *     #methodsThatRun} returns them
    * @param implementationKinds the purity kinds of {@code tree}
@@ -3368,25 +3364,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (wpi == null) {
       throw new BugInCF("No WPI while inferring purity of " + tree);
     }
-    EnumSet<PurityKind> kinds = EnumSet.copyOf(implementationKinds);
-    // The methods are override-equivalent, so either all of them return void or none does.
-    if (methods.get(0).getReturnType().getKind() == TypeKind.VOID) {
-      kinds.remove(PurityKind.DETERMINISTIC);
-    }
-    // Narrow `kinds` until it is safe to infer for every method.  It is not enough to narrow it
-    // separately for each method:  a method that overrides another one inherits the kinds
-    // inferred for the other one.  Discarding a kind for one method can make another kind newly
-    // required by a different method, so repeat until no method discards a kind.  Intersecting
-    // with `kinds` keeps a method's written kinds, which `kindsSafeToInfer` adds, from reaching
-    // the other methods.
-    boolean changed;
-    do {
-      changed = false;
-      for (ExecutableElement method : methods) {
-        changed |= kinds.retainAll(kindsSafeToInfer(method, kinds));
-      }
-    } while (changed);
     for (ExecutableElement method : methods) {
+      EnumSet<PurityKind> kinds = EnumSet.copyOf(implementationKinds);
+      if (method.getReturnType().getKind() == TypeKind.VOID) {
+        kinds.remove(PurityKind.DETERMINISTIC);
+      }
+      // Do not infer a kind that would newly constrain the arguments at call sites.  The methods
+      // have different parameters, so the kinds that are safe to infer depend on the method.
       inferPurityAnno(kindsSafeToInfer(method, kinds), wpi, method);
     }
   }
