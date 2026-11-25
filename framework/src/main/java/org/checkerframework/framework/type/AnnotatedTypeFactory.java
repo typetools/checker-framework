@@ -5023,21 +5023,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the ground target type that javac computed for the given lambda or method reference, as
    * an instantiation of the given functional interface.
    *
-   * <p>If {@code tree}'s target is an intersection type, as in {@code (Serializable & Supplier<?
-   * extends String>) () -> ""}, then javac's type for {@code tree} is an intersection type, whose
-   * bound that instantiates {@code functionalType} is the result.
+   * <p>The ground target type is the parameterization of the target's functional interface that has
+   * no wildcard type arguments. For example, the ground target type of {@code Supplier<? extends
+   * String>} is {@code Supplier<String>}.
    *
+   * <p>If {@code tree}'s target is an intersection type, as in {@code (Serializable & Supplier<?
+   * extends String>) () -> ""}, then javac's type for {@code tree} is an intersection type. This
+   * method returns the bound of that intersection type that instantiates {@code functionalType}.
+   *
+   * @see "JLS 9.9"
    * @param tree a lambda or a method reference
    * @param functionalType the functional interface type that is the target of {@code tree}, or the
    *     bound of {@code tree}'s target that is a functional interface
    * @return javac's ground target type of {@code tree}, as an instantiation of {@code
    *     functionalType}
+   * @throws BugInCF if javac's type for {@code tree} is an intersection type and none of its bounds
+   *     instantiates {@code functionalType}
    */
   private DeclaredType groundTargetJavaType(Tree tree, DeclaredType functionalType) {
     TypeMirror javaType = TreeUtils.typeOf(tree);
-    if (!(javaType instanceof IntersectionType intersection)) {
+    if (javaType.getKind() != TypeKind.INTERSECTION) {
       return (DeclaredType) javaType;
     }
+    // javac's representation of an intersection type is also a DeclaredType, so casting
+    // javaType to DeclaredType would not fail.  But the type arguments of that DeclaredType are
+    // not those of functionalType, so makeGroundTargetType would crash.
+    IntersectionType intersection = (IntersectionType) javaType;
     TypeMirror erasedFunctionalType = types.erasure(functionalType);
     for (TypeMirror bound : intersection.getBounds()) {
       if (types.isSameType(types.erasure(bound), erasedFunctionalType)) {
