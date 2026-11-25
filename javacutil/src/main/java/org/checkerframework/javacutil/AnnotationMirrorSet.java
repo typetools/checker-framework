@@ -175,7 +175,7 @@ public class AnnotationMirrorSet
 
   @Override
   @SideEffectsOnly("this")
-  public boolean remove(@Nullable Object o) {
+  public boolean remove(@NotOwningCollection AnnotationMirrorSet this, @Nullable Object o) {
     if (o instanceof AnnotationMirror am) {
       AnnotationMirror found = AnnotationUtils.getSame(shadowSet, am);
       return found != null && shadowSet.remove(found);

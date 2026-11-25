@@ -16,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -142,8 +141,10 @@ final class EnhancedForDisposalLoopMatcher {
    * @return true if {@code body} might insert into or replace elements of {@code collection}
    */
   private boolean mutatesIteratedCollection(StatementTree body, ExpressionTree collection) {
-    Name collectionName =
-        CollectionOwnershipUtils.getNameFromExpressionTree(TreeUtils.withoutParens(collection));
+    // Compare the variables or fields that the expressions refer to, not their names, so that a
+    // field `this.resources` is distinct from a parameter `resources` that shadows it.
+    Element collectionElement =
+        CollectionOwnershipUtils.getElementFromExpressionTree(TreeUtils.withoutParens(collection));
     boolean isFieldOfThis =
         coAtf.isOwningCollectionField(collection) && TreeUtils.isSelfAccess(collection);
     @Nullable Boolean result =
@@ -152,9 +153,11 @@ final class EnhancedForDisposalLoopMatcher {
           public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
             ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
             ExecutableElement method = TreeUtils.elementFromUse(tree);
-            if (collectionName != null
+            if (collectionElement != null
                 && receiver != null
-                && CollectionOwnershipUtils.getNameFromExpressionTree(receiver) == collectionName
+                && collectionElement.equals(
+                    CollectionOwnershipUtils.getElementFromExpressionTree(
+                        TreeUtils.withoutParens(receiver)))
                 && (coAtf.isCreatesCollectionObligationMethod(method)
                     || REPLACING_METHODS.contains(method.getSimpleName().toString()))) {
               return true;

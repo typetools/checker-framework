@@ -9,12 +9,12 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
@@ -404,16 +404,19 @@ public class CollectionOwnershipVisitor
     } else {
       // A @MustCall value is a method name, and a call to any overload with that name satisfies
       // the obligation.  So a must-call method destructs the field only if every overload with
-      // its name in the class is annotated @CollectionFieldDestructor for the field.
-      List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
+      // its name that the class declares or inherits is annotated @CollectionFieldDestructor for
+      // the field.  getAllMembers omits a superclass method that the class overrides.
+      List<ExecutableElement> instanceMethods =
+          ElementFilter.methodsIn(
+              atypeFactory.getElementUtils().getAllMembers((TypeElement) enclosingElement));
       for (String mustCallMethodName : enclosingMustCallValues) {
         boolean hasOverload = false;
         boolean allOverloadsDestructField = true;
-        for (Element siblingElement : siblingsOfOwningField) {
-          if (siblingElement.getKind() == ElementKind.METHOD
-              && siblingElement.getSimpleName().contentEquals(mustCallMethodName)) {
+        for (ExecutableElement method : instanceMethods) {
+          if (!ElementUtils.isStatic(method)
+              && method.getSimpleName().contentEquals(mustCallMethodName)) {
             hasOverload = true;
-            if (!destructsField((ExecutableElement) siblingElement, fieldElement)) {
+            if (!destructsField(method, fieldElement)) {
               allOverloadsDestructField = false;
               break;
             }

@@ -330,6 +330,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // constructor that it invokes, so use `type`'s element rather than the element of `tree`.
     ExecutableElement declaration = type.getElement();
     changeNonOwningParameterTypesToTop(declaration, type);
+    changeBorrowedCollectionElementTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
 
@@ -492,8 +493,14 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           // List<? extends T>: T is handled below.
           elementType = wildcard.getExtendsBound();
         } else {
-          // List<?> or List<? extends Foo>.
-          wildcard.getExtendsBound().replaceAnnotation(TOP);
+          // List<?> or List<? extends Foo>.  Keep a written bound, as in
+          // List<? extends @MustCall({}) Foo>: the method body was checked against it.
+          TypeMirror bound = wildcard.getUnderlyingType().getExtendsBound();
+          if (bound == null
+              || !AnnotationUtils.containsSameByClass(
+                  bound.getAnnotationMirrors(), MustCall.class)) {
+            wildcard.getExtendsBound().replaceAnnotation(TOP);
+          }
           continue;
         }
       }

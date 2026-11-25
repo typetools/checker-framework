@@ -18,6 +18,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -257,13 +259,14 @@ public class CollectionOwnershipTransfer
 
   /**
    * Returns whether the target of the given assignment (which may be a variable declaration) is a
-   * variable whose declared type is explicitly {@code @NotOwningCollection}.
+   * variable, or a component of an array variable, whose declared type is explicitly
+   * {@code @NotOwningCollection}.
    *
    * <p>Such an assignment creates a non-owning alias at the lhs instead of consuming ownership from
    * the rhs expression.
    *
    * @param node an assignment node
-   * @return true if the assignment's target is a variable with declared type
+   * @return true if the assignment's target is a variable or an array component with declared type
    *     {@code @NotOwningCollection}
    */
   private boolean hasExplicitNotOwningCollectionDeclaration(AssignmentNode node) {
@@ -271,14 +274,28 @@ public class CollectionOwnershipTransfer
         node.getTree() instanceof VariableTree variableTree
             ? variableTree
             : node.getTarget().getTree();
-    // For an array access, elementFromTree returns the array variable, not the element.
-    if (targetTree == null
-        || targetTree instanceof ArrayAccessTree
-        || !(TreeUtils.elementFromTree(targetTree) instanceof VariableElement declaredElement)) {
+    if (targetTree == null) {
       return false;
     }
-    List<? extends AnnotationMirror> declaredType = declaredElement.asType().getAnnotationMirrors();
-    return AnnotationUtils.containsSame(declaredType, atypeFactory.NOTOWNINGCOLLECTION);
+    // For an array access, such as `a[i][j]`, elementFromTree returns the array variable `a`, so
+    // use the component type at the depth of the access.
+    int arrayDepth = 0;
+    while (targetTree instanceof ArrayAccessTree arrayAccess) {
+      arrayDepth++;
+      targetTree = TreeUtils.withoutParens(arrayAccess.getExpression());
+    }
+    if (!(TreeUtils.elementFromTree(targetTree) instanceof VariableElement declaredElement)) {
+      return false;
+    }
+    TypeMirror declaredType = declaredElement.asType();
+    for (int i = 0; i < arrayDepth; i++) {
+      if (!(declaredType instanceof ArrayType arrayType)) {
+        return false;
+      }
+      declaredType = arrayType.getComponentType();
+    }
+    return AnnotationUtils.containsSame(
+        declaredType.getAnnotationMirrors(), atypeFactory.NOTOWNINGCOLLECTION);
   }
 
   @Override

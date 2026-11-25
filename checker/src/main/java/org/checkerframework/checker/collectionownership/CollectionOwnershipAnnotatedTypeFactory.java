@@ -1151,8 +1151,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /*
-   * Defaults a use of a resource collection field to @OwningCollection, or to
-   * @OwningCollectionWithoutObligation in a constructor.
+   * Defaults a use of a resource collection field to @OwningCollection, or, for a field of `this`
+   * in a constructor, to @OwningCollectionWithoutObligation.
    */
   @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -1171,7 +1171,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
           currentPath == null ? null : TreePathUtil.enclosingMethod(currentPath);
       boolean inConstructor =
           enclosingMethodTree != null && TreeUtils.isConstructor(enclosingMethodTree);
-      type.replaceAnnotation(inConstructor ? OWNINGCOLLECTIONWITHOUTOBLIGATION : OWNINGCOLLECTION);
+      // The constructor default applies only to fields of the object being constructed, not to
+      // fields of another object such as `other.items`.
+      boolean isFieldOfThis =
+          !(tree instanceof ExpressionTree exprTree) || TreeUtils.isSelfAccess(exprTree);
+      type.replaceAnnotation(
+          inConstructor && isFieldOfThis ? OWNINGCOLLECTIONWITHOUTOBLIGATION : OWNINGCOLLECTION);
     }
   }
 
