@@ -953,17 +953,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   }
 
   /**
-   * Returns the local variables all of whose assigned values the given {@link SideEffectsOnly}
-   * expressions or the returned local variables permit to be side-effected.
+   * Returns the local variables upon which {@link SideEffectsOnly} permits side-effecting
+   * operations.
    *
-   * <p>A value can mention a local variable, including the one it is assigned to, as in {@code cur
-   * = cur.next}. Therefore, this computes the largest set of local variables that satisfies the
-   * condition: it starts with every candidate and repeatedly removes any local variable that has a
-   * value that the current set does not permit. The result is sound because Java's definite
-   * assignment rules ensure that every local variable that a value mentions has already been
-   * assigned, so by induction over the execution it holds a permitted value.
-   *
-   * <p>A value that is a conditional expression is permitted if both of its branches are permitted.
+   * <p>For example, given {@code @SideEffectsOnly("this")}, then {@code cur} is in the result for
+   * {@code Node cur = this.head; ... cur = cur.next;}: {@code this.head} is reached through {@code
+   * this}, and {@code cur.next} is reached through {@code cur}.
    *
    * @param localAssignments the assignments to local variables in the code being checked
    * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
@@ -975,6 +970,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       LocalAssignmentScanner localAssignments,
       List<JavaExpression> seOnlyExpressions,
       AnnotatedTypeFactory atypeFactory) {
+    // A candidate is a local variable whose every assignment is a simple assignment or
+    // initializer, as opposed to a compound assignment such as `x += 1` or the variable of an
+    // enhanced `for` loop.
     // Maps each candidate local variable to the values that are assigned to it.
     Map<LocalVariable, List<JavaExpression>> candidates = new HashMap<>(2);
     for (Map.Entry<VariableElement, List<ExpressionTree>> entry :
@@ -990,6 +988,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       candidates.put(new LocalVariable(local), values);
     }
 
+    // Start with every candidate, and repeatedly remove any local variable that is assigned a
+    // value that the current set does not permit.  The result is sound because Java's definite
+    // assignment rules ensure that every local variable that a value mentions has already been
+    // assigned, so by induction over the execution it holds a permitted value.
     boolean changed = true;
     while (changed) {
       changed = false;
