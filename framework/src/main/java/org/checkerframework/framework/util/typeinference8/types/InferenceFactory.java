@@ -1624,7 +1624,7 @@ public class InferenceFactory {
           AnnotatedTypeMirror argument = elementToArgument.get(element);
           if (argument != null
               && copiedElements.contains(element)
-              && !original.getPrimaryAnnotationsField().isEmpty()) {
+              && !original.getPrimaryAnnotations().isEmpty()) {
             return substituteTypeVariable(argument, original);
           }
           return super.visitTypeVariable(original, originalToCopy);
