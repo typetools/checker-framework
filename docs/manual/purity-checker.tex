@@ -127,7 +127,9 @@ The errors shown in this section are reported only when purity annotations
 are checked:  by the Purity Checker, or by another checker when you pass
 \<-AcheckPurityAnnotations>.  With \<-Ainfer>, the body of a lambda is not
 checked; instead, it is used to infer the purity of the functional interface
-method.
+method.  With \<-Ainfer>, the purity annotations of the method that a method
+reference refers to are also used to infer the purity of the functional
+interface method.
 
 
 \subsectionAndLabel{Functional-interface parameters of methods with purity annotations}{purity-functional-interface-parameters}

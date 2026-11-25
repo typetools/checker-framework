@@ -3250,13 +3250,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeKind exprKind = exprType.getKind();
     TypeKind widenedKind = widenedType.getKind();
 
-    if (!TypeKindUtils.isNumeric(widenedKind)) {
+    if (!TypeKindUtils.isNumericPrimitive(widenedKind)) {
       // The target type is not a numeric primitive, so primitive widening is not applicable.
       return exprType;
     }
 
     AnnotatedPrimitiveType exprPrimitiveType;
-    if (TypeKindUtils.isNumeric(exprKind)) {
+    if (TypeKindUtils.isNumericPrimitive(exprKind)) {
       exprPrimitiveType = (AnnotatedPrimitiveType) exprType;
     } else if (TypesUtils.isNumericBoxed(exprType.getUnderlyingType())) {
       exprPrimitiveType = getUnboxedType((AnnotatedDeclaredType) exprType);
@@ -3383,7 +3383,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
         TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
-    if (TypeKindUtils.isNumeric(resultTypeKind)) {
+    if (TypeKindUtils.isNumericPrimitive(resultTypeKind)) {
       TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
       AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
       AnnotatedPrimitiveType rightUnboxed = applyUnboxing(right);
@@ -3663,7 +3663,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * AnnotatedTypeMirror#addAnnotation}, so it is called for every annotation added to a type.
    *
    * <p>This implementation handles the case when the passed annotation is an alias of another
-   * annotation. Subclasses can do additional work.
+   * annotation, and it calls {@link QualifierHierarchy#canonicalize} on supported qualifiers.
+   * Subclasses can do additional work.
    *
    * @param a the qualifier to canonicalize
    * @return the canonical annotation, which might be the given annotation
@@ -3672,16 +3673,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
     String qualName = elem.getQualifiedName().toString();
     Alias alias = aliases.get(qualName);
+    AnnotationMirror result;
     if (alias == null) {
-      return a;
-    }
-    if (alias.copyElements) {
+      result = a;
+    } else if (alias.copyElements) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, alias.canonicalName);
       builder.copyElementValuesFromAnnotation(a, alias.ignorableElements);
-      return builder.build();
+      result = builder.build();
     } else {
-      return alias.canonical;
+      result = alias.canonical;
     }
+    if (isSupportedQualifier(result)) {
+      result = qualHierarchy.canonicalize(result);
+    }
+    return result;
   }
 
   /**
@@ -4462,7 +4467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // significant, unlike that of the other inherited declaration annotations.  A method that
     // overrides methods in two supertypes inherits the union of what they permit it to
     // side-effect, rather than the "first one wins" rule of `addOrMerge`;
-    // `BaseTypeVisitor.OverrideChecker` reports any override that thereby side-effects more than a
+    // `OverrideChecker` reports any override that thereby side-effects more than a
     // supertype permits.  Furthermore, each expression must be remembered along with the method
     // that declares it, because the expression is parsed in that method's scope.  A
     // `@SideEffectsOnly` written on `elt` itself is authoritative, so in that case nothing is
