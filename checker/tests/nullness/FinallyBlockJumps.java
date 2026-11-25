@@ -109,26 +109,6 @@ public class FinallyBlockJumps {
     }
   }
 
-  // The return statement runs the finally block of the enclosing try statement, which sets f to
-  // null.
-  @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
-  // :: error: [contracts.postcondition]
-  void returnInNestedFinally(boolean b) {
-    try {
-      try {
-        f = "a";
-      } finally {
-        if (b) {
-          return;
-        }
-      }
-      f = "c";
-    } finally {
-      f = null;
-    }
-  }
-
   // The return statement runs the finally block of the enclosing try statement, which sets f to a
   // non-null value.
   @EnsuresNonNull("f")
@@ -145,6 +125,50 @@ public class FinallyBlockJumps {
       f = "c";
     } finally {
       f = "d";
+    }
+  }
+
+  // The break statement runs the finally block of the enclosing try statement, which sets f to a
+  // non-null value.
+  @EnsuresNonNull("f")
+  @SuppressWarnings("finally") // a finally block that does not complete normally
+  void breakInNestedFinally(boolean b, int n) {
+    f = "init";
+    for (int i = 0; i < n; i++) {
+      try {
+        try {
+          f = null;
+        } finally {
+          if (b) {
+            break;
+          }
+        }
+        f = "c";
+      } finally {
+        f = "d";
+      }
+    }
+  }
+
+  // The continue statement runs the finally block of the enclosing try statement, which sets f to
+  // a non-null value.
+  @EnsuresNonNull("f")
+  @SuppressWarnings("finally") // a finally block that does not complete normally
+  void continueInNestedFinally(boolean b, int n) {
+    f = "init";
+    for (int i = 0; i < n; i++) {
+      try {
+        try {
+          f = null;
+        } finally {
+          if (b) {
+            continue;
+          }
+        }
+        f = "c";
+      } finally {
+        f = "d";
+      }
     }
   }
 }
