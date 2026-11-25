@@ -1,6 +1,5 @@
 // Test case for an enhanced for loop over an object whose iterator() method is
-// @CreatesMustCallFor.  The CFG represents the invocation of iterator() by an artificial tree,
-// which has no TreePath.
+// @CreatesMustCallFor.  The CFG represents the invocation of iterator() by an artificial tree.
 
 import java.io.Closeable;
 import java.util.Collections;
@@ -25,5 +24,19 @@ class CreatesMustCallForIterator implements Iterable<String>, Closeable {
     CreatesMustCallForIterator rc = new CreatesMustCallForIterator();
     for (String s : rc) {}
     rc.close();
+  }
+
+  CreatesMustCallForIterator() {
+    for (String s : this) {}
+  }
+
+  void loopOverThis() {
+    // :: error: (reset.not.owning)
+    for (String s : this) {}
+  }
+
+  @CreatesMustCallFor("#1")
+  static void createsMustCallForParameter(CreatesMustCallForIterator p) {
+    for (String s : p) {}
   }
 }
