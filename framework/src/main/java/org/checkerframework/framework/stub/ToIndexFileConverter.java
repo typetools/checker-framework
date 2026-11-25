@@ -411,6 +411,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * scene (it does not create a new scene).
    *
    * @param iu {@link StubUnit} representing stubfile
+   * @param scene the scene to augment with the annotations in {@code iu}
    */
   private static void extractScene(StubUnit iu, AScene scene) {
     // Every name is written in a compilation unit, whose package and imports apply to it.
@@ -1512,8 +1513,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable @BinaryName String onDemandImportClassMemberBinaryName(
       String prefix, String className, @Nullable CompilationUnit cu) {
-    @SuppressWarnings("signature") // a binary name of a class
-    @ClassGetName String prefixBinaryName = loadClassBinaryName(prefix);
+    @BinaryName String prefixBinaryName = loadClassBinaryName(prefix);
     Class<?> prefixClass = prefixBinaryName == null ? null : loadClass(prefixBinaryName);
     if (prefixClass == null) {
       return null;
