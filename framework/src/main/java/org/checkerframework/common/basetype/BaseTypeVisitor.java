@@ -3296,6 +3296,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * lambda: the functional interface method that the lambda implements, and the other methods that
    * {@link #methodsThatRun} returns.
    *
+   * <p>The body is checked once, against the union of those methods' purity kinds. Therefore, an
+   * error message, such as {@code purity.call}, names the purity kind that the body lacks but not
+   * the method that requires it, which might be a method of a superinterface or of another bound of
+   * an intersection cast. By contrast, the error message for a method reference names the method.
+   *
    * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of those methods from
    * the lambda's body.
    *
@@ -3348,11 +3353,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Records in whole-program inference the purity of each of the given methods, as constrained by a
-   * lambda or a method reference that a call through any of them can run. Whole-program inference
-   * lubs the recorded purity with the purity that it already has for each method. The lambda or
-   * method reference constrains each method's purity just as an overriding method does; see the
-   * treatment of overridden methods in {@link #checkPurityAnnotations}.
+   * Records in whole-program inference the purity of each of the given methods, as constrained by
+   * the given lambda or method reference, which a call through any of the methods can run.
+   * Whole-program inference lubs the recorded purity with the purity that it already has for each
+   * method. The lambda or method reference constrains each method's purity just as an overriding
+   * method does; see the treatment of overridden methods in {@link #checkPurityAnnotations}.
+   *
+   * <p>Records no kind that would newly constrain the arguments at call sites of any of the methods
+   * (see {@link #kindsSafeToInfer}), because one of the methods can override another one and
+   * inherit its purity annotations.
    *
    * @param methods the methods through which a call can run {@code tree}, as {@link
    *     #methodsThatRun} returns them
@@ -3365,13 +3374,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (wpi == null) {
       throw new BugInCF("No WPI while inferring purity of " + tree);
     }
-    for (ExecutableElement method : methods) {
-      EnumSet<PurityKind> kinds = EnumSet.copyOf(implementationKinds);
-      if (method.getReturnType().getKind() == TypeKind.VOID) {
-        kinds.remove(PurityKind.DETERMINISTIC);
+    EnumSet<PurityKind> kinds = EnumSet.copyOf(implementationKinds);
+    // The methods are override-equivalent, so either all of them return void or none does.
+    if (methods.get(0).getReturnType().getKind() == TypeKind.VOID) {
+      kinds.remove(PurityKind.DETERMINISTIC);
+    }
+    // Narrow `kinds` until it is safe to infer for every method.  It is not enough to narrow it
+    // separately for each method:  a method that overrides another one inherits the kinds
+    // inferred for the other one.  Discarding a kind for one method can make another kind newly
+    // required by a different method, so repeat until no method discards a kind.  Intersecting
+    // with `kinds` keeps a method's written kinds, which `kindsSafeToInfer` adds, from reaching
+    // the other methods.
+    boolean changed;
+    do {
+      changed = false;
+      for (ExecutableElement method : methods) {
+        changed |= kinds.retainAll(kindsSafeToInfer(method, kinds));
       }
-      // Do not infer a kind that would newly constrain the arguments at call sites.  The methods
-      // have different parameters, so the kinds that are safe to infer depend on the method.
+    } while (changed);
+    for (ExecutableElement method : methods) {
       inferPurityAnno(kindsSafeToInfer(method, kinds), wpi, method);
     }
   }
@@ -3480,12 +3501,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (!castBounds.isEmpty()) {
       // The bounds' type arguments are the ones in the cast, so compare against the functional
-      // method as a member of the target type, whose type arguments are also the cast's.  Like
-      // javac, use the non-wildcard parameterization of the target type.
+      // method as a member of the target type, whose type arguments are also the cast's.  The
+      // target type is one of `castBounds`, because one of the bounds declares or inherits the
+      // functional method.
       ExecutableType targetMethodType =
-          (ExecutableType)
-              types.asMemberOf(
-                  TypesUtils.nonWildcardParameterization(targetType, env), functionalMethod);
+          (ExecutableType) types.asMemberOf(targetType, functionalMethod);
       for (DeclaredType bound : castBounds) {
         for (TypeElement supertype :
             ElementUtils.getAllSupertypes((TypeElement) bound.asElement(), env)) {
@@ -5541,8 +5561,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>Reports an error for each of those methods that requires a purity kind that the referenced
      * method lacks, except a method whose missing kinds are among those of another reported method.
-     * Thus, the errors together name every missing kind, and no error is redundant. A method whose
-     * declaring type is in {@code -AskipUses} is not checked.
+     * Thus, the errors together name every missing kind, and no error is redundant.
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
      * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
@@ -5566,9 +5585,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // referenced method lacks.  No element's kinds are a subset of another element's kinds.
       Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();
       for (ExecutableElement declaration : methodsThatRun(overriderTree, overridden.getElement())) {
-        if (checker.shouldSkipUses(declaration.getEnclosingElement())) {
-          continue;
-        }
         EnumSet<PurityKind> missing = PurityUtils.getPurityKinds(atypeFactory, declaration);
         missing.removeAll(subPurity);
         if (missing.isEmpty()

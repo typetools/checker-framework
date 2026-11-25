@@ -76,4 +76,24 @@ public class PurityInferenceInheritedFunctionalMethod {
     LambdaB2 b2 = () -> null;
     LambdaB2A2 b2a2 = () -> impure();
   }
+
+  // `GenericSub.apply` overrides `GenericBase.apply`, and a call through either one can run the
+  // lambda.  Inferring @Pure for `GenericSub.apply` would require every argument that is passed to
+  // its `Runnable` parameter to be pure, so inference must not infer @Pure for it.  Neither may
+  // inference infer @Pure for `GenericBase.apply`, because `GenericSub.apply` would inherit it.
+  // Then the validation run would report purity.call at the call `sub.apply(() -> impure())`.
+
+  interface GenericBase<T> {
+    Object apply(T t);
+  }
+
+  interface GenericSub extends GenericBase<Runnable> {
+    @Override
+    Object apply(Runnable r);
+  }
+
+  void overriddenMethodWithGenericParameter() {
+    GenericSub sub = r -> null;
+    sub.apply(() -> impure());
+  }
 }
