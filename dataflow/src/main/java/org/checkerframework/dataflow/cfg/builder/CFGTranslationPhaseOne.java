@@ -294,6 +294,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * finally block, and that rethrows the exception after the finally block completes normally. An
    * extra copy is one other than the first exceptional copy of a given finally block. See {@link
    * #handleFinally}.
+   *
+   * <p>The test {@code checker/tests/nullness/FinallyCopyBudget.java} uses up this budget. If you
+   * increase it, check that the test still uses it up.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
@@ -2914,25 +2917,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // `groups` partitions the types of the exceptions that reach the finally block.  For each
     // group, a copy of the finally block starts at the group's entry labels, which exceptions of
     // the group's types jump to when they reach the finally block, and the copy rethrows the
-    // group's types after the finally block completes normally.  Types that go to the same places
-    // share a copy, because the analysis merges their stores there anyway.  The number of copies
-    // grows exponentially with the depth of the nesting of finally blocks in finally blocks, with
-    // a base that grows with the number of copies per finally block.
+    // group's types after the finally block completes normally.
     //
-    // As an optimization, until the budget described below is used up, two types share a copy if
-    // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
-    // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
-    // copy.  Types that go to different places get different copies, so that the analysis does not
-    // merge stores of paths that never meet.  For example, the Resource Leak Checker would
-    // otherwise report a leak when an exception thrown while a resource is open is caught by a
-    // catch block that closes the resource, and another exception, thrown after the resource is
-    // closed, propagates out of the method.
+    // For precision, until the budget described below is used up, two types share a copy if and
+    // only if the copy rethrows them to the same places:  the same catch blocks, or the exit, past
+    // any enclosing finally blocks.  The analysis merges the stores of the paths that reach a copy.
+    // Types that go to the same places lose no precision by sharing a copy, because the analysis
+    // merges their stores at those places anyway.  Types that go to different places get different
+    // copies, so that the analysis does not merge stores of paths that never meet.  For example,
+    // the Resource Leak Checker would otherwise report a leak when an exception thrown while a
+    // resource is open is caught by a catch block that closes the resource, and another exception,
+    // thrown after the resource is closed, propagates out of the method.
     //
-    // As a further optimization, to bound growth, once the copies beyond the first copy for each
-    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
-    // do not yet have a copy share a single copy, which rethrows each of their exceptions.  A
-    // finally block that the CFG builder translates after that point has a single exceptional
-    // copy, which all of its groups share, as if all of its exceptions went to the same places.
+    // The number of copies grows exponentially with the depth of the nesting of finally blocks in
+    // finally blocks, with a base that grows with the number of copies per finally block.  To
+    // bound that growth, once the copies beyond the first copy for each finally block have
+    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that do not yet have a
+    // copy share a single copy, which rethrows each of their exceptions.  A finally block that the
+    // CFG builder translates after that point has a single exceptional copy, which all of its
+    // groups share, as if all of its exceptions went to the same places.
     List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
 
     for (int i = 0; i < groups.size(); i++) {
