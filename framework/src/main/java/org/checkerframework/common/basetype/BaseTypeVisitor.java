@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1669,6 +1670,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.purityAdjective = purityAdjective;
       this.calleeAdjective = calleeAdjective;
     }
+
+    /**
+     * Returns true if the given purity kinds include a purity property that this violation lacks.
+     *
+     * @param kinds the purity kinds of a method
+     * @return true if {@code kinds} includes a purity property that this violation lacks
+     */
+    private boolean isRequiredBy(EnumSet<PurityKind> kinds) {
+      return switch (this) {
+        case DETERMINISTIC -> kinds.contains(PurityKind.DETERMINISTIC);
+        case SIDE_EFFECT_FREE -> kinds.contains(PurityKind.SIDE_EFFECT_FREE);
+        case BOTH ->
+            kinds.contains(PurityKind.DETERMINISTIC) || kinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      };
+    }
   }
 
   /**
@@ -2129,6 +2145,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param expectedKinds the expected purity for the method
    */
   protected void reportPurityErrors(PurityResult result, EnumSet<PurityKind> expectedKinds) {
+    reportPurityErrors(result, expectedKinds, Collections.emptyMap());
+  }
+
+  /**
+   * Reports errors found during purity checking. Each error message names the methods in {@code
+   * requirements} that require the purity kind that the checked code lacks.
+   *
+   * @param result the result of the purity analysis
+   * @param expectedKinds the expected purity for the checked code
+   * @param requirements methods whose purity annotations require {@code expectedKinds}, each with
+   *     its purity kinds, or an empty map to name no method; used for diagnostics
+   */
+  private void reportPurityErrors(
+      PurityResult result,
+      EnumSet<PurityKind> expectedKinds,
+      Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
     assert !result.isPure(expectedKinds);
     EnumSet<PurityKind> violations = EnumSet.copyOf(expectedKinds);
     violations.removeAll(result.getKinds());
@@ -2143,16 +2175,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         violation = PurityViolation.BOTH;
       }
       for (ImpurityReason r : result.getNotBothReasons()) {
-        reportPurityError(violation, r);
+        reportPurityError(violation, r, requirements);
       }
       if (violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
         for (ImpurityReason r : result.getNotSEFreeReasons()) {
-          reportPurityError(PurityViolation.SIDE_EFFECT_FREE, r);
+          reportPurityError(PurityViolation.SIDE_EFFECT_FREE, r, requirements);
         }
       }
       if (violations.contains(PurityKind.DETERMINISTIC)) {
         for (ImpurityReason r : result.getNotDetReasons()) {
-          reportPurityError(PurityViolation.DETERMINISTIC, r);
+          reportPurityError(PurityViolation.DETERMINISTIC, r, requirements);
         }
       }
     }
@@ -2163,8 +2195,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param violation the purity property that the method was required to have, but does not have
    * @param r the result to report
+   * @param requirements methods whose purity annotations require the purity property, each with its
+   *     purity kinds, or an empty map to name no method; used for diagnostics
    */
-  private void reportPurityError(PurityViolation violation, ImpurityReason r) {
+  private void reportPurityError(
+      PurityViolation violation,
+      ImpurityReason r,
+      Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
     String reason = r.msgId();
     Tree tree = r.tree();
     @CompilerMessageKey String msgKey =
@@ -2189,14 +2226,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             violation.calleeAdjective,
             calleeElement.getEnclosingElement(),
             calleeElement.getSimpleName(),
-            violation.purityAdjective
+            violation.purityAdjective,
+            requiredBy(violation, requirements)
           };
     } else {
-      args = new Object[] {violation.purityAdjective};
+      args = new Object[] {violation.purityAdjective, requiredBy(violation, requirements)};
     }
     // The same tree can be checked more than once:  an initializer is checked as part of every
     // constructor that runs it.
     reportErrorOnce(tree, msgKey, args);
+  }
+
+  /**
+   * Returns the text that ends a purity error message, naming the methods in {@code requirements}
+   * that require a purity kind of {@code violation}, as in " (required by SefFunc.doNothing)". A
+   * purity error message's last argument is this text. A message whose key a checker defines (see
+   * {@link #customPurityMessageKey}) can omit it.
+   *
+   * @param violation a purity property that the checked code was required to have, but does not
+   * @param requirements methods whose purity annotations require purity properties, each with its
+   *     purity kinds, or an empty map to name no method
+   * @return the text that names the methods that require a purity kind of {@code violation}, or the
+   *     empty string if there are none
+   */
+  private static String requiredBy(
+      PurityViolation violation, Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
+    StringJoiner methods = new StringJoiner(", ", " (required by ", ")");
+    methods.setEmptyValue("");
+    for (Map.Entry<ExecutableElement, EnumSet<PurityKind>> entry : requirements.entrySet()) {
+      if (violation.isRequiredBy(entry.getValue())) {
+        ExecutableElement method = entry.getKey();
+        methods.add(method.getEnclosingElement().getSimpleName() + "." + method.getSimpleName());
+      }
+    }
+    return methods.toString();
   }
 
   /**
@@ -3290,10 +3353,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * lambda: the functional interface method that the lambda implements, and the other methods that
    * {@link #methodsThatRun} returns.
    *
-   * <p>The body is checked once, against the union of those methods' purity kinds. Therefore, an
-   * error message, such as {@code purity.call}, names the purity kind that the body lacks but not
-   * the method that requires it, which might be a method of a superinterface or of another bound of
-   * an intersection cast. By contrast, the error message for a method reference names the method.
+   * <p>Each error message, such as {@code purity.call}, names the methods whose annotations require
+   * the purity kind that the body lacks. Such a method might be a method of a superinterface or of
+   * another bound of an intersection cast, rather than the functional interface method.
    *
    * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of those methods from
    * the lambda's body.
@@ -3313,8 +3375,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     List<ExecutableElement> methods = methodsThatRun(tree, functionType.getElement());
     // The body must be at least as pure as each method through which a call can run it.
     EnumSet<PurityKind> purityKinds = EnumSet.noneOf(PurityKind.class);
+    // The purity kinds of each method, in the order of `methods`.
+    Map<ExecutableElement, EnumSet<PurityKind>> requirements = new LinkedHashMap<>();
     for (ExecutableElement method : methods) {
-      purityKinds.addAll(PurityUtils.getPurityKinds(atypeFactory, method));
+      EnumSet<PurityKind> kinds = PurityUtils.getPurityKinds(atypeFactory, method);
+      purityKinds.addAll(kinds);
+      requirements.put(method, kinds);
     }
     // Do not report errors while inferring.  The purity annotations on `methods` may have been
     // written by inference, which has not yet taken this lambda into account; the code below does
@@ -3333,7 +3399,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               assumeDeterministic,
               assumePureGetters);
       if (!r.isPure(purityKinds)) {
-        reportPurityErrors(r, purityKinds);
+        reportPurityErrors(r, purityKinds, requirements);
       }
     }
 
