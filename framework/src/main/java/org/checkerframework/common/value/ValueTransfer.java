@@ -1449,7 +1449,7 @@ public class ValueTransfer extends CFTransfer {
    *
    * @param store the store
    * @param range the range to create an annotation for
-   * @param node the node whose existing annotation to refine
+   * @param node a node whose existing annotation to refine
    * @param nodeAnno the Constant Value Checker annotation of {@code node}'s value before the
    *     refinement
    */

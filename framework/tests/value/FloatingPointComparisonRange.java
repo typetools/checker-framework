@@ -106,7 +106,8 @@ public class FloatingPointComparisonRange {
     }
   }
 
-  void lessThanFloatingOperand(@IntRange(from = 0, to = 100) int i, double d) {
+  void lessThanFloatingOperand(
+      @IntRange(from = 0, to = 100) int i, @DoubleVal({0.5, 99.5}) double d) {
     if (d < i) {
       if (d > 99.2) {
         // `d` might be 99.5.
