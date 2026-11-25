@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -320,15 +321,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Class declarations that have been encountered when building the control-flow graph for a
-   * method.
+   * method. It is a set because the CFG builder translates a finally block more than once, so it
+   * encounters a class declaration in a finally block more than once.
    */
-  private final List<ClassTree> declaredClasses;
+  private final Set<ClassTree> declaredClasses;
 
   /**
    * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
-   * initializer.
+   * initializer. It is a set because the CFG builder translates a finally block more than once, so
+   * it encounters a lambda in a finally block more than once.
    */
-  private final List<LambdaExpressionTree> declaredLambdas;
+  private final Set<LambdaExpressionTree> declaredLambdas;
 
   /** The ArithmeticException type. */
   protected final TypeMirror arithmeticExceptionType;
@@ -431,8 +434,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     breakLabels = new HashMap<>(4);
     continueLabels = new HashMap<>(4);
     returnNodes = new ArrayList<>();
-    declaredClasses = new ArrayList<>();
-    declaredLambdas = new ArrayList<>();
+    declaredClasses = new LinkedHashSet<>();
+    declaredLambdas = new LinkedHashSet<>();
 
     arithmeticExceptionType = getTypeMirror(ArithmeticException.class);
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
@@ -507,8 +510,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           returnNodes,
           regularExitLabel,
           exceptionalExitLabel,
-          declaredClasses,
-          declaredLambdas,
+          new ArrayList<>(declaredClasses),
+          new ArrayList<>(declaredLambdas),
           types);
     } finally {
       this.path = null;
