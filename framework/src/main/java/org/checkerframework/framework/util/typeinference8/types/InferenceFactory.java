@@ -1530,8 +1530,8 @@ public class InferenceFactory {
    * <p>A use of a variable in {@code variables} is replaced by the element of {@code typeArgs}
    * itself, not a copy, so that recursive bounds share the fresh type variables. A use of a
    * variable in {@code instantiated} that has a primary annotation is replaced by a copy of the
-   * instantiation that has that primary annotation, as {@link
-   * TypeVariableSubstitutor#substitute} does; a use without one gets the instantiation's.
+   * instantiation that has that primary annotation, as {@link TypeVariableSubstitutor#substitute}
+   * does; a use without one gets the instantiation's.
    *
    * <p>{@code typeArgs} and {@code variables} are parallel lists: {@code typeArgs.get(i)} is the
    * instantiation of {@code variables.get(i)}.
@@ -1593,8 +1593,8 @@ public class InferenceFactory {
   private static class InstantiationSubstitutor extends TypeVariableSubstitutor {
 
     /**
-     * The type variables whose annotated uses are replaced by a copy of the argument with the
-     * use's primary annotation.
+     * The type variables whose annotated uses are replaced by a copy of the argument with the use's
+     * primary annotation.
      */
     private final Set<TypeParameterElement> copiedElements;
 
