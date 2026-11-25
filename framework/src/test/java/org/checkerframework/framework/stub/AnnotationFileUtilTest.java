@@ -1,7 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +22,7 @@ public class AnnotationFileUtilTest {
    */
   @Test
   public void corruptArchive() throws IOException {
-    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
+    File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
 
     List<AnnotationFileResource> resources =
         AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
@@ -41,7 +39,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void unlistableDirectory() throws IOException {
     File dir = tmp.newFolder("stubs");
-    write(new File(dir, "A.astub"), "class A {}");
+    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "class A {}");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(dir.setReadable(false));
     try {
