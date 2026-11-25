@@ -413,14 +413,14 @@ public abstract class JavaExpression {
   /**
    * Returns the printed form of this expression, as it should appear immediately before a postfix
    * operation, such as a method call {@code .m()} or an array access {@code [i]}. The result is
-   * parenthesized unless this is an expression that the postfix operation cannot regroup. For
-   * example, the binary operation {@code a + b} yields {@code (a + b)}, so that a method call on it
-   * prints as {@code (a + b).trim()} rather than as {@code a + b.trim()}, which means something
-   * different; and the numeric literal {@code 5} yields {@code (5)}, because {@code 5.intValue()}
-   * does not parse.
+   * parenthesized if appending a postfix operation to the unparenthesized form could regroup it or
+   * could yield text that does not parse. For example, the binary operation {@code a + b} yields
+   * {@code (a + b)}, so that a method call on it prints as {@code (a + b).trim()} rather than as
+   * {@code a + b.trim()}, which means something different; and the numeric literal {@code 5} yields
+   * {@code (5)}, because {@code 5.intValue()} does not parse.
    *
-   * @return the printed form of this expression, parenthesized if a postfix operation could regroup
-   *     it
+   * @return the printed form of this expression, parenthesized if appending a postfix operation to
+   *     the unparenthesized form could regroup it or could yield text that does not parse
    */
   @Pure
   public String toStringAsPostfixOperand() {
@@ -430,6 +430,7 @@ public abstract class JavaExpression {
         || this instanceof FieldAccess
         || this instanceof MethodCall
         || this instanceof ArrayAccess
+        || this instanceof IteratedCollectionElement
         || this instanceof ThisReference
         || this instanceof SuperReference
         || this instanceof ClassName) {
