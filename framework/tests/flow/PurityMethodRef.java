@@ -134,6 +134,14 @@ public class PurityMethodRef {
     // :: error: [purity.methodref]
     GenPlainFirstFunc<String> f1 = PurityMethodRef::myMethod;
     GenPlainFirstFunc<String> f2 = PurityMethodRef::mySideEffectFreeMethod;
+    // A bound with a wildcard type argument, which javac replaces by its non-wildcard
+    // parameterization.  javac rejects such a bound when another bound is a functional interface.
+    // :: error: [purity.methodref]
+    Object f3 = (java.io.Serializable & GenSefFunc<? extends String>) PurityMethodRef::myMethod;
+    Object f4 =
+        (java.io.Serializable & GenSefFunc<? extends String>)
+            PurityMethodRef::mySideEffectFreeMethod;
+    Object f5 = (java.io.Serializable & GenPlainFunc<? extends String>) PurityMethodRef::myMethod;
   }
 
   /** Inherits {@code SefFunc.doNothing} and {@code PureFunc.doNothing}, which differ in purity. */
