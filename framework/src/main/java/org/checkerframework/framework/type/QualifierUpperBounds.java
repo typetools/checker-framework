@@ -143,7 +143,9 @@ public class QualifierUpperBounds {
 
   /**
    * Returns {@code annos}, with each qualifier that is not a subtype of the qualifier upper bound
-   * of {@code type} in the same hierarchy replaced by that bound.
+   * of {@code type} in the same hierarchy replaced by that bound. The qualifier upper bounds are
+   * those that {@link AnnotatedTypeFactory#getTypeDeclarationBounds} returns, so an override of
+   * that method affects the result.
    *
    * @param type the type whose qualifier upper bounds limit {@code annos}
    * @param annos the qualifiers to limit
@@ -151,7 +153,7 @@ public class QualifierUpperBounds {
    *     of {@code type} in the same hierarchy replaced by that bound
    */
   public AnnotationMirrorSet limitToBound(TypeMirror type, Set<? extends AnnotationMirror> annos) {
-    AnnotationMirrorSet boundAnnos = getBoundQualifiers(type);
+    AnnotationMirrorSet boundAnnos = atypeFactory.getTypeDeclarationBounds(type);
     AnnotationMirrorSet limitedAnnos = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annos) {
       AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);

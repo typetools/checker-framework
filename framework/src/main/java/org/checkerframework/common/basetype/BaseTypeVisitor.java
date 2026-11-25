@@ -6371,7 +6371,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * enforce a type validity property everywhere, override methods such as {@link
    * BaseTypeValidator#visitDeclared} rather than this method.
    *
-   * @param declarationType the type of the class (TypeElement)
+   * @param declarationType the type of the class (TypeElement), whose primary qualifiers are the
+   *     qualifier upper bounds for a use of the class, as returned by {@link
+   *     AnnotatedTypeFactory#getTypeDeclarationBounds}
    * @param useType the use of the class (instance type)
    * @param tree the tree where the type is used
    * @return true if the useType is a valid use of declarationType
@@ -6381,9 +6383,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
-    TypeMirror declarationTM = declarationType.getUnderlyingType();
-    AnnotationMirrorSet upperBounds =
-        atypeFactory.getQualifierUpperBounds().getBoundQualifiers(declarationTM);
+    AnnotationMirrorSet upperBounds = declarationType.getPrimaryAnnotations();
     for (AnnotationMirror top : tops) {
       AnnotationMirror upperBound = qualHierarchy.findAnnotationInHierarchy(upperBounds, top);
       if (!typeHierarchy.isSubtypeShallowEffective(useType, upperBound)) {
