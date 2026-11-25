@@ -1954,7 +1954,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     try {
       // The package of `declaration` and of every subtype along the inheritance path, or null if
       // they are not all in one package, as for the `packageName` argument of `memberClass`.
-      @Nullable String pathPackage = mixedPackages ? null : stubPackage(declaration);
+      String pathPackage = mixedPackages ? null : stubPackage(declaration);
       for (ClassOrInterfaceType supertype : supertypes(declaration)) {
         Object superDecl = resolveSupertype(supertype);
         if (superDecl instanceof TypeDeclaration<?> superTypeDecl) {
