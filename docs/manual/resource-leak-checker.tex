@@ -152,8 +152,6 @@ The following annotations express ownership of resource collections.
 \item[\refqualclass{checker/collectionownership/qual}{NotOwningCollection}]
   express ownership of resource collections. Resource collection formal parameters default to \<@NotOwningCollection>, whereas resource collection fields and return types default to \<@OwningCollection>.
   For more details, see Section~\ref{resource-leak-collections}.
-\item[\refqualclass{checker/collectionownership/qual}{PolyOwningCollection}]
-  is the polymorphic qualifier for collection ownership. For example, \<Iterable.iterator()> returns an iterator that never owns the collection's elements.
 \end{description}
 
 The following annotations are written on methods.
@@ -758,7 +756,7 @@ caller then owns the returned element and must dispose of it.
 In exchange for these restrictions, a \<@NotOwningCollection> reference has no
 obligation for the elements of the collection.
 
-Of the qualifiers in this hierarchy, programmers may write only \<@OwningCollection>, \<@NotOwningCollection>, and the polymorphic qualifier \<@PolyOwningCollection>.
+Of the qualifiers in this hierarchy, programmers may write only \<@OwningCollection> and \<@NotOwningCollection>.
 The other two are used only internally, and the checker reports an error if a programmer writes one.
 
 \subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}

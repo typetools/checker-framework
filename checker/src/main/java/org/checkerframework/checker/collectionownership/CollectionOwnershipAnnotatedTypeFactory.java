@@ -3,7 +3,6 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -34,7 +32,6 @@ import org.checkerframework.checker.collectionownership.qual.NotOwningCollection
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
-import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -68,15 +65,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
-import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -148,9 +141,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /** The {@code @}{@link OwningCollectionBottom} annotation. */
   public final AnnotationMirror BOTTOM;
-
-  /** The {@code @}{@link PolyOwningCollection} polymorphic annotation. */
-  public final AnnotationMirror POLY;
 
   /** The {@code value} element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
@@ -225,7 +215,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
     OWNINGCOLLECTIONWITHOUTOBLIGATION =
         AnnotationBuilder.fromClass(elements, OwningCollectionWithoutObligation.class);
     BOTTOM = AnnotationBuilder.fromClass(elements, OwningCollectionBottom.class);
-    POLY = AnnotationBuilder.fromClass(elements, PolyOwningCollection.class);
     mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
     this.postInit();
   }
@@ -383,7 +372,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return new LinkedHashSet<>(
         Arrays.asList(
-            PolyOwningCollection.class,
             NotOwningCollection.class,
             OwningCollection.class,
             OwningCollectionWithoutObligation.class,
@@ -955,46 +943,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
         super.createTypeAnnotator(), new CollectionOwnershipTypeAnnotator(this));
   }
 
-  @Override
-  protected QualifierPolymorphism createQualifierPolymorphism() {
-    return new CollectionOwnershipQualifierPolymorphism(processingEnv, this);
-  }
-
-  /**
-   * Resolves {@code @PolyOwningCollection} to {@code @NotOwningCollection} where the default would
-   * resolve it to {@code @OwningCollection} or {@code @OwningCollectionWithoutObligation}. See
-   * {@link PolyOwningCollection}.
-   */
-  private class CollectionOwnershipQualifierPolymorphism extends DefaultQualifierPolymorphism {
-
-    /**
-     * Creates a {@link CollectionOwnershipQualifierPolymorphism}.
-     *
-     * @param env the processing environment
-     * @param factory the factory for the current checker
-     */
-    public CollectionOwnershipQualifierPolymorphism(
-        ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-      super(env, factory);
-    }
-
-    @Override
-    protected void replace(
-        AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
-      AnnotationMirror resolved = replacements.get(POLY);
-      if (resolved == null
-          || !(AnnotationUtils.areSame(OWNINGCOLLECTION, resolved)
-              || AnnotationUtils.areSame(OWNINGCOLLECTIONWITHOUTOBLIGATION, resolved))) {
-        super.replace(type, replacements);
-        return;
-      }
-      AnnotationMirrorMap<AnnotationMirror> notOwning = new AnnotationMirrorMap<>();
-      notOwning.putAll(replacements);
-      notOwning.put(POLY, NOTOWNINGCOLLECTION);
-      super.replace(type, notOwning);
-    }
-  }
-
   /**
    * The TypeAnnotator for the Collection Ownership type system. It gives the receiver, return type,
    * and parameters of a method the collection ownership qualifiers that are not written:
@@ -1026,7 +974,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
       AnnotatedDeclaredType receiverType = t.getReceiverType();
       AnnotatedTypeMirror returnType = t.getReturnType();
       List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
-      boolean returnsResourceCollection = isResourceCollection(returnType.getUnderlyingType());
 
       // Only the receiver of a collection class inherits a qualifier. The receiver of any other
       // class, such as one that overrides toString(), keeps its default.
@@ -1045,22 +992,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
               : "@AssumeAssertion(nullness): an overriding method and the method it overrides are instance methods";
           inheritQualifier(receiverType, overriddenReceiver);
         }
-        AnnotatedTypeMirror overriddenReturnType = overridden.getReturnType();
-        if (inheritQualifier(returnType, overriddenReturnType)
-            && returnsResourceCollection
-            && overriddenReturnType.hasPrimaryAnnotation(POLY)) {
-          // An override of a @PolyOwningCollection method that returns a resource collection,
-          // such as an iterator() method that returns the iterator of an owning field, returns
-          // @NotOwningCollection: its result never owns the elements, it's a read-only view.
-          returnType.replaceAnnotation(NOTOWNINGCOLLECTION);
-        }
+        inheritQualifier(returnType, overridden.getReturnType());
         List<? extends AnnotatedTypeMirror> overriddenParamTypes = overridden.getParameterTypes();
         for (int i = 0; i < overriddenParamTypes.size(); i++) {
           inheritQualifier(paramTypes.get(i), overriddenParamTypes.get(i));
         }
       }
 
-      if (returnsResourceCollection && isMissingAnnotation(returnType)) {
+      if (isResourceCollection(returnType.getUnderlyingType()) && isMissingAnnotation(returnType)) {
         returnType.replaceAnnotation(
             t.getElement().getKind() == ElementKind.CONSTRUCTOR
                 ? OWNINGCOLLECTIONWITHOUTOBLIGATION
@@ -1084,21 +1023,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
      * @param type the receiver, return, or a parameter type of the overriding method, which this
      *     method side-effects
      * @param overriddenType the corresponding type of the overridden method
-     * @return true if {@code type} inherited the qualifier of {@code overriddenType}
      */
-    private boolean inheritQualifier(AnnotatedTypeMirror type, AnnotatedTypeMirror overriddenType) {
-      AnnotationMirror anno = type.getAnnotationInHierarchy(TOP);
+    private void inheritQualifier(AnnotatedTypeMirror type, AnnotatedTypeMirror overriddenType) {
       AnnotationMirror overriddenAnno = overriddenType.getPrimaryAnnotationInHierarchy(TOP);
-      if (!isMissingAnnotation(anno) || isMissingAnnotation(overriddenAnno)) {
-        return false;
+      if (isMissingAnnotation(type) && !isMissingAnnotation(overriddenAnno)) {
+        type.replaceAnnotation(overriddenAnno);
       }
-      // At a call, this runs again after the call has resolved @PolyOwningCollection, possibly to
-      // bottom. So bottom does not inherit @PolyOwningCollection; only a missing qualifier does.
-      if (anno != null && AnnotationUtils.areSameByName(POLY, overriddenAnno)) {
-        return false;
-      }
-      type.replaceAnnotation(overriddenAnno);
-      return true;
     }
 
     /**
@@ -1117,10 +1047,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /**
    * {@inheritDoc}
    *
-   * <p>Also resolves {@code @PolyOwningCollection} where the framework leaves it unresolved: in a
-   * method reference, and in an invocation typed during type argument inference. For example,
-   * without this, inference fails for {@code lists.stream().map(List::iterator)}: the return type
-   * {@code @PolyOwningCollection Iterator<String>} does not fit {@code map}'s type argument.
+   * <p>Also makes the return type bottom if, at this call, it is not a resource collection. For
+   * example, {@link Iterable#iterator()} returns {@code @NotOwningCollection}, but {@code
+   * stringList.iterator()} returns bottom: an {@code Iterator<String>} never holds resources.
    */
   @Override
   protected ParameterizedExecutableType methodFromUse(
@@ -1130,43 +1059,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
       boolean inferTypeArgs) {
     ParameterizedExecutableType result =
         super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
-    AnnotatedExecutableType methodType = result.executableType();
-    if (tree instanceof MemberReferenceTree memberReference) {
-      // list::iterator resolves as list.iterator() would; List::iterator, to bottom.
-      boolean boundToNonBottomReceiver =
-          TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReference)
-                  == TreeUtils.MemberReferenceKind.BOUND
-              && receiverType != null
-              && !isMissingAnnotation(receiverType);
-      replacePoly(methodType, boundToNonBottomReceiver ? NOTOWNINGCOLLECTION : BOTTOM);
-    } else if (tree instanceof MethodInvocationTree && !inferTypeArgs) {
-      // A stand-in for inference, typed again later: accept any argument, fit any type argument.
-      if (methodType.getReceiverType() != null) {
-        replacePoly(methodType.getReceiverType(), NOTOWNINGCOLLECTION);
-      }
-      for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-        replacePoly(paramType, NOTOWNINGCOLLECTION);
-      }
-      replacePoly(methodType.getReturnType(), BOTTOM);
+    AnnotatedTypeMirror returnType = result.executableType().getReturnType();
+    if (returnType.getKind() == TypeKind.DECLARED
+        && !isResourceCollection(returnType.getUnderlyingType())) {
+      returnType.replaceAnnotation(BOTTOM);
     }
     return result;
-  }
-
-  /**
-   * Replaces each {@code @PolyOwningCollection} in the given type by the given qualifier.
-   *
-   * @param type a type, which this method side-effects
-   * @param replacement the qualifier that replaces {@code @PolyOwningCollection}
-   */
-  private void replacePoly(AnnotatedTypeMirror type, AnnotationMirror replacement) {
-    new SimpleAnnotatedTypeScanner<Void, Void>(
-            (t, p) -> {
-              if (t.hasPrimaryAnnotation(POLY)) {
-                t.replaceAnnotation(replacement);
-              }
-              return null;
-            })
-        .visit(type);
   }
 
   /**
