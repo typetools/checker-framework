@@ -195,6 +195,29 @@ public class PurityLambdaSam {
     }
   }
 
+  // A functional interface that inherits its functional method from several superinterfaces, and an
+  // intersection cast:  a call through any of the methods can run the lambda, so the body is
+  // checked against each method's annotations.
+
+  @FunctionalInterface
+  interface PlainFirstFunc extends PlainFunc, SefFunc {}
+
+  @FunctionalInterface
+  interface SefFirstFunc extends SefFunc, PlainFunc {}
+
+  void inheritedFunctionalMethods() {
+    // :: error: [purity.call]
+    PlainFirstFunc f1 = () -> impure();
+    // :: error: [purity.call]
+    SefFirstFunc f2 = () -> impure();
+    PlainFirstFunc f3 = () -> sefNotDeterministic();
+    // :: error: [purity.call]
+    Object f4 = (PlainFunc & SefFunc) () -> impure();
+    // :: error: [purity.call]
+    Object f5 = (SefFunc & PlainFunc) () -> impure();
+    Object f6 = (PlainFunc & java.io.Serializable) () -> impure();
+  }
+
   // Lambdas that are accepted.
 
   void accepted(String s) {

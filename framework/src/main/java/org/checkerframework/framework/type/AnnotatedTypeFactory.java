@@ -4467,7 +4467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // significant, unlike that of the other inherited declaration annotations.  A method that
     // overrides methods in two supertypes inherits the union of what they permit it to
     // side-effect, rather than the "first one wins" rule of `addOrMerge`;
-    // `BaseTypeVisitor.OverrideChecker` reports any override that thereby side-effects more than a
+    // `OverrideChecker` reports any override that thereby side-effects more than a
     // supertype permits.  Furthermore, each expression must be remembered along with the method
     // that declares it, because the expression is parsed in that method's scope.  A
     // `@SideEffectsOnly` written on `elt` itself is authoritative, so in that case nothing is
@@ -5002,10 +5002,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // This is the target type of `tree`.
     AnnotatedTypeMirror functionalInterfaceType = getFunctionalInterfaceType(tree);
     if (functionalInterfaceType.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType functionalDeclaredType =
+          (AnnotatedDeclaredType) functionalInterfaceType;
       functionalInterfaceType =
           makeGroundTargetType(
-              (AnnotatedDeclaredType) functionalInterfaceType,
-              (DeclaredType) TreeUtils.typeOf(tree));
+              functionalDeclaredType,
+              groundTargetJavaType(tree, functionalDeclaredType.getUnderlyingType()));
     }
 
     // Functional method
@@ -5015,6 +5017,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedExecutableType functionType =
         AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
     return new FnInterfaceAndType(functionalInterfaceType, functionType);
+  }
+
+  /**
+   * Returns the ground target type that javac computed for the given lambda or method reference, as
+   * an instantiation of the given functional interface.
+   *
+   * <p>If {@code tree}'s target is an intersection type, as in {@code (Serializable & Supplier<?
+   * extends String>) () -> ""}, then javac's type for {@code tree} is an intersection type, whose
+   * bound that instantiates {@code functionalType} is the result.
+   *
+   * @param tree a lambda or a method reference
+   * @param functionalType the functional interface type that is the target of {@code tree}, or the
+   *     bound of {@code tree}'s target that is a functional interface
+   * @return javac's ground target type of {@code tree}, as an instantiation of {@code
+   *     functionalType}
+   */
+  private DeclaredType groundTargetJavaType(Tree tree, DeclaredType functionalType) {
+    TypeMirror javaType = TreeUtils.typeOf(tree);
+    if (!(javaType instanceof IntersectionType intersection)) {
+      return (DeclaredType) javaType;
+    }
+    TypeMirror erasedFunctionalType = types.erasure(functionalType);
+    for (TypeMirror bound : intersection.getBounds()) {
+      if (types.isSameType(types.erasure(bound), erasedFunctionalType)) {
+        return (DeclaredType) bound;
+      }
+    }
+    throw new BugInCF(
+        "No bound of %s is an instantiation of %s, for tree %s", javaType, functionalType, tree);
   }
 
   /**
