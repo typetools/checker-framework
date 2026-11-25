@@ -1,7 +1,8 @@
 import org.checkerframework.checker.index.qual.LessThan;
 
-// If an operand of a floating-point comparison is NaN, then both the comparison and its inverse are
-// false, so the else branch of the comparison implies nothing.
+// An operand of a floating-point comparison might be NaN. If an operand is NaN, then both the
+// comparison and its inverse are false, so the else branch of a floating-point comparison does not
+// imply the inverse comparison.
 public class FloatingPointComparisonElseBranch {
 
   void greaterThanOrEqual(int j, double d) {

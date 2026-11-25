@@ -37,7 +37,8 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     // Refine the then branch.
     refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
-    // Refine the else branch, which is the inverse of the then branch unless an operand is NaN.
+    // Refine the else branch, which is the inverse of the then branch, unless an operand might be
+    // NaN.
     if (!isFloatingPointComparison(rfi)) {
       refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
     }
