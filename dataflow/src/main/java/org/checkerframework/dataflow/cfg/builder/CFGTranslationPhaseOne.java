@@ -2828,9 +2828,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
     closeAccessNode.setInSource(false);
     extendWithNode(closeAccessNode);
+    // The current path leads to the try statement.  The path of the close() call leads to the
+    // resource, which is a child of the try statement.
+    TreePath resourcePath = new TreePath(getCurrentPath(), resourceDeclarationTree);
     MethodInvocationNode closeCallNode =
-        new MethodInvocationNode(
-            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
+        new MethodInvocationNode(closeCall, closeAccessNode, Collections.emptyList(), resourcePath);
     closeCallNode.setInSource(false);
     extendWithMethodInvocationNode(closeCallNode);
 
