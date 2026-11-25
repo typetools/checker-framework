@@ -1067,7 +1067,7 @@ public abstract class CFAbstractTransfer<
       TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
     // update information in the store
-    store.updateForAssignment(lhs, rhsValue);
+    store.updateForAssignment(lhs, rhs, rhsValue);
   }
 
   @Override

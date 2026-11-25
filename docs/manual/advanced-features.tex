@@ -1491,6 +1491,24 @@ assigns to the field.  Assigning the field is then an error.  To relate one
 formal parameter to another, name the other one with the \<\#> syntax,
 such as \<@SameLen("\#2")>.
 
+If the field's own declared type names the field, then no type for the
+formal parameter avoids an error:
+
+\begin{Verbatim}
+  HashMap<T, List<@KeyFor("childMap") T>> childMap;
+
+  Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
+    this.childMap = childMap;  // error: reassignment.invalidates.type
+  }
+\end{Verbatim}
+
+\noindent
+Writing \<@KeyFor("\#1")> in the formal parameter's type instead makes the
+assignment incompatible with the field's type.  In this case, suppress the
+warning (Chapter~\ref{suppressing-warnings}) by writing
+\<@SuppressWarnings("keyfor:reassignment.invalidates.type")> on the
+constructor.
+
 The checker does not check a reassignment against the declared type of a
 field, and it does not account for a method call that reassigns a field
 that a type names.

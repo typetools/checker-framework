@@ -217,4 +217,68 @@ public class Reassignment {
       b[j] = 0;
     }
   }
+
+  // A self-assignment does not discard a refined type that names the variable.
+  void selfAssignmentKeepsRefinement(int[] a, int i) {
+    if (i >= 0 && i < a.length) {
+      a = a;
+      a[i] = 0;
+    }
+  }
+
+  // After `a = new int[n]`, `n` equals the length of `a`, whatever it was less than before.
+  void newArrayOfRefinedDimension(int[] a, int n) {
+    if (n >= 0 && n < a.length) {
+      a = new int[n];
+      // :: error: [array.access.unsafe.high]
+      a[n] = 0;
+    }
+  }
+
+  // An operand of the dimension is refined only by the length of the new array.
+  void newArrayOfRefinedDimensionOperand(int[] a, int n) {
+    if (n >= 0 && n + 5 < a.length) {
+      a = new int[n + 1];
+      // :: error: [array.access.unsafe.high]
+      a[n + 4] = 0;
+    }
+  }
+
+  // The dimension is computed from the old value of `a`.
+  void newArrayLongerThanOld(int[] a) {
+    a = new int[a.length + 1];
+    // :: error: [array.access.unsafe.high]
+    a[a.length] = 0;
+  }
+
+  // The dimension of a new array is still refined.
+  void newArrayRefinesDimension(int[] a, int n) {
+    if (n >= 0) {
+      a = new int[n + 1];
+      a[n] = 0;
+    }
+  }
+
+  static class HasLengthField {
+    int length;
+
+    // The `length` of an array is not the field `length`.
+    void arrayLengthIsNotField(int[] a, @LessThan("#1.length") int i) {
+      length = 3;
+    }
+
+    // The `length` of an array is not the field `length`.
+    void arrayLengthRefinementSurvives(int[] a, int i) {
+      if (i < a.length) {
+        length = 3;
+        @LessThan("a.length") int j = i;
+      }
+    }
+
+    // `other` might be `this`.
+    void sameFieldOfOtherReceiver(HasLengthField other, @LessThan("#1.length") int i) {
+      // :: error: [reassignment.invalidates.type]
+      length = 3;
+    }
+  }
 }

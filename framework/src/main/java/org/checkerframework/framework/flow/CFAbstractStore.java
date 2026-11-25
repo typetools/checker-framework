@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -1085,19 +1086,39 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Updates the information in the store by considering an assignment with target {@code n}.
    *
-   * <p>If the target is a local variable or a field, this also removes each value whose dependent
-   * type annotation might name the target (see {@link #removeValuesThatMightName}). If {@code val}
-   * itself has such an annotation, the target gets no value: the annotation names the target's
-   * value before the assignment, but after the assignment the same text would name the new value.
+   * <p>This is equivalent to {@link #updateForAssignment(Node, Node, CFAbstractValue)} with an
+   * unknown right-hand side.
    *
    * @param n the left-hand side of an assignment
    * @param val the right-hand value of an assignment
    */
   public void updateForAssignment(Node n, @Nullable V val) {
+    updateForAssignment(n, null, val);
+  }
+
+  /**
+   * Updates the information in the store by considering an assignment with target {@code n}.
+   *
+   * <p>If the target is a local variable or a field, this also removes each value whose dependent
+   * type annotation might name the target (see {@link #removeValuesThatMightName}). If {@code val}
+   * itself has such an annotation, the target gets no value: the annotation names the target's
+   * value before the assignment, but after the assignment the same text would name the new value. A
+   * self-assignment, such as {@code a = a}, does not change the target's value, so it removes no
+   * values.
+   *
+   * @param n the left-hand side of an assignment
+   * @param rhs the right-hand side of the assignment, or null if it is not known
+   * @param val the right-hand value of an assignment
+   */
+  public void updateForAssignment(Node n, @Nullable Node rhs, @Nullable V val) {
     JavaExpression je = JavaExpression.fromNode(n);
-    if (je instanceof LocalVariable || je instanceof FieldAccess) {
-      removeValuesThatMightName(je);
-      if (val != null && mightName(val, je)) {
+    if ((je instanceof LocalVariable || je instanceof FieldAccess)
+        && analysis.getTypeFactory().getDependentTypesHelper().hasDependentAnnotations()
+        && (rhs == null || !JavaExpression.fromNode(rhs).syntacticEquals(je))) {
+      Tree tree = n.getTree();
+      TreePath path = tree == null ? null : analysis.getTypeFactory().getPath(tree);
+      removeValuesThatMightName(je, path);
+      if (val != null && mightName(val, je, path)) {
         val = null;
       }
     }
@@ -1123,14 +1144,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * org.checkerframework.common.basetype.BaseTypeVisitor} reports an error at an assignment that
    * might invalidate the declared type of a local variable in scope.
    *
+   * <p>The whole value is removed, even its annotations in other qualifier hierarchies. Replacing
+   * only the annotations that name {@code variable} by top would be less precise, because a top
+   * value in the store hides the declared type of an expression from code that reads the store
+   * directly.
+   *
    * @param variable a local variable or a field access that is assigned
+   * @param path the location of the assignment, at which to parse the expressions in the
+   *     annotations, or null if it is not known
    */
-  protected void removeValuesThatMightName(JavaExpression variable) {
-    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
-    if (!dependentTypesHelper.hasDependentAnnotations()) {
-      return;
-    }
-    Predicate<V> mightName = value -> mightName(value, variable);
+  protected void removeValuesThatMightName(JavaExpression variable, @Nullable TreePath path) {
+    Predicate<V> mightName = value -> mightName(value, variable, path);
     localVariableValues.values().removeIf(mightName);
     fieldValues.values().removeIf(mightName);
     arrayValues.values().removeIf(mightName);
@@ -1144,16 +1168,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Returns true if a dependent type annotation of {@code value} might name {@code variable}. See
-   * {@link DependentTypesHelper#mightName(AnnotationMirror, JavaExpression)}.
+   * {@link DependentTypesHelper#mightName(AnnotationMirror, JavaExpression, TreePath)}.
    *
    * @param value an abstract value
    * @param variable a local variable or a field access
+   * @param path the location at which to parse the expressions in the annotations of {@code value},
+   *     or null if it is not known
    * @return true if a dependent type annotation of {@code value} might name {@code variable}
    */
-  private boolean mightName(V value, JavaExpression variable) {
+  private boolean mightName(V value, JavaExpression variable, @Nullable TreePath path) {
     DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
     for (AnnotationMirror anno : value.getAnnotations()) {
-      if (dependentTypesHelper.mightName(anno, variable)) {
+      if (dependentTypesHelper.mightName(anno, variable, path)) {
         return true;
       }
     }

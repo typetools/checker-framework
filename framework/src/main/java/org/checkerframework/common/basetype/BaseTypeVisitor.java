@@ -3608,10 +3608,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * checked, and only the declared types of local variables and formal parameters in scope are
    * checked. The declared type of a field that names another field is not checked.
    *
-   * @param variableTree the variable that is assigned, such as {@code a} in {@code a = c}
+   * @param variableTree the variable that {@code reassignmentTree} assigns, such as {@code a} in
+   *     {@code a = c}
    * @param valueTree the new value of {@code variableTree}, such as {@code c} in {@code a = c}, or
    *     null if the new value is not given by a single expression, as for {@code a++}
-   * @param reassignmentTree the assignment, compound assignment, increment, or decrement
+   * @param reassignmentTree an assignment, compound assignment, increment, or decrement
    */
   protected void checkDependentTypesOfReassignedVariable(
       ExpressionTree variableTree,
@@ -3645,7 +3646,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       AnnotatedTypeMirror declaredType = atypeFactory.getAnnotatedType(varElt);
-      if (!dependentTypesHelper.mightName(declaredType, target)) {
+      if (!dependentTypesHelper.mightName(declaredType, target, path)) {
         continue;
       }
       AnnotatedTypeMirror currentType = declaredType.deepCopy();
@@ -3660,7 +3661,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           value == null ? null : dependentTypesHelper.substitute(declaredType, target, value, path);
       if (requiredType == null
           // The new value is expressed in terms of the old value of the target, as in `a = a.f`.
-          || dependentTypesHelper.mightName(requiredType, target)
+          || dependentTypesHelper.mightName(requiredType, target, path)
           || !isValidAfterReassignment(varElt, currentType, requiredType, reassignmentTree)) {
         checker.reportError(
             reassignmentTree,
@@ -3769,7 +3770,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param trees statements, for-loop initializers, or try-with-resources resources
    * @param stop the tree at which to stop, or null to add the variable declarations of all of
    *     {@code trees}
-   * @param result the list to which to add variable declarations
+   * @param result a list to which to add variable declarations
    */
   @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private static void addVariablesBefore(
