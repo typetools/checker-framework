@@ -3198,18 +3198,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If a {@code @SideEffectsOnly} annotation applies to the functional interface method that the
-   * given lambda implements -- whether that method declares the annotation or inherits it -- checks
-   * that the lambda's body side-effects at most the expressions that the annotation lists. Nothing
-   * else checks a lambda's body against that annotation: unlike an overriding method, a lambda does
-   * not inherit the annotation, and unlike a method reference, a lambda has no declaration to
-   * compare the annotation against.
+   * Checks the given lambda's body against each {@code @SideEffectsOnly} annotation that applies to
+   * a method through which a call can run the lambda: the functional interface method that the
+   * lambda implements, and the other methods that {@link #methodsThatRun} returns. An annotation
+   * applies to a method if the method declares it or inherits it. The body must side-effect at most
+   * the expressions that each such annotation lists. Nothing else checks a lambda's body against
+   * those annotations: unlike an overriding method, a lambda does not inherit an annotation, and
+   * unlike a method reference, a lambda has no declaration to compare an annotation against.
    *
-   * <p>An expression that mentions the interface method's {@code this} is ignored. It denotes the
+   * <p>An expression that mentions an interface method's {@code this} is ignored. It denotes the
    * object that evaluating the lambda expression creates, and that object has no state that the
    * body can modify.
    *
-   * <p>A lambda whose interface method is {@code @SideEffectFree} or {@code @Pure} is not checked.
+   * <p>If any of the methods is {@code @SideEffectFree} or {@code @Pure}, the lambda is not checked
+   * here: {@link #checkLambdaPurity} requires the body to be side-effect-free, which satisfies
+   * every {@code @SideEffectsOnly} annotation.
    *
    * @param tree a lambda expression
    */
@@ -3217,16 +3220,50 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (!checkPurityAnnotationsOption) {
       return;
     }
-    ExecutableElement interfaceMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
-    // The interface method might inherit the annotation rather than declare it, and
-    // `@SideEffectsOnly` is not inherited as an annotation, so `getDeclAnnotation` would not find
-    // it; see `AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap`.
-    Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
-        atypeFactory.getSideEffectsOnlyExpressionMap(interfaceMethod);
-    if (seOnlyExpressionStrings == null
-        || getPureOrSideEffectFreeAnnotation(interfaceMethod) != null) {
+    ExecutableElement functionalMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
+    List<ExecutableElement> methods = methodsThatRun(tree, functionalMethod);
+    for (ExecutableElement method : methods) {
+      if (getPureOrSideEffectFreeAnnotation(method) != null) {
+        return;
+      }
+    }
+    TreePath body = atypeFactory.getPath(tree.getBody());
+    if (body == null) {
+      // The body is not in the compilation unit that is being processed, so it cannot be checked.
+      // This is the same conservative treatment that `visitMethod` gives a method body.
       return;
     }
+    // The annotations that have been checked, as `getSideEffectsOnlyExpressionMap` returns them.
+    // A method that overrides another one in `methods` can inherit the same annotation.
+    Set<Map<ExecutableElement, List<String>>> checked = new HashSet<>();
+    for (ExecutableElement method : methods) {
+      // The method might inherit the annotation rather than declare it, and `@SideEffectsOnly` is
+      // not inherited as an annotation, so `getDeclAnnotation` would not find it; see
+      // `AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap`.
+      Map<ExecutableElement, List<String>> seOnlyExpressionStrings =
+          atypeFactory.getSideEffectsOnlyExpressionMap(method);
+      if (seOnlyExpressionStrings != null && checked.add(seOnlyExpressionStrings)) {
+        checkLambdaSideEffectsOnly(tree, body, method, seOnlyExpressionStrings);
+      }
+    }
+  }
+
+  /**
+   * Checks that the given lambda's body side-effects at most the expressions of the given
+   * {@code @SideEffectsOnly} annotation.
+   *
+   * @param tree a lambda expression
+   * @param body the path to the body of {@code tree}
+   * @param interfaceMethod a method through which a call can run {@code tree}; see {@link
+   *     #methodsThatRun}
+   * @param seOnlyExpressionStrings the {@code @SideEffectsOnly} expressions that apply to {@code
+   *     interfaceMethod}, indexed by the method whose declaration contains them
+   */
+  private void checkLambdaSideEffectsOnly(
+      LambdaExpressionTree tree,
+      TreePath body,
+      ExecutableElement interfaceMethod,
+      Map<ExecutableElement, List<String>> seOnlyExpressionStrings) {
     List<? extends VariableTree> lambdaParameters = tree.getParameters();
     if (interfaceMethod.getParameters().size() != lambdaParameters.size()) {
       // javac rejects a lambda whose arity differs from that of the interface method that the
@@ -3235,13 +3272,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           "lambda %s has %d parameters, but %s has %d",
           tree, lambdaParameters.size(), interfaceMethod, interfaceMethod.getParameters().size());
     }
-    TreePath body = atypeFactory.getPath(tree.getBody());
-    if (body == null) {
-      // The body is not in the compilation unit that is being processed, so it cannot be checked.
-      // This is the same conservative treatment that `visitMethod` gives a method body.
-      return;
-    }
-
     // Rewrite each of the interface method's formal parameters as the lambda's corresponding
     // parameter, which is what the lambda's body names it.
     JavaExpressionConverter converter =
