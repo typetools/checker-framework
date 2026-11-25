@@ -231,6 +231,12 @@ public class OverrideChecker {
    */
   public boolean checkOverride() {
     if (visitor.checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+      if (isMethodReference) {
+        // A call through a method of another type, such as another bound of an intersection cast,
+        // can also run the referenced method.  The purity check applies -AskipUses to each such
+        // method separately.
+        checkMethodReferencePurity();
+      }
       return true;
     }
 
@@ -281,8 +287,14 @@ public class OverrideChecker {
     // The methods to report, each paired with the purity kinds that it requires and the
     // referenced method lacks.  No element's kinds are a subset of another element's kinds.
     Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();
+    // As for an override, skip each method of a type that -AskipUses matches.
     List<CallableDeclaration> declarations =
-        visitor.callableDeclarationsThatRun(overriderTree, overridden.getElement());
+        visitor.callableDeclarationsThatRun(overriderTree, overridden.getElement()).stream()
+            .filter(callable -> !visitor.checker.shouldSkipUses(callable.declaration()))
+            .toList();
+    if (declarations.isEmpty()) {
+      return;
+    }
     for (CallableDeclaration callable : declarations) {
       ExecutableElement declaration = callable.declaration();
       EnumSet<PurityKind> missing = PurityUtils.getPurityKinds(visitor.atypeFactory, declaration);

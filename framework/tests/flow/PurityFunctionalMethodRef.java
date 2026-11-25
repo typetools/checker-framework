@@ -287,6 +287,33 @@ public class PurityFunctionalMethodRef {
   }
 
   @FunctionalInterface
+  interface PureStringGetter {
+    @SideEffectFree
+    String get();
+  }
+
+  /**
+   * Inherits {@code PureStringGetter.get} and {@code ObjectGetter.get}; neither overrides the
+   * other, but every object of this type implements both with one side-effect-free method.
+   */
+  @FunctionalInterface
+  interface PureBothGetter extends PureStringGetter, ObjectGetter {}
+
+  @FunctionalInterface
+  interface UnannotatedCaller<T> {
+    boolean call(T g);
+  }
+
+  void sharedCallbackImplementation() {
+    // A call through UnannotatedCaller<PureBothGetter>.call checks nothing about its argument,
+    // but every argument implements ObjectGetter.get with the method that implements the
+    // side-effect-free PureStringGetter.get.
+    UnannotatedCaller<PureBothGetter> a = PurityFunctionalMethodRef::callObjectGetter;
+    // :: error: [purity.methodref.functional.parameter]
+    UnannotatedCaller<BothGetter> b = PurityFunctionalMethodRef::callObjectGetter;
+  }
+
+  @FunctionalInterface
   interface GenericCaller<T extends StringGetter> {
     @SideEffectFree
     boolean call(T g);

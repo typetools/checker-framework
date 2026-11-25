@@ -726,6 +726,9 @@ public final class TypesUtils {
    * parameterization of each bound of an intersection type when it determines the function type of
    * a lambda expression or a method reference whose target is that intersection type.
    *
+   * <p>The enclosing type of a member class, such as {@code Outer<String>} in {@code
+   * Outer<String>.Inner<?>}, is preserved.
+   *
    * @param type a class or interface type
    * @param env the processing environment
    * @return the non-wildcard parameterization of {@code type}
@@ -734,7 +737,20 @@ public final class TypesUtils {
       DeclaredType type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return (DeclaredType) javacTypes.removeWildcards((Type) type);
+    Type javacType = (Type) type;
+    Type result = javacTypes.removeWildcards(javacType);
+    Type outer = javacType.getEnclosingType();
+    if (result == javacType || !outer.hasTag(TypeTag.CLASS) || outer.allparams().isEmpty()) {
+      return (DeclaredType) result;
+    }
+    // `removeWildcards` substitutes into the declared type of `type`'s class, whose enclosing type
+    // is the generic declaration of the outer class.  Restore the actual enclosing type, and
+    // substitute its type arguments for the outer type variables that a type parameter's bound,
+    // and hence the new type arguments, can mention.
+    com.sun.tools.javac.util.List<Type> typeArgs =
+        javacTypes.subst(
+            result.getTypeArguments(), outer.tsym.type.allparams(), outer.allparams());
+    return new ClassType(outer, typeArgs, result.tsym);
   }
 
   /**

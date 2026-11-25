@@ -535,6 +535,11 @@ public final class PurityChecker {
    * method and declare an unrelated abstract method as its own functional method; the default
    * method is what runs.
    *
+   * <p>The result need not override {@code paramFunction}. It can be a method that every object of
+   * type {@code type} implements with the same method as {@code paramFunction} (see {@link
+   * #isSameImplementation}), as {@code B.get} for {@code A.get} in {@code interface Both extends A,
+   * B}. Every implementation of the result is checked against the result's annotations.
+   *
    * @param type a type, such as the type of an argument or of a formal parameter
    * @param paramFunction a functional interface's functional method, such as {@code Function.apply}
    * @param env the processing environment
@@ -546,7 +551,7 @@ public final class PurityChecker {
     TypeMirror functionalType = functionalInterfaceType(type, env);
     if (functionalType != null) {
       ExecutableElement function = TypesUtils.findFunction(functionalType, env);
-      if (isSameOrOverrides(function, paramFunction, env)) {
+      if (isSameImplementation(function, paramFunction, functionalType, env)) {
         return function;
       }
     }
@@ -566,7 +571,9 @@ public final class PurityChecker {
     // that implementation and the interface's abstract method.  The implementation is what runs.
     ExecutableElement abstractMatch = null;
     for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-      if (method.equals(paramFunction) || elements.overrides(method, paramFunction, typeElement)) {
+      if (method.equals(paramFunction)
+          || elements.overrides(method, paramFunction, typeElement)
+          || isSameImplementation(method, paramFunction, type, env)) {
         if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
           return method;
         }

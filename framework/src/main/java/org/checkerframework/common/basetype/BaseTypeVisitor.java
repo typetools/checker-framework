@@ -2314,13 +2314,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * The methods whose purity annotations require the purity of the code that is currently being
+   * checked, each with its purity kinds, or an empty map to name no method. Error messages that
+   * {@link #reportPurityErrors(PurityResult, EnumSet)} issues name these methods. It is non-empty
+   * only while {@link #checkLambdaPurity} reports errors.
+   */
+  private Map<ExecutableElement, EnumSet<PurityKind>> purityRequirements = Collections.emptyMap();
+
+  /**
    * Reports errors found during purity checking.
    *
    * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the method
    */
   protected void reportPurityErrors(PurityResult result, EnumSet<PurityKind> expectedKinds) {
-    reportPurityErrors(result, expectedKinds, Collections.emptyMap());
+    reportPurityErrors(result, expectedKinds, purityRequirements);
   }
 
   /**
@@ -3574,7 +3582,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               assumeDeterministic,
               assumePureGetters);
       if (!r.isPure(purityKinds)) {
-        reportPurityErrors(r, purityKinds, requirements);
+        // Call the overridable method, which reads the requirements from a field.
+        Map<ExecutableElement, EnumSet<PurityKind>> oldRequirements = purityRequirements;
+        purityRequirements = requirements;
+        try {
+          reportPurityErrors(r, purityKinds);
+        } finally {
+          purityRequirements = oldRequirements;
+        }
       }
     }
 
