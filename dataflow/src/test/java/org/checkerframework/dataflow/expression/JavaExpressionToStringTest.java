@@ -102,30 +102,30 @@ public class JavaExpressionToStringTest {
   }
 
   /**
-   * Returns a call to {@code String.trim()} on the given receiver.
+   * Returns the call to {@code String.trim()} on the given receiver.
    *
    * @param receiver a receiver of type String
-   * @return a call to {@code trim()} on the receiver
+   * @return the call to {@code trim()} on the receiver
    */
   private MethodCall trim(JavaExpression receiver) {
     return new MethodCall(stringType, trimMethod, receiver, Collections.emptyList());
   }
 
   /**
-   * Returns a call to {@code Integer.intValue()} on the given receiver.
+   * Returns the call to {@code Integer.intValue()} on the given receiver.
    *
    * @param receiver a receiver of type Integer
-   * @return a call to {@code intValue()} on the receiver
+   * @return the call to {@code intValue()} on the receiver
    */
   private MethodCall intValue(JavaExpression receiver) {
     return new MethodCall(intType, intValueMethod, receiver, Collections.emptyList());
   }
 
   /**
-   * Returns an int literal.
+   * Returns the int literal for the given value.
    *
-   * @param value the value of the literal
-   * @return an int literal for the value
+   * @param value an int
+   * @return the int literal for the value
    */
   private ValueLiteral intLiteral(int value) {
     return new ValueLiteral(intType, value);
