@@ -356,6 +356,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       TypeKind exprKind = exprType.getPrimitiveKind();
       if (castKind != null) {
         if (exprKind != null) {
+          // A cast of a boxed primitive to a primitive type, such as `(int) anInteger` or
+          // `(long) anInteger`, unboxes the expression before any primitive conversion (JLS 5.5).
+          if (!TypesUtils.isPrimitive(exprType.getUnderlyingType())
+              && TypesUtils.isPrimitive(type.getUnderlyingType())) {
+            expressionAnnos = atypeFactory.getUnboxedAnnotations(expressionAnnos, exprKind);
+          }
           switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
             case WIDENING ->
                 expressionAnnos =
