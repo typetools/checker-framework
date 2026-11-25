@@ -620,7 +620,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     if (methodSelect instanceof MemberSelectTree memberSelect) {
       // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
       receiverExprTmp = memberSelect.getExpression().accept(this, null);
-      isClassLiteralReceiver = TreeUtils.isClassLiteral(memberSelect.getExpression());
+      isClassLiteralReceiver =
+          TreeUtils.isClassLiteral(TreeUtils.withoutParens(memberSelect.getExpression()));
       // A class literal is a ClassName, but its value is a Class object, whose methods are those of
       // java.lang.Class rather than those of the named class.
       receiverType =
