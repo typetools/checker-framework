@@ -38,21 +38,21 @@ public class CrossPackageMemberTypes extends PackagePrivateMemberTypes {
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
-    void expectsSibling1CharBuffer(CrossPackageMemberTypes this, CharBuffer b) {
+    void expectsSibling1CharBuffer(CharBuffer b) {
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
-    void expectsSibling1Protected(CrossPackageMemberTypes this, Protected p) {
+    void expectsSibling1Protected(Protected p) {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    CharBuffer getSibling1CharBuffer(CrossPackageMemberTypes this) {
+    CharBuffer getSibling1CharBuffer() {
         return null;
     }
 
     @org.checkerframework.framework.qual.RequiresQualifier(expression = { "this.charBufferField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Pure
-    Protected getSibling1Protected(CrossPackageMemberTypes this) {
+    Protected getSibling1Protected() {
         return null;
     }
 }
