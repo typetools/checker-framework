@@ -166,7 +166,6 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.AssertMethod;
@@ -293,15 +292,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
-   * The maximum number of nodes in extra exceptional copies of finally blocks, beyond which the
-   * exceptions that reach a finally block share one copy. An extra copy is one other than the first
-   * exceptional copy of a given finally block. See {@link #handleFinally}.
+   * The maximum number of nodes in extra exceptional copies of finally blocks. Once the extra
+   * copies contain this many nodes, the exception types that reach a finally block and do not yet
+   * have a copy share one exceptional copy of that finally block, so a finally block that the CFG
+   * builder translates after that point has only one exceptional copy. An exceptional copy of a
+   * finally block is a translation of the finally block that runs when an exception reaches the
+   * finally block, and that rethrows the exception after the finally block completes normally. An
+   * extra copy is one other than the first exceptional copy of a given finally block. See {@link
+   * #handleFinally}.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
   /**
-   * The number of nodes in extra exceptional copies of finally blocks so far. Nodes in nested extra
-   * copies are counted more than once.
+   * The number of nodes in extra exceptional copies of finally blocks so far. A node is counted
+   * once for each extra copy that contains it, so a node in an extra copy that is nested within
+   * another extra copy is counted more than once.
    */
   private int extraExceptionalFinallyNodes = 0;
 
@@ -972,11 +977,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
 
     boolean bool = TypesUtils.isBooleanType(type);
-    boolean numeric = TypesUtils.isNumeric(unboxedType);
+    boolean numeric = TypesUtils.isNumericPrimitive(unboxedType);
 
     return new TreeInfo() {
       @Override
-      public boolean isNumeric() {
+      public boolean isNumericOrBoxed() {
         return numeric;
       }
 
@@ -1017,7 +1022,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (!TypesUtils.isString(node.getType())) {
       Node converted = new StringConversionNode(node.getTree(), node, stringType);
       addToImplicitlyConvertedLookupMap(converted);
-      insertNodeAfter(converted, node);
+      TypeMirror type = node.getType();
+      if (type.getKind().isPrimitive()
+          || type.getKind() == TypeKind.NULL
+          || TypesUtils.isBoxedPrimitive(type)) {
+        insertNodeAfter(converted, node);
+      } else {
+        // The conversion may invoke an arbitrary toString() method, which may throw.
+        insertNodeWithExceptionsAfter(converted, uncheckedExceptionTypes, node);
+      }
       return converted;
     } else {
       return node;
@@ -1058,7 +1071,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (TypesUtils.isBoxedPrimitive(type)) {
       type = types.unboxedType(type);
     }
-    return TypesUtils.isNumeric(type);
+    return TypesUtils.isNumericPrimitive(type);
   }
 
   /**
@@ -1136,17 +1149,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Performs narrowing conversion on the input node to make it match the destination type.
+   * Performs narrowing conversion (JLS 5.1.3), or the widening and narrowing conversion from byte
+   * to char (JLS 5.1.4), on the input node to make it match the destination type. Does nothing if
+   * the conversion from the type of the node to the destination type is an identity or widening
+   * conversion.
    *
    * @param node a node producing a value of numeric primitive type
-   * @param destType the type to narrow the value to
+   * @param destType the numeric primitive type to narrow the value to
    * @return a Node with the value narrowed to the destType, which might be the input node
    */
   protected Node narrow(Node node, TypeMirror destType) {
-    // For narrowing conversion, see JLS 5.1.3
-    assert TypesUtils.isPrimitive(node.getType()) && TypesUtils.isPrimitive(destType)
-        : "narrowing must be applied to primitive types";
-    if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
+    assert TypesUtils.isNumericPrimitive(node.getType()) && TypesUtils.isNumericPrimitive(destType)
+        : "narrowing must be applied to numeric primitive types";
+    // Test `!types.isSubtype(node.getType(), destType)` (that is, "not a widening conversion"),
+    // not `types.isSubtype(destType, node.getType())`:  char is neither a subtype nor a supertype
+    // of byte and short, but a constant char can be narrowed to byte or short (and a constant
+    // byte or short to char) by assignment conversion (JLS 5.2).  Any conversion between distinct
+    // numeric primitive types that is not a widening conversion is a narrowing conversion (or,
+    // for byte to char, a widening and narrowing conversion, JLS 5.1.4).
+    if (!types.isSameType(destType, node.getType()) && !types.isSubtype(node.getType(), destType)) {
+      // The conversion from the type of node to destType is a narrowing conversion (or, for byte
+      // to char, a widening and narrowing conversion).
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
       addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
@@ -1173,24 +1196,47 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if a conversion from the type of the node to varType requires narrowing.
+   * Returns true if the node is a compile-time constant of type byte, short, char, or int, and
+   * varType is byte, short, char, Byte, Short, or Character. Assignment conversion converts such a
+   * constant to the primitive type of varType, even by a narrowing conversion, before boxing it if
+   * varType is a boxed type (JLS 5.2), as in {@code byte b = 1;}, {@code Byte b = 'a';}, and {@code
+   * Short s = (byte) 1;}.
    *
-   * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return true if this conversion requires narrowing to succeed
+   * @param varType the type of a variable (or general LHS) to be converted to
+   * @return true if the node is a compile-time constant of type byte, short, char, or int, and
+   *     varType is byte, short, char, Byte, Short, or Character
    */
-  protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
-    // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
+  protected boolean isNarrowableConstantConversion(Node node, TypeMirror varType) {
+    TypeKind nodeKind = node.getType().getKind();
+    boolean isNodeKindNarrowable =
+        nodeKind == TypeKind.BYTE
+            || nodeKind == TypeKind.SHORT
+            || nodeKind == TypeKind.CHAR
+            || nodeKind == TypeKind.INT;
+    return isNodeKindNarrowable
+        && TypesUtils.canBeNarrowingPrimitiveConversion(varType, types)
+        && node.getTree() instanceof ExpressionTree expressionTree
+        && TreeUtils.isCompileTimeConstant(expressionTree);
+  }
+
+  /**
+   * Converts the given compile-time constant to the given type, which is byte, short, char, Byte,
+   * Short, or Character, as assignment conversion does (JLS 5.2). The conversion widens or narrows
+   * the constant to the primitive type of varType, then boxes it if varType is a boxed type. For
+   * example, it boxes {@code (byte) 1} by {@code Short.valueOf()} in {@code Short s = (byte) 1;}.
+   *
+   * @param node a node producing a compile-time constant of type byte, short, char, or int
+   * @param varType the type to convert the constant to: byte, short, char, Byte, Short, or
+   *     Character
+   * @return a Node with the value converted to varType, which might be the input node
+   * @see #isNarrowableConstantConversion
+   */
+  protected Node convertNarrowableConstant(Node node, TypeMirror varType) {
+    TypeMirror primitiveType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
-    boolean isRightConstant = node instanceof ValueLiteralNode;
-    return isLeftNarrowableTo && isRightConstant;
+    // If widen() changes the node, then narrowAndBox() only boxes it.
+    return narrowAndBox(widen(node, primitiveType), varType);
   }
 
   /**
@@ -1215,11 +1261,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return node;
     }
 
-    boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
+    boolean isRightNumeric = TypesUtils.isNumericPrimitive(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
     boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
     boolean isRightReference = nodeType instanceof ReferenceType;
-    boolean isLeftNumeric = TypesUtils.isNumeric(varType);
+    boolean isLeftNumeric = TypesUtils.isNumericPrimitive(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
     // boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
     boolean isLeftReference = varType instanceof ReferenceType;
@@ -1231,8 +1277,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrowAndBox(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       } else {
         node = box(node);
       }
@@ -1244,8 +1290,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = widen(node, varType);
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
-      if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
-        node = narrow(node, varType);
+      if (contextAllowsNarrowing && isNarrowableConstantConversion(node, varType)) {
+        node = convertNarrowableConstant(node, varType);
       }
     }
     // `node` might have been re-assigned; if `nodeType` is needed, set it again.
@@ -1465,7 +1511,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeMirror unboxedNodeType = isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
     TypeMirror unboxedDestType =
         TypesUtils.isBoxedPrimitive(destType) ? types.unboxedType(destType) : destType;
-    if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
+    if (TypesUtils.isNumericPrimitive(unboxedNodeType)
+        && TypesUtils.isNumericPrimitive(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isBoxedPrimitive) {
           node = unbox(node);
@@ -3038,42 +3085,46 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    // For each type of exception that reaches the finally block, a copy of the finally block
-    // rethrows that type after the finally block completes normally.  Two types share a copy if
+    // `groups` partitions the types of the exceptions that reach the finally block.  For each
+    // group, a copy of the finally block starts at the group's entry labels, which exceptions of
+    // the group's types jump to when they reach the finally block, and the copy rethrows the
+    // group's types after the finally block completes normally.  Types that go to the same places
+    // share a copy, because the analysis merges their stores there anyway.  The number of copies
+    // grows exponentially with the depth of the nesting of finally blocks in finally blocks, with
+    // a base that grows with the number of copies per finally block.
+    //
+    // As an optimization, until the budget described below is used up, two types share a copy if
     // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
     // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
-    // copy.  Types that go to different places get different copies, so that the analysis does
-    // not merge stores of paths that never meet.  For example, the Resource Leak Checker would
+    // copy.  Types that go to different places get different copies, so that the analysis does not
+    // merge stores of paths that never meet.  For example, the Resource Leak Checker would
     // otherwise report a leak when an exception thrown while a resource is open is caught by a
     // catch block that closes the resource, and another exception, thrown after the resource is
-    // closed, propagates out of the method.  Types that go to the same places share a copy, because
-    // the analysis merges their stores there anyway.  The number of copies grows exponentially with
-    // the depth of the nesting of finally blocks in finally blocks, with a base that grows with the
-    // number of copies per finally block.  A copy for each type would make the base much larger.
-    // To bound that growth, once the copies beyond the first copy for each finally block have
-    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the remaining groups of each
-    // finally block share a single copy, which rethrows each of their exceptions.
-    List<Map<TypeMirror, Label>> groups = new ArrayList<>(exceptionGroups(exceptionalFinallyFrame));
+    // closed, propagates out of the method.
+    //
+    // As a further optimization, to bound growth, once the copies beyond the first copy for each
+    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
+    // do not yet have a copy share a single copy, which rethrows each of their exceptions.  A
+    // finally block that the CFG builder translates after that point has a single exceptional
+    // copy, which all of its groups share, as if all of its exceptions went to the same places.
+    List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
+
     for (int i = 0; i < groups.size(); i++) {
-      Map<TypeMirror, Label> group = groups.get(i);
-      boolean isExtraCopy = i > 0;
-      if (isExtraCopy
-          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET
-          && i < groups.size() - 1) {
-        Map<TypeMirror, Label> sharedGroup = new ArrayMap<>();
-        for (Map<TypeMirror, Label> remainingGroup : groups.subList(i, groups.size())) {
-          sharedGroup.putAll(remainingGroup);
-        }
-        groups.subList(i, groups.size()).clear();
+      if (i < groups.size() - 1
+          && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET) {
+        List<RethrowGroup> remainingGroups = groups.subList(i, groups.size());
+        RethrowGroup sharedGroup = RethrowGroup.merge(remainingGroups);
+        remainingGroups.clear();
         groups.add(sharedGroup);
-        group = sharedGroup;
       }
+      RethrowGroup group = groups.get(i);
+      boolean isExtraCopy = i > 0;
       int sizeBeforeCopy = nodeList.size();
 
-      for (Label label : group.values()) {
+      for (Label label : group.entryLabels()) {
         addLabelForNextNode(label);
       }
-      String exceptionsString = group.keySet().toString();
+      String exceptionsString = group.types().toString();
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3083,7 +3134,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      exceptionalFinallyBlockCFGGenerator.accept(Collections.unmodifiableSet(group.keySet()));
+      exceptionalFinallyBlockCFGGenerator.accept(group.types());
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithExceptions(
@@ -3094,12 +3145,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(markerTree),
                   env.getTypeUtils()),
-              Collections.unmodifiableSet(group.keySet()));
+              group.types());
 
       throwing.setTerminatesExecution(true);
 
       if (isExtraCopy) {
-        // This overcounts the nodes of a nested extra copy, which is conservative.
+        // The inner `handleFinally` already counted the nodes of any extra copy nested in this
+        // one, so this counts them again, which is conservative.
         extraExceptionalFinallyNodes += nodeList.size() - sizeBeforeCopy;
       }
     }
@@ -3230,17 +3282,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * TryStack#possibleLabelsPastFinally} returns the same set of labels for each of them.
    *
    * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
-   * @return the groups, in the order that the first type of each group reaches {@code frame} (see
-   *     {@link TryFinallyFrame#getExceptionLabels}); each group maps each of its types to the
-   *     type's label in {@code frame}. Empty if no exception reaches {@code frame}.
+   * @return the groups, in a deterministic order: the order in which the first type of each group
+   *     reaches {@code frame} (see {@link TryFinallyFrame#getExceptionLabels}); the entry label of
+   *     each type is its label in {@code frame}. Empty if no exception reaches {@code frame}.
    */
-  private Collection<Map<TypeMirror, Label>> exceptionGroups(TryFinallyFrame frame) {
-    Map<Set<Label>, Map<TypeMirror, Label>> groups = new LinkedHashMap<>();
+  private Collection<RethrowGroup> rethrowGroups(TryFinallyFrame frame) {
+    Map<Set<Label>, RethrowGroup> groups = new LinkedHashMap<>();
     for (Map.Entry<TypeMirror, Label> entry : frame.getExceptionLabels().entrySet()) {
       TypeMirror type = entry.getKey();
       groups
-          .computeIfAbsent(tryStack.possibleLabelsPastFinally(type), labels -> new ArrayMap<>())
-          .put(type, entry.getValue());
+          .computeIfAbsent(tryStack.possibleLabelsPastFinally(type), labels -> new RethrowGroup())
+          .add(type, entry.getValue());
     }
     return groups.values();
   }
@@ -4427,8 +4479,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node left = scan(leftTree, p);
         Node right = scan(rightTree, p);
 
-        if (leftInfo.isNumeric()
-            && rightInfo.isNumeric()
+        if (leftInfo.isNumericOrBoxed()
+            && rightInfo.isNumericOrBoxed()
             && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =
