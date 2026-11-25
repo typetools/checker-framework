@@ -4344,7 +4344,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else {
       // `result` is false.
       // Use an error key only if it's overridden by a checker.
-      FoundRequired pair = FoundRequired.of(valueType, varType);
+      FoundRequired pair = FoundRequired.of(boxIfAssignedToReference(valueType, varType), varType);
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
       checker.reportError(
@@ -4354,6 +4354,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     commonAssignmentCheckEndDiagnostic(result, null, varType, valueType, errorLocation);
 
     return result;
+  }
+
+  /**
+   * Returns the type of a value of type {@code valueType} after it is assigned to a variable of
+   * type {@code varType}, if the assignment boxes it; otherwise returns {@code valueType}. For
+   * example, for {@code @Interned int} and {@code @Interned Integer}, returns
+   * {@code @UnknownInterned Integer}, because the Interning Checker's {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#getBoxedAnnotations} makes a boxed
+   * {@code int} {@code @UnknownInterned}. A constant is narrowed before it is boxed if {@code
+   * varType} is a boxed primitive of a narrower type, as in {@code Byte b = 1;} (JLS 5.2).
+   *
+   * @param valueType a type of a value
+   * @param varType the type of the variable that the value is assigned to
+   * @return the boxed {@code valueType}, if the assignment boxes it; otherwise {@code valueType}
+   */
+  private AnnotatedTypeMirror boxIfAssignedToReference(
+      AnnotatedTypeMirror valueType, AnnotatedTypeMirror varType) {
+    if (!(valueType instanceof AnnotatedPrimitiveType primitiveValueType)
+        || varType.getKind().isPrimitive()) {
+      return valueType;
+    }
+    TypeMirror varTM = varType.getUnderlyingType();
+    if (TypesUtils.isBoxedPrimitive(varTM)) {
+      TypeMirror unboxedVarTM = types.unboxedType(varTM);
+      if (unboxedVarTM.getKind() != valueType.getKind()
+          && TypesUtils.canBeNarrowingPrimitiveConversion(unboxedVarTM, types)) {
+        primitiveValueType = atypeFactory.getNarrowedPrimitive(primitiveValueType, unboxedVarTM);
+      }
+    }
+    return atypeFactory.getBoxedType(primitiveValueType);
   }
 
   /**
