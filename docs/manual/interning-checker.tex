@@ -399,16 +399,21 @@ subclasses and superclasses of the given class.
 % There is no point to linking to the Javadoc for the valueOf methods,
 % which don't discuss interning.
 
-The Interning Checker conservatively assumes that the \<Character>, \<Integer>,
-and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
-methods sometimes return an interned value and sometimes a non-interned
-value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS
-\S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
-the result is interned, then you will need to suppress an error.
+The Interning Checker conservatively assumes that boxing a \<char>,
+\<short>, \<int>, or \<long> value yields a non-interned value, whether
+the boxing is done by autoboxing or by a call to the \<valueOf> method of
+\<Character>, \<Short>, \<Integer>, or \<Long>.  In fact, boxing
+sometimes yields an interned value and sometimes a non-interned value,
+depending on the run-time value (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS
+\S5.1.7}).  For example, the Interning Checker reports an error for
+\<@Interned Integer i = 5;>, even though every boxing of 5 yields the same
+object.  If you know that the value being boxed implies that the result is
+interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper
-and lower bounds on char, int, and short values so that it can more
-precisely determine whether the result of a given \<valueOf> call is
+and lower bounds on char, short, int, and long values so that it can more
+precisely determine whether the result of a given boxing conversion is
 interned.)
+Boxing a \<boolean> or \<byte> value always yields an interned value.
 
 
 

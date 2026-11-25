@@ -106,10 +106,11 @@ public class MethodInvocationNode extends Node {
   /**
    * Creates a MethodInvocationNode.
    *
-   * @param tree the tree for the method invocation
+   * @param tree a tree for a method invocation, or null if the method invocation corresponds to no
+   *     AST tree
    * @param target the MethodAccessNode for the method being invoked
-   * @param arguments arguments of the method invocation
-   * @param treePath path to the method invocation
+   * @param arguments the arguments of the method invocation
+   * @param treePath the path to the method invocation
    * @param boxingConversion the boxing or unboxing that the method invocation performs, if any; see
    *     {@link BoxingConversion}
    */
