@@ -80,6 +80,9 @@ import org.checkerframework.javacutil.TypesUtils;
  *       NullnessChecker. (The rationale for this is that {@code null} is a frequently-used default
  *       value, and it would be undesirable to infer the bottom type if {@code null} were the only
  *       value passed as an argument.)
+ *   <li>The inferred type is for a precondition or postcondition about an expression whose declared
+ *       type is not {@linkplain GenericAnnotatedTypeFactory#isRelevant relevant}. Such a contract
+ *       would state a qualifier that cannot be written on the expression's type.
  * </ol>
  *
  * When outputting a file, WPI ignores an inferred type if:
@@ -456,6 +459,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           // A static method can't have precondition annotations about instance fields.
           continue;
         }
+        if (!isRelevant(fieldElement.asType())) {
+          continue;
+        }
         FieldAccess fa =
             new FieldAccess(
                 (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
@@ -497,6 +503,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       if (!ElementUtils.isEffectivelyFinal(paramElt)) {
         continue;
       }
+      if (!isRelevant(paramElt.asType())) {
+        continue;
+      }
       LocalVariable param = new LocalVariable(paramElt);
       CFAbstractValue<?> v = store.getValue(param);
       AnnotatedTypeMirror declType = atypeFactory.getAnnotatedType(paramElt);
@@ -525,7 +534,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
     }
     // Receiver parameter ("this"):
-    if (!ElementUtils.isStatic(methodElt)) { // Static methods do not have a receiver.
+    if (!ElementUtils.isStatic(methodElt) // Static methods do not have a receiver.
+        && isRelevant(enclosingClass.asType())) {
       CFAbstractValue<?> v = store.getValue(thisReference);
       if (v != null) {
         // This parameter is in the store.
@@ -554,6 +564,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
       }
     }
+  }
+
+  /**
+   * Returns true if the type factory's qualifiers can be written on the given Java type, as
+   * determined by {@link GenericAnnotatedTypeFactory#isRelevant}. Returns true if the type factory
+   * is not a {@link GenericAnnotatedTypeFactory}.
+   *
+   * @param tm a Java type, such as the declared type of a field
+   * @return true if the type factory's qualifiers can be written on {@code tm}
+   */
+  private boolean isRelevant(TypeMirror tm) {
+    return !(atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)
+        || gatf.isRelevant(tm);
   }
 
   /**

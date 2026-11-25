@@ -2935,9 +2935,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code @RequiresQualifier} does not support. Subclasses can remove this restriction by
    * overriding {@link #createRequiresOrEnsuresQualifier}.
    *
-   * <p>The list is empty if the declared type of the expression is not {@linkplain #isRelevant
-   * relevant}. Overriding {@link #createRequiresOrEnsuresQualifier} does not change that.
-   *
    * <p>Each annotation in the list is of the form
    * {@code @RequiresQualifier(expression="expression", qualifier=MyQual.class)}. {@code expression}
    * must be a valid Java Expression string, in the same format used by {@link RequiresQualifier}.
@@ -2959,9 +2956,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
    * redundant postconditions. Subclasses can remove these restrictions by overriding {@link
    * #createRequiresOrEnsuresQualifier}.
-   *
-   * <p>The list is empty if the declared type of the expression is not {@linkplain #isRelevant
-   * relevant}. Overriding {@link #createRequiresOrEnsuresQualifier} does not change that.
    *
    * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
    * qualifier=MyQual.class)}. {@code expression} must be a valid Java Expression string, in the
@@ -2990,9 +2984,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
    * expression. Returns an empty list if none can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
-   * support. Also returns an empty list if the declared type of the expression is not {@linkplain
-   * #isRelevant relevant}, because a contract about the expression would state a qualifier that
-   * cannot be written on its type.
+   * support.
    *
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
    * subclasses can do so.
@@ -3001,8 +2993,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param inferredType the type of the expression, on method entry or exit (depending on the value
    *     of {@code preOrPost})
    * @param declaredType the declared type of the expression, which is used to determine if the
-   *     inferred type supplies no additional information beyond the declared type and if a
-   *     qualifier can be written on the expression's type at all
+   *     inferred type supplies no additional information beyond the declared type
    * @param preOrPost what to return: preconditions or postconditions
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
@@ -3022,10 +3013,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // TODO: should this only check the top-level annotations?
     if (declaredType.equals(inferredType)) {
-      return Collections.emptyList();
-    }
-
-    if (!isRelevant(declaredType)) {
       return Collections.emptyList();
     }
 

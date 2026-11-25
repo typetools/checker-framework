@@ -9,7 +9,8 @@ import org.checkerframework.framework.qual.EnsuresQualifier;
 //
 // `ParameterAndReceiverContracts` and `Irrelevant` are irrelevant, because neither is a subtype or
 // supertype of any type in the checker's `@RelevantJavaTypes`.  `String` and `RelevantReceiver`
-// are relevant, because they are subtypes of `CharSequence`.
+// are relevant, because they are subtypes of `CharSequence`.  `String[]` is irrelevant, because
+// the checker's `@RelevantJavaTypes` lists no array type.
 public class ParameterAndReceiverContracts {
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
@@ -24,6 +25,10 @@ public class ParameterAndReceiverContracts {
 
   void relevantParameter(String s) {
     becomeSibling1(s);
+  }
+
+  void irrelevantArrayParameter(String[] a) {
+    becomeSibling1(a);
   }
 
   void irrelevantReceiver() {
