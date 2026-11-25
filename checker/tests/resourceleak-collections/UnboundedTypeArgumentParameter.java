@@ -6,6 +6,7 @@
 
 import java.util.List;
 import org.checkerframework.checker.collectionownership.qual.*;
+import org.checkerframework.checker.mustcall.qual.*;
 
 class UnboundedTypeArgumentParameter {
 
@@ -22,6 +23,24 @@ class UnboundedTypeArgumentParameter {
   }
 
   static <T> int countLowerBoundedWildcard(List<? super T> list) {
+    return list.size();
+  }
+
+  // The bound of `U` is the type variable `T`, whose bound is `Object`.
+  static <T, U extends T> int countTypeVariableChain(List<U> list) {
+    return list.size();
+  }
+
+  static <T, U extends T, V extends U> int countLongTypeVariableChain(List<V> list) {
+    return list.size();
+  }
+
+  static <T, U extends T> int countUpperBoundedWildcardChain(List<? extends U> list) {
+    return list.size();
+  }
+
+  // The bound of `T` is written, so the chain from `U` is not widened.
+  static <T extends @MustCall({}) Object, U extends T> int countWrittenBoundChain(List<U> list) {
     return list.size();
   }
 
@@ -48,6 +67,18 @@ class UnboundedTypeArgumentParameter {
   void passToBoundedWildcards(@OwningCollection List<Resource> resources) {
     countUpperBoundedWildcard(resources);
     countLowerBoundedWildcard(resources);
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+  }
+
+  void passToTypeVariableChains(@OwningCollection List<Resource> resources) {
+    countTypeVariableChain(resources);
+    countLongTypeVariableChain(resources);
+    countUpperBoundedWildcardChain(resources);
+    // :: error: type.arguments.not.inferred
+    countWrittenBoundChain(resources);
     for (Resource r : resources) {
       r.close();
       r.flush();
