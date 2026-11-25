@@ -301,6 +301,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       classpathMemberClassCache = new IdentityHashMap<>();
 
   /**
+   * The results of the calls to {@link #classpathMemberClass}, during the current outermost call,
+   * that cyclic inheritance cut short. It is to {@link #classpathMemberClassCache} as {@link
+   * #inheritedMemberTypesCycleCache} is to {@link #inheritedMemberTypesCache}, and it is cleared at
+   * the same time.
+   */
+  private final IdentityHashMap<TypeDeclaration<?>, Map<ClasspathMemberQuery, @Nullable Class<?>>>
+      classpathMemberClassCycleCache = new IdentityHashMap<>();
+
+  /**
    * The results of the calls to {@link #inheritedMemberType}, during the current outermost call,
    * that cyclic inheritance cut short. Such a result depends on the types whose search was in
    * progress, so it is not stored in {@link #inheritedMemberTypesCache}. Reusing it within the
@@ -1558,8 +1567,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable @BinaryName String onDemandImportClassMemberBinaryName(
       String prefix, String className, @Nullable CompilationUnit cu) {
-    @SuppressWarnings("signature") // a binary name of a class
-    @ClassGetName String prefixBinaryName = loadClassBinaryName(prefix);
+    @BinaryName String prefixBinaryName = loadClassBinaryName(prefix);
     Class<?> prefixClass = prefixBinaryName == null ? null : loadClass(prefixBinaryName);
     if (prefixClass == null) {
       return null;
@@ -1913,6 +1921,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     } finally {
       if (outermost) {
         inheritedMemberTypesCycleCache.clear();
+        classpathMemberClassCycleCache.clear();
         inheritanceCycleCut = false;
       }
     }
@@ -2281,6 +2290,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (cache.containsKey(query)) {
       return cache.get(query);
     }
+    Map<ClasspathMemberQuery, @Nullable Class<?>> cycleCache =
+        classpathMemberClassCycleCache.computeIfAbsent(declaration, d -> new HashMap<>());
+    if (cycleCache.containsKey(query)) {
+      // That result was cut short by cyclic inheritance, so the caller's result is too.
+      inheritanceCycleCut = true;
+      return cycleCache.get(query);
+    }
     // As in inheritedMemberType, a result is cached only if it is complete.  Without the cache, a
     // search through a hierarchy in which several paths lead to the same supertype, as in a
     // diamond, would search that supertype once per path.
@@ -2292,6 +2308,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           classpathMemberClassUncached(declaration, identifier, inherited, packageName);
       if (outermost || !inheritanceCycleCut) {
         cache.put(query, result);
+      } else {
+        cycleCache.put(query, result);
       }
       inheritanceCycleCut |= enclosingCycleCut;
       return result;
@@ -2300,6 +2318,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         // The calls to inheritedMemberType within this call were not outermost, so they did not
         // clear the results that cyclic inheritance cut short.
         inheritedMemberTypesCycleCache.clear();
+        classpathMemberClassCycleCache.clear();
         inheritanceCycleCut = false;
       }
     }
