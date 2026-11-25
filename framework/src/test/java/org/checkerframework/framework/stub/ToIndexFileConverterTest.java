@@ -1419,7 +1419,10 @@ public class ToIndexFileConverterTest {
     AScene scene = new AScene();
     ToIndexFileConverter detachedConverter =
         new ToIndexFileConverter(
-            StaticJavaParser.parsePackageDeclaration("package p;"), Collections.emptyList(), scene);
+            StaticJavaParser.parsePackageDeclaration("package p;"),
+            Collections.emptyList(),
+            scene,
+            Collections.emptyMap());
     TypeDeclaration<?> decl =
         StaticJavaParser.parseTypeDeclaration("class C { class N {} void m(N x) {} }");
     decl.accept(detachedConverter, scene.classes.getVivify("p.C"));
