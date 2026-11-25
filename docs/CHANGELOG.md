@@ -21,6 +21,12 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+New method `CaseNode.selectorExprMayHaveChanged()` returns true if a guard of an
+earlier case might have changed the value of the switch selector expression.
+If so, `CFAbstractTransfer.visitCase()` does not refine a selector expression
+that other code can assign, such as a non-final field.  New method
+`CFAbstractTransfer.canRefineSelectorExpression()` implements this test.
+
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
 opposite order.  It returns true for any compile-time constant of type `byte`,

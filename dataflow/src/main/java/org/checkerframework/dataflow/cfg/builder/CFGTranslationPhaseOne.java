@@ -2233,6 +2233,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private AssignmentNode selectorExprAssignment;
 
     /**
+     * True if the CFG for a guard has been built. Cases are tested in the order they are built, so
+     * this is true if a guard might execute between the evaluation of the selector expression and
+     * the test of the case currently being built. A guard might change the value of the selector
+     * expression.
+     */
+    private boolean guardBuilt = false;
+
+    /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
@@ -2449,7 +2457,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+          extendWithNode(
+              new CaseNode(
+                  caseTree, selectorExprAssignment, exprs, guardBuilt, env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
@@ -2459,6 +2469,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          guardBuilt = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
