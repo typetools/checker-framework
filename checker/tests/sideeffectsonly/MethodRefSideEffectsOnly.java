@@ -369,4 +369,55 @@ public class MethodRefSideEffectsOnly {
     // :: error: (purity.methodref)
     return f::apply;
   }
+
+  // A call through any method that the functional interface inherits can run the referenced
+  // method, so the referenced method must satisfy the `@SideEffectsOnly` annotation of each such
+  // method, not only of the functional interface method.  Each group of interfaces lists its
+  // superinterfaces in a different order, so that whichever superinterface's method javac chooses
+  // as the functional interface method, some test case has the `@SideEffectsOnly` annotation on a
+  // method that is not the functional interface method.
+
+  interface PlainMutator {
+    void apply(Collection<Integer> c);
+  }
+
+  interface PlainFirstMutator extends PlainMutator, Mutator {}
+
+  interface PlainLastMutator extends Mutator, PlainMutator {}
+
+  static Collection<Integer> other;
+
+  @SideEffectsOnly("MethodRefSideEffectsOnly.other")
+  static void mutatesOther(Collection<Integer> c) {
+    other.add(1);
+  }
+
+  void inheritedOk() {
+    PlainFirstMutator m1 = MethodRefSideEffectsOnly::mutatesArgument;
+    PlainLastMutator m2 = MethodRefSideEffectsOnly::mutatesArgument;
+    Object m3 = (PlainMutator & Mutator) MethodRefSideEffectsOnly::mutatesArgument;
+    Object m4 = (Mutator & PlainMutator) MethodRefSideEffectsOnly::mutatesArgument;
+  }
+
+  void inheritedUnannotated() {
+    // :: error: (purity.methodref)
+    PlainFirstMutator m1 = MethodRefSideEffectsOnly::unannotated;
+    // :: error: (purity.methodref)
+    PlainLastMutator m2 = MethodRefSideEffectsOnly::unannotated;
+    // :: error: (purity.methodref)
+    Object m3 = (PlainMutator & Mutator) MethodRefSideEffectsOnly::unannotated;
+    // :: error: (purity.methodref)
+    Object m4 = (Mutator & PlainMutator) MethodRefSideEffectsOnly::unannotated;
+  }
+
+  void inheritedNotNarrowed() {
+    // :: error: (purity.methodref)
+    PlainFirstMutator m1 = MethodRefSideEffectsOnly::mutatesOther;
+    // :: error: (purity.methodref)
+    PlainLastMutator m2 = MethodRefSideEffectsOnly::mutatesOther;
+    // :: error: (purity.methodref)
+    Object m3 = (PlainMutator & Mutator) MethodRefSideEffectsOnly::mutatesOther;
+    // :: error: (purity.methodref)
+    Object m4 = (Mutator & PlainMutator) MethodRefSideEffectsOnly::mutatesOther;
+  }
 }
