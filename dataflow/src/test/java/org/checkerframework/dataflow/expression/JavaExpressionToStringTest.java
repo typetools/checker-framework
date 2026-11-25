@@ -205,6 +205,19 @@ public class JavaExpressionToStringTest {
   }
 
   @Test
+  public void staticMethodCallOfGenericClass() {
+    TypeElement optionalElement = elements.getTypeElement("java.util.Optional");
+    // The receiver's type is `java.util.Optional<T>`.
+    MethodCall call =
+        new MethodCall(
+            optionalElement.asType(),
+            getMethod(optionalElement, "empty"),
+            new ClassName(optionalElement.asType()),
+            Collections.emptyList());
+    Assert.assertEquals("java.util.Optional.empty()", call.toString());
+  }
+
+  @Test
   public void classNameOfInnerClassOfGenericClass() {
     TypeElement keySetElement = elements.getTypeElement("java.util.HashMap.KeySet");
     // The type is `java.util.HashMap<K,V>.KeySet`.

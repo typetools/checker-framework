@@ -189,8 +189,8 @@ public class MethodCall extends JavaExpression {
   @Override
   public String toString() {
     StringBuilder preParen = new StringBuilder();
-    if (receiver instanceof ClassName) {
-      preParen.append(receiver.getType());
+    if (receiver instanceof ClassName className) {
+      preParen.append(className.getTypeString());
     } else {
       preParen.append(receiver.toStringAsPostfixOperand());
     }
