@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -74,8 +75,8 @@ public class KeyForAnnotatedTypeFactory
 
   /**
    * If true, assume the argument to Map.get is always a key for the receiver map. This is set by
-   * the `-AassumeKeyFor` command-line argument. However, if the Nullness Checker is being run, then
-   * `-AassumeKeyFor` disables the Map Key Checker.
+   * the {@code -AassumeKeyFor} command-line argument. However, if the Nullness Checker is being
+   * run, then {@code -AassumeKeyFor} disables the Map Key Checker.
    */
   private final boolean assumeKeyFor;
 
@@ -138,22 +139,22 @@ public class KeyForAnnotatedTypeFactory
   }
 
   /**
-   * Given a string array 'values', returns an AnnotationMirror corresponding to @KeyFor(values)
+   * Given a set of strings 'values', returns an AnnotationMirror corresponding to @KeyFor(values).
+   * The values of the result are sorted.
    *
    * @param values the values for the {@code @KeyFor} annotation
    * @return a {@code @KeyFor} annotation with the given values
    */
   public AnnotationMirror createKeyForAnnotationMirrorWithValue(Set<String> values) {
-    // Create an AnnotationBuilder with the ArrayList
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), KeyFor.class);
-    builder.setValue("value", values.toArray());
+    builder.setValue("value", new TreeSet<>(values).toArray());
 
     // Return the resulting AnnotationMirror
     return builder.build();
   }
 
   /**
-   * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value)
+   * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value).
    *
    * @param value the argument to {@code @KeyFor}
    * @return a {@code @KeyFor} annotation with the given value
@@ -245,7 +246,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * <p>For example, if the type of some method called, {@code getList(...)}, is changed from {@code
    * List<@KeyFor("a ? b : c") String>} to {@code List<@UnknownKeyFor String>}, then the returned
-   * list may have @UnknownKeyFor strings added.
+   * list might have @UnknownKeyFor strings added.
    *
    * <pre>{@code
    * List<String> l = getList(...);

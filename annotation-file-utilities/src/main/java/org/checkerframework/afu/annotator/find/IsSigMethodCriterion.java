@@ -52,7 +52,7 @@ public class IsSigMethodCriterion implements Criterion {
   /** List of parameters in Java, not JVML, format. */
   private final List<@BinaryName String> fullyQualifiedParams;
 
-  /** Return type in Java, not JVML, format. null if return type is "void". */
+  /** The return type in Java, not JVML, format, or null if the return type is "void". */
   private final @Nullable @BinaryName String returnType;
 
   /**
@@ -150,7 +150,7 @@ public class IsSigMethodCriterion implements Criterion {
   }
 
   /**
-   * Matches type parameters
+   * Matches type parameters.
    *
    * @param sourceParams the type parameters
    * @param typeParamToClassMap maps type parameter name to class name for the type parameter

@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Generate the control flow graph of a given method in a given class. See {@link
+ * Generates the control flow graph of a given method in a given class. See {@link
  * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for example usage.
  */
 @SupportedAnnotationTypes("*")
@@ -45,9 +45,9 @@ public class CFGProcessor extends BasicTypeProcessor {
   private @MonotonicNonNull CFGProcessResult result = null;
 
   /**
-   * Create a CFG processor.
+   * Creates a CFG processor.
    *
-   * @param className the qualified name of class that defines the method
+   * @param className the qualified name of the class that defines the method
    * @param methodName the name of the method to generate the CFG for
    */
   public CFGProcessor(String className, String methodName) {
@@ -117,19 +117,19 @@ public class CFGProcessor extends BasicTypeProcessor {
     return SourceVersion.latestSupported();
   }
 
-  /** The result of the CFG process, contains the control flow graph when successful. */
+  /** The result of the CFG process; contains the control flow graph when successful. */
   public static class CFGProcessResult {
     /** Control flow graph. */
     private final @Nullable ControlFlowGraph controlFlowGraph;
 
-    /** Did the CFG process succeed? */
+    /** True if the CFG process succeeded. */
     private final boolean isSuccess;
 
     /** Error message (when the CFG process failed). */
     private final @Nullable String errMsg;
 
     /**
-     * Create the result of the CFG process. Only called if the CFG was built successfully.
+     * Creates the result of the CFG process. Only called if the CFG was built successfully.
      *
      * @param cfg control flow graph
      */
@@ -138,7 +138,7 @@ public class CFGProcessor extends BasicTypeProcessor {
     }
 
     /**
-     * Create the result of the CFG process. Only called if the CFG was not built successfully.
+     * Creates the result of the CFG process. Only called if the CFG was not built successfully.
      *
      * @param errMsg the error message
      */
@@ -147,10 +147,10 @@ public class CFGProcessor extends BasicTypeProcessor {
     }
 
     /**
-     * Create the result of CFG process.
+     * Creates the result of the CFG process.
      *
      * @param cfg the control flow graph
-     * @param isSuccess did the CFG process succeed?
+     * @param isSuccess true if the CFG process succeeded
      * @param errMsg error message (when the CFG process failed)
      */
     private CFGProcessResult(
@@ -161,7 +161,7 @@ public class CFGProcessor extends BasicTypeProcessor {
     }
 
     /**
-     * Check if the CFG process succeeded.
+     * Returns true if the CFG process succeeded.
      *
      * @return true if the CFG process succeeded
      */

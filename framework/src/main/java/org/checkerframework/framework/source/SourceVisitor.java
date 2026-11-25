@@ -63,7 +63,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
   }
 
   /**
-   * Set the CompilationUnitTree to be used during any visits. For any later calls of {@code
+   * Sets the CompilationUnitTree to be used during any visits. For any later calls of {@code
    * com.sun.source.util.TreePathScanner.scan(TreePath, P)}, the CompilationUnitTree of the TreePath
    * has to be equal to {@code root}.
    *
@@ -74,8 +74,8 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
   }
 
   /**
-   * Store the last Tree visited by the SourceVisitor. This is necessary because the finally blocks
-   * in {@link com.sun.source.util.TreePathScanner#scan(TreePath, Object)} and {@link
+   * The last Tree visited by the SourceVisitor. This is necessary because the finally blocks in
+   * {@link com.sun.source.util.TreePathScanner#scan(TreePath, Object)} and {@link
    * com.sun.source.util.TreePathScanner#scan(Tree, Object)} set the visited Path to null. This
    * field is used to report a rough location for the error in {@link
    * org.checkerframework.framework.source.SourceChecker#logBugInCF(BugInCF)}.
@@ -113,9 +113,10 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
   }
 
   /**
-   * If {@code tree} has a {@code @SuppressWarnings} add it to treesWithSuppressWarnings.
+   * If {@code tree} has a {@code @SuppressWarnings} annotation, adds it to
+   * treesWithSuppressWarnings.
    *
-   * @param tree a declaration on which a {@code @SuppressWarnings} annotation may be placed
+   * @param tree a declaration on which a {@code @SuppressWarnings} annotation can be placed
    */
   protected void storeSuppressWarningsAnno(Tree tree) {
     if (!warnUnneededSuppressions) {

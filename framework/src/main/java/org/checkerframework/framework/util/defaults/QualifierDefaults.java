@@ -11,6 +11,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class QualifierDefaults {
 
   /**
    * True if a default should be applied to type vars located in the type being defaulted. This
-   * should only ever be true when the type variable is a local variable, non-component use, i.e.
+   * should only ever be true when the type variable is a local variable, non-component use, i.e.,
    *
    * <pre>{@code
    * <T> void method(@NOT_HERE T tIn) {
@@ -107,13 +108,20 @@ public class QualifierDefaults {
   protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
-   * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
-   * name for the field was "qualifierCache"). It can also be used by type systems to set defaults
-   * for certain Elements.
+   * Defaults that a type system has explicitly declared for an Element, via {@link
+   * #addElementDefault}. See {@link #addElementDefault} for how they interact with the other
+   * defaults.
    */
-  private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+  private final IdentityHashMap<Element, DefaultSet> elementDeclaredDefaults =
+      new IdentityHashMap<>();
 
-  /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
+  /**
+   * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
+   * Element, including the defaults contributed by the Element's enclosing scopes.
+   */
+  private final IdentityHashMap<Element, DefaultSet> defaultsAtCache = new IdentityHashMap<>();
+
+  /** A mapping of Element &rarr; true if that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
   /** CLIMB locations whose standard default is top for a given type system. */
@@ -158,17 +166,21 @@ public class QualifierDefaults {
   private final boolean useConservativeDefaultsBytecode;
 
   /**
-   * Returns an array of locations that are valid for the unchecked value defaults. These are simply
-   * by syntax, since an entire file is typechecked, it is not possible for local variables to be
-   * unchecked.
+   * Returns an array of locations that are valid for the unchecked value defaults. These are
+   * determined simply by syntax: since an entire file is type-checked, it is not possible for local
+   * variables to be unchecked.
+   *
+   * @return the locations that are valid for the unchecked value defaults
    */
   public static List<TypeUseLocation> validLocationsForUncheckedCodeDefaults() {
     return validUncheckedCodeDefaultLocations;
   }
 
   /**
+   * Creates a new QualifierDefaults.
+   *
    * @param elements interface to Element data in the current processing environment
-   * @param atypeFactory an annotation factory, used to get annotations by name
+   * @param atypeFactory an annotated type factory, used to get annotations by name
    */
   public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
     this.elements = elements;
@@ -198,7 +210,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
+   * Returns true if a default with TypeUseLocation OTHERWISE or ALL is specified.
    *
    * @return true if we found a Default with location OTHERWISE or ALL
    */
@@ -211,7 +223,7 @@ public class QualifierDefaults {
     return false;
   }
 
-  /** Add standard unchecked defaults that do not conflict with previously added defaults. */
+  /** Adds standard unchecked defaults that do not conflict with previously added defaults. */
   public void addUncheckedStandardDefaults() {
     QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
@@ -236,7 +248,7 @@ public class QualifierDefaults {
     }
   }
 
-  /** Add standard CLIMB defaults that do not conflict with previously added defaults. */
+  /** Adds standard CLIMB defaults that do not conflict with previously added defaults. */
   public void addClimbStandardDefaults() {
     QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
@@ -264,7 +276,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Adds a default annotation. A programmer may override this by writing the @DefaultQualifier
+   * Adds a default annotation. A programmer can override this by writing the @DefaultQualifier
    * annotation on an element.
    *
    * @param absoluteDefaultAnno the default annotation mirror
@@ -277,7 +289,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Add a default annotation for unchecked elements.
+   * Adds a default annotation for unchecked elements.
    *
    * @param uncheckedDefaultAnno the default annotation mirror
    * @param location the type use location
@@ -306,22 +318,39 @@ public class QualifierDefaults {
   }
 
   /**
-   * Sets the default annotations for a certain Element.
+   * Sets the default annotation for the given element and location.
+   *
+   * <p>The default is treated like a {@code @DefaultQualifier} annotation written on {@code elem}:
+   * it applies within {@code elem} and within the elements that {@code elem} encloses, and it is
+   * combined with the other {@code @DefaultQualifier} annotations that apply there, rather than
+   * suppressing them. As with {@code @DefaultQualifier}, an alias is replaced by its canonical
+   * qualifier.
+   *
+   * <p>Call this method before the type of {@code elem}, or of any element that {@code elem}
+   * encloses, is computed. A type that was computed earlier does not reflect the default.
    *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
+   * @throws BugInCF if this type system does not support the qualifier
    */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
-    DefaultSet prevset = elementDefaults.get(elem);
+    AnnotationMirror anno = atypeFactory.canonicalAnnotation(elementDefaultAnno);
+    if (!atypeFactory.isSupportedQualifier(anno)) {
+      throw new BugInCF(
+          "addElementDefault: unsupported qualifier " + elementDefaultAnno + " for " + elem);
+    }
+    DefaultSet prevset = elementDeclaredDefaults.get(elem);
     if (prevset != null) {
-      checkDuplicates(prevset, elementDefaultAnno, location);
+      checkDuplicates(prevset, anno, location);
     } else {
       prevset = new DefaultSet();
+      elementDeclaredDefaults.put(elem, prevset);
     }
-    prevset.add(new Default(elementDefaultAnno, location));
-    elementDefaults.put(elem, prevset);
+    if (prevset.add(new Default(anno, location))) {
+      defaultsAtCache.clear();
+    }
   }
 
   /**
@@ -525,9 +554,9 @@ public class QualifierDefaults {
     //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
     boolean defaultTypeVarLocals =
-        (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>)
-            && ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-                .getShouldDefaultTypeVarLocals();
+        (atypeFactory
+                instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAnnotatedTypeFactory)
+            && genericAnnotatedTypeFactory.getShouldDefaultTypeVarLocals();
     applyToTypeVar =
         defaultTypeVarLocals
             && elt != null
@@ -542,7 +571,7 @@ public class QualifierDefaults {
       new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
 
   /**
-   * Create a DefaultSet from a @DefaultQualifier annotation.
+   * Creates a DefaultSet from a @DefaultQualifier annotation.
    *
    * @param dq a @DefaultQualifier annotation
    * @return a DefaultSet corresponding to the @DefaultQualifier annotation
@@ -619,51 +648,45 @@ public class QualifierDefaults {
    * Returns the defaults that apply to the given Element, considering defaults from enclosing
    * Elements.
    *
-   * @param elt the element
+   * @param elt an element, or null
    * @return the defaults
    */
-  private DefaultSet defaultsAt(Element elt) {
+  private DefaultSet defaultsAt(@Nullable Element elt) {
     if (elt == null) {
       return DefaultSet.EMPTY;
     }
 
-    if (elementDefaults.containsKey(elt)) {
-      return elementDefaults.get(elt);
+    DefaultSet cached = defaultsAtCache.get(elt);
+    if (cached != null) {
+      return cached;
     }
 
-    DefaultSet qualifiers = null;
+    DefaultSet qualifiers = new DefaultSet();
 
-    {
-      AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    if (dqAnno != null) {
+      Set<Default> p = fromDefaultQualifier(dqAnno);
+      if (p != null) {
+        qualifiers.addAll(p);
+      }
+    }
 
-      if (dqAnno != null) {
-        qualifiers = new DefaultSet();
-        Set<Default> p = fromDefaultQualifier(dqAnno);
-
+    AnnotationMirror dqListAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
+    if (dqListAnno != null) {
+      List<AnnotationMirror> values =
+          AnnotationUtils.getElementValueArray(
+              dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
+      for (AnnotationMirror listDqAnno : values) {
+        Set<Default> p = fromDefaultQualifier(listDqAnno);
         if (p != null) {
           qualifiers.addAll(p);
         }
       }
     }
 
-    {
-      AnnotationMirror dqListAnno =
-          atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
-      if (dqListAnno != null) {
-        if (qualifiers == null) {
-          qualifiers = new DefaultSet();
-        }
-
-        List<AnnotationMirror> values =
-            AnnotationUtils.getElementValueArray(
-                dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
-        for (AnnotationMirror dqAnno : values) {
-          Set<Default> p = fromDefaultQualifier(dqAnno);
-          if (p != null) {
-            qualifiers.addAll(p);
-          }
-        }
-      }
+    DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
+    if (elementDefaults != null) {
+      qualifiers.addAll(elementDefaults);
     }
 
     Element parent;
@@ -674,14 +697,14 @@ public class QualifierDefaults {
     }
 
     DefaultSet parentDefaults = defaultsAt(parent);
-    if (qualifiers == null || qualifiers.isEmpty()) {
+    if (qualifiers.isEmpty()) {
       qualifiers = parentDefaults;
     } else {
       qualifiers.addAll(parentDefaults);
     }
 
-    if (qualifiers != null && !qualifiers.isEmpty()) {
-      elementDefaults.put(elt, qualifiers);
+    if (!qualifiers.isEmpty()) {
+      defaultsAtCache.put(elt, qualifiers);
       return qualifiers;
     } else {
       return DefaultSet.EMPTY;
@@ -833,7 +856,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * Apply default to the type.
+     * Applies the default to the type.
      *
      * @param def default to apply
      */
@@ -862,10 +885,10 @@ public class QualifierDefaults {
     }
 
     /**
-     * Add the qualifier to the type if it does not already have an annotation in the same hierarchy
-     * as qual.
+     * Adds the qualifier to the type if it does not already have an annotation in the same
+     * hierarchy as qual.
      *
-     * @param type type to add qual
+     * @param type type to which to add qual
      * @param qual annotation to add
      */
     protected void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
@@ -1034,14 +1057,27 @@ public class QualifierDefaults {
         impl.boundType = BoundType.UNBOUNDED;
       }
 
-      // are we currently defaulting the lower bound of a type variable or wildcard
+      /** True if the lower bound of a type variable or wildcard is currently being defaulted. */
       private boolean isLowerBound = false;
 
-      // are we currently defaulting the upper bound of a type variable or wildcard
+      /** True if the upper bound of a type variable or wildcard is currently being defaulted. */
       private boolean isUpperBound = false;
 
-      // the bound type of the current wildcard or type variable being defaulted
+      /** The bound type of the wildcard or type variable that is currently being defaulted. */
       private BoundType boundType = BoundType.UNBOUNDED;
+
+      /** The declared types that enclose the type being scanned, innermost first. */
+      private final ArrayDeque<AnnotatedDeclaredType> enclosingDeclaredTypes = new ArrayDeque<>();
+
+      @Override
+      public Void visitDeclared(AnnotatedDeclaredType type, AnnotationMirror qual) {
+        enclosingDeclaredTypes.addFirst(type);
+        try {
+          return super.visitDeclared(type, qual);
+        } finally {
+          enclosingDeclaredTypes.removeFirst();
+        }
+      }
 
       @Override
       public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
@@ -1064,8 +1100,13 @@ public class QualifierDefaults {
       }
 
       /**
-       * Visit the bounds of a type variable or a wildcard and potentially apply qual to those
-       * bounds. This method will also update the boundType, isLowerBound, and isUpperbound fields.
+       * Visits the bounds of a type variable or a wildcard and potentially applies qual to those
+       * bounds. This method will also update the boundType, isLowerBound, and isUpperBound fields.
+       *
+       * @param boundedType the type variable or wildcard whose bounds to visit
+       * @param upperBound the upper bound of {@code boundedType}
+       * @param lowerBound the lower bound of {@code boundedType}
+       * @param qual the qualifier to apply to the bounds
        */
       protected void visitBounds(
           AnnotatedTypeMirror boundedType,
@@ -1077,7 +1118,7 @@ public class QualifierDefaults {
         boolean prevIsLowerBound = isLowerBound;
         BoundType prevBoundType = boundType;
 
-        boundType = getBoundType(boundedType);
+        boundType = getBoundType(boundedType, enclosingDeclaredTypes.peekFirst());
 
         try {
           isLowerBound = true;
@@ -1114,7 +1155,7 @@ public class QualifierDefaults {
     LOWER,
 
     /**
-     * Neither bound is specified, BOTH are implicit. (If a type variable is declared in bytecode
+     * Neither bound is specified; BOTH are implicit. (If a type variable is declared in bytecode
      * and the type of the upper bound is Object, then the checker assumes that the bound was not
      * explicitly written in source code.)
      */
@@ -1136,15 +1177,17 @@ public class QualifierDefaults {
    *
    * @param type the type whose boundType is returned. type must be an AnnotatedWildcardType or
    *     AnnotatedTypeVariable.
+   * @param enclosingType a declared type of which {@code type} might be a type argument, or null
    * @return the boundType for type
    */
-  private BoundType getBoundType(AnnotatedTypeMirror type) {
+  private BoundType getBoundType(
+      AnnotatedTypeMirror type, @Nullable AnnotatedDeclaredType enclosingType) {
     if (type instanceof AnnotatedTypeVariable atv) {
       return getTypeVarBoundType(atv);
     }
 
     if (type instanceof AnnotatedWildcardType awt) {
-      return getWildcardBoundType(awt);
+      return getWildcardBoundType(awt, enclosingType);
     }
 
     throw new BugInCF("Unexpected type kind: type=" + type);
@@ -1214,16 +1257,35 @@ public class QualifierDefaults {
   }
 
   /**
+   * Returns the BoundType of wildcardType. If it is unbounded, uses the type parameter to which it
+   * is an argument.
+   *
+   * <p>If the declared type of which {@code wildcardType} is a type argument is known, call {@link
+   * #getWildcardBoundType(AnnotatedWildcardType, AnnotatedDeclaredType)} instead, which determines
+   * the type parameter more reliably.
+   *
+   * @param wildcardType the annotated wildcard type
+   * @return the BoundType of wildcardType. If it is unbounded, uses the type parameter to which it
+   *     is an argument
+   */
+  public BoundType getWildcardBoundType(AnnotatedWildcardType wildcardType) {
+    return getWildcardBoundType(wildcardType, null);
+  }
+
+  /**
    * Returns the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    * its an argument.
    *
    * @param wildcardType the annotated wildcard type
+   * @param enclosingType a declared type of which {@code wildcardType} might be a type argument, or
+   *     null
    * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    *     its an argument
    */
-  public BoundType getWildcardBoundType(AnnotatedWildcardType wildcardType) {
+  public BoundType getWildcardBoundType(
+      AnnotatedWildcardType wildcardType, @Nullable AnnotatedDeclaredType enclosingType) {
     if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {
-      TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
+      TypeParameterElement e = AnnotatedTypes.wildcardToTypeParam(wildcardType, enclosingType);
       if (e != null) {
         return getTypeVarBoundType(e);
       } else {

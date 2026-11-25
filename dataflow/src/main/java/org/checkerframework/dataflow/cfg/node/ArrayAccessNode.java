@@ -34,7 +34,7 @@ public class ArrayAccessNode extends Node {
   /**
    * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then the
    * {@code arrayExpression} field is the expression in the for loop, e.g., {@code arr} in {@code
-   * for(Object o: arr}.
+   * for(Object o: arr)}.
    *
    * <p>Is set by {@link #setArrayExpression}.
    */
@@ -49,7 +49,7 @@ public class ArrayAccessNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
-   * Create an ArrayAccessNode.
+   * Creates an ArrayAccessNode.
    *
    * @param t tree for the array access
    * @param array the node for the array expression being accessed
@@ -63,9 +63,9 @@ public class ArrayAccessNode extends Node {
   }
 
   /**
-   * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then return
-   * the expression in the for loop, e.g., {@code arr} in {@code for(Object o: arr}. Otherwise,
-   * return null.
+   * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then
+   * returns the expression in the for loop, e.g., {@code arr} in {@code for(Object o: arr)}.
+   * Otherwise, returns null.
    *
    * @return the array expression, or null if this is not an array desugared from an enhanced for
    *     loop
@@ -75,7 +75,7 @@ public class ArrayAccessNode extends Node {
   }
 
   /**
-   * Set the array expression from a for loop.
+   * Sets the array expression from a for loop.
    *
    * @param arrayExpression array expression
    * @see #getArrayExpression()
@@ -86,7 +86,7 @@ public class ArrayAccessNode extends Node {
 
   /**
    * If this ArrayAccessNode is a node for an array access desugared from an enhanced for loop, then
-   * return the {@code EnhancedForLoopTree} AST node. Otherwise, return null.
+   * returns the {@code EnhancedForLoopTree} AST node. Otherwise, returns null.
    *
    * @return the {@code EnhancedForLoopTree}, or null if this is not an array access desugared from
    *     an enhanced for loop
@@ -96,7 +96,7 @@ public class ArrayAccessNode extends Node {
   }
 
   /**
-   * Set the enhanced for loop from which {@code this} is desugared from.
+   * Sets the enhanced for loop from which {@code this} is desugared.
    *
    * @param enhancedForLoop the {@code EnhancedForLoopTree}
    * @see #getEnhancedForLoop()

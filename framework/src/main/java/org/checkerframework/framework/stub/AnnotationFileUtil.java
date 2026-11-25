@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.Element;
@@ -245,7 +246,7 @@ public class AnnotationFileUtil {
   public record QualifiedName(@FullyQualifiedName String typeName, String memberName) {}
 
   /**
-   * Split a name (which comes from an import statement) into the part before the last period and
+   * Splits a name (which comes from an import statement) into the part before the last period and
    * the part after the last period.
    *
    * @param imported the name to split
@@ -394,11 +395,12 @@ public class AnnotationFileUtil {
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-   *     for it as described in {@link #findFileSystemLocation}.
+   *     for it as described in {@link #findFileSystemLocation}. The annotation files are those that
+   *     {@link #forEachAnnotationFile} finds.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
-   *     classpath). Returns null if the file system location does not exist; the caller may wish to
-   *     issue a warning in that case.
+   *     classpath). Returns null if the file system location does not exist; the caller might wish
+   *     to issue a warning in that case.
    */
   public static @Nullable List<AnnotationFileResource> allAnnotationFiles(
       String location, AnnotationFileType fileType) {
@@ -407,7 +409,7 @@ public class AnnotationFileUtil {
       return null;
     }
     List<AnnotationFileResource> resources = new ArrayList<>();
-    addAnnotationFilesToList(file, resources, fileType);
+    forEachAnnotationFile(file, fileType, resources::add);
     return resources;
   }
 
@@ -456,61 +458,110 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Side-effects {@code resources} by adding annotation files of the given file type to it.
+   * Returns the given entry of the given archive, as an annotation file resource.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
-   *     stub file or ajava file, add it to the {@code resources} list. If a jarfile, use all
-   *     annotation files (of type {@code fileType}) contained in it. If a directory, recurse on all
-   *     files contained in it.
-   * @param resources the list to add the found files to
-   * @param fileType type of annotation files to add
+   * @param archive a JAR or ZIP archive
+   * @param jarFile {@code archive}, open
+   * @param entry the entry of {@code archive} to read
+   * @return a resource that holds the contents of {@code entry}, or a resource whose {@link
+   *     AnnotationFileResource#getInputStream} throws an exception if {@code entry} cannot be read
    */
-  private static void addAnnotationFilesToList(
-      File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
-    if (isAnnotationFile(location, fileType)) {
-      resources.add(new FileAnnotationFileResource(location));
-    } else if (isJar(location)) {
-      try (JarFile file = new JarFile(location)) {
-        file.stream()
-            .filter(entry -> isAnnotationFile(entry.getName(), fileType))
-            .forEach(
-                entry -> {
-                  try {
-                    resources.add(
-                        new JarEntryAnnotationFileResource(
-                            location, entry.getName(), readEntry(file, entry)));
-                  } catch (IOException e) {
-                    // The client reports the error when it reads this entry, and it still
-                    // processes the archive's other entries.
-                    String description = location.getPath() + "!" + entry.getName();
-                    resources.add(
-                        new AnnotationFileResource() {
-                          @Override
-                          public String getDescription() {
-                            return description;
-                          }
+  private static AnnotationFileResource archiveEntry(
+      File archive, JarFile jarFile, JarEntry entry) {
+    try {
+      return new JarEntryAnnotationFileResource(
+          archive, entry.getName(), readEntry(jarFile, entry));
+    } catch (IOException e) {
+      return unreadableResource(archive.getPath() + "!" + entry.getName(), e);
+    }
+  }
 
-                          @Override
-                          public InputStream getInputStream() throws IOException {
-                            throw e;
-                          }
-                        });
-                  }
-                });
-      } catch (IOException e) {
-        System.err.println("AnnotationFileUtil: could not process archive " + location + ": " + e);
+  /**
+   * Returns the given exception, wrapped as an annotation file resource whose {@link
+   * AnnotationFileResource#getInputStream} throws the exception. The client reports the error when
+   * it reads the resource.
+   *
+   * @param description a description of the resource
+   * @param e the exception that occurred when reading the resource
+   * @return an annotation file resource whose {@code getInputStream} method throws {@code e}
+   */
+  private static AnnotationFileResource unreadableResource(String description, IOException e) {
+    return new AnnotationFileResource() {
+      @Override
+      public String getDescription() {
+        return description;
       }
 
+      @Override
+      public InputStream getInputStream() throws IOException {
+        throw e;
+      }
+    };
+  }
+
+  /**
+   * Runs {@code action} on each annotation file of type {@code fileType} at the given file system
+   * location. Passes the files under a directory in order of their names, and the entries in an
+   * archive in the order that the archive stores them.
+   *
+   * <p>If {@code location} is a directory, recurses on all files contained in it. If {@code
+   * location} is a jarfile that cannot be opened or a directory that cannot be listed, passes a
+   * resource whose {@link AnnotationFileResource#getInputStream} throws an exception, so the client
+   * reports the error rather than treating {@code location} as empty.
+   *
+   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory
+   * @param fileType type of annotation files to pass to {@code action}
+   * @param action the operation to perform on each annotation file
+   */
+  public static void forEachAnnotationFile(
+      File location, AnnotationFileType fileType, Consumer<AnnotationFileResource> action) {
+    if (isAnnotationFile(location, fileType)) {
+      action.accept(new FileAnnotationFileResource(location));
+    } else if (isJar(location)) {
+      // Passes an archive entry while its archive is open, and reads the entry's contents just
+      // before passing it, so an archive's entries need not all be in memory at once.
+      forEachArchiveEntry(location, fileType, action);
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       if (directoryContents == null) {
-        System.err.println("AnnotationFileUtil: could not list directory: " + location);
+        action.accept(
+            unreadableResource(location.getPath(), new IOException("could not list directory")));
         return;
       }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
-        addAnnotationFilesToList(enclosed, resources, fileType);
+        forEachAnnotationFile(enclosed, fileType, action);
       }
+    }
+  }
+
+  /**
+   * Opens the given archive, passes each annotation file of type {@code fileType} in it to {@code
+   * action}, and closes the archive.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param fileType type of annotation files to pass to {@code action}
+   * @param action the operation to perform on each annotation file in {@code archive}
+   */
+  private static void forEachArchiveEntry(
+      File archive, AnnotationFileType fileType, Consumer<AnnotationFileResource> action) {
+    JarFile jarFile;
+    try {
+      jarFile = new JarFile(archive);
+    } catch (IOException e) {
+      action.accept(unreadableResource(archive.getPath(), e));
+      return;
+    }
+    try (jarFile) {
+      Iterator<JarEntry> entries = jarFile.entries().asIterator();
+      while (entries.hasNext()) {
+        JarEntry entry = entries.next();
+        if (isAnnotationFile(entry.getName(), fileType)) {
+          action.accept(archiveEntry(archive, jarFile, entry));
+        }
+      }
+    } catch (IOException e) {
+      // Closing an archive that was opened for reading does not lose any data.
     }
   }
 

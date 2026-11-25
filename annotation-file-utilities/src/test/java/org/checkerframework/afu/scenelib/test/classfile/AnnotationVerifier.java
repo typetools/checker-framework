@@ -22,7 +22,7 @@ import org.plumelib.util.CollectionsP;
 
 /**
  * An {@code AnnotationVerifier} provides a way to check to see if two versions of the same class
- * (from two different {@code .class} files), have the same annotations on the same elements.
+ * (from two different {@code .class} files) have the same annotations on the same elements.
  */
 public class AnnotationVerifier {
 
@@ -601,9 +601,7 @@ public class AnnotationVerifier {
     }
   }
 
-  /**
-   * An AnnotationRecorder is an TypeAnnotationVisitor that records all the information it visits.
-   */
+  /** An AnnotationRecorder is an AnnotationVisitor that records all the information it visits. */
   private class AnnotationRecorder extends AnnotationVisitor {
     private String description;
 
@@ -860,7 +858,7 @@ public class AnnotationVerifier {
 
   /**
    * An AnnotationMismatchException is an Exception that indicates that two versions of the same
-   * class do not have the same annotations on either the class, its field, or its methods.
+   * class do not have the same annotations on either the class, its fields, or its methods.
    */
   public static class AnnotationMismatchException extends RuntimeException {
     private static final long serialVersionUID = 20060714L; // today's date

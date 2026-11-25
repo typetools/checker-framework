@@ -6,6 +6,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -62,9 +63,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The visitor for the nullness type-system. */
+/** The visitor for the nullness type system. */
 public class NullnessVisitor
     extends InitializationVisitor<NullnessAnnotatedTypeFactory, NullnessValue, NullnessStore> {
   // Error message keys
@@ -88,16 +90,16 @@ public class NullnessVisitor
   /** The element for java.util.Collection.size(). */
   private final ExecutableElement collectionSize;
 
-  /** The element for java.util.Collection.toArray(T). */
+  /** The element for java.util.Collection.toArray(T[]). */
   private final ExecutableElement collectionToArray;
 
   /** The System.clearProperty(String) method. */
   private final ExecutableElement systemClearProperty;
 
-  /** The System.setProperties(String) method. */
+  /** The System.setProperties(Properties) method. */
   private final ExecutableElement systemSetProperties;
 
-  /** True if checked code may clear system properties. */
+  /** True if checked code might clear system properties. */
   private final boolean permitClearProperty;
 
   /** True if -AassumeAssertionsAreEnabled was passed on the command line. */
@@ -321,7 +323,7 @@ public class NullnessVisitor
    * Returns true if the given tree is "new X[]", in the context "toArray(new X[])".
    *
    * @param tree a tree to test
-   * @return true if the tree is a new array within acall to toArray()
+   * @return true if the tree is a new array within a call to toArray()
    */
   private boolean isNewArrayInToArray(NewArrayTree tree) {
     if (tree.getDimensions().size() != 1) {
@@ -417,6 +419,15 @@ public class NullnessVisitor
   }
 
   @Override
+  public Void visitCase(CaseTree tree, Void p) {
+    ExpressionTree guard = CaseUtils.getGuard(tree);
+    if (guard != null) {
+      checkForNullability(guard, CONDITION_NULLABLE);
+    }
+    return super.visitCase(tree, p);
+  }
+
+  @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
@@ -432,8 +443,13 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
-    // Instead, just scan the part before "instanceof".
+    // Instead, validate the reference type and scan the expression and the pattern or type.
+    Tree patternTree = tree.getPattern();
+    if (patternTree == null) {
+      validateTypeOf(refTypeTree);
+    }
     super.scan(tree.getExpression(), p);
+    super.scan(patternTree != null ? patternTree : refTypeTree, p);
     return null;
   }
 
@@ -467,7 +483,7 @@ public class NullnessVisitor
     }
   }
 
-  /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations. */
+  /** Case 6: Check for redundant nullness tests. Case 7: unboxing case: primitive operations. */
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
     ExpressionTree leftOp = tree.getLeftOperand();
@@ -615,7 +631,7 @@ public class NullnessVisitor
   /**
    * Issues the error message if the type of the tree is not of a {@link NonNull} type.
    *
-   * @param tree the tree where the error is to reported
+   * @param tree the tree where the error is to be reported
    * @param errMsg the error message (must be {@link CompilerMessageKey})
    * @return true if the check succeeded
    */
@@ -625,10 +641,10 @@ public class NullnessVisitor
   }
 
   /**
-   * Issues the error message if an expression with this type may be null.
+   * Issues the error message if an expression with this type might be null.
    *
    * @param type annotated type
-   * @param tree the tree where the error is to reported
+   * @param tree the tree where the error is to be reported
    * @param errMsg the error message (must be {@link CompilerMessageKey})
    * @return true if the check succeeded
    */
@@ -689,10 +705,10 @@ public class NullnessVisitor
   }
 
   /**
-   * Returns true if the type of the tree is a super of String.
+   * Returns true if the type of the tree is a supertype of String.
    *
    * @param tree a tree
-   * @return true if the type of the tree is a super of String
+   * @return true if the type of the tree is a supertype of String
    */
   private boolean isString(ExpressionTree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
@@ -854,7 +870,7 @@ public class NullnessVisitor
   private static class NullnessValidator extends BaseTypeValidator {
 
     /**
-     * Create NullnessValidator.
+     * Create a NullnessValidator.
      *
      * @param checker checker
      * @param visitor visitor

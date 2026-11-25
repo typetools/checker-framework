@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class InitializedFieldsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a InitializedFieldsTest.
+   * Creates an InitializedFieldsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

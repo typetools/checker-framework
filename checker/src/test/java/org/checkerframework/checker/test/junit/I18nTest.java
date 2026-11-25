@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class I18nTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create an I18nTest.
+   * Creates an I18nTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

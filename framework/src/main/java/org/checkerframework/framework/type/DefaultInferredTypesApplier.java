@@ -34,11 +34,11 @@ public class DefaultInferredTypesApplier {
   }
 
   /**
-   * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over
-   * to type.
+   * For each top in the qualifier hierarchy, traverses inferred and copies the required annotations
+   * over to type.
    *
    * @param type the type to which annotations are being applied
-   * @param inferredSet the type inferred by data flow
+   * @param inferredSet the type inferred by dataflow
    * @param inferredTypeMirror underlying inferred type
    */
   public void applyInferredType(
@@ -46,13 +46,28 @@ public class DefaultInferredTypesApplier {
     if (inferredSet == null) {
       return;
     }
-    if (inferredTypeMirror.getKind() == TypeKind.WILDCARD) {
-      // Dataflow might infer a wildcard that extends a type variable for types that are
-      // actually type variables.  Use the type variable instead.
-      while (inferredTypeMirror.getKind() == TypeKind.WILDCARD
-          && (((WildcardType) inferredTypeMirror).getExtendsBound() != null)) {
+    while (true) {
+      // Dataflow might infer a wildcard that extends a type variable for types that are actually
+      // type variables.  Use the type variable instead.
+      if (inferredTypeMirror.getKind() == TypeKind.WILDCARD
+          && ((WildcardType) inferredTypeMirror).getExtendsBound() != null) {
         inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
+        continue;
       }
+      // Use the type variable that bounds the wildcard of a captured type variable, such as `U`
+      // for the type of `list.get(0)` where `list` is a `List<? extends U>`, because a captured
+      // type variable has no declaration from which to read the upper bound's annotations.
+      if (inferredTypeMirror.getKind() == TypeKind.TYPEVAR) {
+        WildcardType capturedWildcard =
+            TypesUtils.getCapturedWildcard((TypeVariable) inferredTypeMirror);
+        if (capturedWildcard != null
+            && capturedWildcard.getExtendsBound() != null
+            && capturedWildcard.getExtendsBound().getKind() == TypeKind.TYPEVAR) {
+          inferredTypeMirror = capturedWildcard.getExtendsBound();
+          continue;
+        }
+      }
+      break;
     }
     for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
       AnnotationMirror inferred = hierarchy.findAnnotationInHierarchy(inferredSet, top);

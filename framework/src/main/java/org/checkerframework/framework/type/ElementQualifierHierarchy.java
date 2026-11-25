@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * A {@link QualifierHierarchy} where qualifiers may be represented by annotations with elements.
+ * A {@link QualifierHierarchy} where qualifiers can be represented by annotations with elements.
  *
  * <p>ElementQualifierHierarchy uses a {@link QualifierKindHierarchy} to model the relationships
  * between qualifiers. (By contrast, {@link MostlyNoElementQualifierHierarchy} uses the {@link
@@ -64,7 +64,7 @@ public abstract class ElementQualifierHierarchy extends QualifierHierarchy {
   protected final Map<QualifierKind, AnnotationMirror> kindToElementlessQualifier;
 
   /**
-   * Creates a ElementQualifierHierarchy from the given classes.
+   * Creates an ElementQualifierHierarchy from the given classes.
    *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param elements element utils
@@ -99,7 +99,7 @@ public abstract class ElementQualifierHierarchy extends QualifierHierarchy {
   }
 
   /**
-   * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
+   * Creates the {@link QualifierKindHierarchy}. (Subclasses can override to return a subclass of
    * QualifierKindHierarchy.)
    *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy

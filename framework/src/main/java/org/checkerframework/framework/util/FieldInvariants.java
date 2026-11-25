@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class FieldInvariants {
 
   /**
-   * A list of simple field names. A field may appear more than once in this list. This list has the
+   * A list of simple field names. A field can appear more than once in this list. This list has the
    * same length as {@link #qualifiers}.
    */
   private final List<String> fields;
@@ -36,7 +36,7 @@ public class FieldInvariants {
 
   /**
    * Creates a new FieldInvariants object. The result is well-formed if the length of qualifiers is
-   * either 1 or equal to length of {@code fields}.
+   * either 1 or equal to the length of {@code fields}.
    *
    * @param fields list of fields
    * @param qualifiers list of qualifiers, or a single qualifier that applies to all fields
@@ -50,9 +50,9 @@ public class FieldInvariants {
   /**
    * Creates a new object with all the invariants in {@code other}, plus those specified by {@code
    * fields} and {@code qualifiers}. The result is well-formed if the length of qualifiers is either
-   * 1 or equal to length of {@code fields}.
+   * 1 or equal to the length of {@code fields}.
    *
-   * @param other other invariant object, may be null
+   * @param other other invariant object, or null
    * @param fields list of fields
    * @param qualifiers list of qualifiers
    * @param factory the type factory
@@ -77,7 +77,11 @@ public class FieldInvariants {
     this.factory = factory;
   }
 
-  /** The simple names of the fields that have a qualifier. May contain duplicates. */
+  /**
+   * Returns the simple names of the fields that have a qualifier. Can contain duplicates.
+   *
+   * @return the simple names of the fields that have a qualifier
+   */
   public List<String> getFields() {
     return fields;
   }

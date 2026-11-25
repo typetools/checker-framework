@@ -134,9 +134,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           //
           //  1. By the time the constraint formula for expressionTree was reduced, its target
           //     type had become a proper type, so JLS 18.2.1's rule for
-          //     <MethodReference -> T> (which requires that T mention an inference variable)
+          //     <MethodReference -> T> (which requires that T contain an inference variable)
           //     did not apply.  This happens when the target type's function type has a
-          //     parameter type that mentions one of the outer tree's inference variables: JLS
+          //     parameter type that contains one of the outer tree's inference variables: JLS
           //     18.5.2.2 makes such a variable an input variable of the constraint, so it is
           //     resolved and substituted into the constraint before the constraint is reduced.
           //
@@ -188,8 +188,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /**
    * Returns the outermost tree required to find the type of {@code tree}.
    *
-   * @param tree tree that may need an outer tree to find the type
-   * @param parentPath path to the parent of {@code tree} or null if no such parent exists
+   * @param tree tree that might need an outer tree to find the type
+   * @param parentPath path to the parent of {@code tree}, or null if no such parent exists
    * @param env the processing environment
    * @return the outermost tree required to find the type of {@code tree}
    */
@@ -292,7 +292,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * @param executableElement symbol of method or constructor
    * @param argTrees all the arguments of the method or constructor call
    * @param argTree the argument of interest
-   * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
+   * @param newClassTree the new class tree, or {@code null} if {@code executableElement} is a
+   *     method
    * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
    *     that contains a type variable that needs to be inferred
    */

@@ -339,7 +339,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   /**
    * Adds the qualifiers in {@code annos} to {@code type} that are below the qualifier upper bound
-   * of type and for which type does not already have annotation in the same hierarchy. If a
+   * of type and for which type does not already have an annotation in the same hierarchy. If a
    * qualifier in {@code annos} is above the bound, then the bound is added to {@code type} instead.
    *
    * @param type annotations are added to this type
@@ -347,18 +347,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    */
   private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
     log("addAnnoOrBound(%s, %s)%n", type, annos);
-    TypeMirror tm = type.getUnderlyingType();
-    AnnotationMirrorSet boundAnnos = atypeFactory.getQualifierUpperBounds().getBoundQualifiers(tm);
-    AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
-    for (AnnotationMirror boundAnno : boundAnnos) {
-      AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annos, boundAnno);
-      if (anno != null && !qualHierarchy.isSubtypeShallow(anno, tm, boundAnno, tm)) {
-        annosToAdd.add(boundAnno);
-      }
-    }
-    type.addMissingAnnotations(annosToAdd);
+    type.addMissingAnnotations(
+        atypeFactory.getQualifierUpperBounds().limitToBound(type.getUnderlyingType(), annos));
     log("addAnnoOrBound#2(%s, %s)%n", type, annos);
-    type.addMissingAnnotations(annos);
-    log("addAnnoOrBound#3(%s, %s)%n", type, annos);
   }
 }

@@ -58,8 +58,20 @@ public final class TypeKindUtils {
    *
    * @param typeKind a type kind
    * @return true if the argument is a primitive numeric type kind
+   * @deprecated use {@link #isNumericPrimitive}
    */
+  @Deprecated(forRemoval = true, since = "4.4.1") // 2026-11-22
   public static boolean isNumeric(TypeKind typeKind) {
+    return isNumericPrimitive(typeKind);
+  }
+
+  /**
+   * Returns true iff the argument is a primitive numeric type kind.
+   *
+   * @param typeKind a type kind
+   * @return true if the argument is a primitive numeric type kind
+   */
+  public static boolean isNumericPrimitive(TypeKind typeKind) {
     return switch (typeKind) {
       case BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
       default -> false;
@@ -69,8 +81,8 @@ public final class TypeKindUtils {
   // Cannot create an overload that takes an AnnotatedTypeMirror because the javacutil
   // package must not depend on the framework package.
   /**
-   * Given a primitive type, return its kind. Given a boxed primitive type, return the corresponding
-   * primitive type kind. Otherwise, return null.
+   * Given a primitive type, returns its kind. Given a boxed primitive type, returns the
+   * corresponding primitive type kind. Otherwise, returns null.
    *
    * @param type a primitive or boxed primitive type
    * @return a primitive type kind, or null
@@ -117,15 +129,15 @@ public final class TypeKindUtils {
   }
 
   /**
-   * Given two type kinds, return the type kind they are widened to, when an arithmetic operation is
-   * performed on them. Defined in JLS 5.6.2.
+   * Given two type kinds, returns the type kind they are widened to, when an arithmetic operation
+   * is performed on them. Defined in JLS 5.6.2.
    *
    * @param a a type kind
    * @param b a type kind
    * @return the type kind to which they are widened, when an operation is performed on them
    */
   public static TypeKind widenedNumericType(TypeKind a, TypeKind b) {
-    if (!isNumeric(a) || !isNumeric(b)) {
+    if (!isNumericPrimitive(a) || !isNumericPrimitive(b)) {
       return TypeKind.NONE;
     }
 
@@ -205,7 +217,7 @@ public final class TypeKindUtils {
    * not a primitive type.
    *
    * @param tk a primitive type kind
-   * @return the number of bits in its representation, or -1 if not integral
+   * @return the number of bits in its representation, or -1 if not a primitive type
    */
   private static int numBits(TypeKind tk) {
     return switch (tk) {
