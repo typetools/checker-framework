@@ -195,7 +195,7 @@ public class MethodCall extends JavaExpression {
       // that is a ClassName is a class literal, such as `Foo.class`.
       preParen.append(receiver.getType());
     } else {
-      preParen.append(receiver);
+      preParen.append(receiver.toStringAsPostfixOperand());
     }
     preParen.append('.');
     String methodName = method.getSimpleName().toString();
