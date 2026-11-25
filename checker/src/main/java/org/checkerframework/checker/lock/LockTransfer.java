@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -149,6 +150,24 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
       makeLockPossiblyHeld(result, n.getExpression());
     }
 
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, LockStore> visitMethodInvocation(
+      MethodInvocationNode n, TransferInput<CFValue, LockStore> in) {
+    TransferResult<CFValue, LockStore> result = super.visitMethodInvocation(n, in);
+    // The value of the call might come from the store before the call.  A @LockHeld fact in it
+    // might be stale, because a call that is not side-effect-free might release the lock that it
+    // returns.  LockStore.updateForMethodCall removes such a fact from the store.
+    CFValue resultValue = result.getResultValue();
+    // Unlike getRegularStore(), getThenStore() neither copies nor merges a store.
+    LockStore store = result.getThenStore();
+    if (resultValue != null
+        && !atypeFactory.isSideEffectFree(n.getTarget().getMethod())
+        && store.hasLockHeld(resultValue)) {
+      result.setResultValue(store.changeLockAnnoToTop(resultValue));
+    }
     return result;
   }
 }

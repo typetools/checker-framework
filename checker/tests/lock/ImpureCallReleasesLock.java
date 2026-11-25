@@ -15,18 +15,25 @@ public class ImpureCallReleasesLock {
   @MayReleaseLocks
   static ReentrantLock getLockMayRelease() {
     counter++;
+    LOCK.unlock();
     return LOCK;
   }
 
-  @Holding("ImpureCallReleasesLock.getLockMayRelease()")
-  static void requiresLock() {}
+  @Holding("#1")
+  static void requiresArg(ReentrantLock l) {}
 
   @MayReleaseLocks
-  void callResult() {
+  void viaLocal() {
     getLockMayRelease().lock();
-    requiresLock();
-    getLockMayRelease();
+    ReentrantLock l = getLockMayRelease();
     // :: error: [contracts.precondition]
-    requiresLock();
+    requiresArg(l);
+  }
+
+  @MayReleaseLocks
+  void viaArgument() {
+    getLockMayRelease().lock();
+    // :: error: [contracts.precondition]
+    requiresArg(getLockMayRelease());
   }
 }
