@@ -119,9 +119,12 @@ library and no stub file annotates it --- then neither a lambda's body nor
 a method reference is checked against it.  If a functional interface
 inherits its functional method from several superinterfaces, as
 \<interface C extends A, B> inherits \<run> from both \<A> and \<B>, then
-a call through any of those methods can run a method reference of type
-\<C>, so the referenced method must be annotated at least as pure as each
-of them.
+a call through any of those methods can run a lambda or a method reference
+of type \<C>.  Therefore, the lambda's body must be at least as pure as
+each of those methods, and the referenced method must be annotated at least
+as pure as each of them.  Likewise, if a lambda or a method reference is
+cast to an intersection type, as in \<(A \& B) Util::m>, then a call through
+a method of any bound can run it.
 
 The errors shown in this section are reported only when purity annotations
 are checked:  by the Purity Checker, or by another checker when you pass

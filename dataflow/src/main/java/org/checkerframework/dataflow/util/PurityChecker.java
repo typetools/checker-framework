@@ -32,6 +32,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
@@ -426,7 +427,10 @@ public final class PurityChecker {
    * receiver type supplies. Every argument has that type, so its implementation of {@code
    * parameterFunction} has the purity that the type's implementation promises. A call checks its
    * arguments against {@code declaration}'s purity annotation only if the declared type of the
-   * parameter is a functional interface, however.
+   * parameter is a functional interface, however. The call checks the argument's implementation of
+   * that type's functional method, which is also its implementation of {@code parameterFunction} if
+   * the two methods are override-equivalent in {@code parameterType}, even if they are not in the
+   * declared type.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method that a call might invoke
@@ -445,21 +449,20 @@ public final class PurityChecker {
       ExecutableElement parameterFunction,
       ProcessingEnvironment env) {
     EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
-    ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
-    if (declarationFunction != null
-        && isSameImplementation(
-            declarationFunction,
-            parameterFunction,
-            declaration.getParameters().get(index).asType(),
-            env)) {
-      result.addAll(functionalParameterKinds(annoProvider, declaration, env));
-      result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
-      PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
-    }
     if (parameterType.getKind() == TypeKind.WILDCARD) {
       TypeMirror extendsBound = ((WildcardType) parameterType).getExtendsBound();
       parameterType =
           extendsBound != null ? extendsBound : declaration.getParameters().get(index).asType();
+    }
+    // The call checks the argument's implementation of the functional method of the parameter's
+    // declared type.  Every argument has type `parameterType`, so compare the two methods there:
+    // they can share an implementation in `parameterType` even if they do not in the declared type.
+    ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
+    if (declarationFunction != null
+        && isSameImplementation(declarationFunction, parameterFunction, parameterType, env)) {
+      result.addAll(functionalParameterKinds(annoProvider, declaration, env));
+      result.addAll(PurityUtils.getPurityKinds(annoProvider, declarationFunction));
+      PurityUtils.addDeterminismOfVoidCall(result, declarationFunction.getReturnType());
     }
     ExecutableElement implementation = implementationOf(parameterType, parameterFunction, env);
     if (implementation != null) {
@@ -596,9 +599,12 @@ public final class PurityChecker {
    * override-equivalent as members of {@code type} (JLS 8.4.2), as {@code A.get} and {@code B.get}
    * are in {@code interface Both extends A, B}, though neither overrides the other.
    *
-   * @param function the functional method of {@code type}
+   * <p>If {@code type} is an intersection type, or a type variable whose upper bound is one, the
+   * methods can come from different bounds, as {@code A.get} and {@code B.get} in {@code A & B}.
+   *
+   * @param function a method of {@code type}, such as its functional method
    * @param other another method
-   * @param type a functional interface type, or a type variable whose upper bound is one
+   * @param type the type of the argument to a functional-interface parameter
    * @param env the processing environment
    * @return true if every object of type {@code type} implements {@code function} and {@code other}
    *     with the same method
@@ -611,27 +617,51 @@ public final class PurityChecker {
     if (isSameOrOverrides(other, function, env) || isSameOrOverrides(function, other, env)) {
       return true;
     }
-    if (!function.getSimpleName().equals(other.getSimpleName())) {
+    if (!function.getSimpleName().contentEquals(other.getSimpleName())) {
       return false;
     }
     if (type.getKind() == TypeKind.TYPEVAR) {
       type = TypesUtils.upperBound(type);
     }
-    if (type.getKind() != TypeKind.DECLARED) {
+    List<? extends TypeMirror> bounds;
+    if (type.getKind() == TypeKind.DECLARED) {
+      bounds = Collections.singletonList(type);
+    } else if (type.getKind() == TypeKind.INTERSECTION) {
+      // An object of an intersection type has every bound's methods, as members of one type.
+      bounds = ((IntersectionType) type).getBounds();
+    } else {
       return false;
     }
-    DeclaredType declaredType = (DeclaredType) type;
     Types types = env.getTypeUtils();
-    TypeMirror erasedType = types.erasure(declaredType);
-    if (!types.isSubtype(erasedType, types.erasure(function.getEnclosingElement().asType()))
-        || !types.isSubtype(erasedType, types.erasure(other.getEnclosingElement().asType()))) {
+    ExecutableType functionType = memberType(bounds, function, types);
+    ExecutableType otherType = memberType(bounds, other, types);
+    if (functionType == null || otherType == null) {
       // One of the methods is not a member of `type`.
       return false;
     }
-    ExecutableType functionType = (ExecutableType) types.asMemberOf(declaredType, function);
-    ExecutableType otherType = (ExecutableType) types.asMemberOf(declaredType, other);
     return types.isSubsignature(functionType, otherType)
         || types.isSubsignature(otherType, functionType);
+  }
+
+  /**
+   * Returns the type of {@code method} as a member of the first of {@code bounds} that has it as a
+   * member, or null if none does.
+   *
+   * @param bounds the bounds of an intersection type, or a singleton list of a type
+   * @param method a method
+   * @param types the type utilities
+   * @return the type of {@code method} as a member of one of {@code bounds}, or null
+   */
+  private static @Nullable ExecutableType memberType(
+      List<? extends TypeMirror> bounds, ExecutableElement method, Types types) {
+    TypeMirror erasedOwner = types.erasure(method.getEnclosingElement().asType());
+    for (TypeMirror bound : bounds) {
+      if (bound.getKind() == TypeKind.DECLARED
+          && types.isSubtype(types.erasure(bound), erasedOwner)) {
+        return (ExecutableType) types.asMemberOf((DeclaredType) bound, method);
+      }
+    }
+    return null;
   }
 
   /**
@@ -937,7 +967,8 @@ public final class PurityChecker {
      * <p>The body's effects occur where the lambda's functional method is invoked, and that
      * invocation is checked like any other method call. Therefore, do not scan the body. The body
      * is checked elsewhere, against the purity annotations on the functional method that the lambda
-     * implements; see {@code BaseTypeVisitor#checkLambdaPurity}.
+     * implements and on the other methods through which a call can run the lambda; see {@code
+     * BaseTypeVisitor#checkLambdaPurity}.
      *
      * @param tree a lambda expression
      * @param ignore an unused parameter

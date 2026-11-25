@@ -275,6 +275,44 @@ public class PurityFunctionalMethodRef {
     // A call through BothGetterCaller.call checks the argument's implementation of BothGetter's
     // functional method, which is also its implementation of ObjectGetter.get.
     BothGetterCaller a = PurityFunctionalMethodRef::callObjectGetter;
+    // A call through GenericCaller<BothGetter>.call checks the argument's implementation of
+    // StringGetter.get, which in a BothGetter is also its implementation of ObjectGetter.get.
+    GenericCaller<BothGetter> b = PurityFunctionalMethodRef::callObjectGetter;
+    // Likewise for an argument whose type is an intersection of the two getters.
+    IntersectionCaller c = PurityFunctionalMethodRef::callObjectGetter;
+    // A call through OverloadCaller.call checks nothing, because its parameter's type has two
+    // different `get` methods and so is not a functional interface.
+    // :: error: [purity.methodref.functional.parameter]
+    OverloadCaller d = PurityFunctionalMethodRef::callObjectGetter;
+  }
+
+  @FunctionalInterface
+  interface GenericCaller<T extends StringGetter> {
+    @SideEffectFree
+    boolean call(T g);
+  }
+
+  @FunctionalInterface
+  interface IntersectionCaller {
+    @SideEffectFree
+    <T extends ObjectGetter & StringGetter> boolean call(T g);
+  }
+
+  /** Declares a {@code get} method that overloads {@code ObjectGetter.get}. */
+  @FunctionalInterface
+  interface ArgGetter {
+    Object get(String s);
+  }
+
+  @FunctionalInterface
+  interface OverloadCaller {
+    @SideEffectFree
+    <T extends ObjectGetter & ArgGetter> boolean call(T g);
+  }
+
+  @FunctionalInterface
+  interface UnannotatedGenericApplier<F> {
+    int apply(F f, String s);
   }
 
   void intersectionCast() {
@@ -284,6 +322,12 @@ public class PurityFunctionalMethodRef {
     Object b = (Applier & UnannotatedApplier) PurityFunctionalMethodRef::applyStatic;
     // :: error: [purity.methodref.functional.parameter]
     Object c = (UnannotatedApplier & Applier) PurityFunctionalMethodRef::applyStatic;
+    // A call through UnannotatedGenericApplier.apply can run the reference.  The methodref.param
+    // error is because the FlowTestChecker's lower bound of the wildcard is @Bottom.
+    Object d =
+        (UnannotatedGenericApplier<? super Function<String, Integer>> & java.io.Serializable)
+            // :: error: [methodref.param] :: error: [purity.methodref.functional.parameter]
+            PurityFunctionalMethodRef::applyStatic;
   }
 
   /**
