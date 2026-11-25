@@ -2141,6 +2141,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports errors found during purity checking.
    *
+   * <p>This calls {@link #reportPurityErrors(PurityResult, EnumSet, Map)}, which is also called
+   * directly for a lambda. A subclass that customizes purity diagnostics should override that
+   * method, so that the customization applies to lambdas too.
+   *
    * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the method
    */
@@ -2157,7 +2161,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param requirements methods whose purity annotations require {@code expectedKinds}, each with
    *     its purity kinds, or an empty map to name no method; used for diagnostics
    */
-  private void reportPurityErrors(
+  protected void reportPurityErrors(
       PurityResult result,
       EnumSet<PurityKind> expectedKinds,
       Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
@@ -3269,7 +3273,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>If any of the methods is {@code @SideEffectFree} or {@code @Pure}, the lambda is not checked
    * here: {@link #checkLambdaPurity} requires the body to be side-effect-free, which satisfies
-   * every {@code @SideEffectsOnly} annotation.
+   * every {@code @SideEffectsOnly} annotation. Under {@code -Ainfer}, {@link #checkLambdaPurity}
+   * reports no error, so the lambda is checked here regardless.
    *
    * @param tree a lambda expression
    */
@@ -3279,9 +3284,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ExecutableElement functionalMethod = atypeFactory.getFunctionTypeFromTree(tree).getElement();
     List<ExecutableElement> methods = methodsThatRun(tree, functionalMethod);
-    for (ExecutableElement method : methods) {
-      if (getPureOrSideEffectFreeAnnotation(method) != null) {
-        return;
+    if (!infer) {
+      for (ExecutableElement method : methods) {
+        if (getPureOrSideEffectFreeAnnotation(method) != null) {
+          return;
+        }
       }
     }
     TreePath body = atypeFactory.getPath(tree.getBody());
@@ -3558,9 +3565,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     DeclaredType interfaceType = (DeclaredType) functionalInterface.asType();
     ExecutableType functionalMethodType =
         (ExecutableType) types.asMemberOf(interfaceType, functionalMethod);
-    Set<TypeElement> visited = new HashSet<>();
     for (TypeElement supertype : ElementUtils.getAllSupertypes(functionalInterface, env)) {
-      visited.add(supertype);
       if (TypesUtils.isObject(supertype.asType())) {
         continue;
       }
@@ -3580,6 +3585,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // functional method.
       ExecutableType targetMethodType =
           (ExecutableType) types.asMemberOf(targetType, functionalMethod);
+      // A supertype that the loop above visited is visited again, because a method that does not
+      // match as a member of `interfaceType` can match as a member of a bound, whose type
+      // arguments are the cast's.
+      Set<TypeElement> visited = new HashSet<>();
       for (DeclaredType bound : castBounds) {
         for (TypeElement supertype :
             ElementUtils.getAllSupertypes((TypeElement) bound.asElement(), env)) {
@@ -3588,7 +3597,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
           for (ExecutableElement method :
               ElementFilter.methodsIn(supertype.getEnclosedElements())) {
-            if (isOverrideEquivalent(method, bound, functionalMethod, targetMethodType)) {
+            if (!result.contains(method)
+                && isOverrideEquivalent(method, bound, functionalMethod, targetMethodType)) {
               result.add(method);
             }
           }
@@ -3629,13 +3639,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * If the given lambda or method reference is cast to an intersection type, returns the bounds of
    * that type that are class or interface types. Otherwise, returns an empty list.
    *
-   * <p>Each bound is replaced by its non-wildcard parameterization (JLS 9.9), as javac does when it
-   * determines which methods the lambda or method reference implements. For example, the bound
-   * {@code Open<? super Callback>} becomes {@code Open<Callback>}.
+   * <p>Each bound is the one that javac attributes to {@code tree}, not the one written in the
+   * cast. javac instantiates each bound with the parameter types of an explicitly typed lambda
+   * (JLS 18.5.3) and replaces it by its non-wildcard parameterization (JLS 9.9). For example, the
+   * bound {@code Open<? super Callback>} becomes {@code Open<Callback>}, or {@code Open<Object>} if
+   * the lambda's parameter is declared as {@code Object}.
    *
    * @param tree a lambda or a method reference
-   * @return the non-wildcard parameterizations of the bounds of the intersection type that {@code
-   *     tree} is cast to, or an empty list
+   * @return the bounds, as javac attributes them, of the intersection type that {@code tree} is
+   *     cast to, or an empty list
    */
   private List<DeclaredType> intersectionCastBounds(Tree tree) {
     TreePath path = atypeFactory.getPath(tree);
@@ -3645,15 +3657,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     if (parent == null
         || !(parent.getLeaf() instanceof TypeCastTree cast)
-        || !(TreeUtils.typeOf(cast.getType()) instanceof IntersectionType intersection)) {
+        || !(TreeUtils.typeOf(cast.getType()) instanceof IntersectionType)
+        // javac's type for `tree` is the intersection type, with each bound instantiated.
+        || !(TreeUtils.typeOf(tree) instanceof IntersectionType intersection)) {
       return Collections.emptyList();
     }
     List<DeclaredType> result = new ArrayList<>();
     for (TypeMirror bound : intersection.getBounds()) {
       if (bound.getKind() == TypeKind.DECLARED) {
-        result.add(
-            TypesUtils.nonWildcardParameterization(
-                (DeclaredType) bound, atypeFactory.getProcessingEnv()));
+        result.add((DeclaredType) bound);
       }
     }
     return result;

@@ -503,26 +503,34 @@ public class OverrideChecker {
       // static.
       return;
     }
+    // The overrider is not a method reference, so it is a method declaration.
+    MethodTree overriderMethodTree = (MethodTree) overriderTree;
 
     ContractsFromMethod contractsUtils = visitor.atypeFactory.getContractsFromMethod();
 
     // Check preconditions
     Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
     Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
-    Set<LocalizedContract> superPre2 = parseAndLocalizeContracts(superPre, overridden);
-    Set<LocalizedContract> subPre2 = parseAndLocalizeContracts(subPre, overrider);
+    Set<LocalizedContract> superPre2 =
+        parseAndLocalizeContracts(superPre, overridden, overriderMethodTree);
+    Set<LocalizedContract> subPre2 =
+        parseAndLocalizeContracts(subPre, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String premsg = "contracts.precondition." + msgKey;
-    checkContractsSubset(overriderType, overriddenType, subPre2, superPre2, premsg);
+    checkContractsSubset(
+        overriderMethodTree, overriderType, overriddenType, subPre2, superPre2, premsg);
 
     // Check postconditions
     Set<Postcondition> superPost = contractsUtils.getPostconditions(overridden.getElement());
     Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement());
-    Set<LocalizedContract> superPost2 = parseAndLocalizeContracts(superPost, overridden);
-    Set<LocalizedContract> subPost2 = parseAndLocalizeContracts(subPost, overrider);
+    Set<LocalizedContract> superPost2 =
+        parseAndLocalizeContracts(superPost, overridden, overriderMethodTree);
+    Set<LocalizedContract> subPost2 =
+        parseAndLocalizeContracts(subPost, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String postmsg = "contracts.postcondition." + msgKey;
-    checkContractsSubset(overriderType, overriddenType, superPost2, subPost2, postmsg);
+    checkContractsSubset(
+        overriderMethodTree, overriderType, overriddenType, superPost2, subPost2, postmsg);
 
     // Check conditional postconditions
     Set<ConditionalPostcondition> superCPost =
@@ -532,23 +540,36 @@ public class OverrideChecker {
     // consider only 'true' postconditions
     Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
     Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
-    Set<LocalizedContract> superCPostTrue2 = parseAndLocalizeContracts(superCPostTrue, overridden);
-    Set<LocalizedContract> subCPostTrue2 = parseAndLocalizeContracts(subCPostTrue, overrider);
+    Set<LocalizedContract> superCPostTrue2 =
+        parseAndLocalizeContracts(superCPostTrue, overridden, overriderMethodTree);
+    Set<LocalizedContract> subCPostTrue2 =
+        parseAndLocalizeContracts(subCPostTrue, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String posttruemsg = "contracts.conditional.postcondition.true." + msgKey;
     checkContractsSubset(
-        overriderType, overriddenType, superCPostTrue2, subCPostTrue2, posttruemsg);
+        overriderMethodTree,
+        overriderType,
+        overriddenType,
+        superCPostTrue2,
+        subCPostTrue2,
+        posttruemsg);
 
     // consider only 'false' postconditions
     Set<Postcondition> superCPostFalse = filterConditionalPostconditions(superCPost, false);
     Set<Postcondition> subCPostFalse = filterConditionalPostconditions(subCPost, false);
     Set<LocalizedContract> superCPostFalse2 =
-        parseAndLocalizeContracts(superCPostFalse, overridden);
-    Set<LocalizedContract> subCPostFalse2 = parseAndLocalizeContracts(subCPostFalse, overrider);
+        parseAndLocalizeContracts(superCPostFalse, overridden, overriderMethodTree);
+    Set<LocalizedContract> subCPostFalse2 =
+        parseAndLocalizeContracts(subCPostFalse, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String postfalsemsg = "contracts.conditional.postcondition.false." + msgKey;
     checkContractsSubset(
-        overriderType, overriddenType, superCPostFalse2, subCPostFalse2, postfalsemsg);
+        overriderMethodTree,
+        overriderType,
+        overriddenType,
+        superCPostFalse2,
+        subCPostFalse2,
+        postfalsemsg);
   }
 
   /**
@@ -570,7 +591,7 @@ public class OverrideChecker {
         MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree);
     // These act like a traditional override
     if (methodRefKind == MemberReferenceKind.UNBOUND) {
-      AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
+      AnnotatedTypeMirror overriderReceiver = receiverType(overrider);
       AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
       boolean success = visitor.typeHierarchy.isSubtype(overriddenReceiver, overriderReceiver);
       if (!success) {
@@ -594,14 +615,13 @@ public class OverrideChecker {
       case UNBOUND:
         throw new BugInCF("Case UNBOUND should already be handled.");
       case SUPER:
-        receiverDecl = overrider.getReceiverType();
+        receiverDecl = receiverType(overrider);
         receiverArg = visitor.atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
 
-        AnnotatedTypeMirror selfType = visitor.atypeFactory.getSelfType(memberTree);
-        receiverArg.replaceAnnotations(selfType.getPrimaryAnnotations());
+        receiverArg.replaceAnnotations(selfType(memberTree).getPrimaryAnnotations());
         break;
       case BOUND:
-        receiverDecl = overrider.getReceiverType();
+        receiverDecl = receiverType(overrider);
         receiverArg = overriderType;
         break;
       case IMPLICIT_INNER:
@@ -614,13 +634,20 @@ public class OverrideChecker {
         // So a member reference can only refer to an inner class constructor if a type
         // that encloses the inner class can be found. So either "this" is that
         // enclosing type or "this" has an enclosing type that is that type.
-        receiverDecl = overrider.getReceiverType();
-        receiverArg = visitor.atypeFactory.getSelfType(memberTree);
+        receiverDecl = receiverType(overrider);
+        AnnotatedDeclaredType enclosingInstance = selfType(memberTree);
         while (!TypesUtils.isErasedSubtype(
-            receiverArg.getUnderlyingType(), receiverDecl.getUnderlyingType(), types)) {
-          receiverArg = ((AnnotatedDeclaredType) receiverArg).getEnclosingType();
+            enclosingInstance.getUnderlyingType(), receiverDecl.getUnderlyingType(), types)) {
+          AnnotatedDeclaredType enclosingType = enclosingInstance.getEnclosingType();
+          if (enclosingType == null) {
+            // javac rejects the method reference if no enclosing instance can be found.
+            throw new BugInCF(
+                "No type that encloses %s is a subtype of %s, for %s",
+                selfType(memberTree), receiverDecl, memberTree);
+          }
+          enclosingInstance = enclosingType;
         }
-
+        receiverArg = enclosingInstance;
         break;
       case TOPLEVEL:
       case STATIC:
@@ -647,13 +674,43 @@ public class OverrideChecker {
   }
 
   /**
+   * Returns the receiver type of the given method, which must have one.
+   *
+   * @param method the type of an instance method or of an inner class constructor
+   * @return the receiver type of {@code method}
+   */
+  private static AnnotatedDeclaredType receiverType(AnnotatedExecutableType method) {
+    AnnotatedDeclaredType result = method.getReceiverType();
+    if (result == null) {
+      throw new BugInCF("%s has no receiver type", method);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the type of {@code this} at the given method reference, which must be in a context
+   * that has a {@code this}.
+   *
+   * @param memberTree a method reference whose kind is {@code SUPER} or {@code IMPLICIT_INNER}
+   * @return the type of {@code this} at {@code memberTree}
+   */
+  private AnnotatedDeclaredType selfType(MemberReferenceTree memberTree) {
+    AnnotatedDeclaredType result = visitor.atypeFactory.getSelfType(memberTree);
+    if (result == null) {
+      throw new BugInCF("No type for this at %s", memberTree);
+    }
+    return result;
+  }
+
+  /**
    * Issues an "override.receiver" error if the receiver override is not valid.
    *
    * @return true if the override is legal
    */
   protected boolean checkReceiverOverride() {
-    AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-    AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
+    // An overriding method and the method that it overrides are instance methods.
+    AnnotatedDeclaredType overriderReceiver = receiverType(overrider);
+    AnnotatedDeclaredType overriddenReceiver = receiverType(overridden);
     // Check the receiver type.
     // Just check primary annotations rather than using `isSubtype()`.  `isSubtype()` requires its
     // arguments to be actual subtypes with respect to the JLS, but an overrider receiver is not a
@@ -844,6 +901,20 @@ public class OverrideChecker {
     return result;
   }
 
+  /**
+   * Issues an error message or log message about checking an overriding parameter type: an error
+   * if the check failed, and a log message if {@code -Ashowchecks} was passed.
+   *
+   * @param success true if the overridden method's parameter type at {@code index} is a subtype of
+   *     the overriding method's parameter type at {@code index}
+   * @param index the index of the parameter that was checked
+   * @param overriderParams the parameter types of the overriding method; for a method reference
+   *     whose referenced method has varargs, they are expanded to correspond to {@code
+   *     overriddenParams}
+   * @param overriddenParams the parameter types of the overridden method; for an unbound method
+   *     reference, they omit the first parameter, which corresponds to the receiver of the
+   *     referenced method
+   */
   private void checkParametersMsg(
       boolean success,
       int index,
@@ -987,9 +1058,7 @@ public class OverrideChecker {
    * expression in {@code mustSubset} there must be the same expression in {@code set}, with the
    * same (or a stronger) annotation.
    *
-   * <p>This uses field {@link BaseTypeVisitor#methodTree} to determine where to issue an error
-   * message.
-   *
+   * @param overriderMethodTree the declaration of the overriding method, where an error is issued
    * @param overriderType the subtype
    * @param overriddenType the supertype
    * @param mustSubset annotations that should be weaker
@@ -997,6 +1066,7 @@ public class OverrideChecker {
    * @param messageKey message key for error messages
    */
   private void checkContractsSubset(
+      MethodTree overriderMethodTree,
       AnnotatedTypeMirror overriderType,
       AnnotatedDeclaredType overriddenType,
       Set<LocalizedContract> mustSubset,
@@ -1050,10 +1120,10 @@ public class OverrideChecker {
         }
 
         visitor.checker.reportError(
-            visitor.methodTree,
+            overriderMethodTree,
             messageKey,
             jexpr,
-            visitor.methodTree.getName(),
+            overriderMethodTree.getName(),
             overriddenTypeString,
             overriddenAnno,
             overriderTypeString,
@@ -1063,8 +1133,7 @@ public class OverrideChecker {
   }
 
   /**
-   * Localizes some contracts -- that is, viewpoint-adapts them to some method body, according to
-   * the value of {@link BaseTypeVisitor#methodTree}.
+   * Localizes some contracts -- that is, viewpoint-adapts them to the given method body.
    *
    * <p>The input is a set of {@link Contract}s, each of which contains an expression string and an
    * annotation. In a {@link Contract}, Java expressions are exactly as written in source code, not
@@ -1072,23 +1141,23 @@ public class OverrideChecker {
    *
    * <p>The output is a set of {@link LocalizedContract}s, each of which pairs a {@link
    * JavaExpression} (parsed expression string) with a standardized annotation (with respect to the
-   * path of {@link BaseTypeVisitor#methodTree}). This method discards any contract whose expression
-   * cannot be parsed into a JavaExpression.
+   * path of {@code methodTree}). This method discards any contract whose expression cannot be
+   * parsed into a JavaExpression.
    *
    * @param contractSet a set of contracts
    * @param methodType the type of the method that the contracts are for
+   * @param methodTree the method declaration where the contracts are used, which might or might
+   *     not be where they are defined. For example, {@code methodTree} might be an overriding
+   *     declaration, and the contracts might be those of the method that it overrides.
    * @return localized contracts
    */
   private Set<LocalizedContract> parseAndLocalizeContracts(
-      Set<? extends Contract> contractSet, AnnotatedExecutableType methodType) {
+      Set<? extends Contract> contractSet,
+      AnnotatedExecutableType methodType,
+      MethodTree methodTree) {
     if (contractSet.isEmpty()) {
       return Collections.emptySet();
     }
-
-    // This is the path to a place where the contract is being used, which might or might not be
-    // where the contract was defined.  For example, methodTree might be an overriding
-    // definition, and the contract might be for a superclass.
-    MethodTree methodTree = visitor.methodTree;
 
     StringToJavaExpression stringToJavaExpr =
         expression -> {
