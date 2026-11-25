@@ -1357,6 +1357,39 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand of the member types of a type makes available a protected member type that
+   * the type inherits from a supertype in another package, if the import is in the package of the
+   * protected member type.
+   */
+  @Test
+  public void testOnDemandImportOfProtectedMemberTypeInheritedFromImportPackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Sub.*;",
+            "class Use {",
+            "  void m(N x) {}",
+            "}",
+            "public class Base {",
+            "  protected static class N {}",
+            "}",
+            "package q;",
+            "public class Sub extends p.Base {}");
+    assertMethod(jaif, "Use", "m(Lp/Base$N;)V");
+
+    // `javax.swing.JComponent` inherits the protected member type `FlipBufferStrategy` from
+    // `java.awt.Component`.
+    jaif =
+        convert(
+            "package java.awt;",
+            "import javax.swing.JComponent.*;",
+            "class Use {",
+            "  void m(FlipBufferStrategy x) {}",
+            "}");
+    assertMethod(jaif, "Use", "m(Ljava/awt/Component$FlipBufferStrategy;)V");
+  }
+
+  /**
    * A member type that a classpath type declares is inherited even if the stub file declares the
    * type and omits the member type.
    */
