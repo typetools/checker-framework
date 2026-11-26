@@ -30,6 +30,7 @@ import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.basetype.OverrideChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -99,7 +100,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     protected boolean checkReceiverOverride() {
       // We cannot reuse the inherited method because it directly issues the failure, but we
       // want a more permissive check.  So this is copied down and modified from
-      // BaseTypeVisitor.OverrideChecker.checkReceiverOverride.
+      // OverrideChecker.checkReceiverOverride.
       // isSubtype() requires its arguments to be actual subtypes with
       // respect to JLS, but the overrider receiver is not a subtype of the
       // overridden receiver.  Hence copying the annotations.
@@ -170,6 +171,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         AnnotatedDeclaredType overriddenType,
         AnnotatedTypeMirror overriddenReturnType) {
       super(
+          GuiEffectVisitor.this,
           overriderTree,
           overrider,
           overridingType,
