@@ -427,4 +427,119 @@ public class PurityFunctionalMethodRef {
     // :: error: [purity.methodref.functional.parameter]
     ImpureFixedApplier b = PurityFunctionalMethodRef::applyStatic;
   }
+
+  @FunctionalInterface
+  interface GenericConsumer<T> {
+    void accept(T t);
+  }
+
+  @FunctionalInterface
+  interface StringConsumer {
+    void accept(String s);
+  }
+
+  /**
+   * As a member of {@code Split<String>}, {@code GenericConsumer.accept} has the same signature as
+   * {@code StringConsumer.accept}, but {@code Split} implements them with different methods.
+   */
+  static class Split<X> implements GenericConsumer<X>, StringConsumer {
+    @Override
+    @SideEffectFree
+    public void accept(X x) {}
+
+    @Override
+    public void accept(String s) {}
+  }
+
+  /** Like {@link Split}, but not generic, so it implements both methods with one method. */
+  static class Joined implements GenericConsumer<String>, StringConsumer {
+    @Override
+    public void accept(String s) {}
+  }
+
+  @SideEffectFree
+  static void callStringConsumer(StringConsumer c) {
+    c.accept("");
+  }
+
+  @FunctionalInterface
+  interface GenericConsumerCaller<T extends GenericConsumer<String>> {
+    @SideEffectFree
+    void call(T t);
+  }
+
+  void splitImplementations() {
+    // A call through GenericConsumerCaller checks the argument's implementation of
+    // GenericConsumer.accept, but callStringConsumer runs Split.accept(String).
+    // :: error: [purity.methodref.functional.parameter]
+    GenericConsumerCaller<Split<String>> a = PurityFunctionalMethodRef::callStringConsumer;
+    // Every Joined implements both methods with the method that the call checks.
+    GenericConsumerCaller<Joined> b = PurityFunctionalMethodRef::callStringConsumer;
+  }
+
+  @FunctionalInterface
+  interface SefObjectGetter {
+    @SideEffectFree
+    Object get();
+  }
+
+  /**
+   * Every implementation of {@code ObjectGetter.get} also implements {@code SefObjectGetter.get}.
+   */
+  @FunctionalInterface
+  interface PlainFirstGetter extends ObjectGetter, SefObjectGetter {}
+
+  /** Like {@link PlainFirstGetter}, but with its superinterfaces in the other order. */
+  @FunctionalInterface
+  interface SefFirstGetter extends SefObjectGetter, ObjectGetter {}
+
+  @FunctionalInterface
+  interface PlainFirstGetterCaller {
+    boolean call(PlainFirstGetter g);
+  }
+
+  @FunctionalInterface
+  interface SefFirstGetterCaller {
+    boolean call(SefFirstGetter g);
+  }
+
+  void siblingPurity(PlainFirstGetter p, SefFirstGetter s) {
+    // A call checks nothing about its argument, but the argument's implementation of
+    // ObjectGetter.get also implements SefObjectGetter.get, so it is side-effect-free.
+    PlainFirstGetterCaller a = PurityFunctionalMethodRef::callObjectGetter;
+    SefFirstGetterCaller b = PurityFunctionalMethodRef::callObjectGetter;
+    callObjectGetter(p);
+    callObjectGetter(s);
+  }
+
+  /** Callers must pass a side-effect-free getter. */
+  @SideEffectFree
+  static Object boundReferenceToParameter(ObjectGetter g) {
+    // A call to PlainFirstGetter.get, which can run g.get, must be side-effect-free, and g.get is.
+    PlainFirstGetter a = g::get;
+    PlainFirstGetter b = () -> g.get();
+    return a;
+  }
+
+  @SideEffectFree
+  static Object boundReferenceToReassignedParameter(ObjectGetter g) {
+    g = () -> null;
+    // :: error: [purity.methodref]
+    PlainFirstGetter a = g::get;
+    return a;
+  }
+
+  @SideEffectFree
+  static Object boundReferenceToLocal(ObjectGetter g) {
+    ObjectGetter local = g;
+    // :: error: [purity.methodref]
+    PlainFirstGetter a = local::get;
+    return a;
+  }
+
+  static Object boundReferenceInImpureMethod(ObjectGetter g) {
+    // :: error: [purity.methodref]
+    PlainFirstGetter a = g::get;
+    return a;
+  }
 }

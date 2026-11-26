@@ -1976,14 +1976,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 env));
       }
     } else {
-      ExecutableElement argFunction =
-          PurityChecker.implementationOf(TreeUtils.typeOf(argument), paramFunction, env);
-      if (argFunction == null) {
+      List<ExecutableElement> argFunctions =
+          PurityChecker.implementationsOf(TreeUtils.typeOf(argument), paramFunction, env);
+      if (argFunctions.isEmpty()) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
         return;
       }
-      argKinds = implementationPurityKinds(argFunction);
+      // The code that the argument runs has the purity of every method that it implements.
+      argKinds = EnumSet.noneOf(PurityKind.class);
+      for (ExecutableElement implemented : argFunctions) {
+        argKinds.addAll(implementationPurityKinds(implemented));
+      }
+      ExecutableElement argFunction = argFunctions.get(0);
       // If the argument is a functional-interface parameter of the enclosing method, the caller
       // of that method was required to check the code that argFunction runs.
       argKinds.addAll(
@@ -2014,12 +2019,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * code, and no use of {@code parameter} in that body relies on the assumption: the body uses
    * {@code parameter} only as an operand of a binary operator such as {@code ==}, as the
    * destination or the value of an assignment, as the value of a variable initializer or of a
-   * return statement, or as the receiver of a call to a method other than {@code
-   * parameterFunction} and its overrides, such as {@code hashCode}. The call runs {@code method}'s
-   * own body if {@code method} cannot be overridden, or if the call is through a {@code super}
-   * method reference such as {@code super::m}, which is not dispatched dynamically (JLS 15.13.3).
-   * Otherwise the result is true, because the body of an override that the checker does not see
-   * might rely on the assumption.
+   * return statement, or as the receiver of a call to a method other than {@code parameterFunction}
+   * and its overrides, such as {@code hashCode}. The call runs {@code method}'s own body if {@code
+   * method} cannot be overridden, or if the call is through a {@code super} method reference such
+   * as {@code super::m}, which is not dispatched dynamically (JLS 15.13.3). Otherwise the result is
+   * true, because the body of an override that the checker does not see might rely on the
+   * assumption.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
@@ -3727,7 +3732,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TypeMirror erasedOwner = types.erasure(owner.asType());
     // The type that the functional method is a member of, through which a call runs `tree`.  For an
     // intersection cast, its type arguments are the cast's.  Like each bound of an intersection
-    // cast, it has no wildcard type argument (JLS 9.9), so that the types of its methods' parameters
+    // cast, it has no wildcard type argument (JLS 9.9), so that the types of its methods'
+    // parameters
     // contain no wildcard either.
     DeclaredType targetType = null;
     for (DeclaredType bound : castBounds) {

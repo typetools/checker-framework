@@ -3,6 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -320,20 +321,24 @@ public class OverrideChecker {
     // treated like a lambda whose body calls the referenced method.  Like such a call, a
     // side-effect-free referenced method that returns void is deterministic.
     EnumSet<PurityKind> subPurity = purityKinds(overrider.getElement(), true);
-    // `f::apply`, where `f` is a functional-interface parameter of the enclosing method, denotes
-    // the code that the caller of that method was required to check, as in
-    // `checkFunctionalArgument`.
-    EnumSet<PurityKind> parameterPurity =
-        PurityChecker.functionalParameterCallPurity(
-            visitor.atypeFactory,
-            ((MemberReferenceTree) overriderTree).getQualifierExpression(),
-            overrider.getElement(),
-            TreePathUtil.enclosingMethod(visitor.getCurrentPath()),
-            visitor.atypeFactory.getProcessingEnv());
-    if (parameterPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
-      subPurity.remove(PurityKind.SIDE_EFFECTS_ONLY);
+    // `f::get`, where `f` is a functional-interface parameter of the enclosing method, denotes the
+    // code that the caller of that method was required to check, as in `checkFunctionalArgument`.
+    // The guarantee is empty for any other qualifier, such as a local variable or a reassigned
+    // parameter.
+    TreePath referencePath = visitor.atypeFactory.getPath(overriderTree);
+    if (referencePath != null) {
+      EnumSet<PurityKind> parameterPurity =
+          PurityChecker.functionalParameterCallPurity(
+              visitor.atypeFactory,
+              ((MemberReferenceTree) overriderTree).getQualifierExpression(),
+              overrider.getElement(),
+              TreePathUtil.enclosingMethod(referencePath),
+              visitor.atypeFactory.getProcessingEnv());
+      if (parameterPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        subPurity.remove(PurityKind.SIDE_EFFECTS_ONLY);
+      }
+      subPurity.addAll(parameterPurity);
     }
-    subPurity.addAll(parameterPurity);
 
     List<CallableDeclaration> declarations = methodsThatRunReference();
     // The methods to report, each paired with the purity kinds that it requires and the
