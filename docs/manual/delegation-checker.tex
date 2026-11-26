@@ -67,6 +67,7 @@ The Delegation Checker uses the following declaration annotations:
   the class that declares it:  each implementation of an overriding method
   calls the same method on
   the field.  A class can have at most one \<@Delegate> field.
+\iffalse % Remove this conditional when the Delegation Checker checks @InheritableByDelegator.
 \item[\refqualclass{common/delegation/qual}{InheritableByDelegator}]
   is written on a method.  It indicates that the method's implementation is
   correct for a delegator that inherits it, so a delegator need not
@@ -81,6 +82,7 @@ The Delegation Checker uses the following declaration annotations:
     return size() == 0;
   }
 \end{Verbatim}
+\fi
 \end{description}
 
 
@@ -105,6 +107,7 @@ Checker enforces the following rules.
     refuse to support an operation rather than delegating it.
   \end{itemize}
   Otherwise, the checker issues an \<invalid.delegate> warning.
+\iffalse % Remove this conditional when the Delegation Checker checks @InheritableByDelegator.
 \item
   The class overrides every concrete method that it would otherwise
   inherit from a supertype, except methods that are annotated
@@ -116,11 +119,13 @@ Checker enforces the following rules.
   cannot override (a final or static method), a default method of an
   interface (which cannot read instance fields), or a method of \<Object>
   (which has no fields).
+\fi
 \end{itemize}
 
 A class with no field annotated \<@Delegate> is not a delegator, so the
 Delegation Checker does not apply the above rules to it.
 
+\iffalse % Remove this conditional when the Delegation Checker checks @InheritableByDelegator.
 In every class, the Delegation Checker verifies each method that is
 annotated \<@InheritableByDelegator>:  the method uses its receiver only as
 the receiver of a call to a method that is overridable or that is itself
@@ -130,6 +135,7 @@ pass \<this> as an argument.  Otherwise, the checker issues an
 \<invalid.inheritable.by.delegator> warning.  A package-private method is
 treated as not overridable, because a delegator in a different package
 cannot override it.
+\fi
 
 
 \sectionAndLabel{Example}{delegation-checker-example}
@@ -139,9 +145,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.common.delegation.qual.Delegate;
 
-// Warning: MyMap does not override methods such as containsKey() and put(),
-// whose inherited implementations read IdentityHashMap's fields, which hold
-// MyMap's own state rather than the delegate's.
 public class MyMap<K, V> extends IdentityHashMap<K, V> {
 
   @Delegate private final IdentityHashMap<K, V> map;
