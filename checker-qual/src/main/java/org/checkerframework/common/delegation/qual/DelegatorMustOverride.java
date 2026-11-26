@@ -16,14 +16,12 @@ import java.lang.annotation.Target;
  * precondition, a postcondition, or a conditional postcondition &mdash; would not be satisfied by
  * an inherited implementation, and therefore requires a delegating implementation.
  *
- * <p>Here is a way that this annotation may be used:
- *
- * <p>Given a class that declares a method with a conditional postcondition:
+ * <p>For example, consider a class that declares a method with a conditional postcondition:
  *
  * <pre><code>
  * class Sequence&lt;T&gt; {
  *
- *   private final List&lt;T&gt; elements;
+ *   private final List&lt;T&gt; elements = new ArrayList&lt;&gt;();
  *
  *   {@literal @}DelegatorMustOverride
  *   {@literal @}EnsuresNonNullIf(expression = "peek()", result = true)
@@ -31,6 +29,7 @@ import java.lang.annotation.Target;
  *     return !elements.isEmpty();
  *   }
  *
+ *   {@literal @}Pure
  *   public {@literal @}Nullable T peek() {
  *     return elements.isEmpty() ? null : elements.get(0);
  *   }
@@ -56,6 +55,7 @@ import java.lang.annotation.Target;
  *   }
  *
  *   {@literal @}Override
+ *   {@literal @}Pure
  *   public {@literal @}Nullable T peek() {
  *     return delegate.peek();
  *   }

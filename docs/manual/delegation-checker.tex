@@ -2,8 +2,9 @@
 
 The Delegation Checker verifies that a class that is written as a
 \emph{delegator} really does delegate.  A delegator is a class that
-implements each of its methods by calling the same method on some other
-object, called the \emph{delegate}.  Delegation is an alternative to
+implements each method that overrides a supertype method by calling the
+same method on some other object, called the \emph{delegate}.  Delegation
+is an alternative to
 inheritance:  rather than reusing a superclass's implementation, the
 delegator forwards each call to an object that it wraps.
 
@@ -23,8 +24,9 @@ class MyEnumeration<T> implements Enumeration<T> {
 }
 \end{Verbatim}
 
-Delegation is worth verifying because a delegator inherits more than an
-implementation:  it also inherits the delegate's specification.  For
+Delegation is worth verifying because other reasoning depends on it.  A
+delegator must satisfy the specifications of the supertype methods that it
+overrides, and it does so because the delegate satisfies them.  For
 example, suppose that \<Enumeration.hasMoreElements()> has a conditional
 postcondition.  Then \<MyEnumeration.hasMoreElements()> satisfies that
 postcondition only because its body is exactly a call to
@@ -50,7 +52,7 @@ The Delegation Checker's purpose is to justify reasoning that
 the type-checkers whose specifications the delegator depends on:
 
 \begin{Verbatim}
-javac -processor MapKeyChecker,DelegationChecker MyFile.java
+javac -processor NullnessChecker,DelegationChecker MyFile.java
 \end{Verbatim}
 
 
@@ -61,9 +63,9 @@ The Delegation Checker uses the following declaration annotations:
 \begin{description}
 \item[\refqualclass{common/delegation/qual}{Delegate}]
   is written on a field.  It indicates that the field is the delegate of
-  the class that declares it:  the enclosing class's methods are
-  implemented by calling the same method on the field.  A class may have at
-  most one \<@Delegate> field.
+  the class that declares it:  each method of the enclosing class that
+  overrides a supertype method is implemented by calling the same method on
+  the field.  A class can have at most one \<@Delegate> field.
 \iffalse % Remove this conditional when the Delegation Checker checks @DelegatorMustOverride.
 \item[\refqualclass{common/delegation/qual}{DelegatorMustOverride}]
   is written on a method \<m> of a class \<C>.  It indicates that any
@@ -92,7 +94,7 @@ Checker enforces the following rules.
     a call to the same method on the delegate field, passing the
     overriding method's formal parameters, in order, as the arguments; or
   \item
-    \<throw new UnsupportedOperationException(...)>.  A delegator may
+    \<throw new UnsupportedOperationException(...)>.  A delegator can
     refuse to support an operation rather than delegating it.
   \end{itemize}
   Otherwise, the checker issues an \<invalid.delegate> warning.
@@ -150,7 +152,7 @@ public class MyMap<K, V> extends IdentityHashMap<K, V> {
 
   @Override
   public void putAll(Map<? extends K, ? extends V> m) {
-    // OK: a delegator may refuse to support an operation
+    // OK: a delegator can refuse to support an operation
     throw new UnsupportedOperationException();
   }
 }
@@ -159,5 +161,5 @@ public class MyMap<K, V> extends IdentityHashMap<K, V> {
 
 % LocalWords:  delegator delegators MyEnumeration hasMoreElements nextElement
 % LocalWords:  DelegatorMustOverride IdentityHashMap MyMap
-% LocalWords:  UnsupportedOperationException putAll MapKeyChecker
-% LocalWords:  DelegationChecker overridable mustoverride
+% LocalWords:  UnsupportedOperationException putAll NullnessChecker
+% LocalWords:  DelegationChecker
