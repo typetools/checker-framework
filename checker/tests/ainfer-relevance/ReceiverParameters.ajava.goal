@@ -1,0 +1,49 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// This class is relevant because it is a subtype of CharSequence, so whole-program inference can
+// infer a qualifier for a receiver.  Inference adds a receiver parameter to each method whose
+// receiver type it infers.  The goal file shows that an ajava file contains:
+//  * no receiver parameter that inference added and that has no annotations, as for `length`;
+//  * every receiver parameter that is written in the source code, even one that has no
+//    annotations, as for `writtenReceiver`; and
+//  * every receiver parameter that inference added and that has an annotation, as for
+//    `inferredReceiver`.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class ReceiverParameters implements CharSequence {
+
+    @org.checkerframework.dataflow.qual.Pure
+    public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length() {
+        return 0;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public char charAt(int index) {
+        return 'a';
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public CharSequence subSequence(int start, int end) {
+        return this;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void writtenReceiver(ReceiverParameters this) {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void inferredReceiver(@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 ReceiverParameters this) {
+        // :: warning: [assignment]
+        ReceiverParameters r = this;
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void client(ReceiverParameters r) {
+        r.writtenReceiver();
+        getSibling1().inferredReceiver();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static ReceiverParameters getSibling1() {
+        return (ReceiverParameters) new ReceiverParameters();
+    }
+}
