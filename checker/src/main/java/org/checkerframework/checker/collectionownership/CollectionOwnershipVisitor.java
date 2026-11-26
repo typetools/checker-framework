@@ -22,6 +22,7 @@ import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.basetype.OverrideChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -232,6 +233,7 @@ public class CollectionOwnershipVisitor
         AnnotatedDeclaredType overriddenType,
         AnnotatedTypeMirror overriddenReturnType) {
       super(
+          CollectionOwnershipVisitor.this,
           overriderTree,
           overrider,
           overriderType,
