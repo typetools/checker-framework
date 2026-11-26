@@ -974,6 +974,24 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
   }
 
+  /**
+   * A package-private member type is not inherited through a class in another package, even if the
+   * class that seeks it is in the member type's package.
+   */
+  @Test
+  public void testPackagePrivateMemberTypeNotInheritedThroughOtherPackage() throws Exception {
+    // q.X is not on the classpath, so only the stub file declares it.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class C extends q.X {}",
+            "class Use { void m(C.N n) {} }",
+            "package q;",
+            "public class X extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle {}");
+    assertNoMethod(
+        jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PackagePrivateMiddle$N;)V");
+  }
+
   /** A name can go through a private member type to the member types that it inherits. */
   @Test
   public void testMemberTypeOfPrivateMemberType() throws Exception {
