@@ -98,6 +98,14 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> {
 
+  // Many maps and sets in this class are keyed by JavaParser nodes, and they are identity-based
+  // (IdentityHashMap, or a set backed by one).  A JavaParser node's `equals` and `hashCode` compare
+  // its whole subtree, but they ignore the node's location, such as its parent.  An ordinary
+  // HashMap keyed by nodes would therefore be slow, because each lookup traverses the key's
+  // subtree.  It would also be wrong, because two distinct declarations with identical text would
+  // share an entry.  An example is the two member types `X` in `class A { class X {} }` and
+  // `class B { class X {} }`, whose binary names differ.
+
   // The asm library is not on this class's compile classpath, so the following three constants
   // are written literally rather than as references to fields of org.objectweb.asm.TypePath.
 
@@ -182,10 +190,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
   }
 
-  /**
-   * A cache of the import contexts of the stub file's compilation units. It is an identity map
-   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
-   */
+  /** A cache of the import contexts of the stub file's compilation units. */
   private final IdentityHashMap<CompilationUnit, ImportContext> importContexts =
       new IdentityHashMap<>();
 
@@ -196,11 +201,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Maps a package name, such as {@code java.util}, to the compilation units of the stub file that
-   * declare that package. A stub file has one compilation unit per {@code package} declaration, so
-   * different compilation units can declare types in different packages. It omits the compilation
-   * units in the unnamed package, because a type in the unnamed package cannot be referred to from
-   * another package. It is empty for a converter that the public constructor creates, which knows
-   * only the compilation unit in which each name is written.
+   * declare that package. It omits the compilation units in the unnamed package, because a type in
+   * the unnamed package cannot be referred to from another package.
    */
   private final Map<String, List<CompilationUnit>> compilationUnitsByPackage = new HashMap<>();
 
@@ -214,34 +216,28 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * A cache for {@link #resolve}. Maps a compilation unit of the stub file, and a class name as
    * written in it, to the binary name that the class name identifies, or to null if resolution
    * fails. The compilation unit is part of the key because its package and imports affect the
-   * result. It is an identity map because a JavaParser node's {@code equals} and {@code hashCode}
-   * compare its whole subtree.
+   * result.
    */
   private final IdentityHashMap<CompilationUnit, Map<String, @Nullable @BinaryName String>>
       resolveCache = new IdentityHashMap<>();
 
   /**
    * A cache for {@link #memberTypeDeclaration}. Maps a type declaration of the stub file to a map
-   * from the simple name of each of its member types to that member type's declaration. It is an
-   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
-   * subtree.
+   * from the simple name of each of its member types to that member type's declaration.
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<String, TypeDeclaration<?>>>
       memberTypeDeclarationCache = new IdentityHashMap<>();
 
   /**
    * A cache for {@link #topLevelType}. Maps a compilation unit of the stub file to a map from the
-   * simple name of each of its top-level types to that type's declaration. It is an identity map
-   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
+   * simple name of each of its top-level types to that type's declaration.
    */
   private final IdentityHashMap<CompilationUnit, Map<String, TypeDeclaration<?>>>
       topLevelTypeCache = new IdentityHashMap<>();
 
   /**
    * A cache for {@link #classpathDeclaredMemberType}. Maps a type declaration of the stub file to
-   * the class on the classpath that has the same binary name, or to null if there is none. It is an
-   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
-   * subtree.
+   * the class on the classpath that has the same binary name, or to null if there is none.
    */
   private final IdentityHashMap<TypeDeclaration<?>, @Nullable Class<?>> classpathClassCache =
       new IdentityHashMap<>();
@@ -293,9 +289,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * A cache for {@link #classpathMemberClass}. Maps a type declaration of the stub file, and the
-   * other arguments of a call to {@link #classpathMemberClass}, to the result of the call. It is an
-   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
-   * subtree.
+   * other arguments of a call to {@link #classpathMemberClass}, to the result of the call.
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<ClasspathMemberQuery, @Nullable Class<?>>>
       classpathMemberClassCache = new IdentityHashMap<>();
@@ -1269,7 +1263,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (!(child instanceof AnnotationExpr) || !(n instanceof NodeWithAnnotations<?> annotated)) {
       return false;
     }
-    // Compare by identity, because a JavaParser node's `equals` compares its whole subtree.
+    // Compare by identity; see the comment at the top of this class.
     for (AnnotationExpr anno : annotated.getAnnotations()) {
       if (anno == child) {
         return true;
