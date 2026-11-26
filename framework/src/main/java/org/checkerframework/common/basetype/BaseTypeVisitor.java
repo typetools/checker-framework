@@ -2153,8 +2153,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Reports errors found during purity checking of a method body or a lambda body. Each error
-   * message names the methods in {@code requirements} that require the purity kind that the
-   * checked code lacks.
+   * message names the methods in {@code requirements} that require the purity kind that the checked
+   * code lacks.
    *
    * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the checked code
