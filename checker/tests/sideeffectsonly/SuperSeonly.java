@@ -38,4 +38,21 @@ public class SuperSeonly {
       super.f = null;
     }
   }
+
+  static class HidingSub extends Super {
+    // Hides `Super.f`.
+    Object f;
+
+    // `super.f` in the annotation and in the body both denote `Super.f`.
+    @SideEffectsOnly("super.f")
+    void assignsSuperField() {
+      super.f = null;
+    }
+
+    @SideEffectsOnly("super.f")
+    void assignsOwnField() {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      f = null;
+    }
+  }
 }
