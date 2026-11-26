@@ -1252,7 +1252,9 @@ public class MustCallConsistencyAnalyzer {
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node) {
 
-    TreePath currentPath = cmAtf.getPath(node.getTree());
+    // For an artificial invocation, such as the invocation of iterator() that an enhanced for loop
+    // desugars to, this is the path to the source code construct that the invocation implements.
+    TreePath currentPath = node.getTreePath();
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             node, cmAtf, cmAtf);
@@ -1311,7 +1313,9 @@ public class MustCallConsistencyAnalyzer {
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
    * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
-   *     annotation {@code expression} came
+   *     annotation {@code expression} came; for an artificial invocation, such as the invocation of
+   *     iterator() that an enhanced for loop desugars to, the path to the source code construct
+   *     that the invocation implements
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
@@ -2284,6 +2288,15 @@ public class MustCallConsistencyAnalyzer {
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
     TreePath currentPath = cmAtf.getPath(node.getTree());
+    if (currentPath == null) {
+      // The assignment is an artificial tree, as for a postfix increment such as `f++`.  Use the
+      // path to the increment, which is the parent of the left-hand side.
+      TreePath lhsPath = cmAtf.getPath(lhs.getTree());
+      if (lhsPath == null) {
+        throw new BugInCF("no path to the left-hand side of " + node);
+      }
+      currentPath = lhsPath.getParentPath();
+    }
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
 
     if (enclosingMethodTree == null) {
