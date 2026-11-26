@@ -20,6 +20,9 @@ value of the boolean variable.
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
+
 New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
 qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
@@ -58,6 +61,12 @@ returns true if a tree is a constant expression.
 In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
 `createIteratorVariableForEnhancedForLoop()` and
 `createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
+
+`BaseTypeVisitor.OverrideChecker` is now a top-level class,
+`org.checkerframework.common.basetype.OverrideChecker`.  Its constructor takes a
+new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
+inner class of a visitor can pass the visitor, as in
+`super(MyVisitor.this, overriderTree, ...)`.
 
 Deprecated methods:
 
