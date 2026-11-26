@@ -115,6 +115,33 @@ public class Issue3028 {
     StringList s = (StringList) list;
   }
 
+  <T extends Runnable & List<@Nullable String>>
+      void unsafeDowncastToNonGenericSubclassFromIntersection(T t) {
+    // As in unsafeDowncastToNonGenericSubclass, the value is a List<@Nullable String>.
+    // :: warning: [cast.unsafe]
+    StringList s = (StringList) t;
+  }
+
+  <T extends List<@Nullable String> & Runnable>
+      void unsafeDowncastToNonGenericSubclassFromIntersectionListFirst(T t) {
+    // :: warning: [cast.unsafe]
+    StringList s = (StringList) t;
+  }
+
+  <T extends Runnable & List<@NonNull String>> void downcastToNonGenericSubclassFromIntersection(
+      T t) {
+    StringList s = (StringList) t;
+  }
+
+  <T extends Runnable & List<@NonNull String>> void downcastFromIntersection(T t) {
+    ArrayList<@NonNull String> list = (ArrayList<@NonNull String>) t;
+  }
+
+  <T extends Runnable & List<@Nullable String>> void unsafeDowncastFromIntersection(T t) {
+    // :: warning: [cast.unsafe]
+    ArrayList<@NonNull String> list = (ArrayList<@NonNull String>) t;
+  }
+
   void upcastToObject(List<@Nullable String> list) {
     Object o = (Object) list;
   }
@@ -159,6 +186,19 @@ public class Issue3028 {
     // The run-time check does not verify that the list has no null elements.
     // :: warning: [cast.unsafe]
     List<? extends @NonNull Object> list = (List<? extends @NonNull Object>) o;
+  }
+
+  static class Outer<T> {
+    class Inner {}
+  }
+
+  // javac 17 treats a cast to `? extends Object` from a non-Object type as unchecked.
+  @SuppressWarnings("unchecked")
+  void nonNullWildcardEnclosingTypeDowncast(Object o) {
+    Outer<?>.Inner inner = (Outer<?>.Inner) o;
+    // The run-time check does not verify the type argument of the enclosing type.
+    // :: warning: [cast.unsafe]
+    Outer<? extends @NonNull Object>.Inner inner2 = (Outer<? extends @NonNull Object>.Inner) o;
   }
 
   void nonNullWildcardDowncastFromCollection(Collection<? extends @NonNull Object> c) {
