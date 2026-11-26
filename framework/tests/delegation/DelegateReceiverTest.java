@@ -4,6 +4,7 @@
 import java.util.ArrayList;
 import org.checkerframework.common.delegation.qual.*;
 
+// :: warning: [delegator.must.override]
 public class DelegateReceiverTest<E> extends ArrayList<E> {
 
   @Delegate private ArrayList<E> list;

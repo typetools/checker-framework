@@ -138,6 +138,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.common.delegation.qual.Delegate;
 
+// Warning: MyMap does not override methods such as containsKey() and put(),
+// whose inherited implementations read IdentityHashMap's fields, which hold
+// MyMap's own state rather than the delegate's.
 public class MyMap<K, V> extends IdentityHashMap<K, V> {
 
   @Delegate private final IdentityHashMap<K, V> map;
@@ -174,4 +177,4 @@ public class MyMap<K, V> extends IdentityHashMap<K, V> {
 % LocalWords:  delegator delegators MyEnumeration hasMoreElements nextElement
 % LocalWords:  InheritableByDelegator IdentityHashMap MyMap containsKey
 % LocalWords:  UnsupportedOperationException putAll NullnessChecker
-% LocalWords:  DelegationChecker
+% LocalWords:  DelegationChecker overridable

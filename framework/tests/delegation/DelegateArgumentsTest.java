@@ -3,6 +3,7 @@
 import java.util.IdentityHashMap;
 import org.checkerframework.common.delegation.qual.*;
 
+// :: warning: [delegator.must.override]
 public class DelegateArgumentsTest<K, V> extends IdentityHashMap<K, V> {
 
   @Delegate private IdentityHashMap<K, V> map;

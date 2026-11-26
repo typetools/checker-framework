@@ -1,6 +1,7 @@
 import java.util.IdentityHashMap;
 import org.checkerframework.common.delegation.qual.*;
 
+// :: warning: [delegator.must.override]
 public class DelegatedCallTest<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;

@@ -2,6 +2,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.common.delegation.qual.*;
 
+// :: warning: [delegator.must.override]
 public class DelegatedCallThrowsException<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;

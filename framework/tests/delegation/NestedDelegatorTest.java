@@ -4,6 +4,7 @@
 import java.util.ArrayList;
 import org.checkerframework.common.delegation.qual.*;
 
+// :: warning: [delegator.must.override]
 public class NestedDelegatorTest<E> extends ArrayList<E> {
 
   @Delegate private ArrayList<E> outerDelegate;
@@ -18,6 +19,7 @@ public class NestedDelegatorTest<E> extends ArrayList<E> {
   }
 
   /** A nested class that is itself a delegator, to a different field. */
+  // :: warning: [delegator.must.override]
   class Inner extends ArrayList<E> {
 
     @Delegate private ArrayList<E> innerDelegate;

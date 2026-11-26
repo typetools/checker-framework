@@ -1,7 +1,7 @@
 package org.checkerframework.common.delegation;
 
 import org.checkerframework.common.delegation.qual.Delegate;
-import org.checkerframework.common.delegation.qual.DelegatorMustOverride;
+import org.checkerframework.common.delegation.qual.InheritableByDelegator;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -20,9 +20,14 @@ import org.checkerframework.javacutil.BasicAnnotationProvider;
  *   <li>The body of a method that overrides a supertype's method is exactly a call to the same
  *       method on the delegate field, passing the overriding method's formal parameters as the
  *       arguments. Alternately, the body may throw {@code UnsupportedOperationException}.
- *   <li>The class overrides every method of a supertype that is annotated with {@link
- *       DelegatorMustOverride}.
+ *   <li>The class overrides each concrete method that it would otherwise inherit, unless the method
+ *       is annotated with {@link InheritableByDelegator}, is a default method of an interface, or
+ *       is a method of {@code Object}.
  * </ul>
+ *
+ * <p>In every class, this checker verifies each method that is annotated with {@link
+ * InheritableByDelegator}: the method uses its receiver only to call methods that are overridable
+ * or that are themselves annotated with {@link InheritableByDelegator}.
  *
  * <p>The Delegation Checker is not a type system: it defines no type qualifiers and no subtyping
  * relationship, so it extends {@link SourceChecker} rather than {@code BaseTypeChecker}. Its

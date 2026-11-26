@@ -4,34 +4,42 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringJoiner;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.delegation.qual.Delegate;
-import org.checkerframework.common.delegation.qual.DelegatorMustOverride;
+import org.checkerframework.common.delegation.qual.InheritableByDelegator;
 import org.checkerframework.framework.source.SourceVisitor;
-import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -46,14 +54,12 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
   /** The canonical name of the {@link Delegate} annotation. */
   private static final String DELEGATE_NAME = Delegate.class.getCanonicalName();
 
+  /** The canonical name of the {@link InheritableByDelegator} annotation. */
+  private static final String INHERITABLE_BY_DELEGATOR_NAME =
+      InheritableByDelegator.class.getCanonicalName();
+
   /** The checker that is using this visitor. */
   private final DelegationChecker checker;
-
-  /** The processing environment. */
-  private final ProcessingEnvironment processingEnv;
-
-  /** Reads declaration annotations. */
-  private final AnnotationProvider annotationProvider;
 
   /**
    * For each class that encloses the tree currently being visited, its field that is annotated with
@@ -70,8 +76,6 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
   public DelegationVisitor(DelegationChecker checker) {
     super(checker);
     this.checker = checker;
-    this.processingEnv = checker.getProcessingEnvironment();
-    this.annotationProvider = checker.getAnnotationProvider();
   }
 
   /**
@@ -99,11 +103,11 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     // has already been reported as erroneous.  In neither case is any further check performed on
     // the class's methods.
     VariableTree delegate = delegateFields.size() == 1 ? delegateFields.get(0) : null;
+    if (delegate != null) {
+      checkInheritedMethods(tree);
+    }
     delegates.add(delegate);
     try {
-      if (delegate != null) {
-        checkDelegatorMustOverrideMethods(tree);
-      }
       return super.visitClass(tree, p);
     } finally {
       delegates.remove(delegates.size() - 1);
@@ -112,37 +116,102 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
 
   @Override
   public Void visitMethod(MethodTree tree, Void p) {
-    checkMustOverrideIsOverridable(tree);
     checkDelegatedCall(tree);
+    checkInheritableByDelegator(tree);
     return super.visitMethod(tree, p);
   }
 
   /**
-   * Issues an error if the given method is annotated with {@link DelegatorMustOverride} but cannot
-   * be overridden. No delegator could satisfy such a requirement.
+   * Issues a warning if the given delegator inherits a method that it must override: that is, a
+   * method whose inherited implementation might read the delegator's own state rather than the
+   * delegate's.
    *
-   * @param tree a method declaration
+   * @param tree a class that has a field annotated with {@link Delegate}
    */
-  private void checkMustOverrideIsOverridable(MethodTree tree) {
-    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-    if (methodElt != null
-        && annotationProvider.getDeclAnnotation(methodElt, DelegatorMustOverride.class) != null
-        && !isOverridable(methodElt)) {
-      checker.reportError(tree, "mustoverride.not.overridable", tree.getName());
+  private void checkInheritedMethods(ClassTree tree) {
+    TypeElement delegator = TreeUtils.elementFromDeclaration(tree);
+    if (delegator == null) {
+      return;
+    }
+    List<ExecutableElement> allMethods = ElementFilter.methodsIn(elements.getAllMembers(delegator));
+    List<String> notOverridden = new ArrayList<>();
+    for (ExecutableElement method : allMethods) {
+      if (method.getEnclosingElement().equals(delegator)
+          || delegatorNeedNotOverride(method)
+          || isOverridden(method, allMethods, delegator)) {
+        continue;
+      }
+      notOverridden.add(method.getEnclosingElement().getSimpleName() + "." + method);
+    }
+    if (!notOverridden.isEmpty()) {
+      Collections.sort(notOverridden);
+      checker.reportWarning(
+          tree, "delegator.must.override", tree.getSimpleName(), String.join(", ", notOverridden));
     }
   }
 
   /**
-   * Returns true if the given method can be overridden by a method in a subclass.
+   * Returns true if a delegator need not override the given method: that is, the method's
+   * implementation is correct for a delegator, or a delegator cannot override the method.
    *
-   * @param methodElt a method
-   * @return true if the given method can be overridden by a method in a subclass
+   * <p>A delegator can inherit a method that is annotated with {@link InheritableByDelegator}, a
+   * default method of an interface (which cannot read instance fields), and a method of {@code
+   * Object} (which has no fields). A delegator cannot override a method that is final or static,
+   * and it need not override an abstract method, because the compiler requires a concrete delegator
+   * to implement it.
+   *
+   * @param method a method that a delegator inherits
+   * @return true if a delegator need not override the method
    */
-  private static boolean isOverridable(ExecutableElement methodElt) {
-    Set<Modifier> modifiers = methodElt.getModifiers();
-    return !modifiers.contains(Modifier.STATIC)
-        && !modifiers.contains(Modifier.PRIVATE)
-        && !modifiers.contains(Modifier.FINAL);
+  private boolean delegatorNeedNotOverride(ExecutableElement method) {
+    Set<Modifier> modifiers = method.getModifiers();
+    return modifiers.contains(Modifier.ABSTRACT)
+        || modifiers.contains(Modifier.FINAL)
+        || modifiers.contains(Modifier.STATIC)
+        || modifiers.contains(Modifier.PRIVATE)
+        || method.isDefault()
+        || ElementUtils.isObject((TypeElement) method.getEnclosingElement())
+        || ElementUtils.hasAnnotation(method, INHERITABLE_BY_DELEGATOR_NAME);
+  }
+
+  /**
+   * Returns true if some other method in {@code allMethods} overrides the given method, in the
+   * given class.
+   *
+   * @param method a method
+   * @param allMethods all the methods of {@code clazz}, including inherited ones
+   * @param clazz the class in which overriding is determined
+   * @return true if some other method in {@code allMethods} overrides {@code method}
+   */
+  private boolean isOverridden(
+      ExecutableElement method, List<ExecutableElement> allMethods, TypeElement clazz) {
+    for (ExecutableElement other : allMethods) {
+      if (!other.equals(method) && elements.overrides(other, method, clazz)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Issues a warning if the given method is annotated with {@link InheritableByDelegator} but its
+   * body uses its receiver other than to call an overridable method or a method that is annotated
+   * with {@link InheritableByDelegator}.
+   *
+   * <p>This method must be called while {@code getCurrentPath()} is the path to {@code tree}.
+   *
+   * @param tree a method declaration
+   */
+  private void checkInheritableByDelegator(MethodTree tree) {
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+    BlockTree body = tree.getBody();
+    if (methodElt == null
+        || body == null
+        || !ElementUtils.hasAnnotation(methodElt, INHERITABLE_BY_DELEGATOR_NAME)) {
+      return;
+    }
+    TypeElement receiverClass = (TypeElement) methodElt.getEnclosingElement();
+    new ReceiverUseScanner(receiverClass, tree).scan(new TreePath(getCurrentPath(), body), null);
   }
 
   /**
@@ -336,58 +405,218 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
   }
 
   /**
-   * Issues a warning if the given class does not override every method of a supertype that is
-   * annotated with {@link DelegatorMustOverride}.
-   *
-   * <p>A delegator need not override every method of a supertype: for many methods, the inherited
-   * implementation is correct for the delegator as well. A method is annotated with {@link
-   * DelegatorMustOverride} if its specification would not be satisfied by an inherited
-   * implementation.
-   *
-   * @param tree a class that has a field annotated with {@link Delegate}
+   * Reports each use, in a method that is annotated with {@link InheritableByDelegator}, of the
+   * method's receiver that is not the receiver of a call to an overridable method or to a method
+   * that is itself annotated with {@link InheritableByDelegator}. Such a use reads the receiver's
+   * state other than through methods that a delegator forwards to its delegate. Examples include
+   * reading a field, calling a private or final method, calling a method on {@code super}, and
+   * passing {@code this} as an argument.
    */
-  private void checkDelegatorMustOverrideMethods(ClassTree tree) {
-    TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-    if (classElt == null) {
-      return;
+  private class ReceiverUseScanner extends TreePathScanner<Void, Void> {
+
+    /** The class that declares the method whose body is being scanned. */
+    private final TypeElement receiverClass;
+
+    /** The method whose body is being scanned; used for diagnostics. */
+    private final MethodTree method;
+
+    /**
+     * Creates a ReceiverUseScanner.
+     *
+     * @param receiverClass the class that declares {@code method}
+     * @param method a method whose body will be scanned; used for diagnostics
+     */
+    ReceiverUseScanner(TypeElement receiverClass, MethodTree method) {
+      this.receiverClass = receiverClass;
+      this.method = method;
     }
-    List<ExecutableElement> declaredMethods =
-        ElementFilter.methodsIn(classElt.getEnclosedElements());
-    List<ExecutableElement> notOverridden = new ArrayList<>();
-    for (TypeElement supertypeElt : ElementUtils.getAllSupertypes(classElt, processingEnv)) {
-      if (supertypeElt.equals(classElt)) {
-        continue;
+
+    /**
+     * Issues a warning about the given use of the receiver.
+     *
+     * @param tree a use of the receiver
+     */
+    private void report(Tree tree) {
+      checker.reportWarning(tree, "invalid.inheritable.by.delegator", method.getName());
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      ExecutableElement callee = TreeUtils.elementFromUse(tree);
+      ExpressionTree methodSelect = tree.getMethodSelect();
+      boolean receiverIsThis;
+      boolean isSuperCall;
+      if (methodSelect instanceof IdentifierTree) {
+        receiverIsThis = !ElementUtils.isStatic(callee) && isImplicitlyThis(callee);
+        isSuperCall = false;
+      } else if (methodSelect instanceof MemberSelectTree memberSelect) {
+        ExpressionTree receiver = TreeUtils.withoutParens(memberSelect.getExpression());
+        receiverIsThis = isThisOrSuper(receiver);
+        isSuperCall = receiverIsThis && isSuper(receiver);
+      } else {
+        return super.visitMethodInvocation(tree, p);
       }
-      for (ExecutableElement supertypeMethod :
-          ElementFilter.methodsIn(supertypeElt.getEnclosedElements())) {
-        if (annotationProvider.getDeclAnnotation(supertypeMethod, DelegatorMustOverride.class)
-                == null
-            || !isOverridable(supertypeMethod)) {
-          continue;
+      if (!receiverIsThis) {
+        return super.visitMethodInvocation(tree, p);
+      }
+      // A call on super is not dispatched dynamically, so it does not reach the delegator's
+      // overriding implementation.
+      boolean calleeIsOk =
+          ElementUtils.hasAnnotation(callee, INHERITABLE_BY_DELEGATOR_NAME)
+              || (!isSuperCall && isOverridable(callee));
+      if (!calleeIsOk) {
+        report(tree);
+      }
+      // Do not scan the receiver, which is a permitted use of `this`.
+      scan(tree.getTypeArguments(), p);
+      scan(tree.getArguments(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      if (isThisOrSuper(tree)) {
+        report(tree);
+      } else {
+        Element elt = TreeUtils.elementFromUse(tree);
+        if (elt.getKind() == ElementKind.FIELD
+            && !ElementUtils.isStatic(elt)
+            && isImplicitlyThis(elt)) {
+          report(tree);
         }
-        boolean isOverridden =
-            declaredMethods.stream()
-                .anyMatch(m -> ElementUtils.isMethod(m, supertypeMethod, processingEnv));
-        if (!isOverridden) {
-          notOverridden.add(supertypeMethod);
+      }
+      return super.visitIdentifier(tree, p);
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      if (isThisOrSuper(tree)) {
+        report(tree);
+        // Do not scan the class name that qualifies `this` or `super`.
+        return null;
+      }
+      return super.visitMemberSelect(tree, p);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, Void p) {
+      // Instantiating an inner class passes `this` as the new object's enclosing instance.
+      if (tree.getEnclosingExpression() == null) {
+        TypeMirror instantiated = TreeUtils.typeOf(tree.getIdentifier());
+        if (instantiated instanceof DeclaredType declaredType) {
+          TypeElement instantiatedClass = (TypeElement) declaredType.asElement();
+          if (instantiatedClass.getNestingKind() == NestingKind.MEMBER
+              && !ElementUtils.isStatic(instantiatedClass)
+              && isImplicitlyThis(instantiatedClass)) {
+            report(tree);
+          }
         }
       }
+      return super.visitNewClass(tree, p);
     }
-    // A supertype method and a method that overrides it may both be annotated with
-    // @DelegatorMustOverride.  They are one method as far as the delegator is concerned, so list
-    // only the most specific one.
-    StringJoiner mostSpecific = new StringJoiner(", ");
-    for (ExecutableElement method : notOverridden) {
-      boolean hasMoreSpecific =
-          notOverridden.stream()
-              .anyMatch(m -> !m.equals(method) && ElementUtils.isMethod(m, method, processingEnv));
-      if (!hasMoreSpecific) {
-        mostSpecific.add(ElementUtils.getSimpleDescription(method));
+
+    /**
+     * Returns true if the given expression is {@code this} or {@code super}, possibly qualified by
+     * a class name, and it refers to the receiver of the method whose body is being scanned. The
+     * expression must be the leaf of the current path or a child of that leaf.
+     *
+     * @param tree an expression
+     * @return true if the expression is {@code this} or {@code super} and refers to the receiver
+     */
+    private boolean isThisOrSuper(ExpressionTree tree) {
+      if (tree instanceof IdentifierTree identifier) {
+        String name = identifier.getName().toString();
+        return (name.equals("this") || name.equals("super")) && innermostClassIsReceiverClass();
+      } else if (tree instanceof MemberSelectTree memberSelect) {
+        String name = memberSelect.getIdentifier().toString();
+        if (!name.equals("this") && !name.equals("super")) {
+          return false;
+        }
+        Element qualifier = TreeUtils.elementFromTree(memberSelect.getExpression());
+        if (qualifier == null) {
+          return false;
+        }
+        // In `Interface.super.m()`, the qualifier is a superinterface of the innermost class, and
+        // the receiver is that class's instance.
+        if (name.equals("super") && qualifier.getKind().isInterface()) {
+          return innermostClassIsReceiverClass();
+        }
+        return qualifier.equals(receiverClass);
+      } else {
+        return false;
       }
     }
-    if (mostSpecific.length() != 0) {
-      checker.reportWarning(
-          tree, "delegate.override", tree.getSimpleName(), mostSpecific.toString());
+
+    /**
+     * Returns true if the given expression, which satisfies {@link #isThisOrSuper}, is {@code
+     * super} rather than {@code this}.
+     *
+     * @param tree {@code this} or {@code super}, possibly qualified by a class name
+     * @return true if the expression is {@code super}
+     */
+    private boolean isSuper(ExpressionTree tree) {
+      if (tree instanceof IdentifierTree identifier) {
+        return identifier.getName().contentEquals("super");
+      } else {
+        return ((MemberSelectTree) tree).getIdentifier().contentEquals("super");
+      }
     }
+
+    /**
+     * Returns true if the innermost class that encloses the current path is the class that declares
+     * the method being scanned, so {@code this} refers to that method's receiver.
+     *
+     * @return true if {@code this} at the current path refers to the receiver
+     */
+    private boolean innermostClassIsReceiverClass() {
+      ClassTree enclosing = TreePathUtil.enclosingClass(getCurrentPath());
+      return enclosing != null && receiverClass.equals(TreeUtils.elementFromDeclaration(enclosing));
+    }
+
+    /**
+     * Returns true if an unqualified use, at the current path, of the given instance member refers
+     * to the member of the receiver of the method being scanned, rather than to the member of an
+     * instance of some other enclosing class.
+     *
+     * @param member an instance member: a field, a method, or a member class
+     * @return true if an unqualified use of {@code member} refers to the receiver's member
+     */
+    private boolean isImplicitlyThis(Element member) {
+      TypeMirror owner = member.getEnclosingElement().asType();
+      for (TreePath path = getCurrentPath(); path != null; path = path.getParentPath()) {
+        if (path.getLeaf() instanceof ClassTree classTree) {
+          TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
+          if (classElt == null) {
+            continue;
+          }
+          boolean hasMember = TypesUtils.isErasedSubtype(classElt.asType(), owner, types);
+          if (classElt.equals(receiverClass)) {
+            return hasMember;
+          }
+          if (hasMember) {
+            // The member is that of a class nested within the receiver's class.
+            return false;
+          }
+        }
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if a subclass can override the given method, so a call to it is dispatched to the
+   * subclass's implementation. A package-private method is treated as not overridable, because a
+   * delegator in a different package cannot override it.
+   *
+   * @param method a method
+   * @return true if a subclass in any package can override the method
+   */
+  private static boolean isOverridable(ExecutableElement method) {
+    Set<Modifier> modifiers = method.getModifiers();
+    return !modifiers.contains(Modifier.STATIC)
+        && !modifiers.contains(Modifier.PRIVATE)
+        && !modifiers.contains(Modifier.FINAL)
+        && (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED))
+        && !ElementUtils.isFinal(method.getEnclosingElement());
   }
 }
