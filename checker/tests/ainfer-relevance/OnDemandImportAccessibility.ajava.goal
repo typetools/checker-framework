@@ -37,11 +37,11 @@ public class OnDemandImportAccessibility {
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
-    void expectsSibling1CharBuffer(OnDemandImportAccessibility this, CharBuffer b) {
+    void expectsSibling1CharBuffer(CharBuffer b) {
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    CharBuffer getSibling1CharBuffer(OnDemandImportAccessibility this) {
+    CharBuffer getSibling1CharBuffer() {
         return null;
     }
 }

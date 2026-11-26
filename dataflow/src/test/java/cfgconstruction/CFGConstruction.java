@@ -14,10 +14,23 @@ public class CFGConstruction {
 
     String inputFile = "Test.java";
     String clazz = "Test";
-    String method = "manyNestedTryFinallyBlocks";
 
     ControlFlowGraph cfg =
-        CFGVisualizeLauncher.generateMethodCFG(inputFile, method, clazz, /* analysis= */ null);
+        CFGVisualizeLauncher.generateMethodCFG(
+            inputFile, "manyNestedTryFinallyBlocks", clazz, /* analysis= */ null);
     cfg.checkInvariants();
+
+    // The CFG builder translates the finally block several times, but the CFG lists each lambda
+    // and class declaration in it once, so that each is analyzed once.
+    cfg =
+        CFGVisualizeLauncher.generateMethodCFG(
+            inputFile, "lambdaAndClassInFinallyBlock", clazz, /* analysis= */ null);
+    cfg.checkInvariants();
+    if (cfg.getDeclaredLambdas().size() != 1) {
+      throw new Error("Expected 1 declared lambda, found " + cfg.getDeclaredLambdas());
+    }
+    if (cfg.getDeclaredClasses().size() != 1) {
+      throw new Error("Expected 1 declared class, found " + cfg.getDeclaredClasses());
+    }
   }
 }
