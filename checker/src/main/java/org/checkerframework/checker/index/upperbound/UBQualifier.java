@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -1207,6 +1208,37 @@ public abstract class UBQualifier {
         return false;
       }
       return containsSame(offsets, otherOffsets);
+    }
+
+    /**
+     * Returns true if this qualifier implies {@code other} when each sequence of {@code other} can
+     * be replaced by a sequence that has the same length. For example, if {@code b} has the same
+     * length as {@code a}, then {@code @LTLengthOf("a")} implies {@code @LTLengthOf("b")}.
+     *
+     * @param other a qualifier
+     * @param sameLens returns the sequences that have the same length as a sequence of {@code
+     *     other}, such as "a" for "b"
+     * @return true if this qualifier implies {@code other}, up to sequences that have the same
+     *     length
+     */
+    public boolean impliesUpToSameLen(
+        LessThanLengthOf other, Function<String, List<String>> sameLens) {
+      for (String sequence : other.map.keySet()) {
+        if (other.isValidReplacement(sequence, sequence, this)) {
+          continue;
+        }
+        boolean found = false;
+        for (String sameLenSequence : sameLens.apply(sequence)) {
+          if (other.isValidReplacement(sequence, sameLenSequence, this)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          return false;
+        }
+      }
+      return true;
     }
 
     @Override

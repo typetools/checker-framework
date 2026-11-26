@@ -1477,11 +1477,11 @@ Checker Framework handles a reassignment as follows.
   }
 \end{Verbatim}
 
-  An increment, a decrement, a compound assignment such as \<a += 2>, and
-  an assignment whose right-hand side cannot be expressed as a Java
-  expression (such as a call to a method that is not deterministic, or
-  \<new int[n]>) is an error if a declared type names the reassigned
-  variable.  A self-assignment such as \<a = a> is always permitted.
+  If a declared type names the reassigned variable, then an increment, a
+  decrement, a compound assignment such as \<a += 2>, or an assignment
+  whose right-hand side cannot be expressed as a Java expression (such as a
+  call to a method that is not deterministic, or \<new int[n]>) is an
+  error.  A self-assignment such as \<a = a> is always permitted.
 \end{itemize}
 
 In a constructor, a formal parameter's type that names a field refers to
@@ -1508,6 +1508,25 @@ assignment incompatible with the field's type.  In this case, suppress the
 warning (Chapter~\ref{suppressing-warnings}) by writing
 \<@SuppressWarnings("keyfor:reassignment.invalidates.type")> on the
 constructor.
+
+Likewise, no types for the formal parameters avoid an error if the declared
+types of two fields name each other:
+
+\begin{Verbatim}
+  long @SameLen("names") [] transitions;
+  String @SameLen("transitions") [] names;
+
+  C(long @SameLen("names") [] transitions, String @SameLen("transitions") [] names) {
+    this.transitions = transitions;  // error: reassignment.invalidates.type
+    this.names = names;
+  }
+\end{Verbatim}
+
+\noindent
+Writing \<@SameLen("\#2")> and \<@SameLen("\#1")> in the formal parameters'
+types instead makes the first field assignment incompatible with the
+field's type, because the other field still has its default value.  In
+this case, too, suppress the warning.
 
 The checker does not check a reassignment against the declared type of a
 field, and it does not account for a method call that reassigns a field

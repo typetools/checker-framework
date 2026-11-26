@@ -16,11 +16,21 @@ new value.  For example, after `a = c`, a formal parameter declared as
 `@IndexFor("a") int i` might not be an index for `c`.  This affects every type
 system with expressions in its annotations, such as the Index Checker and
 `@KeyFor`.  In a constructor, a formal parameter's type that names a field
-refers to the field's default value; to relate formal parameters, write `#2`
-rather than the field name.  See the manual section "Reassigning a variable that
-a type names".
+refers to the field's default value; to relate formal parameters, usually write
+`#2` rather than the field name.  See the manual section "Reassigning a variable
+that a type names", which also describes constructors that need a warning
+suppression.
 
 ### Changes for type system implementers
+
+`CFAbstractTransfer.processCommonAssignment()` removes from the store each value
+whose dependent type annotation might name the assigned variable, via the new
+method `CFAbstractStore.removeValuesThatMightName()`.  At an assignment,
+`BaseTypeVisitor` calls the new method `checkDependentTypesOfReassignedVariable()`,
+which calls the new method `isValidAfterReassignment()`; override the latter to
+permit a reassignment by using facts other than subtyping.  New methods
+`DependentTypesHelper.mightName()` and `DependentTypesHelper.substitute()`
+support them.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a

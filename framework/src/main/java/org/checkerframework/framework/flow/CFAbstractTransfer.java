@@ -90,6 +90,7 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1057,6 +1058,13 @@ public abstract class CFAbstractTransfer<
   /**
    * Determines the abstract value of the right-hand side and updates the store accordingly.
    *
+   * <p>If the target is a local variable or a field, this also removes from the store each value
+   * whose dependent type annotation might name the target (see {@link
+   * CFAbstractStore#removeValuesThatMightName}). If {@code rhsValue} itself has such an annotation,
+   * the target gets no value: the annotation names the target's value before the assignment, but
+   * after the assignment the same text would name the new value. A self-assignment, such as {@code
+   * a = a}, does not change the target's value, so it removes no values.
+   *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
@@ -1066,8 +1074,23 @@ public abstract class CFAbstractTransfer<
   protected void processCommonAssignment(
       TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
+    @Nullable V targetValue = rhsValue;
+    JavaExpression target = JavaExpression.fromNode(lhs);
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if ((target instanceof LocalVariable || target instanceof FieldAccess)
+        && dependentTypesHelper.hasDependentAnnotations()
+        && !JavaExpression.fromNode(rhs).syntacticEquals(target)) {
+      Tree lhsTree = lhs.getTree();
+      TreePath path = lhsTree == null ? null : analysis.getTypeFactory().getPath(lhsTree);
+      store.removeValuesThatMightName(target, path);
+      if (targetValue != null
+          && dependentTypesHelper.mightName(targetValue.getAnnotations(), target, path)) {
+        targetValue = null;
+      }
+    }
+
     // update information in the store
-    store.updateForAssignment(lhs, rhs, rhsValue);
+    store.updateForAssignment(lhs, targetValue);
   }
 
   @Override

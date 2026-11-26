@@ -3605,8 +3605,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * reassigned variable.
    *
    * <p>Only reassignments of local variables (including formal parameters) and of fields are
-   * checked, and only the declared types of local variables and formal parameters in scope are
-   * checked. The declared type of a field that names another field is not checked.
+   * checked, and only the declared types of local variables, formal parameters, and pattern
+   * variables in scope are checked. The declared type of a field that names another field is not
+   * checked. Within a local or anonymous class, the declared types of the variables of the
+   * enclosing methods are also checked; a reassignment of a field that such a type might name is an
+   * error, because the type is not expressed in terms of the class's own variables.
    *
    * @param variableTree the variable that {@code reassignmentTree} assigns, such as {@code a} in
    *     {@code a = c}
@@ -3640,7 +3643,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath path = getCurrentPath();
     @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(reassignmentTree);
-    for (VariableTree declTree : localVariablesInScope(path)) {
+    List<VariableTree> localVariables = new ArrayList<>();
+    List<VariableTree> capturedVariables = new ArrayList<>();
+    collectVariablesInScope(path, localVariables, capturedVariables);
+    for (VariableTree declTree : localVariables) {
       VariableElement varElt = TreeUtils.variableElementFromTree(declTree);
       if (target instanceof LocalVariable targetLocal && targetLocal.getElement().equals(varElt)) {
         continue;
@@ -3672,6 +3678,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             requiredType == null ? "unknown" : requiredType);
       }
     }
+    // A local or anonymous class cannot reassign a local variable of an enclosing method, which is
+    // effectively final.  It can reassign a field.
+    if (target instanceof FieldAccess) {
+      for (VariableTree declTree : capturedVariables) {
+        VariableElement varElt = TreeUtils.variableElementFromTree(declTree);
+        AnnotatedTypeMirror declaredType = atypeFactory.getAnnotatedType(varElt);
+        // Parse the expressions in the declared type where they were written.
+        if (dependentTypesHelper.mightName(declaredType, target, atypeFactory.getPath(declTree))) {
+          checker.reportError(
+              reassignmentTree,
+              "reassignment.invalidates.type",
+              varElt.getSimpleName(),
+              target,
+              declaredType,
+              "unknown");
+        }
+      }
+    }
   }
 
   /**
@@ -3699,25 +3723,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the declarations of the local variables and formal parameters that are in scope at
-   * {@code path}, within the innermost enclosing method. This includes the formal parameters of
-   * enclosing lambda expressions. It omits pattern variables, such as {@code s} in {@code o
-   * instanceof String s}.
+   * Collects the declarations of the local variables, formal parameters, and pattern variables that
+   * are in scope at {@code path}. Those of the innermost enclosing method, including the formal
+   * parameters of enclosing lambda expressions, are added to {@code localVariables}. Those of the
+   * methods that enclose a local or anonymous class that encloses {@code path} are added to {@code
+   * capturedVariables}.
+   *
+   * <p>The result for pattern variables is conservative: it contains every pattern variable that
+   * might be in scope at {@code path}, such as {@code s} in {@code if (!(o instanceof String s))
+   * return;}, and it can contain a pattern variable that is not in scope.
    *
    * @param path a path to a tree in a method body
-   * @return the declarations of the local variables and formal parameters in scope at {@code path}
+   * @param localVariables a list to which to add the declarations of the innermost method
+   * @param capturedVariables a list to which to add the declarations of enclosing methods
    */
   @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  private List<VariableTree> localVariablesInScope(TreePath path) {
-    List<VariableTree> result = new ArrayList<>();
+  private void collectVariablesInScope(
+      TreePath path, List<VariableTree> localVariables, List<VariableTree> capturedVariables) {
+    List<VariableTree> result = localVariables;
     Tree child = path.getLeaf();
     for (TreePath p = path.getParentPath(); p != null; p = p.getParentPath()) {
       Tree parent = p.getLeaf();
       if (parent instanceof ClassTree) {
-        return result;
+        // A local or anonymous class can use the effectively final local variables of the methods
+        // that enclose it.
+        result = capturedVariables;
       } else if (parent instanceof MethodTree methodTree) {
         result.addAll(methodTree.getParameters());
-        return result;
       } else if (parent instanceof LambdaExpressionTree lambdaTree) {
         result.addAll(lambdaTree.getParameters());
       } else if (parent instanceof BlockTree blockTree) {
@@ -3759,9 +3791,58 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           addVariablesBefore(tryTree.getResources(), child, result);
         }
       }
+      if (!(parent instanceof ClassTree
+          || parent instanceof MethodTree
+          || parent instanceof CompilationUnitTree)) {
+        addPatternVariablesBefore(parent, child, result);
+      }
       child = parent;
     }
-    return result;
+  }
+
+  /**
+   * Adds to {@code result} the declaration of each pattern variable in {@code parent} that precedes
+   * {@code child} and that might be in scope at {@code child}. The pattern variables within {@code
+   * child}, and those within a block, lambda expression, or class within {@code parent}, are not in
+   * scope at {@code child}. For example, if {@code parent} is {@code if (o instanceof String s) {
+   * ... } else { ... }}, then {@code s} is added for either branch.
+   *
+   * @param parent a tree
+   * @param child a child of {@code parent}
+   * @param result a list to which to add pattern variable declarations
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private static void addPatternVariablesBefore(
+      Tree parent, Tree child, List<VariableTree> result) {
+    new TreeScanner<Void, Void>() {
+      // True if this scanner has reached `child`.
+      private boolean reachedChild = false;
+
+      @Override
+      public Void scan(@Nullable Tree tree, Void p) {
+        if (tree == null || reachedChild) {
+          return null;
+        }
+        if (tree == child) {
+          // The scanner visits a tree's children in source order.
+          reachedChild = true;
+          return null;
+        }
+        if (tree != parent
+            && (tree instanceof BlockTree
+                || tree instanceof LambdaExpressionTree
+                || tree instanceof ClassTree)) {
+          return null;
+        }
+        return super.scan(tree, p);
+      }
+
+      @Override
+      public Void visitBindingPattern(BindingPatternTree tree, Void p) {
+        result.add(tree.getVariable());
+        return super.visitBindingPattern(tree, p);
+      }
+    }.scan(parent, null);
   }
 
   /**

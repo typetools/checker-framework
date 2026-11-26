@@ -389,7 +389,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * {@code currentType} has the same offsets for {@code b} or for a sequence that has the same
    * length as {@code b} before the reassignment. For example, if {@code i} is
    * {@code @LTLengthOf("a")} and {@code b} is {@code @SameLen("a")}, then after {@code a = b},
-   * {@code i} is still {@code @LTLengthOf("a")}.
+   * {@code i} is still {@code @LTLengthOf("a")}. This relaxation applies only to the primary
+   * annotation; the rest of the type, such as the bounds of a type variable, must satisfy the
+   * default check.
    */
   @Override
   protected boolean isValidAfterReassignment(
@@ -410,17 +412,21 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
       return false;
     }
     SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
-    for (String sequence : requiredLtl.getSequences()) {
-      if (requiredLtl.isValidReplacement(sequence, sequence, currentLtl)) {
-        continue;
-      }
-      List<String> sameLenSequences =
-          sameLenFactory.getSameLensFromString(sequence, reassignmentTree, getCurrentPath());
-      if (!testSameLen(currentLtl, requiredLtl, sameLenSequences, sequence)) {
-        return false;
-      }
+    AnnotationMirror requiredAnno =
+        requiredType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWN);
+    if (requiredAnno == null
+        || !currentLtl.impliesUpToSameLen(
+            requiredLtl,
+            sequence ->
+                sameLenFactory.getSameLensFromString(
+                    sequence, reassignmentTree, getCurrentPath()))) {
+      return false;
     }
-    return true;
+    // The primary annotation is valid.  Check the rest of the type without relaxation.
+    AnnotatedTypeMirror relaxedCurrentType = currentType.deepCopy();
+    relaxedCurrentType.replaceAnnotation(requiredAnno);
+    return super.isValidAfterReassignment(
+        variable, relaxedCurrentType, requiredType, reassignmentTree);
   }
 
   /*

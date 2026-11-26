@@ -16,6 +16,7 @@ import com.sun.tools.javac.tree.JCTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -1387,6 +1388,28 @@ public class DependentTypesHelper {
             && mightName(expression, variable, path)) {
           return true;
         }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if a Java expression in one of {@code annos} might name {@code variable}. See
+   * {@link #mightName(AnnotationMirror, JavaExpression, TreePath)}.
+   *
+   * @param annos annotations, such as those of an abstract value
+   * @param variable a local variable, such as {@code a}, or a field access, such as {@code this.f}
+   * @param path the location at which to parse the expressions in {@code annos}, or null to examine
+   *     only their text
+   * @return true if a Java expression in one of {@code annos} might name {@code variable}
+   */
+  public boolean mightName(
+      Collection<? extends AnnotationMirror> annos,
+      JavaExpression variable,
+      @Nullable TreePath path) {
+    for (AnnotationMirror anno : annos) {
+      if (mightName(anno, variable, path)) {
+        return true;
       }
     }
     return false;

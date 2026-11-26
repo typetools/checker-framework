@@ -58,8 +58,10 @@ assignment is an error (\<reassignment.invalidates.type>) if it might make
 false the declared type of a local variable or formal parameter that names
 \<a>.  For example, after \<a = c;>, a formal parameter declared as
 \<@IndexFor("a") int i> might not be an index for \<c>.  In a constructor,
-write \<@SameLen("\#2")> rather than naming the field that the constructor
-initializes.  See Section~\ref{java-expressions-reassignment}.
+a formal parameter's type usually should be written as \<@SameLen("\#2")>
+rather than naming the field that the constructor initializes.  See
+Section~\ref{java-expressions-reassignment}, which also describes
+constructors for which neither works.
 
 To run the Index Checker, run either of these commands:
 

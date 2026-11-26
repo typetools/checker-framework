@@ -3,15 +3,19 @@
 // such a type would describe the new value of the variable, not the value for which the type was
 // established.
 // * A refined type that names the reassigned variable is discarded.
-// * An assignment that might make the declared type of a local variable or formal parameter false
-//   is an error.
+// * An assignment that might make the declared type of a local variable, formal parameter, or
+//   pattern variable false is an error.
 
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
+import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.index.qual.SearchIndexFor;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class Reassignment {
 
@@ -153,6 +157,68 @@ public class Reassignment {
     j = j + 1;
   }
 
+  // The declared type of the pattern variable `i` names `a`.
+  @SuppressWarnings("instanceof.pattern.unsafe") // the test does not verify the binding
+  void declaredPatternVariable(Object o, int[] a, int[] c) {
+    if (o instanceof @IndexFor("a") Integer i) {
+      // :: error: [reassignment.invalidates.type]
+      a = c;
+      a[i] = 0;
+    }
+  }
+
+  // The pattern variable `i` is in scope after an `if` statement that cannot complete normally
+  // when the pattern does not match.
+  @SuppressWarnings("instanceof.pattern.unsafe") // the test does not verify the binding
+  void declaredPatternVariableAfterIf(Object o, int[] a, int[] c) {
+    if (!(o instanceof @IndexFor("a") Integer i)) {
+      return;
+    }
+    // :: error: [reassignment.invalidates.type]
+    a = c;
+    a[i] = 0;
+  }
+
+  // The pattern variable `i` is in scope in the right operand of `&&`.
+  @SuppressWarnings("instanceof.pattern.unsafe") // the test does not verify the binding
+  boolean declaredPatternVariableInCondition(Object o, int[] a, int[] c) {
+    // :: error: [reassignment.invalidates.type]
+    return o instanceof @IndexFor("a") Integer i && (a = c).length > i;
+  }
+
+  // The declared type of the captured parameter `i` names the field `f`, which a method of an
+  // anonymous class reassigns.
+  void declaredCapturedByAnonymousClass(@IndexFor("f") int i, int[] c) {
+    new Object() {
+      void m() {
+        // :: error: [reassignment.invalidates.type]
+        f = c;
+        f[i] = 0;
+      }
+    };
+  }
+
+  // The declared type of the captured parameter `i` names the field `f`, which a method of a local
+  // class reassigns.
+  void declaredCapturedByLocalClass(@IndexFor("f") int i, int[] c) {
+    class Local {
+      void m() {
+        // :: error: [reassignment.invalidates.type]
+        f = c;
+        f[i] = 0;
+      }
+    }
+  }
+
+  // After `m = x`, the `@SameLen("m[0]")` type of `x` is about the old `m[0]`, not the new one.
+  void sameLenNamesElementOfReassigned(int @MinLen(1) [][] m, int @MinLen(1) [][] x) {
+    if (x.length == m[0].length) {
+      m = x;
+      // :: error: [assignment]
+      int @SameLen("x") [] r = m[0];
+    }
+  }
+
   //
   // Reassignments that must be accepted
   //
@@ -257,6 +323,52 @@ public class Reassignment {
       a = new int[n + 1];
       a[n] = 0;
     }
+  }
+
+  // A pattern variable in a block that has ended is not in scope.
+  @SuppressWarnings("instanceof.pattern.unsafe") // the test does not verify the binding
+  void patternVariableNotInScope(Object o, int[] a, int[] c) {
+    {
+      if (o instanceof @IndexFor("a") Integer i) {
+        a[i] = 0;
+      }
+    }
+    a = c;
+  }
+
+  // A local or anonymous class cannot reassign a local variable of the enclosing method, so its
+  // own variable of the same name is unrelated.
+  void localOfAnonymousClassIsUnrelated(@IndexFor("#2") int i, int[] a, int[] c) {
+    new Object() {
+      void m() {
+        int[] a = new int[0];
+        a = c;
+      }
+    };
+  }
+
+  // `b` has the same length as `a`, so `i` is still a search index for `a` after `a = b`.
+  void sameLenSearchIndex(@SearchIndexFor("#2") int i, int[] a, int @SameLen("#2") [] b) {
+    a = b;
+  }
+
+  // `b` has the same length as `a`, so `i` is still a negative index for `a` after `a = b`.
+  void sameLenNegativeIndex(@NegativeIndexFor("#2") int i, int[] a, int @SameLen("#2") [] b) {
+    a = b;
+  }
+
+  // `b` has the same length as `a`, so `i` is still a substring index for `a` after `a = b`.
+  void sameLenSubstringIndex(
+      @SubstringIndexFor(value = "#2", offset = "-1") int i, String a, @SameLen("#2") String b) {
+    a = b;
+  }
+
+  // `c` might not have the same length as `a`.  Both the Search Index Checker and the Upper Bound
+  // Checker report the error.
+  void notSameLenSearchIndex(@SearchIndexFor("#2") int i, int[] a, int[] c) {
+    // :: error: [reassignment.invalidates.type]
+    // :: error: [reassignment.invalidates.type]
+    a = c;
   }
 
   static class HasLengthField {

@@ -1,7 +1,10 @@
 package org.checkerframework.checker.index.substringindex;
 
+import java.util.Set;
+import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
@@ -17,4 +20,12 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 public class SubstringIndexChecker extends BaseTypeChecker {
   /** Creates a SubstringIndexChecker. */
   public SubstringIndexChecker() {}
+
+  @Override
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
+    // SubstringIndexVisitor uses the SameLen Checker's facts.
+    checkers.add(SameLenChecker.class);
+    return checkers;
+  }
 }

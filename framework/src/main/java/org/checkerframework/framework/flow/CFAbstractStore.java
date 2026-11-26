@@ -1086,42 +1086,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Updates the information in the store by considering an assignment with target {@code n}.
    *
-   * <p>This is equivalent to {@link #updateForAssignment(Node, Node, CFAbstractValue)} with an
-   * unknown right-hand side.
-   *
    * @param n the left-hand side of an assignment
    * @param val the right-hand value of an assignment
    */
   public void updateForAssignment(Node n, @Nullable V val) {
-    updateForAssignment(n, null, val);
-  }
-
-  /**
-   * Updates the information in the store by considering an assignment with target {@code n}.
-   *
-   * <p>If the target is a local variable or a field, this also removes each value whose dependent
-   * type annotation might name the target (see {@link #removeValuesThatMightName}). If {@code val}
-   * itself has such an annotation, the target gets no value: the annotation names the target's
-   * value before the assignment, but after the assignment the same text would name the new value. A
-   * self-assignment, such as {@code a = a}, does not change the target's value, so it removes no
-   * values.
-   *
-   * @param n the left-hand side of an assignment
-   * @param rhs the right-hand side of the assignment, or null if it is not known
-   * @param val the right-hand value of an assignment
-   */
-  public void updateForAssignment(Node n, @Nullable Node rhs, @Nullable V val) {
     JavaExpression je = JavaExpression.fromNode(n);
-    if ((je instanceof LocalVariable || je instanceof FieldAccess)
-        && analysis.getTypeFactory().getDependentTypesHelper().hasDependentAnnotations()
-        && (rhs == null || !JavaExpression.fromNode(rhs).syntacticEquals(je))) {
-      Tree tree = n.getTree();
-      TreePath path = tree == null ? null : analysis.getTypeFactory().getPath(tree);
-      removeValuesThatMightName(je, path);
-      if (val != null && mightName(val, je, path)) {
-        val = null;
-      }
-    }
     if (je instanceof ArrayAccess aa) {
       updateForArrayAssignment(aa, val);
     } else if (je instanceof FieldAccess fa) {
@@ -1153,8 +1122,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param path the location of the assignment, at which to parse the expressions in the
    *     annotations, or null if it is not known
    */
-  protected void removeValuesThatMightName(JavaExpression variable, @Nullable TreePath path) {
-    Predicate<V> mightName = value -> mightName(value, variable, path);
+  public void removeValuesThatMightName(JavaExpression variable, @Nullable TreePath path) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    Predicate<V> mightName =
+        value -> dependentTypesHelper.mightName(value.getAnnotations(), variable, path);
     localVariableValues.values().removeIf(mightName);
     fieldValues.values().removeIf(mightName);
     arrayValues.values().removeIf(mightName);
@@ -1164,26 +1135,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (thisValue != null && mightName.test(thisValue)) {
       thisValue = null;
     }
-  }
-
-  /**
-   * Returns true if a dependent type annotation of {@code value} might name {@code variable}. See
-   * {@link DependentTypesHelper#mightName(AnnotationMirror, JavaExpression, TreePath)}.
-   *
-   * @param value an abstract value
-   * @param variable a local variable or a field access
-   * @param path the location at which to parse the expressions in the annotations of {@code value},
-   *     or null if it is not known
-   * @return true if a dependent type annotation of {@code value} might name {@code variable}
-   */
-  private boolean mightName(V value, JavaExpression variable, @Nullable TreePath path) {
-    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
-    for (AnnotationMirror anno : value.getAnnotations()) {
-      if (dependentTypesHelper.mightName(anno, variable, path)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

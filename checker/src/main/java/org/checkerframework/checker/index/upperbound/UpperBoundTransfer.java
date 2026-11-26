@@ -879,29 +879,31 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       value = analysis.getValue(n);
     }
     UBQualifier qualifier = getUBQualifier(hierarchy, value);
-    if (qualifier.isUnknown()) {
+    Tree tree = n.getTree();
+    if (qualifier.isUnknown() && tree != null) {
       // The qualifier from the store or analysis might be UNKNOWN if there was some error.
       // For example,
       //   @LTLength("a") int i = 4;  // error
       // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
       // the type factory is @LTLength("a"), so use that type.
-      CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
+      CFValue valueFromFactory = getValueFromFactory(tree, n);
       qualifier = getUBQualifier(hierarchy, valueFromFactory);
     }
-    if (reassignedVariable != null
+    JavaExpression reassigned = reassignedVariable;
+    if (reassigned != null
         && !qualifier.isUnknown()
         && atypeFactory
             .getDependentTypesHelper()
             .mightName(
                 atypeFactory.convertUBQualifierToAnnotation(qualifier),
-                reassignedVariable,
+                reassigned,
                 reassignmentPath)) {
       return UpperBoundUnknownQualifier.UNKNOWN;
     }
     return qualifier;
   }
 
-  private UBQualifier getUBQualifier(QualifierHierarchy hierarchy, CFValue value) {
+  private UBQualifier getUBQualifier(QualifierHierarchy hierarchy, @Nullable CFValue value) {
     if (value == null) {
       return UpperBoundUnknownQualifier.UNKNOWN;
     }
