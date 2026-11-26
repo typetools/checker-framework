@@ -90,8 +90,7 @@ final class EnhancedForDisposalLoopMatcher {
     // If the body reassigns the collection variable, the loop still iterates over the original
     // collection, but after the loop the variable refers to a different collection.
     Element collectionElement =
-        CollectionOwnershipUtils.getElementFromExpressionTree(
-            TreeUtils.withoutParens(tree.getExpression()));
+        CollectionOwnershipUtils.getElementFromExpressionTree(tree.getExpression());
     if (collectionElement != null && assignsTo(tree.getStatement(), collectionElement)) {
       return Set.of();
     }
@@ -143,8 +142,7 @@ final class EnhancedForDisposalLoopMatcher {
   private boolean mutatesIteratedCollection(StatementTree body, ExpressionTree collection) {
     // Compare the variables or fields that the expressions refer to, not their names, so that a
     // field `this.resources` is distinct from a parameter `resources` that shadows it.
-    Element collectionElement =
-        CollectionOwnershipUtils.getElementFromExpressionTree(TreeUtils.withoutParens(collection));
+    Element collectionElement = CollectionOwnershipUtils.getElementFromExpressionTree(collection);
     boolean isFieldOfThis =
         coAtf.isOwningCollectionField(collection) && TreeUtils.isSelfAccess(collection);
     @Nullable Boolean result =
@@ -156,8 +154,7 @@ final class EnhancedForDisposalLoopMatcher {
             if (collectionElement != null
                 && receiver != null
                 && collectionElement.equals(
-                    CollectionOwnershipUtils.getElementFromExpressionTree(
-                        TreeUtils.withoutParens(receiver)))
+                    CollectionOwnershipUtils.getElementFromExpressionTree(receiver))
                 && (coAtf.isCreatesCollectionObligationMethod(method)
                     || REPLACING_METHODS.contains(method.getSimpleName().toString()))) {
               return true;

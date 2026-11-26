@@ -1144,7 +1144,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     inserted = removeCastsAndGetTmpVarIfPresent(inserted);
-    if (coAtf.getCollectionMutatorArgumentKind(inserted.getTree())
+    if (coAtf.getCollectionMutatorArgumentKind(node.getTarget().getMethod(), inserted.getTree())
         == CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
             .BULK_RESOURCE_COLLECTION) {
       // Bulk op (addAll/putAll etc).
@@ -1281,8 +1281,12 @@ public class MustCallConsistencyAnalyzer {
       String s = m.toString();
       missingStrs.add(s.equals("this") ? s + " of type " + m.getType() : s);
     }
+    // An artificial invocation, such as the invocation of iterator() that an enhanced for loop
+    // desugars to, has no position in the source code.  Report the error at the source code
+    // construct that the invocation implements, such as the enhanced for loop.
+    Tree errorTree = node.getInSource() ? node.getTree() : node.getTreePath().getLeaf();
     checker.reportError(
-        node.getTree(),
+        errorTree,
         "reset.not.owning",
         node.getTarget().getMethod().getSimpleName().toString(),
         missingStrs.toString());

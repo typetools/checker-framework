@@ -704,21 +704,25 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /**
    * Classifies the argument inserted by a {@code @CreatesCollectionObligation} mutator call.
    *
-   * <p>For resource collections, this returns {@link
-   * CollectionMutatorArgumentKind#BULK_RESOURCE_COLLECTION}. For non-collection values, this
-   * returns {@link CollectionMutatorArgumentKind#DEFINITELY_NON_OWNING} only if ownership is
-   * definitely absent at the call site.
+   * <p>For a resource collection that the mutator inserts the elements of, as {@code addAll} does,
+   * this returns {@link CollectionMutatorArgumentKind#BULK_RESOURCE_COLLECTION}. For a value that
+   * the mutator inserts as a single element, this returns {@link
+   * CollectionMutatorArgumentKind#DEFINITELY_NON_OWNING} only if ownership is definitely absent at
+   * the call site.
    *
-   * @param insertedArgumentTree the inserted argument
+   * @param method the invoked mutator
+   * @param insertedArgumentTree the inserted argument of a call to {@code method}
    * @return the inserted argument's ownership classification
    */
   public CollectionMutatorArgumentKind getCollectionMutatorArgumentKind(
-      @Nullable Tree insertedArgumentTree) {
+      ExecutableElement method, @Nullable Tree insertedArgumentTree) {
     if (insertedArgumentTree == null) {
       return CollectionMutatorArgumentKind.MAY_BE_OWNING;
     }
 
-    if (isResourceCollection(insertedArgumentTree)) {
+    // A resource collection can itself be an element, as in `List<Bucket>.add(bucket)` where
+    // `Bucket` extends `ArrayList<Resource>`.
+    if (!insertsSingleElement(method) && isResourceCollection(insertedArgumentTree)) {
       return CollectionMutatorArgumentKind.BULK_RESOURCE_COLLECTION;
     }
 
@@ -769,6 +773,27 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     return CollectionMutatorArgumentKind.MAY_BE_OWNING;
+  }
+
+  /**
+   * Returns true if the given {@code @CreatesCollectionObligation} method inserts its inserted
+   * parameter as a single element: the parameter's declared type is the element type of the class
+   * that declares the method. For example, returns true for {@code Collection.add(E)} and false for
+   * {@code Collection.addAll(Collection<? extends E>)}.
+   *
+   * @param method a {@code @CreatesCollectionObligation} method
+   * @return true if {@code method} inserts its inserted parameter as a single element
+   */
+  private boolean insertsSingleElement(ExecutableElement method) {
+    int index = getInsertedParameterIndex(method);
+    if (index < 0) {
+      return false;
+    }
+    TypeMirror elementType =
+        ResourceLeakUtils.getCollectionElementType(
+            method.getEnclosingElement().asType(), processingEnv);
+    return elementType != null
+        && types.isSameType(method.getParameters().get(index).asType(), elementType);
   }
 
   /**

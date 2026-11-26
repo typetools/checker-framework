@@ -22,6 +22,30 @@ class EnhancedForLoopAddsToCollection {
     }
   }
 
+  void addInLoopThroughParenthesizedReceiver() {
+    List<Resource> list = new CopyOnWriteArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    list.add(new Resource());
+    for (Resource r : list) {
+      r.close();
+      r.flush();
+      // :: error: unfulfilled.collection.obligations
+      (list).add(new Resource());
+    }
+  }
+
+  void addInLoopOverParenthesizedCollection() {
+    List<Resource> list = new CopyOnWriteArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    list.add(new Resource());
+    for (Resource r : (list)) {
+      r.close();
+      r.flush();
+      // :: error: unfulfilled.collection.obligations
+      ((list)).add(new Resource());
+    }
+  }
+
   @InheritableMustCall("close")
   static class Refill {
     @OwningCollection List<Resource> resources = new ArrayList<>();
