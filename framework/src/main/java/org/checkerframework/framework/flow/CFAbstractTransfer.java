@@ -1015,8 +1015,8 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns a test for expressions whose values might change after the given operand of a
-   * comparison produces its value and before the comparison completes. Returns null if no
-   * variable, field, or array element is written in that time.
+   * comparison produces its value and before the comparison completes. Returns null if no variable,
+   * field, or array element is written in that time.
    *
    * <p>A client uses the test for an expression that the abstract value of the operand depends on,
    * such as {@code a} in {@code @LTLengthOf("a")}. If the test returns true, the abstract value
