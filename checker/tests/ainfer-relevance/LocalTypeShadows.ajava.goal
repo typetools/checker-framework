@@ -31,11 +31,11 @@ public class LocalTypeShadows {
             }
 
             @org.checkerframework.dataflow.qual.SideEffectFree
-            void expectsSibling1(Foo this, Foo f) {
+            void expectsSibling1(Foo f) {
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            Foo getSibling1(Foo this) {
+            Foo getSibling1() {
                 return null;
             }
         }
