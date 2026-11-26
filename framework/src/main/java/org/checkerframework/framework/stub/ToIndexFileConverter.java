@@ -1958,7 +1958,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           // `superTypeDecl` declares.
           Class<?> counterpartMember = classpathDeclaredMemberType(superTypeDecl, identifier);
           if (counterpartMember != null) {
-            if (isInheritedClasspathMemberType(counterpartMember, pathPackage, importPackage)) {
+            // A member type is inherited only if it is accessible in every subtype along the path
+            // (JLS 8.5).
+            if (isAccessible(counterpartMember, pathPackage, importPackage)) {
               return counterpartMember;
             }
             // As above, a member type that is not inherited hides the member types of the same
@@ -2031,24 +2033,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return false;
     }
     return member.isProtected() || memberPackage.equals(pathPackage);
-  }
-
-  /**
-   * Returns true if the given member type, which is on the classpath and which a supertype declares
-   * or inherits, is inherited along an inheritance path. As for {@link #isInheritedStubMemberType},
-   * a member type is inherited only if it is accessible in every subtype along the path (JLS 8.5).
-   *
-   * @param member a member type on the classpath
-   * @param pathPackage the package of every subtype along the inheritance path, or null if they are
-   *     not all in one package
-   * @param importPackage the package of an import on demand to which {@code member} must also be
-   *     accessible, so that a protected member type counts only if it is in that package, or null
-   *     if there is no such import
-   * @return true if {@code member} is inherited along the inheritance path
-   */
-  private boolean isInheritedClasspathMemberType(
-      Class<?> member, @Nullable String pathPackage, @Nullable String importPackage) {
-    return member.getDeclaringClass() != null && isAccessible(member, pathPackage, importPackage);
   }
 
   /**
@@ -2205,9 +2189,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that the classpath counterpart of {@code
-   * declaration} itself declares, or null if there is none. The result can be any member type that
-   * the counterpart declares, including a private or otherwise inaccessible one; each caller checks
-   * whether the result is accessible where the caller uses it.
+   * declaration} itself declares, or null if there is none. The result can be private or otherwise
+   * inaccessible, because a class can refer to its own member types whatever their access.
    *
    * @param declaration a type declaration in a stub file
    * @param identifier the simple name of a member type
@@ -2480,7 +2463,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private static boolean isAccessible(
       Class<?> member, @Nullable String packageName, @Nullable String importPackage) {
-    Class<?> declaringClass = member.getDeclaringClass();
+    Class<?> declaringClass;
+    try {
+      declaringClass = member.getDeclaringClass();
+    } catch (LinkageError | SecurityException e) {
+      // The declaring class cannot be read; judge accessibility by the modifiers alone.
+      declaringClass = null;
+    }
     if (declaringClass != null && declaringClass.isInterface()) {
       // A member type of an interface is implicitly public.
       return true;
