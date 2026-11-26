@@ -98,6 +98,14 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> {
 
+  // Many maps and sets in this class are keyed by JavaParser nodes, and they are identity-based
+  // (IdentityHashMap, or a set backed by one).  A JavaParser node's `equals` and `hashCode` compare
+  // its whole subtree, but they ignore the node's location, such as its parent.  An ordinary
+  // HashMap keyed by nodes would therefore be slow, because each lookup traverses the key's
+  // subtree.  It would also be wrong, because two distinct declarations with identical text would
+  // share an entry.  An example is the two member types `X` in `class A { class X {} }` and
+  // `class B { class X {} }`, whose binary names differ.
+
   // The asm library is not on this class's compile classpath, so the following three constants
   // are written literally rather than as references to fields of org.objectweb.asm.TypePath.
 
@@ -182,10 +190,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
   }
 
-  /**
-   * A cache of the import contexts of the stub file's compilation units. It is an identity map
-   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
-   */
+  /** A cache of the import contexts of the stub file's compilation units. */
   private final IdentityHashMap<CompilationUnit, ImportContext> importContexts =
       new IdentityHashMap<>();
 
@@ -214,34 +219,28 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * A cache for {@link #resolve}. Maps a compilation unit of the stub file, and a class name as
    * written in it, to the binary name that the class name identifies, or to null if resolution
    * fails. The compilation unit is part of the key because its package and imports affect the
-   * result. It is an identity map because a JavaParser node's {@code equals} and {@code hashCode}
-   * compare its whole subtree.
+   * result.
    */
   private final IdentityHashMap<CompilationUnit, Map<String, @Nullable @BinaryName String>>
       resolveCache = new IdentityHashMap<>();
 
   /**
    * A cache for {@link #memberTypeDeclaration}. Maps a type declaration of the stub file to a map
-   * from the simple name of each of its member types to that member type's declaration. It is an
-   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
-   * subtree.
+   * from the simple name of each of its member types to that member type's declaration.
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<String, TypeDeclaration<?>>>
       memberTypeDeclarationCache = new IdentityHashMap<>();
 
   /**
    * A cache for {@link #topLevelType}. Maps a compilation unit of the stub file to a map from the
-   * simple name of each of its top-level types to that type's declaration. It is an identity map
-   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
+   * simple name of each of its top-level types to that type's declaration.
    */
   private final IdentityHashMap<CompilationUnit, Map<String, TypeDeclaration<?>>>
       topLevelTypeCache = new IdentityHashMap<>();
 
   /**
    * A cache for {@link #classpathDeclaredMemberType}. Maps a type declaration of the stub file to
-   * the class on the classpath that has the same binary name, or to null if there is none. It is an
-   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
-   * subtree.
+   * the class on the classpath that has the same binary name, or to null if there is none.
    */
   private final IdentityHashMap<TypeDeclaration<?>, @Nullable Class<?>> classpathClassCache =
       new IdentityHashMap<>();
@@ -293,9 +292,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * A cache for {@link #classpathMemberClass}. Maps a type declaration of the stub file, and the
-   * other arguments of a call to {@link #classpathMemberClass}, to the result of the call. It is an
-   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
-   * subtree.
+   * other arguments of a call to {@link #classpathMemberClass}, to the result of the call.
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<ClasspathMemberQuery, @Nullable Class<?>>>
       classpathMemberClassCache = new IdentityHashMap<>();
@@ -1269,7 +1266,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (!(child instanceof AnnotationExpr) || !(n instanceof NodeWithAnnotations<?> annotated)) {
       return false;
     }
-    // Compare by identity, because a JavaParser node's `equals` compares its whole subtree.
+    // Compare by identity; see the comment at the top of this class.
     for (AnnotationExpr anno : annotated.getAnnotations()) {
       if (anno == child) {
         return true;
@@ -1832,7 +1829,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that a type declaration of the stub file
-   * inherits from its supertypes.
+   * inherits from its supertypes. The member types of a supertype that the stub file declares
+   * include the ones that its classpath counterpart declares, even if the stub file omits them.
    *
    * @param declaration a type declaration in the stub file
    * @param identifier the simple name of a member type
@@ -1953,15 +1951,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             // supertypes of `superTypeDecl` (JLS 8.5).
             continue;
           }
-          // A stub file often omits some member types of a type that is on the classpath.
-          Class<?> classpathNestedType = classpathDeclaredMemberType(superTypeDecl, identifier);
-          Class<?> classpathDeclaringType =
-              classpathNestedType == null ? null : classpathNestedType.getDeclaringClass();
-          if (classpathNestedType != null && classpathDeclaringType != null) {
-            // A member type of an interface is implicitly public.
-            if (classpathDeclaringType.isInterface()
-                || isAccessible(classpathNestedType, pathPackage, importPackage)) {
-              return classpathNestedType;
+          // The stub file often omits a member type that the classpath counterpart of
+          // `superTypeDecl` declares.
+          Class<?> counterpartMember = classpathDeclaredMemberType(superTypeDecl, identifier);
+          if (counterpartMember != null) {
+            // A member type is inherited only if it is accessible in every subtype along the path
+            // (JLS 8.5).
+            if (isAccessible(counterpartMember, pathPackage, importPackage)) {
+              return counterpartMember;
             }
             // As above, a member type that is not inherited hides the member types of the same
             // name in the supertypes.
@@ -2189,8 +2186,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that the classpath counterpart of {@code
-   * declaration} itself declares, or null if there is none. The result may be private, because a
-   * class can refer to its own private member types.
+   * declaration} itself declares, or null if there is none. The result can be private or otherwise
+   * inaccessible, because a class can refer to its own member types whatever their access.
    *
    * @param declaration a type declaration in a stub file
    * @param identifier the simple name of a member type
@@ -2417,11 +2414,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Class<?> member = declaredMemberClass(clazz, identifier);
     if (member != null) {
       // A member type that `clazz` declares hides every member type of the same name in the
-      // supertypes of `clazz`, even if it is not inherited.  A member type of an interface is
-      // implicitly public.
-      return (!inherited || clazz.isInterface() || isAccessible(member, packageName, importPackage))
-          ? member
-          : null;
+      // supertypes of `clazz`, even if it is not inherited.
+      return (!inherited || isAccessible(member, packageName, importPackage)) ? member : null;
     }
     // A supertype's member type is inherited by `clazz` only if it is accessible from `clazz`.
     String superPackageName = clazz.getPackageName().equals(packageName) ? packageName : null;
@@ -2455,6 +2449,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private static boolean isAccessible(
       Class<?> member, @Nullable String packageName, @Nullable String importPackage) {
+    Class<?> declaringClass;
+    try {
+      declaringClass = member.getDeclaringClass();
+    } catch (LinkageError | SecurityException e) {
+      // The declaring class cannot be read; judge accessibility by the modifiers alone.
+      declaringClass = null;
+    }
+    if (declaringClass != null && declaringClass.isInterface()) {
+      // A member type of an interface is implicitly public.
+      return true;
+    }
     int modifiers = member.getModifiers();
     if (Modifier.isPublic(modifiers)) {
       return true;
