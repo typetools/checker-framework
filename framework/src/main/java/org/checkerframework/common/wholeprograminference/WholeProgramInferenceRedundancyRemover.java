@@ -17,11 +17,11 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Determines which inferred qualifiers are redundant: a qualifier is redundant at a location if the
+ * Removes inferred qualifiers that are redundant: a qualifier is redundant at a location if the
  * location has that qualifier even when no annotation is written there. Whole-program inference
  * omits redundant qualifiers from the files that it writes.
  */
-/*package-private*/ final class WholeProgramInferenceDefaults {
+/*package-private*/ final class WholeProgramInferenceRedundancyRemover {
 
   /** The type factory whose qualifiers and defaults are used. */
   private final AnnotatedTypeFactory atypeFactory;
@@ -34,12 +34,69 @@ import org.checkerframework.javacutil.AnnotationUtils;
   private final Map<Element, @Nullable AnnotatedTypeMirror> defaultedTypes = new HashMap<>();
 
   /**
-   * Creates a new WholeProgramInferenceDefaults.
+   * Creates a new WholeProgramInferenceRedundancyRemover.
    *
    * @param atypeFactory a type factory, whose qualifiers and defaults are used
    */
-  /*package-private*/ WholeProgramInferenceDefaults(AnnotatedTypeFactory atypeFactory) {
+  /*package-private*/ WholeProgramInferenceRedundancyRemover(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
+  }
+
+  /**
+   * Removes from {@code atm}, the inferred type of {@code elt}, each primary annotation, and each
+   * annotation on an array component type at any depth, that would be redundant.
+   *
+   * @param atm the inferred type of {@code elt}, which this method side-effects
+   * @param elt a field or formal parameter
+   */
+  /*package-private*/ void removeRedundantAnnotations(AnnotatedTypeMirror atm, Element elt) {
+    removeRedundantAnnotationsUsingDefaulted(atm, defaultedType(elt));
+  }
+
+  /**
+   * Removes from {@code returnType}, the inferred return type of {@code methodElt}, each primary
+   * annotation, and each annotation on an array component type at any depth, that would be
+   * redundant.
+   *
+   * @param returnType the inferred return type of {@code methodElt}, which this method side-effects
+   * @param methodElt a method
+   */
+  /*package-private*/ void removeRedundantReturnTypeAnnotations(
+      AnnotatedTypeMirror returnType, ExecutableElement methodElt) {
+    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
+    removeRedundantAnnotationsUsingDefaulted(
+        returnType, methodType == null ? null : methodType.getReturnType());
+  }
+
+  /**
+   * Removes from {@code receiverType}, the inferred receiver type of {@code methodElt}, each
+   * primary annotation, and each annotation on an array component type at any depth, that would be
+   * redundant.
+   *
+   * @param receiverType the inferred receiver type of {@code methodElt}, which this method
+   *     side-effects
+   * @param methodElt a method or constructor
+   */
+  /*package-private*/ void removeRedundantReceiverAnnotations(
+      AnnotatedTypeMirror receiverType, ExecutableElement methodElt) {
+    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
+    removeRedundantAnnotationsUsingDefaulted(
+        receiverType, methodType == null ? null : methodType.getReceiverType());
+  }
+
+  /**
+   * Returns true if {@code anno} is an alias for a type qualifier of the type factory. Writing such
+   * a declaration annotation on an element gives the element's type the aliased type qualifier, so
+   * none of the element's type annotations is redundant, even one that the element's type has when
+   * no annotation is written on it.
+   *
+   * @param anno a declaration annotation that whole-program inference has inferred
+   * @return true if {@code anno} is an alias for a type qualifier
+   */
+  /*package-private*/ boolean isAliasForTypeQualifier(AnnotationMirror anno) {
+    AnnotationMirror canonical = atypeFactory.canonicalAnnotation(anno);
+    return !AnnotationUtils.areSameByName(canonical, anno)
+        && atypeFactory.isSupportedQualifier(canonical);
   }
 
   /**
@@ -56,7 +113,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
    * @return the type that {@code elt} has when no annotation is written on it, or null if that type
    *     is not known
    */
-  /*package-private*/ @Nullable AnnotatedTypeMirror defaultedType(Element elt) {
+  private @Nullable AnnotatedTypeMirror defaultedType(Element elt) {
     if (defaultedTypes.containsKey(elt)) {
       return defaultedTypes.get(elt);
     }
@@ -89,31 +146,25 @@ import org.checkerframework.javacutil.AnnotationUtils;
   }
 
   /**
-   * Returns the type that the return type of {@code methodElt} has when no annotation is written on
-   * it. The result must not be side-effected.
+   * Removes from {@code atm} each primary annotation, and each annotation on an array component
+   * type at any depth, that would be redundant (see {@link #isRedundant}).
    *
-   * @param methodElt a method
-   * @return the type that the return type of {@code methodElt} has when no annotation is written on
-   *     it, or null if that type is not known
+   * @param atm the inferred type of a location, which this method side-effects
+   * @param defaulted the type that the location has when no annotation is written there, or null if
+   *     that type is not known
    */
-  /*package-private*/ @Nullable AnnotatedTypeMirror defaultedReturnType(
-      ExecutableElement methodElt) {
-    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
-    return methodType == null ? null : methodType.getReturnType();
-  }
-
-  /**
-   * Returns the type that the receiver of {@code methodElt} has when no annotation is written on
-   * it. The result must not be side-effected.
-   *
-   * @param methodElt a method or constructor
-   * @return the type that the receiver of {@code methodElt} has when no annotation is written on
-   *     it, or null if that type is not known or {@code methodElt} has no receiver
-   */
-  /*package-private*/ @Nullable AnnotatedTypeMirror defaultedReceiverType(
-      ExecutableElement methodElt) {
-    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
-    return methodType == null ? null : methodType.getReceiverType();
+  private void removeRedundantAnnotationsUsingDefaulted(
+      AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
+    for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
+      if (isRedundant(anno, atm, defaulted)) {
+        atm.removePrimaryAnnotation(anno);
+      }
+    }
+    if (atm instanceof AnnotatedArrayType array
+        && defaulted instanceof AnnotatedArrayType defaultedArray) {
+      removeRedundantAnnotationsUsingDefaulted(
+          array.getComponentType(), defaultedArray.getComponentType());
+    }
   }
 
   /**
@@ -129,7 +180,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
    *     that type is not known
    * @return true if writing {@code anno} at the location would be redundant
    */
-  /*package-private*/ boolean isRedundant(
+  private boolean isRedundant(
       AnnotationMirror anno, AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
     if (defaulted == null
         || atm.getKind() == TypeKind.TYPEVAR
@@ -138,44 +189,5 @@ import org.checkerframework.javacutil.AnnotationUtils;
     }
     AnnotationMirror defaultedAnno = defaulted.getPrimaryAnnotationInHierarchy(anno);
     return defaultedAnno != null && AnnotationUtils.areSame(anno, defaultedAnno);
-  }
-
-  /**
-   * Removes from {@code atm} each primary annotation, and each annotation on an array component
-   * type at any depth, that would be redundant (see {@link #isRedundant}).
-   *
-   * @param atm the inferred type of a location, which this method side-effects; or null
-   * @param defaulted the type that the location has when no annotation is written there, or null if
-   *     that type is not known
-   */
-  /*package-private*/ void removeRedundantAnnotations(
-      @Nullable AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
-    if (atm == null) {
-      return;
-    }
-    for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
-      if (isRedundant(anno, atm, defaulted)) {
-        atm.removePrimaryAnnotation(anno);
-      }
-    }
-    if (atm instanceof AnnotatedArrayType array
-        && defaulted instanceof AnnotatedArrayType defaultedArray) {
-      removeRedundantAnnotations(array.getComponentType(), defaultedArray.getComponentType());
-    }
-  }
-
-  /**
-   * Returns true if {@code anno} is an alias for a type qualifier of the type factory. Writing such
-   * a declaration annotation on an element gives the element's type the aliased type qualifier, so
-   * none of the element's type annotations is redundant, even one that the element's type has when
-   * no annotation is written on it.
-   *
-   * @param anno a declaration annotation that whole-program inference has inferred
-   * @return true if {@code anno} is an alias for a type qualifier
-   */
-  /*package-private*/ boolean isAliasForTypeQualifier(AnnotationMirror anno) {
-    AnnotationMirror canonical = atypeFactory.canonicalAnnotation(anno);
-    return !AnnotationUtils.areSameByName(canonical, anno)
-        && atypeFactory.isSupportedQualifier(canonical);
   }
 }
