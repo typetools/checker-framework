@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The bottom qualifier of the UnboxingWeakens Checker. An unboxing conversion changes it to
- * {@link UWTop}.
+ * The bottom qualifier of the UnboxingWeakens Checker. An unboxing conversion changes it to {@link
+ * UWTop}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
