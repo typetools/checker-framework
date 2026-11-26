@@ -117,8 +117,9 @@ public class UnaryOperation extends JavaExpression {
   @Override
   public String toString() {
     String operandString = operand.toString();
-    // Every unary operator binds more tightly than every binary operator.
-    if (operand instanceof BinaryOperation) {
+    // Every unary operator binds more tightly than every binary operator.  An unknown expression,
+    // such as a conditional expression "b ? x : y", might bind less tightly than every operator.
+    if (operand instanceof BinaryOperation || operand instanceof Unknown) {
       operandString = "(" + operandString + ")";
     }
     return switch (operationKind) {
