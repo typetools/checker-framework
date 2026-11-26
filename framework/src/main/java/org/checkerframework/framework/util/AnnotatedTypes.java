@@ -1446,7 +1446,7 @@ public final class AnnotatedTypes {
    *     "overrides" the other)
    * @deprecated To compare the signatures of an overriding method and an overridden method, express
    *     both signatures in terms of the same type variables; see {@link
-   *     org.checkerframework.common.basetype.BaseTypeVisitor.OverrideChecker#adaptToOverridden}.
+   *     org.checkerframework.common.basetype.OverrideChecker#adaptToOverridden}.
    */
   @Deprecated(forRemoval = true, since = "4.4.0") // 2026-10-22
   public static boolean areCorrespondingTypeVariables(
