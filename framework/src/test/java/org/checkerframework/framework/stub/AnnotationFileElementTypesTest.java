@@ -1,7 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilterInputStream;
@@ -101,7 +99,8 @@ public class AnnotationFileElementTypesTest {
   private List<String> diagnostics(
       String checker, @Nullable ClassLoader checkerLoader, String... checkerOptions)
       throws IOException {
-    File sourceFile = write(new File(tmp.getRoot(), "src/Test.java"), "class Test {}");
+    File sourceFile =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "src/Test.java"), "class Test {}");
     File classes = tmp.newFolder();
     List<String> options = new ArrayList<>();
     if (checkerLoader == null) {
@@ -280,7 +279,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unlistableDirectory() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(dir.setReadable(false));
     try {
@@ -301,7 +300,7 @@ public class AnnotationFileElementTypesTest {
   public void unlistableDirectoryInDirectory() throws IOException {
     File dir = tmp.newFolder("stubdir");
     File sub = new File(dir, "sub");
-    write(new File(sub, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(sub, "A.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(sub.setReadable(false));
     try {
@@ -319,7 +318,7 @@ public class AnnotationFileElementTypesTest {
   /** Tests that a named archive that cannot be opened yields one warning. */
   @Test
   public void corruptArchive() throws IOException {
-    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
+    File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
     assertOneWarning(
         "Could not read annotation resource: " + jar.getPath() + ": ", diagnostics(jar.getPath()));
   }
@@ -330,7 +329,7 @@ public class AnnotationFileElementTypesTest {
    */
   @Test
   public void corruptAjavaArchive() throws IOException {
-    File zip = write(new File(tmp.getRoot(), "ajava.zip"), "not a zip file");
+    File zip = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "ajava.zip"), "not a zip file");
     ByteArrayOutputStream err = new ByteArrayOutputStream();
     PrintStream originalErr = System.err;
     List<String> diagnostics;
@@ -350,7 +349,7 @@ public class AnnotationFileElementTypesTest {
    */
   @Test
   public void corruptArchiveCompoundChecker() throws IOException {
-    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
+    File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
     assertOneWarning(
         "Could not read annotation resource: " + jar.getPath() + ": ",
         diagnostics(
@@ -366,7 +365,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void leadingWhitespaceOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    write(
+    AnnotationFileTestUtil.write(
         new File(classpathDir, "Padded.astub"),
         " ".repeat(150) + "package p; class NoSuchClass {}");
     assertHasDiagnostic(
@@ -377,7 +376,8 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unreadableFileOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    File stub = write(new File(classpathDir, "Unreadable.astub"), "package p;");
+    File stub =
+        AnnotationFileTestUtil.write(new File(classpathDir, "Unreadable.astub"), "package p;");
     Assume.assumeTrue(stub.setReadable(false));
     // Making a file unreadable has no effect for the root user.
     Assume.assumeFalse(Files.isReadable(stub.toPath()));
@@ -395,7 +395,7 @@ public class AnnotationFileElementTypesTest {
   public void unreadableCheckerStubFile() throws IOException {
     File classpathDir = tmp.newFolder();
     // The checker's stub files are in the same directory as the checker's class file.
-    write(
+    AnnotationFileTestUtil.write(
         new File(classpathDir, "org/checkerframework/common/value/jdk.astub"),
         "package java.lang;");
     try (URLClassLoader checkerLoader = new CloseFailingClassLoader(classpathDir)) {
@@ -412,7 +412,9 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unreadableAjavaFile() throws IOException {
     File ajavaDir = tmp.newFolder("ajava");
-    File ajava = write(new File(ajavaDir, "Test-" + CHECKER + ".ajava"), "class Test {}");
+    File ajava =
+        AnnotationFileTestUtil.write(
+            new File(ajavaDir, "Test-" + CHECKER + ".ajava"), "class Test {}");
     Assume.assumeTrue(ajava.setReadable(false));
     // Making a file unreadable has no effect for the root user.
     Assume.assumeFalse(Files.isReadable(ajava.toPath()));

@@ -1,7 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,7 +106,7 @@ public class AnnotationFileUtilTest {
    */
   @Test
   public void corruptArchive() throws IOException {
-    File jar = write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
+    File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
 
     List<AnnotationFileResource> resources =
         AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
@@ -122,10 +120,10 @@ public class AnnotationFileUtilTest {
   @Test
   public void directoryUsesOnlyFilesWithMatchingName() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
-    write(new File(dir, "notes.txt"), "not a stub file");
-    File b = write(new File(dir, "sub/B.astub"), "package p;");
-    write(new File(dir, "sub/C.ajava"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "notes.txt"), "not a stub file");
+    File b = AnnotationFileTestUtil.write(new File(dir, "sub/B.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "sub/C.ajava"), "package p;");
 
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath(), b.getAbsolutePath()),
@@ -150,7 +148,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void archiveInDirectoryIsNotOpened() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     writeZip(new File(dir, "backup.zip"), "A.astub");
     writeZip(new File(dir, "sub/lib.jar"), "B.astub");
 
@@ -172,8 +170,8 @@ public class AnnotationFileUtilTest {
         descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
 
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
-    write(new File(dir, "._A.astub"), "not a stub file");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "._A.astub"), "not a stub file");
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
@@ -183,8 +181,8 @@ public class AnnotationFileUtilTest {
   @Test
   public void hiddenDirectoriesAreNotSearched() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
-    write(new File(dir, ".history/A_20231010.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, ".history/A_20231010.astub"), "package p;");
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
@@ -219,7 +217,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void explicitHiddenDirectoryIsSearched() throws IOException {
     File dir = tmp.newFolder(".stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
@@ -229,7 +227,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void archiveInDirectoryIsReported() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     File backup = writeZip(new File(dir, "backup.zip"), "A.astub");
     File lib = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
 
@@ -246,9 +244,9 @@ public class AnnotationFileUtilTest {
   @Test
   public void unlistableDirectoryInDirectoryIsReported() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     File sub = new File(dir, "sub");
-    write(new File(sub, "B.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(sub, "B.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(sub.setReadable(false));
     try {
@@ -270,8 +268,9 @@ public class AnnotationFileUtilTest {
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
   @Test
   public void explicitHiddenFileIsUsed() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), ".Foo-checker.ajava"), "package p;");
-    File stub = write(new File(tmp.getRoot(), ".Foo.astub"), "package p;");
+    File ajava =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), ".Foo-checker.ajava"), "package p;");
+    File stub = AnnotationFileTestUtil.write(new File(tmp.getRoot(), ".Foo.astub"), "package p;");
 
     Assert.assertEquals(
         Arrays.asList(ajava.getAbsolutePath()), descriptions(ajava, AnnotationFileType.AJAVA));
@@ -364,7 +363,8 @@ public class AnnotationFileUtilTest {
   /** Tests that an archive that cannot be opened yields an exception. */
   @Test
   public void archiveEntriesInUnreadableArchive() throws IOException {
-    File notZip = write(new File(tmp.getRoot(), "not-an-archive.zip"), "package p;");
+    File notZip =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "not-an-archive.zip"), "package p;");
 
     Assert.assertThrows(
         IOException.class, () -> AnnotationFileUtil.archiveEntries(notZip, "-checker.ajava"));
@@ -415,7 +415,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void unlistableDirectory() throws IOException {
     File dir = tmp.newFolder("stubs");
-    write(new File(dir, "A.astub"), "class A {}");
+    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "class A {}");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(dir.setReadable(false));
     try {
