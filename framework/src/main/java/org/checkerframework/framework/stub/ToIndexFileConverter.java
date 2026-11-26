@@ -412,6 +412,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * scene (it does not create a new scene).
    *
    * @param iu {@link StubUnit} representing stubfile
+   * @param scene the scene to augment with the annotations in {@code iu}
    */
   private static void extractScene(StubUnit iu, AScene scene) {
     // Every name is written in a compilation unit, whose package and imports apply to it.
@@ -1513,8 +1514,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable @BinaryName String onDemandImportClassMemberBinaryName(
       String prefix, String className, @Nullable CompilationUnit cu) {
-    @SuppressWarnings("signature") // a binary name of a class
-    @ClassGetName String prefixBinaryName = loadClassBinaryName(prefix);
+    @BinaryName String prefixBinaryName = loadClassBinaryName(prefix);
     Class<?> prefixClass = prefixBinaryName == null ? null : loadClass(prefixBinaryName);
     if (prefixClass == null) {
       return null;
@@ -1614,8 +1614,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
   private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
-    String cuPkgName = importContext(cu).pkgName();
-    String cuPackage = cuPkgName == null ? "" : cuPkgName;
+    String cuPackage = importPackage(cu);
     if (member instanceof TypeDeclaration<?> memberDecl) {
       Node parent = memberDecl.getParentNode().orElse(null);
       if ((parent instanceof ClassOrInterfaceDeclaration classDecl && classDecl.isInterface())
