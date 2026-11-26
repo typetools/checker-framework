@@ -1010,6 +1010,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // is unbounded, so it must be cleared whether or not caching is enabled.
     lambdaParamTypes.clear();
 
+    // The previous compilation unit's ajava annotations do not apply to the new one.
+    boolean hadCurrentFileAjavaTypes = currentFileAjavaTypes != null;
+    currentFileAjavaTypes = null;
+
     if (root != null && checker.hasOption("ajava")) {
       // Search for an ajava file with annotations for the current source file and the current
       // checker. It will be in a directory specified by the "ajava" option in a subdirectory
@@ -1068,7 +1072,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // one match no file is parsed for this class and a warning is issued instead.
           // The user can disambiguate by supplying a root directory, instead of specific
           // files.
-          if (ajavaLocation.endsWith(File.separator + ajavaEnding)) {
+          // ajavaEnding uses "/", but ajavaLocation uses the file system's separator.
+          if (ajavaLocation.endsWith(
+              File.separator + ajavaEnding.replace('/', File.separatorChar))) {
             // This is a candidate ajava file. If it is the only candidate, then it
             // might be unambiguous. If not, issue a warning.
             candidateAjavaFiles.add(ajavaLocation);
@@ -1087,8 +1093,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       } else if (candidateAjavaFiles.size() > 1) {
         checker.reportWarning(root, "ambiguous.ajava", String.join(", ", candidateAjavaFiles));
       }
-    } else {
-      currentFileAjavaTypes = null;
+    }
+
+    // Cached types and declaration annotations may reflect the previous compilation unit's ajava
+    // annotations, or may lack the new compilation unit's ajava annotations.
+    if (hadCurrentFileAjavaTypes || currentFileAjavaTypes != null) {
+      if (shouldCache) {
+        elementCache.clear();
+      }
+      cacheDeclAnnos.clear();
+      // Populated in lockstep with `cacheDeclAnnos`.
+      inheritedSideEffectsOnlyExpressions.clear();
     }
   }
 
@@ -3235,13 +3250,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeKind exprKind = exprType.getKind();
     TypeKind widenedKind = widenedType.getKind();
 
-    if (!TypeKindUtils.isNumeric(widenedKind)) {
+    if (!TypeKindUtils.isNumericPrimitive(widenedKind)) {
       // The target type is not a numeric primitive, so primitive widening is not applicable.
       return exprType;
     }
 
     AnnotatedPrimitiveType exprPrimitiveType;
-    if (TypeKindUtils.isNumeric(exprKind)) {
+    if (TypeKindUtils.isNumericPrimitive(exprKind)) {
       exprPrimitiveType = (AnnotatedPrimitiveType) exprType;
     } else if (TypesUtils.isNumericBoxed(exprType.getUnderlyingType())) {
       exprPrimitiveType = getUnboxedType((AnnotatedDeclaredType) exprType);
@@ -3368,7 +3383,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
         TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
-    if (TypeKindUtils.isNumeric(resultTypeKind)) {
+    if (TypeKindUtils.isNumericPrimitive(resultTypeKind)) {
       TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
       AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
       AnnotatedPrimitiveType rightUnboxed = applyUnboxing(right);
@@ -3648,7 +3663,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * AnnotatedTypeMirror#addAnnotation}, so it is called for every annotation added to a type.
    *
    * <p>This implementation handles the case when the passed annotation is an alias of another
-   * annotation. Subclasses can do additional work.
+   * annotation, and it calls {@link QualifierHierarchy#canonicalize} on supported qualifiers.
+   * Subclasses can do additional work.
    *
    * @param a the qualifier to canonicalize
    * @return the canonical annotation, which might be the given annotation
@@ -3657,16 +3673,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
     String qualName = elem.getQualifiedName().toString();
     Alias alias = aliases.get(qualName);
+    AnnotationMirror result;
     if (alias == null) {
-      return a;
-    }
-    if (alias.copyElements) {
+      result = a;
+    } else if (alias.copyElements) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, alias.canonicalName);
       builder.copyElementValuesFromAnnotation(a, alias.ignorableElements);
-      return builder.build();
+      result = builder.build();
     } else {
-      return alias.canonical;
+      result = alias.canonical;
     }
+    if (isSupportedQualifier(result)) {
+      result = qualHierarchy.canonicalize(result);
+    }
+    return result;
   }
 
   /**
