@@ -1035,6 +1035,42 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
   }
 
+  /**
+   * A private member type that a supertype declares, in the stub file or in its classpath
+   * counterpart, hides the member types of the same name in the supertypes of that supertype. So a
+   * simple name in a subtype resolves to the member type that an enclosing type declares.
+   */
+  @Test
+  public void testPrivateMemberTypeHidesInheritedMemberTypeFromOuterScope() throws Exception {
+    // The stub file declares the private member type.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Outer {",
+            "  static class N {}",
+            "  static class S extends Base { private static class N {} }",
+            "  static class C extends S {",
+            "    void m(N n) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
+
+    // The classpath counterpart of Middle declares the private member type, which the stub file
+    // omits.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Base { static class N {} }",
+            "class Middle extends Base {}",
+            "class Outer {",
+            "  static class N {}",
+            "  static class C extends Middle {",
+            "    void m(N n) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
+  }
+
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicInheritance() throws Exception {
