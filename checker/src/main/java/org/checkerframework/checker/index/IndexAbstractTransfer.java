@@ -12,6 +12,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class provides methods shared by the Index Checker's internal checkers in their transfer
@@ -36,8 +37,11 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     // Refine the then branch.
     refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
-    // Refine the else branch, which is the inverse of the then branch.
-    refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    // Refine the else branch, which is the inverse of the then branch, unless an operand might be
+    // NaN.
+    if (!isFloatingPointComparison(rfi)) {
+      refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    }
 
     return rfi.newResult;
   }
@@ -55,8 +59,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     // Refine the then branch.
     refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.thenStore, in);
 
-    // Refine the else branch.
-    refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    // Refine the else branch, unless an operand might be NaN.
+    if (!isFloatingPointComparison(rfi)) {
+      refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.elseStore, in);
+    }
 
     return rfi.newResult;
   }
@@ -74,8 +80,10 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     // Refine the then branch. A <= is just a flipped >=.
     refineGTE(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
-    // Refine the else branch.
-    refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    // Refine the else branch, unless an operand might be NaN.
+    if (!isFloatingPointComparison(rfi)) {
+      refineGT(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    }
     return rfi.newResult;
   }
 
@@ -92,20 +100,35 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     // Refine the then branch. A < is just a flipped >.
     refineGT(rfi.right, rfi.rightAnno, rfi.left, rfi.leftAnno, rfi.thenStore, in);
 
-    // Refine the else branch.
-    refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    // Refine the else branch, unless an operand might be NaN.
+    if (!isFloatingPointComparison(rfi)) {
+      refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
+    }
     return rfi.newResult;
   }
 
   /**
-   * Refines the given store, assuming that the value of {@code left} is greater than the value of
-   * {@code right}.
+   * Returns true if the given comparison is a floating-point comparison: that is, if an operand has
+   * a floating-point type, primitive or boxed. An operand of such a comparison might be NaN. Every
+   * comparison with NaN is false, so the else branch of such a comparison does not imply the
+   * inverse comparison: if {@code d} is NaN, then both {@code i > d} and {@code i <= d} are false.
    *
-   * @param left the larger operand of a comparison
-   * @param leftAnno the annotation of {@code left}
-   * @param right the smaller operand of the comparison
-   * @param rightAnno the annotation of {@code right}
-   * @param store the store to refine
+   * @param rfi refinement information for a numerical comparison
+   * @return true if the comparison is a floating-point comparison
+   */
+  private static boolean isFloatingPointComparison(IndexRefinementInfo rfi) {
+    return TypesUtils.isFloatingPoint(rfi.left.getType())
+        || TypesUtils.isFloatingPoint(rfi.right.getType());
+  }
+
+  /**
+   * Refines the given store, given that {@code left > right} holds in it.
+   *
+   * @param left the greater operand of a comparison
+   * @param leftAnno the annotation on the type of {@code left}
+   * @param right the lesser operand of the comparison
+   * @param rightAnno the annotation on the type of {@code right}
+   * @param store the store to refine, in which {@code left > right} holds
    * @param in the input to the transfer function for the comparison
    */
   protected abstract void refineGT(
@@ -117,14 +140,13 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
       TransferInput<CFValue, CFStore> in);
 
   /**
-   * Refines the given store, assuming that the value of {@code left} is greater than or equal to
-   * the value of {@code right}.
+   * Refines the given store, given that {@code left >= right} holds in it.
    *
-   * @param left the larger-or-equal operand of a comparison
-   * @param leftAnno the annotation of {@code left}
-   * @param right the smaller-or-equal operand of the comparison
-   * @param rightAnno the annotation of {@code right}
-   * @param store the store to refine
+   * @param left the greater-or-equal operand of a comparison
+   * @param leftAnno the annotation on the type of {@code left}
+   * @param right the lesser-or-equal operand of the comparison
+   * @param rightAnno the annotation on the type of {@code right}
+   * @param store the store to refine, in which {@code left >= right} holds
    * @param in the input to the transfer function for the comparison
    */
   protected abstract void refineGTE(

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -148,6 +149,26 @@ public class OffsetEquation {
       }
     }
     return terms;
+  }
+
+  /**
+   * Returns true if the given predicate is true for any added or subtracted term of this.
+   *
+   * @param p a predicate on Java expression strings
+   * @return true if {@code p} is true for any term of this
+   */
+  public boolean anyTermMatches(Predicate<? super String> p) {
+    for (String term : addedTerms) {
+      if (p.test(term)) {
+        return true;
+      }
+    }
+    for (String term : subtractedTerms) {
+      if (p.test(term)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

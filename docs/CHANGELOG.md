@@ -13,11 +13,13 @@
 assignment node.  Its signature changed from
 `processCommonAssignment(TransferInput, Node lhs, Node rhs, S store, V rhsValue)`
 to
-`processCommonAssignment(TransferInput, AssignmentNode assignment, Node lhs, Node rhs, S store, V rhsValue)`.
+`processCommonAssignment(TransferInput, AssignmentNode assignment, Node lhs,
+Node rhs, S store, V rhsValue)`.
 A subclass that overrides the old signature must override the new one instead;
-`CFAbstractTransfer` no longer calls the old one.  New method `CFAbstractTransfer.rhsMayRelocateTarget()`
-returns true if evaluating an assignment's right-hand side might change the
-location that its target denotes, as in `n.next = (n = o)`.
+`CFAbstractTransfer` no longer calls the old one.  New method
+`CFAbstractTransfer.rhsMayRelocateTarget()` returns true if evaluating an
+assignment's right-hand side might change the location that its target
+denotes, as in `n.next = (n = o)`.
 
 Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
 result omits each node that might have a different value by the time the
@@ -34,6 +36,10 @@ subclass that needs its override to affect refinements must also override
 To refine an operand of a comparison, an override of
 `CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method
 `CFAbstractTransfer.insertValueForNodesWithValueOf`.
+
+New method `CFAbstractTransfer.mayChangeAfterOperand()` tells whether an
+expression that an operand's type depends on might change before the
+comparison completes.
 
 `CFAbstractStore.canAlias()` is now final.  It calls the new method
 `CFAbstractAnalysis.canAlias()`, which calls the new method

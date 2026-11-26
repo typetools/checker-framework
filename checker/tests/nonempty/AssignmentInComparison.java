@@ -38,6 +38,14 @@ class AssignmentInComparison {
     }
   }
 
+  // The call in the rhs might change the abstract value of the list that `slots` denotes, but not
+  // which array `slots` denotes, so it does not change which element the assignment stores into.
+  void callInRhsArrayElementTarget(List<String>[] slots, @NonEmpty List<String> ne) {
+    if ((slots[0] = newList()) == ne) {
+      @NonEmpty List<String> m = slots[0];
+    }
+  }
+
   // Not side-effect-free.
   static List<String> clearAndReturn(List<String> l) {
     l.clear();
