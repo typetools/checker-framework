@@ -1472,6 +1472,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the type declaration of the stub file that has the given binary name.
    *
+   * <p>A {@code $} in a binary name may separate a member type from its enclosing type, or it may
+   * be part of an identifier, as in a class named {@code Base$Generated}. This method matches the
+   * names of actual declarations, so it handles both.
+   *
    * @param node a node in the stub file's AST
    * @param binaryName a binary name
    * @return the type declaration, in {@code node}'s compilation unit, whose binary name is {@code
@@ -1482,26 +1486,68 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (!binaryName.startsWith(prefix)) {
       return null;
     }
-    String rest = binaryName.substring(prefix.length());
-    if (rest.contains(".")) {
+    String nameInPackage = binaryName.substring(prefix.length());
+    if (nameInPackage.contains(".")) {
       return null;
     }
     CompilationUnit cu = node.findCompilationUnit().orElse(null);
     if (cu == null) {
       return null;
     }
-    String[] identifiers = rest.split("\\$", -1);
-    TypeDeclaration<?> result = null;
-    for (TypeDeclaration<?> topLevel : cu.getTypes()) {
-      if (topLevel.getNameAsString().equals(identifiers[0])) {
-        result = topLevel;
-        break;
+    int end = -1;
+    do {
+      end = nameInPackage.indexOf('$', end + 1);
+      if (end < 0) {
+        end = nameInPackage.length();
       }
+      String topLevelName = nameInPackage.substring(0, end);
+      for (TypeDeclaration<?> topLevel : cu.getTypes()) {
+        if (topLevel.getNameAsString().equals(topLevelName)) {
+          TypeDeclaration<?> result = memberDeclarationOfBinaryName(topLevel, nameInPackage, end);
+          if (result != null) {
+            return result;
+          }
+        }
+      }
+    } while (end < nameInPackage.length());
+    return null;
+  }
+
+  /**
+   * Returns the type declaration, at or within {@code declaration}, whose binary name without its
+   * package is {@code nameInPackage}. Each {@code $} in {@code nameInPackage} at or after {@code
+   * start} may separate a member type from its enclosing type or may be part of an identifier; this
+   * method tries each possibility.
+   *
+   * @param declaration a type declaration in a stub file, whose binary name without its package is
+   *     {@code nameInPackage.substring(0, start)}
+   * @param nameInPackage a binary name without its package
+   * @param start the index in {@code nameInPackage} just after the name of {@code declaration};
+   *     either the length of {@code nameInPackage} or the index of a {@code $}
+   * @return the type declaration whose binary name without its package is {@code nameInPackage}, or
+   *     null if there is none
+   */
+  private @Nullable TypeDeclaration<?> memberDeclarationOfBinaryName(
+      TypeDeclaration<?> declaration, String nameInPackage, int start) {
+    if (start == nameInPackage.length()) {
+      return declaration;
     }
-    for (int i = 1; i < identifiers.length && result != null; i++) {
-      result = memberTypeDeclaration(result, identifiers[i]);
-    }
-    return result;
+    int end = start;
+    do {
+      end = nameInPackage.indexOf('$', end + 1);
+      if (end < 0) {
+        end = nameInPackage.length();
+      }
+      TypeDeclaration<?> member =
+          memberTypeDeclaration(declaration, nameInPackage.substring(start + 1, end));
+      if (member != null) {
+        TypeDeclaration<?> result = memberDeclarationOfBinaryName(member, nameInPackage, end);
+        if (result != null) {
+          return result;
+        }
+      }
+    } while (end < nameInPackage.length());
+    return null;
   }
 
   /**
