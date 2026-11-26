@@ -901,7 +901,9 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
         return operand;
       }
       case UNARY_MINUS -> {
-        if (operand instanceof ValueLiteral valueLiteral) {
+        // A literal of a non-numeric type, such as a boolean, is not folded.
+        if (operand instanceof ValueLiteral valueLiteral
+            && TypesUtils.isNumericPrimitive(valueLiteral.getType())) {
           if (valueLiteral.getValue() instanceof Character c) {
             // Unary numeric promotion: the negation of a char is an int.
             valueLiteral = new ValueLiteral(types.getPrimitiveType(TypeKind.INT), (int) c);
