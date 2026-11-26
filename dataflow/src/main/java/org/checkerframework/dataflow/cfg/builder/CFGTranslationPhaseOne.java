@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -321,15 +322,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Class declarations that have been encountered when building the control-flow graph for a
-   * method.
+   * method. It is a set because the CFG builder translates a finally block more than once, so it
+   * encounters a class declaration in a finally block more than once.
    */
-  private final List<ClassTree> declaredClasses;
+  private final Set<ClassTree> declaredClasses;
 
   /**
    * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
-   * initializer.
+   * initializer. It is a set because the CFG builder translates a finally block more than once, so
+   * it encounters a lambda in a finally block more than once.
    */
-  private final List<LambdaExpressionTree> declaredLambdas;
+  private final Set<LambdaExpressionTree> declaredLambdas;
 
   /** The ArithmeticException type. */
   protected final TypeMirror arithmeticExceptionType;
@@ -432,8 +435,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     breakLabels = new HashMap<>(4);
     continueLabels = new HashMap<>(4);
     returnNodes = new ArrayList<>();
-    declaredClasses = new ArrayList<>();
-    declaredLambdas = new ArrayList<>();
+    declaredClasses = new LinkedHashSet<>();
+    declaredLambdas = new LinkedHashSet<>();
 
     arithmeticExceptionType = getTypeMirror(ArithmeticException.class);
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
@@ -508,8 +511,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           returnNodes,
           regularExitLabel,
           exceptionalExitLabel,
-          declaredClasses,
-          declaredLambdas,
+          new ArrayList<>(declaredClasses),
+          new ArrayList<>(declaredLambdas),
           types);
     } finally {
       this.path = null;
@@ -2038,12 +2041,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
-   * enhanced for loop over an {@code Iterable}.
+   * Returns the declaration of a new, uniquely named variable that is initialized to the iterator
+   * of an enhanced for loop.
    *
-   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
-   * @param variableElement the element of the loop variable of the enhanced for loop; the new
-   *     variable has the same enclosing element
+   * @param iteratorCall the call to {@code iterator()} on the iterable expression of an enhanced
+   *     for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
    * @return the declaration of the new iterator variable
    */
   protected VariableTree createEnhancedForLoopIteratorVariable(
@@ -2086,13 +2090,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
-   * for loop over an array.
+   * Returns the declaration of a new, uniquely named variable that is initialized to the array of
+   * an enhanced for loop.
    *
-   * @param expression an array expression of an enhanced for loop, which initializes the new
-   *     variable
-   * @param variableElement the element of the loop variable of the enhanced for loop; the new
-   *     variable has the same enclosing element
+   * @param expression the array expression of an enhanced for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
    * @return the declaration of the new array variable
    */
   protected VariableTree createEnhancedForLoopArrayVariable(
@@ -2825,9 +2828,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
     closeAccessNode.setInSource(false);
     extendWithNode(closeAccessNode);
+    // The current path leads to the try statement.  The path of the close() call leads to the
+    // resource, which is a child of the try statement.
+    TreePath resourcePath = new TreePath(getCurrentPath(), resourceDeclarationTree);
     MethodInvocationNode closeCallNode =
-        new MethodInvocationNode(
-            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
+        new MethodInvocationNode(closeCall, closeAccessNode, Collections.emptyList(), resourcePath);
     closeCallNode.setInSource(false);
     extendWithMethodInvocationNode(closeCallNode);
 
