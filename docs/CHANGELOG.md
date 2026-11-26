@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+The new Delegation Checker verifies correctness of wrapper classes.
+
 ### Changes for type system implementers
 
 New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
@@ -41,8 +43,6 @@ Deprecated methods:
 ## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
-
-The new Delegation Checker verifies correctness of wrapper classes.
 
 A method with a purity annotation can call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
