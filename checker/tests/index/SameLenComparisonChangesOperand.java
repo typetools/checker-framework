@@ -94,4 +94,40 @@ public class SameLenComparisonChangesOperand {
       }
     }
   }
+
+  static class Box {
+    String text = "";
+
+    @Override
+    public String toString() {
+      return text;
+    }
+  }
+
+  // Not side-effect-free.
+  static String setText(Box box, String t) {
+    box.text = t;
+    return t;
+  }
+
+  // The string conversion of `box` calls `box.toString()`, whose result the call to `setText`
+  // changes.  So after the comparison, "p" + box might be longer than s.
+  void changedByToString(Box box, String s) {
+    if (("p" + box).length() == (s = setText(box, "abc")).length()) {
+      String u = "p" + box;
+      for (int k = 0; k < u.length(); k++) {
+        // :: error: (argument)
+        s.charAt(k);
+      }
+    }
+  }
+
+  void unchangedByToString(Box box, String s, String t) {
+    if (("p" + box).length() == (s = t).length()) {
+      String u = "p" + box;
+      for (int k = 0; k < u.length(); k++) {
+        s.charAt(k);
+      }
+    }
+  }
 }
