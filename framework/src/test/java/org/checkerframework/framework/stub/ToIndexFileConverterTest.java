@@ -924,6 +924,39 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand from a type in another package makes available a protected member type that
+   * the type inherits, if the import is in the package that declares the member type. A
+   * package-private member type is not inherited by a subclass in another package.
+   */
+  @Test
+  public void testOnDemandImportOfProtectedInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "import org.checkerframework.framework.stub.inheritanceb.ProtectedSub.*;",
+            "class Use {",
+            "  void m(ProtectedInner x) {}",
+            "  void n(Integer i) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "Use",
+        "m(Lorg/checkerframework/framework/stub/inheritancea/ProtectedBase$ProtectedInner;)V");
+    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+
+    // `javax.swing.JComponent` inherits the protected member type `FlipBufferStrategy` from
+    // `java.awt.Component`.
+    jaif =
+        convert(
+            "package java.awt;",
+            "import javax.swing.JComponent.*;",
+            "class Use {",
+            "  void m(FlipBufferStrategy x) {}",
+            "}");
+    assertMethod(jaif, "Use", "m(Ljava/awt/Component$FlipBufferStrategy;)V");
+  }
+
+  /**
    * An import on demand does not make available an inaccessible member type, so the member type
    * does not shadow a type in {@code java.lang}.
    */
@@ -985,6 +1018,28 @@ public class ToIndexFileConverterTest {
             "public class Pub {}");
     assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
     assertMethod(jaif, "C", "n(Lp/Pub;)V");
+  }
+
+  /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * the package that is on the classpath, so the type does not shadow a type that a later import on
+   * demand makes available. {@code java.util.RegularEnumSet} is package-private.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleClasspathTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "import p.*;",
+            "class C {",
+            "  void m(RegularEnumSet s) {}",
+            "  void n(List x) {}",
+            "}",
+            "package p;",
+            "public class RegularEnumSet {}");
+    assertMethod(jaif, "C", "m(Lp/RegularEnumSet;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/List;)V");
   }
 
   /**
@@ -1056,6 +1111,42 @@ public class ToIndexFileConverterTest {
             "  public static class Inner {}",
             "}");
     assertMethod(jaif, "Sub", "m(Lr/Parent$Inner;)V");
+  }
+
+  /**
+   * An import on demand of the member types of a class on the classpath makes available the member
+   * types that the class declares and the ones that it inherits.
+   */
+  @Test
+  public void testOnDemandImportOfClasspathTypeMembers() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.AbstractMap.*;",
+            "class C {",
+            "  void m(Entry e) {}",
+            "  void n(SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * Via an import on demand of a package, a qualified name whose first identifier names a top-level
+   * type of the package on the classpath can name a member type that the top-level type inherits.
+   */
+  @Test
+  public void testOnDemandImportOfPackageWithInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "class C {",
+            "  void m(AbstractMap.Entry e) {}",
+            "  void n(AbstractMap.SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
   }
 
   /**

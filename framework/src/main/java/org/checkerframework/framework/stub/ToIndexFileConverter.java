@@ -1336,8 +1336,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * <p>An import on demand makes available the top-level types of a package, not its subpackages,
    * or the member types of a type. Therefore, the first identifier of {@code className} names a
-   * top-level type of package {@code prefix} or a member type of type {@code prefix}; the import
-   * does not make available any other name.
+   * top-level type of package {@code prefix} or a member type, declared or inherited, of type
+   * {@code prefix}; the import does not make available any other name.
    *
    * @param prefix the name of the package or type that the import on demand imports from
    * @param className the class name, in which a {@code .} separates a nested class from its
@@ -1357,11 +1357,112 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     String qualifiedName = prefix + "." + className;
     String binaryName = loadClassBinaryName(qualifiedName);
+    if (binaryName == null) {
+      // A later identifier of `className` may name a member type that the type named by an earlier
+      // identifier inherits, rather than declares.  The binary name of that member type does not
+      // start with `prefix`.  `prefix` names either a package, whose top-level type the first
+      // identifier names, or a class on the classpath, whose member type the first identifier
+      // names.
+      String result = onDemandImportPackageMemberBinaryName(prefix, className, cu);
+      return result != null ? result : onDemandImportClassMemberBinaryName(prefix, className, cu);
+    }
     // No `.` follows the part of `binaryName` that comes from the import.
-    if (binaryName == null || binaryName.lastIndexOf('.') > prefix.length()) {
+    if (binaryName.lastIndexOf('.') > prefix.length()) {
+      return null;
+    }
+    // An import on demand makes available only the accessible top-level or member types (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.  The first identifier of `className` names the type that the import makes
+    // available; the binary name of that type is a prefix of `binaryName`.
+    int firstLength = className.indexOf('.');
+    if (firstLength < 0) {
+      firstLength = className.length();
+    }
+    @SuppressWarnings("signature") // a prefix of a binary name, ending at the end of an identifier
+    @ClassGetName String firstBinaryName = binaryName.substring(0, prefix.length() + 1 + firstLength);
+    if (!isImportAccessible(loadClass(firstBinaryName), cu)) {
       return null;
     }
     return binaryName;
+  }
+
+  /**
+   * If {@code prefix} names a package, and the first identifier of {@code className} names a
+   * top-level type of that package on the classpath that is accessible to an import on demand in
+   * {@code cu}, returns the binary name of the type that {@code className} names. Each later
+   * identifier names a member type, declared or inherited. Otherwise returns null. For example, via
+   * {@code import java.util.*;}, {@code AbstractMap.Entry} names {@code java.util.Map$Entry}.
+   *
+   * @param prefix the name of the package or type that the import on demand imports from
+   * @param className the class name, in which a {@code .} separates a nested class from its
+   *     enclosing class
+   * @param cu the stub file's compilation unit, or null for the converter's import context
+   * @return the binary name of the class that {@code className} names via the import, or null
+   */
+  private @Nullable @BinaryName String onDemandImportPackageMemberBinaryName(
+      String prefix, String className, @Nullable CompilationUnit cu) {
+    String[] identifiers = className.split("\\.", -1);
+    if (identifiers.length < 2) {
+      // `onDemandImportBinaryName` already tried a single identifier.
+      return null;
+    }
+    // If `prefix` names a type rather than a package, then the binary name of its member type
+    // contains `$`, so no class has this name.
+    @SuppressWarnings("signature") // a package name followed by an identifier
+    @ClassGetName String firstName = prefix + "." + identifiers[0];
+    Class<?> first = loadClass(firstName);
+    // An import on demand makes available only the accessible top-level types (JLS 7.5.2).
+    if (first == null || !isImportAccessible(first, cu)) {
+      return null;
+    }
+    @SuppressWarnings("signature") // the binary name of a class, followed by its member types
+    @BinaryName String result = classMemberBinaryName(first, identifiers, 1);
+    // As when `loadClassBinaryName` fails for the whole name, an unresolvable member type yields
+    // null, so that a later import may supply the name.
+    return loadClass(result) == null ? null : result;
+  }
+
+  /**
+   * If {@code prefix} names a class on the classpath, and the first identifier of {@code className}
+   * names a member type, declared or inherited, of that class that is accessible to an import on
+   * demand in {@code cu}, returns the binary name of the type that {@code className} names.
+   * Otherwise returns null.
+   *
+   * @param prefix the name of the type that the import on demand imports from
+   * @param className the class name, in which a {@code .} separates a nested class from its
+   *     enclosing class
+   * @param cu the stub file's compilation unit, or null for the converter's import context
+   * @return the binary name of the class that {@code className} names via the import, or null
+   */
+  private @Nullable @BinaryName String onDemandImportClassMemberBinaryName(
+      String prefix, String className, @Nullable CompilationUnit cu) {
+    @BinaryName String prefixBinaryName = loadClassBinaryName(prefix);
+    Class<?> prefixClass = prefixBinaryName == null ? null : loadClass(prefixBinaryName);
+    if (prefixClass == null) {
+      return null;
+    }
+    String[] identifiers = className.split("\\.", -1);
+    Class<?> first;
+    try {
+      first = declaredMemberType(prefixClass, identifiers[0]);
+    } catch (NoClassDefFoundError | SecurityException e) {
+      return null;
+    }
+    if (first == null) {
+      // `classMemberType` applies the rules of inheritance and hiding (JLS 8.5).  An inherited
+      // member type that is inaccessible to the import does not hide one, from a later supertype,
+      // that is accessible.
+      first =
+          classMemberType(
+              prefixClass, identifiers[0], prefixClass.getPackageName(), importPackage(cu));
+    }
+    // An import on demand makes available only the accessible member types (JLS 7.5.2).
+    if (first == null || !isImportAccessible(first, cu)) {
+      return null;
+    }
+    @SuppressWarnings("signature") // the binary name of a class, followed by its member types
+    @BinaryName String result = classMemberBinaryName(first, identifiers, 1);
+    return result;
   }
 
   /**
@@ -1420,21 +1521,38 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * annotation interface, is accessible; a private member type is not; a protected or
    * package-private type is accessible only in its own package.
    *
-   * @param memberDecl a top-level or member type of the stub file
-   * @param cu the stub file's compilation unit in which the import is written
-   * @return true if {@code memberDecl} is accessible to an import in {@code cu}
+   * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
+   *     Class} on the classpath, or null
+   * @param cu the stub file's compilation unit in which the import is written, or null for the
+   *     converter's import context
+   * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
-  private boolean isImportAccessible(TypeDeclaration<?> memberDecl, CompilationUnit cu) {
-    Node parent = memberDecl.getParentNode().orElse(null);
-    if ((parent instanceof ClassOrInterfaceDeclaration classDecl && classDecl.isInterface())
-        || parent instanceof AnnotationDeclaration
-        || memberDecl.isPublic()) {
-      return true;
+  private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
+    String cuPackage = importPackage(cu);
+    if (member instanceof TypeDeclaration<?> memberDecl) {
+      Node parent = memberDecl.getParentNode().orElse(null);
+      if ((parent instanceof ClassOrInterfaceDeclaration classDecl && classDecl.isInterface())
+          || parent instanceof AnnotationDeclaration
+          || memberDecl.isPublic()) {
+        return true;
+      }
+      if (memberDecl.isPrivate()) {
+        return false;
+      }
+      return stubPackage(memberDecl).equals(cuPackage);
+    } else if (member instanceof Class<?> memberClass) {
+      Class<?> declaringClass = memberClass.getDeclaringClass();
+      int modifiers = memberClass.getModifiers();
+      if ((declaringClass != null && declaringClass.isInterface())
+          || java.lang.reflect.Modifier.isPublic(modifiers)) {
+        return true;
+      }
+      if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
+        return false;
+      }
+      return memberClass.getPackageName().equals(cuPackage);
     }
-    if (memberDecl.isPrivate()) {
-      return false;
-    }
-    return stubPackage(memberDecl).equals(importPackage(cu));
+    return false;
   }
 
   /**
@@ -1537,7 +1655,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     determined
    */
   private static @Nullable Class<?> classMemberType(Class<?> clazz, String identifier) {
-    return classMemberType(clazz, identifier, null);
+    return classMemberType(clazz, identifier, null, null);
   }
 
   /**
@@ -1561,17 +1679,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * <p>If {@code subclassPackage} is null, then the result can be a member type, even a private
    * one, that {@code clazz} declares, because no subclass needs to inherit it.
    *
+   * <p>If {@code importPackage} is non-null, then the member type must also be accessible to an
+   * import on demand written in {@code importPackage}: a protected or package-private member type
+   * counts only if it is declared in that package (JLS 6.6.1). An inaccessible member type that a
+   * class declares still hides the member types of the same name in that class's supertypes.
+   *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
    * @param subclassPackage the package of every subclass along the inheritance path that inherits
    *     the member types of {@code clazz}, {@link #MIXED_PACKAGES} if they are not all in one
    *     package, or null if {@code clazz} is the type whose member is sought; the unnamed package
    *     is {@code ""}
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import; the unnamed package is {@code ""}
    * @return the member type named {@code identifier}, or null if there is none or it cannot be
    *     determined
    */
   private static @Nullable Class<?> classMemberType(
-      Class<?> clazz, String identifier, @Nullable String subclassPackage) {
+      Class<?> clazz,
+      String identifier,
+      @Nullable String subclassPackage,
+      @Nullable String importPackage) {
     List<Class<?>> worklist = new ArrayList<>();
     // For each element of `worklist`, the package of every class on the inheritance path from
     // `clazz` to it, excluding the element itself, as for `subclassPackage`.
@@ -1594,7 +1722,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         Class<?> nestedType = declaredMemberType(c, identifier);
         if (nestedType != null) {
           if (pathPackage == null
-              || isInheritedMemberType(c, nestedType, packagePrivateInherited)) {
+              || isInheritedMemberType(c, nestedType, packagePrivateInherited, importPackage)) {
             return nestedType;
           }
           // A member type that `c` declares hides every member type of the same name in the
@@ -1644,10 +1772,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param nestedType a member type that {@code c} declares
    * @param packagePrivateInherited whether a package-private member type of {@code c} is inherited
    *     along the inheritance path
+   * @param importPackage the package of an import on demand to which {@code nestedType} must also
+   *     be accessible, or null if there is no such import; a protected or package-private member
+   *     type is accessible to the import only if {@code c} is in {@code importPackage}
    * @return true if {@code nestedType} is inherited along the inheritance path
    */
   private static boolean isInheritedMemberType(
-      Class<?> c, Class<?> nestedType, boolean packagePrivateInherited) {
+      Class<?> c,
+      Class<?> nestedType,
+      boolean packagePrivateInherited,
+      @Nullable String importPackage) {
     if (c.isInterface()) {
       // A member type of an interface is implicitly public.
       return true;
@@ -1656,9 +1790,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
       return false;
     }
-    return packagePrivateInherited
-        || java.lang.reflect.Modifier.isPublic(modifiers)
-        || java.lang.reflect.Modifier.isProtected(modifiers);
+    if (java.lang.reflect.Modifier.isPublic(modifiers)) {
+      return true;
+    }
+    if (importPackage != null && !c.getPackageName().equals(importPackage)) {
+      return false;
+    }
+    return packagePrivateInherited || java.lang.reflect.Modifier.isProtected(modifiers);
   }
 
   /**
@@ -1693,7 +1831,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             return inherited;
           }
         } else if (superDecl instanceof Class<?> superClass) {
-          Class<?> nestedType = classMemberType(superClass, identifier, stubPackage(declaration));
+          Class<?> nestedType =
+              classMemberType(superClass, identifier, stubPackage(declaration), null);
           if (nestedType != null) {
             return nestedType;
           }
@@ -1701,7 +1840,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       if (declaration instanceof EnumDeclaration) {
         // The implicit superclass of an enum declares the member type `Enum.EnumDesc`.
-        return classMemberType(Enum.class, identifier, stubPackage(declaration));
+        return classMemberType(Enum.class, identifier, stubPackage(declaration), null);
       }
       return null;
     } finally {
