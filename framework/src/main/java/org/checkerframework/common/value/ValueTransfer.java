@@ -1523,7 +1523,8 @@ public class ValueTransfer extends CFTransfer {
     if (firstValue == null) {
       return transferResult;
     }
-    if (TypesUtils.isNumeric(firstNode.getType()) || TypesUtils.isNumeric(secondNode.getType())) {
+    if (TypesUtils.isNumericPrimitive(firstNode.getType())
+        || TypesUtils.isNumericPrimitive(secondNode.getType())) {
       CFStore thenStore = transferResult.getThenStore();
       CFStore elseStore = transferResult.getElseStore();
       // At least one must be a primitive otherwise reference equality is used.

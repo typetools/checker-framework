@@ -1,7 +1,8 @@
-// Copied from framework/tests/flow/PurityMethodRef.java, because of the expected error
-// on line 26. During the first round of WPI, errors are warnings: so the test fails.
-// The class has been renamed so that an -AskipDefs=TestPure command-line argument
-// can suppress the original errors.
+// Copied from framework/tests/flow/PurityMethodRef.java.  Under -Ainfer, a method reference is
+// used to infer the purity of the functional interface method, and is not checked; so the
+// inference run reports no purity.methodref error.  The class has been renamed so that an
+// -AskipDefs=TestPure command-line argument can suppress the error that a run without -Ainfer
+// reports.
 
 import org.checkerframework.dataflow.qual.*;
 
@@ -23,7 +24,6 @@ class TestPure1 {
 
   void context() {
     PureFunc f1 = TestPure1::myPureMethod;
-    // :: warning: [purity.methodref]
     PureFunc f2 = TestPure1::myMethod;
   }
 }
