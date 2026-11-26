@@ -34,6 +34,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -46,6 +47,8 @@ import org.checkerframework.dataflow.expression.JavaExpressionParseException.Jav
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.javacparse.JavacParse;
@@ -70,6 +73,10 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
           Tree.Kind.LESS_THAN_EQUAL,
           Tree.Kind.GREATER_THAN,
           Tree.Kind.GREATER_THAN_EQUAL);
+
+  /** The shift operators. */
+  private static final Set<Tree.Kind> SHIFT_OPERATORS =
+      EnumSet.of(Tree.Kind.LEFT_SHIFT, Tree.Kind.RIGHT_SHIFT, Tree.Kind.UNSIGNED_RIGHT_SHIFT);
 
   /** The processing environment. */
   private final ProcessingEnvironment env;
@@ -613,15 +620,25 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     JavaExpression receiverExprTmp; // null if not yet computed
     TypeMirror receiverType;
     String methodName;
+    // True if the receiver is a class literal, like `Foo.class` in `Foo.class.getName()`.
+    boolean isClassLiteralReceiver;
     if (methodSelect instanceof MemberSelectTree memberSelect) {
       // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
       receiverExprTmp = memberSelect.getExpression().accept(this, null);
-      receiverType = receiverExprTmp.getType();
+      isClassLiteralReceiver =
+          TreeUtils.isClassLiteral(TreeUtils.withoutParens(memberSelect.getExpression()));
+      // A class literal is a ClassName, but its value is a Class object, whose methods are those of
+      // java.lang.Class rather than those of the named class.
+      receiverType =
+          isClassLiteralReceiver
+              ? classLiteralType(receiverExprTmp.getType())
+              : receiverExprTmp.getType();
       methodName = memberSelect.getIdentifier().toString();
     } else if (methodSelect instanceof IdentifierTree identifierTree) {
       // Static or instance method call with implicit receiver, like `method()`.
       methodName = identifierTree.getName().toString();
       receiverExprTmp = null;
+      isClassLiteralReceiver = false;
       receiverType = enclosingType;
     } else {
       throw new JavaExpressionParseExceptionUnchecked(
@@ -672,16 +689,16 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
       assert receiverExprTmp != null : "@AssumeAssertion(nullness): established in `if` above";
       receiverExpr = receiverExprTmp;
-      if (isInstance && receiverExpr instanceof ClassName) {
+      if (isInstance && receiverExpr instanceof ClassName && !isClassLiteralReceiver) {
         throw new JavaExpressionParseExceptionUnchecked(
             JavaExpressionParseException.construct(
                 invocation.toString(),
                 "Use a value, not a class name, as the receiver when calling an instance"
                     + " method"));
-      } else if (isStatic && !(receiverExpr instanceof ClassName)) {
+      } else if (isStatic && (isClassLiteralReceiver || !(receiverExpr instanceof ClassName))) {
         // TODO: Should we instead issue an error "Use a class name, not a value, as the receiver
         // when calling a static method"?
-        receiverExpr = new ClassName(receiverExpr.getType());
+        receiverExpr = new ClassName(receiverType);
       }
     } else if (methodSelect instanceof IdentifierTree) {
       // Static or instance method call with implicit receiver, like `method()`.
@@ -705,6 +722,25 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     }
 
     return new MethodCall(returnType, methodElement, receiverExpr, arguments);
+  }
+
+  /**
+   * Returns the type of the class literal for the given type, such as {@code Class<String>} for
+   * {@code String.class} and {@code Class<Integer>} for {@code int.class}.
+   *
+   * @param type a type that a class literal names, such as {@code String} in {@code String.class}
+   * @return the type of the class literal for the type
+   */
+  private TypeMirror classLiteralType(TypeMirror type) {
+    TypeMirror typeArgument;
+    if (type.getKind().isPrimitive()) {
+      typeArgument = types.boxedClass((PrimitiveType) type).asType();
+    } else if (type.getKind() == TypeKind.VOID) {
+      typeArgument = ElementUtils.getTypeElement(env, Void.class).asType();
+    } else {
+      typeArgument = types.erasure(type);
+    }
+    return types.getDeclaredType(ElementUtils.getTypeElement(env, Class.class), typeArgument);
   }
 
   /**
@@ -868,7 +904,9 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
         }
       }
       case UNARY_MINUS -> {
-        if (operand instanceof ValueLiteral valueLiteral) {
+        // A literal of a non-numeric type, such as a boolean, is not folded.
+        if (operand instanceof ValueLiteral valueLiteral
+            && TypesUtils.isNumericPrimitive(valueLiteral.getType())) {
           if (valueLiteral.getValue() instanceof Character c) {
             // Unary numeric promotion: the negation of a char is an int.
             valueLiteral = new ValueLiteral(types.getPrimitiveType(TypeKind.INT), (int) c);
@@ -914,6 +952,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     JavaExpression rightJe = exprTree.getRightOperand().accept(this, null);
     TypeMirror leftType = leftJe.getType();
     TypeMirror rightType = rightJe.getType();
+    TypeMirror leftUnboxedType = unboxedTypeOrSelf(leftType);
+    TypeMirror rightUnboxedType = unboxedTypeOrSelf(rightType);
     TypeMirror type;
     // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
     if (operator == Tree.Kind.PLUS
@@ -921,6 +961,27 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // JLS 15.18.1 says, "If only one operand expression is of type String, then string
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
+    } else if (SHIFT_OPERATORS.contains(operator)
+        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
+        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+      // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
+      // promotion, which converts a byte, short, or char to int.
+      type =
+          types.getPrimitiveType(
+              TypeKindUtils.widenedNumericType(leftUnboxedType.getKind(), TypeKind.INT));
+    } else if (TypesUtils.isNumericPrimitive(leftUnboxedType)
+        && TypesUtils.isNumericPrimitive(rightUnboxedType)) {
+      // Binary numeric promotion (JLS 5.6), after unboxing if necessary:  for example, the sum of
+      // two shorts is an int, and the sum of an Integer and a long is a long.
+      type =
+          COMPARISON_OPERATORS.contains(operator)
+              ? booleanTypeMirror
+              : types.getPrimitiveType(
+                  TypeKindUtils.widenedNumericType(leftUnboxedType, rightUnboxedType));
+    } else if (leftUnboxedType.getKind() == TypeKind.BOOLEAN
+        && rightUnboxedType.getKind() == TypeKind.BOOLEAN) {
+      // An operation on two booleans, after unboxing if necessary, such as == or &&.
+      type = booleanTypeMirror;
     } else if (COMPARISON_OPERATORS.contains(operator)) {
       if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
         type = booleanTypeMirror;
@@ -942,6 +1003,17 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
               String.format("inconsistent types %s %s for %s", leftType, rightType, exprTree)));
     }
     return new BinaryOperation(type, operator, leftJe, rightJe);
+  }
+
+  /**
+   * Returns the primitive type that unboxing conversion converts the given type to, or the given
+   * type itself if it is not a boxed primitive type.
+   *
+   * @param type a type, such as {@code Integer} or {@code int}
+   * @return the unboxed type, such as {@code int} for {@code Integer}, or {@code type} itself
+   */
+  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
+    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
   }
 
   /**

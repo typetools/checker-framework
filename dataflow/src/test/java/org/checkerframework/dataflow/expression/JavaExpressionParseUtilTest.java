@@ -71,4 +71,39 @@ public class JavaExpressionParseUtilTest {
     Assert.assertTrue(plusInt instanceof ValueLiteral);
     Assert.assertEquals(TypeKind.INT, plusInt.getType().getKind());
   }
+
+  /** The negation of a floating-point literal is folded into a literal. */
+  @Test
+  public void negateFloatingPointLiteral() {
+    JavaExpression negation = parse("-1.5");
+    Assert.assertTrue(negation instanceof ValueLiteral);
+    Assert.assertEquals(TypeKind.DOUBLE, negation.getType().getKind());
+    Assert.assertEquals(-1.5, ((ValueLiteral) negation).getValue());
+
+    negation = parse("-1.5f");
+    Assert.assertTrue(negation instanceof ValueLiteral);
+    Assert.assertEquals(TypeKind.FLOAT, negation.getType().getKind());
+    Assert.assertEquals(-1.5f, ((ValueLiteral) negation).getValue());
+  }
+
+  /** The negation of a non-numeric literal is not folded. */
+  @Test
+  public void negateNonNumericLiteral() {
+    Assert.assertTrue(parse("-true") instanceof UnaryOperation);
+    Assert.assertTrue(parse("-\"s\"") instanceof UnaryOperation);
+  }
+
+  /** A parsed binary operation has the type that binary numeric promotion gives it. */
+  @Test
+  public void binaryOperationPromotedType() {
+    // Binary numeric promotion:  the sum of two chars is an int.
+    Assert.assertEquals(TypeKind.INT, parse("'a' + 'b'").getType().getKind());
+    Assert.assertEquals(TypeKind.LONG, parse("1 + 2L").getType().getKind());
+    Assert.assertEquals(TypeKind.DOUBLE, parse("1L * 2.0").getType().getKind());
+    Assert.assertEquals(TypeKind.BOOLEAN, parse("'a' < 2.0").getType().getKind());
+    // The type of a shift is the promoted type of its left operand.
+    Assert.assertEquals(TypeKind.INT, parse("1 << 2L").getType().getKind());
+    Assert.assertEquals(TypeKind.INT, parse("'a' >> 1").getType().getKind());
+    Assert.assertEquals(TypeKind.LONG, parse("1L >>> 2").getType().getKind());
+  }
 }
