@@ -1024,6 +1024,24 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
   }
 
+  /**
+   * A package-private member type is not inherited through a class in another package, even if the
+   * class that seeks it is in the member type's package.
+   */
+  @Test
+  public void testPackagePrivateMemberTypeNotInheritedThroughOtherPackage() throws Exception {
+    // q.X is not on the classpath, so only the stub file declares it.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class C extends q.X {}",
+            "class Use { void m(C.N n) {} }",
+            "package q;",
+            "public class X extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle {}");
+    assertNoMethod(
+        jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PackagePrivateMiddle$N;)V");
+  }
+
   /** A name can go through a private member type to the member types that it inherits. */
   @Test
   public void testMemberTypeOfPrivateMemberType() throws Exception {
@@ -1069,6 +1087,32 @@ public class ToIndexFileConverterTest {
             "  }",
             "}");
     assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
+  }
+
+  /**
+   * A {@code $} in the name of a stub-declared supertype can be part of an identifier, rather than
+   * a separator between a member type and its enclosing type.
+   */
+  @Test
+  public void testInheritedMemberTypeOfPackageQualifiedSupertypeWithDollarInName()
+      throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Sub extends p.Base$Generated {}",
+            "class DeepSub extends p.Base$Generated.Deep {}",
+            "public class Base$Generated {",
+            "  public static class Inner {}",
+            "  public static class Deep {",
+            "    public static class DeepInner {}",
+            "  }",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(DeepSub.DeepInner x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Generated$Inner;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Base$Generated$Deep$DeepInner;)V");
   }
 
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
