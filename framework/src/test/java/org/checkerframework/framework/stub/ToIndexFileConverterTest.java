@@ -990,38 +990,21 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A name that refers to member types of two supertypes is ambiguous, and javac rejects it. The
-   * converter resolves it to the member type of the first supertype, whether or not the stub file
-   * declares that supertype. A member type that the classpath counterpart of a stub-declared
-   * supertype declares is a member type of that supertype, even if the stub file omits it.
+   * A package-private member type is not inherited through a class in another package, even if the
+   * class that seeks it is in the member type's package.
    */
   @Test
-  public void testAmbiguousInheritedMemberType() throws Exception {
-    // Base and I are on the classpath, and both declare a member type N.
+  public void testPackagePrivateMemberTypeNotInheritedThroughOtherPackage() throws Exception {
+    // q.X is not on the classpath, so only the stub file declares it.
     String jaif =
         convert(
             "package org.checkerframework.framework.stub.hiding;",
-            "class C extends Base implements I {}",
-            "class Use { void m(C.N n) {} }");
-    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
-
-    jaif =
-        convert(
-            "package org.checkerframework.framework.stub.hiding;",
-            "class Base {}",
-            "class C extends Base implements I {}",
-            "class Use { void m(C.N n) {} }");
-    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
-
-    // The stub file declares Derived but omits its superclass Base, which the classpath
-    // counterpart of Derived extends.
-    jaif =
-        convert(
-            "package org.checkerframework.framework.stub.hiding;",
-            "class Derived {}",
-            "class C extends Derived implements I {}",
-            "class Use { void m(C.N n) {} }");
-    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
+            "class C extends q.X {}",
+            "class Use { void m(C.N n) {} }",
+            "package q;",
+            "public class X extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle {}");
+    assertNoMethod(
+        jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PackagePrivateMiddle$N;)V");
   }
 
   /** A name can go through a private member type to the member types that it inherits. */
@@ -1033,6 +1016,68 @@ public class ToIndexFileConverterTest {
             "class C implements org.checkerframework.framework.stub.hiding.I {}",
             "class Use { void m(C.N.P.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
+  }
+
+  /**
+   * A private member type that a supertype declares, in the stub file or in its classpath
+   * counterpart, hides the member types of the same name in the supertypes of that supertype. So a
+   * simple name in a subtype resolves to the member type that an enclosing type declares.
+   */
+  @Test
+  public void testPrivateMemberTypeHidesInheritedMemberTypeFromOuterScope() throws Exception {
+    // The stub file declares the private member type.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Outer {",
+            "  static class N {}",
+            "  static class S extends Base { private static class N {} }",
+            "  static class C extends S {",
+            "    void m(N n) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
+
+    // The classpath counterpart of Middle declares the private member type, which the stub file
+    // omits.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Base { static class N {} }",
+            "class Middle extends Base {}",
+            "class Outer {",
+            "  static class N {}",
+            "  static class C extends Middle {",
+            "    void m(N n) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
+  }
+
+  /**
+   * A {@code $} in the name of a stub-declared supertype can be part of an identifier, rather than
+   * a separator between a member type and its enclosing type.
+   */
+  @Test
+  public void testInheritedMemberTypeOfPackageQualifiedSupertypeWithDollarInName()
+      throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Sub extends p.Base$Generated {}",
+            "class DeepSub extends p.Base$Generated.Deep {}",
+            "public class Base$Generated {",
+            "  public static class Inner {}",
+            "  public static class Deep {",
+            "    public static class DeepInner {}",
+            "  }",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(DeepSub.DeepInner x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Generated$Inner;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Base$Generated$Deep$DeepInner;)V");
   }
 
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
@@ -1118,6 +1163,57 @@ public class ToIndexFileConverterTest {
     // The supertype is in another compilation unit of the stub file, in a package whose name is
     // longer than the import's.
     assertMethod(jaif, "MyClass", "myOtherMethod(Lsome/other/pkg/OtherBase$OtherInner;)V");
+  }
+
+  /**
+   * An import on demand from a type in another package makes available a protected member type that
+   * the type inherits, if the import is in the package that declares the member type. A
+   * package-private member type is not inherited by a subclass in another package.
+   */
+  @Test
+  public void testOnDemandImportOfProtectedInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Sub.*;",
+            "class Use {",
+            "  void m(N x) {}",
+            "  void n(Integer i) {}",
+            "}",
+            "public class Base {",
+            "  protected static class N {}",
+            "  static class Integer {}",
+            "}",
+            "package q;",
+            "public class Sub extends p.Base {}");
+    assertMethod(jaif, "Use", "m(Lp/Base$N;)V");
+    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+
+    // The same, for classes on the classpath.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "import org.checkerframework.framework.stub.inheritanceb.ProtectedSub.*;",
+            "class Use {",
+            "  void m(ProtectedInner x) {}",
+            "  void n(Integer i) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "Use",
+        "m(Lorg/checkerframework/framework/stub/inheritancea/ProtectedBase$ProtectedInner;)V");
+    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+
+    // `javax.swing.JComponent` inherits the protected member type `FlipBufferStrategy` from
+    // `java.awt.Component`.
+    jaif =
+        convert(
+            "package java.awt;",
+            "import javax.swing.JComponent.*;",
+            "class Use {",
+            "  void m(FlipBufferStrategy x) {}",
+            "}");
+    assertMethod(jaif, "Use", "m(Ljava/awt/Component$FlipBufferStrategy;)V");
   }
 
   /**
@@ -1439,39 +1535,6 @@ public class ToIndexFileConverterTest {
     lines.set(1, "import p.Sub.*;");
     jaif = convert(lines.toArray(new String[0]));
     assertMethod(jaif, "C", "m(Lp/Base$N;)V");
-  }
-
-  /**
-   * An import on demand of the member types of a type makes available a protected member type that
-   * the type inherits from a supertype in another package, if the import is in the package of the
-   * protected member type.
-   */
-  @Test
-  public void testOnDemandImportOfProtectedMemberTypeInheritedFromImportPackage() throws Exception {
-    String jaif =
-        convert(
-            "package p;",
-            "import q.Sub.*;",
-            "class Use {",
-            "  void m(N x) {}",
-            "}",
-            "public class Base {",
-            "  protected static class N {}",
-            "}",
-            "package q;",
-            "public class Sub extends p.Base {}");
-    assertMethod(jaif, "Use", "m(Lp/Base$N;)V");
-
-    // `javax.swing.JComponent` inherits the protected member type `FlipBufferStrategy` from
-    // `java.awt.Component`.
-    jaif =
-        convert(
-            "package java.awt;",
-            "import javax.swing.JComponent.*;",
-            "class Use {",
-            "  void m(FlipBufferStrategy x) {}",
-            "}");
-    assertMethod(jaif, "Use", "m(Ljava/awt/Component$FlipBufferStrategy;)V");
   }
 
   /**
