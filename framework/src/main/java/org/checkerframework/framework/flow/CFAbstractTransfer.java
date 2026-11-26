@@ -1398,8 +1398,7 @@ public abstract class CFAbstractTransfer<
    */
   protected boolean canRefineSelectorExpression(CaseNode n) {
     return !n.selectorExprMayHaveChanged()
-        || !JavaExpression.fromNode(n.getSwitchOperand().getExpression())
-            .isAssignableByOtherCode();
+        || !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
   }
 
   // /**
