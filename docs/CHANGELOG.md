@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
+
 New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
 qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
@@ -20,6 +23,9 @@ element's enclosing elements.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
+
+New method `TypeVariableSubstitutor.substituteCopyingSomeTypeArguments()`
+copies the type arguments of only some type variables.
 
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the

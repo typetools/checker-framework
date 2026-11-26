@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1147,7 +1145,8 @@ public class InferenceFactory {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
     IgnoredAnnotations.copyPrimaryAnnotations(
         atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(samePrimaryAnnotations, atm);
+    // Compare the enclosing types too, which the type hierarchy does not.
+    return context.areMutualSubtypesIncludingEnclosingTypes(samePrimaryAnnotations, atm);
   }
 
   /**
@@ -1231,7 +1230,10 @@ public class InferenceFactory {
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(compared.type1(), compared.type2());
+    // Compare the enclosing types too, which the type hierarchy does not.  Otherwise, an origin
+    // could be kept that, when instantiations are applied again, would replace the annotations of
+    // an enclosing type of the result by those of `properType`.
+    return context.areMutualSubtypesIncludingEnclosingTypes(compared.type1(), compared.type2());
   }
 
   /**
@@ -1528,10 +1530,9 @@ public class InferenceFactory {
    * until this substitution has been performed.
    *
    * <p>A use of a variable in {@code variables} is replaced by the element of {@code typeArgs}
-   * itself, not a copy, so that recursive bounds share the fresh type variables. A use of a
-   * variable in {@code instantiated} that has a primary annotation is replaced by a copy of the
-   * instantiation that has that primary annotation, as {@link TypeVariableSubstitutor#substitute}
-   * does; a use without one gets the instantiation's.
+   * itself, not a copy, so that recursive bounds share the fresh type variables. Each use of a
+   * variable in {@code instantiated} is replaced by its own copy of the instantiation, with the
+   * use's primary annotations, if any, as {@link TypeVariableSubstitutor#substitute} does.
    *
    * <p>{@code typeArgs} and {@code variables} are parallel lists: {@code typeArgs.get(i)} is the
    * instantiation of {@code variables.get(i)}.
@@ -1548,88 +1549,45 @@ public class InferenceFactory {
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
-    Set<TypeParameterElement> instantiatedElements = new HashSet<>();
+    // Each use of a variable in `instantiated` is replaced by its own copy of the instantiation,
+    // with the use's primary annotations, if any, replacing the instantiation's (see
+    // TypeVariableSubstitutor#substituteTypeVariable).  Copying also keeps the substitution from
+    // mutating the instantiation.  A use of a variable in `variables` is replaced by the fresh type
+    // variable itself, without copying, which keeps the identity links between fresh type variables
+    // whose bounds refer to one another.
+    List<TypeVariable> copiedTypeVars = new ArrayList<>(instantiated.size());
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      // A copy, because the substitution below does not copy and can mutate what it substitutes.
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
-      instantiatedElements.add((TypeParameterElement) variable.getJavaType().asElement());
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      copiedTypeVars.add(variable.getJavaType());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does
     // not eliminate the variable: the result still contains the variable, because such a recursive
     // type cannot be written as a Java type.
-    InstantiationSubstitutor substitutor = new InstantiationSubstitutor(instantiatedElements);
     List<AbstractType> subsTypeArgs = new ArrayList<>();
     for (AbstractType typeArg : typeArgs) {
       AnnotatedTypeMirror type = typeArg.getAnnotatedType();
+      TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
       AnnotatedTypeMirror subs;
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
         AnnotatedTypeMirror upperBound =
-            substitutor.substituteWithoutCopyingTypeArguments(map, capTypeVar.getUpperBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getUpperBound());
         AnnotatedTypeMirror lowerBound =
-            substitutor.substituteWithoutCopyingTypeArguments(map, capTypeVar.getLowerBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
       } else {
-        subs = substitutor.substituteWithoutCopyingTypeArguments(map, type);
+        subs = typeVarSubstitutor.substituteCopyingSomeTypeArguments(map, copiedTypeVars, type);
       }
       subsTypeArgs.add(new ProperType(subs, context));
     }
     return subsTypeArgs;
-  }
-
-  /**
-   * A substitutor for {@link #getSubsTypeArgs}. Like {@link
-   * TypeVariableSubstitutor#substituteWithoutCopyingTypeArguments}, it replaces a use of a type
-   * variable by its argument itself, not a copy, except at a use of a type variable in {@link
-   * #copiedElements} that has a primary annotation. There, the use is replaced by a copy of the
-   * argument with the use's primary annotation, as {@link TypeVariableSubstitutor#substitute} does.
-   */
-  private static class InstantiationSubstitutor extends TypeVariableSubstitutor {
-
-    /**
-     * The type variables whose annotated uses are replaced by a copy of the argument with the use's
-     * primary annotation.
-     */
-    private final Set<TypeParameterElement> copiedElements;
-
-    /**
-     * Creates an InstantiationSubstitutor.
-     *
-     * @param copiedElements the type variables whose annotated uses are replaced by a copy of the
-     *     argument with the use's primary annotation
-     */
-    InstantiationSubstitutor(Set<TypeParameterElement> copiedElements) {
-      this.copiedElements = copiedElements;
-    }
-
-    @Override
-    public AnnotatedTypeMirror substituteWithoutCopyingTypeArguments(
-        Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArgument, AnnotatedTypeMirror type) {
-      Map<Element, AnnotatedTypeMirror> elementToArgument = new HashMap<>();
-      for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry : typeVarToTypeArgument.entrySet()) {
-        elementToArgument.put(entry.getKey().asElement(), entry.getValue());
-      }
-      return new Visitor(typeVarToTypeArgument, false) {
-        @Override
-        public AnnotatedTypeMirror visitTypeVariable(
-            AnnotatedTypeVariable original,
-            IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-          Element element = original.getUnderlyingType().asElement();
-          AnnotatedTypeMirror argument = elementToArgument.get(element);
-          if (argument != null
-              && copiedElements.contains(element)
-              && !original.getPrimaryAnnotations().isEmpty()) {
-            return substituteTypeVariable(argument, original);
-          }
-          return super.visitTypeVariable(original, originalToCopy);
-        }
-      }.visit(type);
-    }
   }
 }

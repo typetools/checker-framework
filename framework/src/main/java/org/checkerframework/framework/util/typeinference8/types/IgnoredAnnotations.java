@@ -70,8 +70,9 @@ import org.checkerframework.javacutil.BugInCF;
  * annotations that cannot affect the result: for example, bottom for a subtype and top for a
  * supertype, or the annotations at the corresponding position of the other type. (An exception: in
  * a hierarchy in which both types ignore the annotations at a position, that position is not
- * replaced before a least upper bound or greatest lower bound, so that the result there combines
- * the annotations of both types.) The rest of each type is then compared or combined as usual.
+ * replaced before a least upper bound or greatest lower bound, so that a least upper bound there
+ * combines the annotations of both types; see {@link #replaceIgnoredForLubOrGlb}.) The rest of each
+ * type is then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
@@ -224,9 +225,16 @@ final class IgnoredAnnotations {
    *       the annotations of only one of the two positions are ignored (see {@link
    *       #replaceIgnoredWithCorresponding}), except that a type variable is returned itself, with
    *       no annotations replaced. In a hierarchy in which the annotations of both positions are
-   *       ignored, both are kept, so that the least upper bound or greatest lower bound combines
-   *       them and does not depend on the order of {@code type1} and {@code type2}.
+   *       ignored, both are kept, so that the least upper bound combines them and does not depend
+   *       on the order of {@code type1} and {@code type2}.
    * </ol>
+   *
+   * <p>TODO: The greatest lower bound does not combine the annotations at such a position. {@link
+   * org.checkerframework.framework.util.AnnotatedTypes#annotatedGLB} combines only the primary
+   * annotations and takes the rest from one of its arguments, so at a position whose annotations
+   * both types ignore, the result has the annotations of one type, which depends on the order of
+   * {@code type1} and {@code type2}. Fixing this requires replacing both positions by the greatest
+   * lower bound of their annotations here.
    *
    * <p>This method does not replace primary annotations that are ignored because of {@link
    * AbstractType#ignoreAnnotations}; the caller handles them.
@@ -800,7 +808,9 @@ final class IgnoredAnnotations {
    * are copied (see {@link #boundOf}).
    *
    * <p>Positions correspond only where the two types have the same structure; elsewhere, nothing is
-   * replaced.
+   * replaced. Where one type has a wildcard and the other does not, the wildcard's bound
+   * corresponds to the other type (see {@link #allCorrespondingPositionsMatch}), so whether the
+   * annotations there are ignored is decided by the bound, not by the wildcard.
    *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
@@ -846,11 +856,12 @@ final class IgnoredAnnotations {
    * Positions correspond only where the two types have the same structure, so the type arguments of
    * declared types of different classes do not correspond, even if there are equally many of them
    * (as in {@code Reversed<A, B> extends Pair<B, A>}). There is one exception: where one type has a
-   * wildcard and the other does not, the wildcard and its bound (see {@link #boundOf}) both
-   * correspond to the other type, so the positions nested in the bound correspond to those nested
-   * in the other type. For example, in {@code List<? extends Box<@A String>>} and {@code
-   * List<Box<@B String>>}, both {@code ? extends Box<@A String>} and {@code Box<@A String>}
-   * correspond to {@code Box<@B String>}, and {@code @A String} corresponds to {@code @B String}.
+   * wildcard and the other does not, the wildcard's bound (see {@link #boundOf}), rather than the
+   * wildcard itself, corresponds to the other type, so the positions nested in the bound correspond
+   * to those nested in the other type. For example, in {@code List<? extends Box<@A String>>} and
+   * {@code List<Box<@B String>>}, {@code Box<@A String>} corresponds to {@code Box<@B String>}, and
+   * {@code @A String} corresponds to {@code @B String}; the wildcard {@code ? extends Box<@A
+   * String>} corresponds to nothing.
    *
    * @param atm1 a type
    * @param atm2 a type
@@ -868,13 +879,13 @@ final class IgnoredAnnotations {
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}; see {@link #allCorrespondingPositionsMatch(AnnotatedTypeMirror,
    * AnnotatedTypeMirror, BiPredicate)}. A pair of positions at least one of which is a wildcard is
-   * tested at most once.
+   * visited at most once.
    *
    * @param atm1 a type
    * @param atm2 a type
    * @param test the test to apply to each pair of corresponding positions; it may side-effect them
    * @param visitedWildcards the pairs of positions, at least one of which is a wildcard, that have
-   *     been tested (see {@link #addPair})
+   *     been visited (see {@link #addPair})
    * @return true if {@code test} holds for each pair of corresponding positions
    */
   private static boolean allCorrespondingPositionsMatch(
@@ -885,21 +896,25 @@ final class IgnoredAnnotations {
     // The type argument of a raw type can be a wildcard that is reachable from its own bound (see
     // BoundsInitializer).  Every cycle that this method traverses passes through a wildcard, so
     // stopping at a repeated pair that includes a wildcard ensures termination.  The pair was
-    // already tested, so it does not make the result false.
+    // already visited, so it does not make the result false.
     if ((atm1.getKind() == TypeKind.WILDCARD || atm2.getKind() == TypeKind.WILDCARD)
         && !addPair(visitedWildcards, atm1, atm2)) {
       return true;
     }
-    if (!test.test(atm1, atm2)) {
-      return false;
-    }
     if (atm1.getKind() != atm2.getKind()) {
-      // A type argument is compared with a wildcard's bound; see #boundOf.
+      // A type argument corresponds to a wildcard's bound, not to the wildcard itself; see
+      // #boundOf.  The pair of the wildcard and the type argument is not tested: the test would see
+      // the wildcard's ignored hierarchies, not those of the bound that supplies its annotations.
       if (atm1.getKind() == TypeKind.WILDCARD) {
         return allCorrespondingPositionsMatch(boundOf(atm1), atm2, test, visitedWildcards);
       } else if (atm2.getKind() == TypeKind.WILDCARD) {
         return allCorrespondingPositionsMatch(atm1, boundOf(atm2), test, visitedWildcards);
       }
+    }
+    if (!test.test(atm1, atm2)) {
+      return false;
+    }
+    if (atm1.getKind() != atm2.getKind()) {
       return true;
     }
     switch (atm1.getKind()) {
