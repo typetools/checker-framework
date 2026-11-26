@@ -186,4 +186,40 @@ public class SwitchSelectorSideEffects {
       outerSelector.hashCode();
     }
   }
+
+  static @Nullable Object state;
+
+  record Resetter(@Nullable Inner inner) {
+    // A record pattern invokes this accessor, even if the pattern does not match.
+    @Override
+    public @Nullable Inner inner() {
+      state = null;
+      return inner;
+    }
+  }
+
+  // A record accessor might change a field that is not the selector expression, even if the
+  // selector expression is a local variable.
+  void impureDeconstructionNonSelectorField(Resetter local) {
+    state = new Object();
+    switch (local) {
+      case Resetter(Inner i) ->
+          // :: error: (dereference.of.nullable)
+          state.hashCode();
+    }
+  }
+
+  // The accessor might change a field that is not the selector expression before the switch
+  // throws MatchException.
+  void impureDeconstructionNonSelectorFieldBeforeMatchException(Resetter local) {
+    state = new Object();
+    try {
+      switch (local) {
+        case Resetter(Inner()) -> {}
+      }
+    } catch (RuntimeException e) {
+      // :: error: (dereference.of.nullable)
+      state.hashCode();
+    }
+  }
 }
