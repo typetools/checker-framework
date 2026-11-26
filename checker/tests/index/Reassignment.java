@@ -4,6 +4,8 @@
 // established.  A refined type that names the reassigned variable is discarded.
 
 import org.checkerframework.checker.index.qual.LessThan;
+import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 public class Reassignment {
 
@@ -38,6 +40,15 @@ public class Reassignment {
     }
   }
 
+  // After `m = x`, the `@SameLen("m[0]")` type of `x` is about the old `m[0]`, not the new one.
+  void sameLenNamesElementOfReassigned(int @MinLen(1) [][] m, int @MinLen(1) [][] x) {
+    if (x.length == m[0].length) {
+      m = x;
+      // :: error: [assignment]
+      int @SameLen("x") [] r = m[0];
+    }
+  }
+
   //
   // Reassignments that must be accepted
   //
@@ -65,6 +76,39 @@ public class Reassignment {
     if (i >= 0 && i < a.length) {
       a = a;
       a[i] = 0;
+    }
+  }
+
+  // After `a = new int[n]`, `n` equals the length of `a`, whatever it was less than before.
+  void newArrayOfRefinedDimension(int[] a, int n) {
+    if (n >= 0 && n < a.length) {
+      a = new int[n];
+      // :: error: [array.access.unsafe.high]
+      a[n] = 0;
+    }
+  }
+
+  // An operand of the dimension is refined only by the length of the new array.
+  void newArrayOfRefinedDimensionOperand(int[] a, int n) {
+    if (n >= 0 && n + 5 < a.length) {
+      a = new int[n + 1];
+      // :: error: [array.access.unsafe.high]
+      a[n + 4] = 0;
+    }
+  }
+
+  // The dimension is computed from the old value of `a`.
+  void newArrayLongerThanOld(int[] a) {
+    a = new int[a.length + 1];
+    // :: error: [array.access.unsafe.high]
+    a[a.length] = 0;
+  }
+
+  // The dimension of a new array is still refined.
+  void newArrayRefinesDimension(int[] a, int n) {
+    if (n >= 0) {
+      a = new int[n + 1];
+      a[n] = 0;
     }
   }
 
