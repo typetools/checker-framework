@@ -74,7 +74,7 @@ public class WholeProgramInferenceScenesStorage
   protected final AnnotatedTypeFactory atypeFactory;
 
   /** Determines which inferred qualifiers are redundant. */
-  private final WholeProgramInferenceDefaults wpiDefaults;
+  private final WholeProgramInferenceRedundancyRemover redundancyRemover;
 
   /** Annotations that should not be output to a .jaif or stub file. */
   private final AnnotationsInContexts annosToIgnore = new AnnotationsInContexts();
@@ -160,7 +160,7 @@ public class WholeProgramInferenceScenesStorage
   public WholeProgramInferenceScenesStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
-    this.wpiDefaults = new WholeProgramInferenceDefaults(atypeFactory);
+    this.redundancyRemover = new WholeProgramInferenceRedundancyRemover(atypeFactory);
     try {
       this.inferOutputDirectory = Path.of(inferOutputDirectory);
     } catch (InvalidPathException e) {
@@ -267,7 +267,7 @@ public class WholeProgramInferenceScenesStorage
     AField param =
         methodAnnos.vivifyAndAddTypeMirrorToParameter(
             index_1based - 1, paramATM.getUnderlyingType(), ve.getSimpleName());
-    defaultedTypes.put(param.type, wpiDefaults.defaultedType(ve));
+    defaultedTypes.put(param.type, redundancyRemover.defaultedType(ve));
     return param.type;
   }
 
@@ -277,7 +277,8 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeMirror paramATM,
       AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
-    defaultedTypes.put(methodAnnos.receiver.type, wpiDefaults.defaultedReceiverType(methodElt));
+    defaultedTypes.put(
+        methodAnnos.receiver.type, redundancyRemover.defaultedReceiverType(methodElt));
     return methodAnnos.receiver.type;
   }
 
@@ -310,7 +311,7 @@ public class WholeProgramInferenceScenesStorage
   public ATypeElement getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
-    defaultedTypes.put(methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
+    defaultedTypes.put(methodAnnos.returnType, redundancyRemover.defaultedReturnType(methodElt));
     return methodAnnos.returnType;
   }
 
@@ -327,7 +328,7 @@ public class WholeProgramInferenceScenesStorage
     AClass classAnnos = getClassAnnos(className, file, enclosingClass);
     AField field = classAnnos.fields.getVivify(fieldName);
     field.setTypeMirror(lhsATM.getUnderlyingType());
-    defaultedTypes.put(field.type, wpiDefaults.defaultedType(element));
+    defaultedTypes.put(field.type, redundancyRemover.defaultedType(element));
     return field.type;
   }
 
@@ -409,7 +410,7 @@ public class WholeProgramInferenceScenesStorage
 
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
     boolean isNewAnnotation = methodAnnos.tlAnnotationsHere.add(sceneAnno);
-    if (wpiDefaults.isAliasForTypeQualifier(anno)) {
+    if (redundancyRemover.isAliasForTypeQualifier(anno)) {
       // A declaration annotation on a method that is an alias for a type qualifier applies to
       // the method's return type.
       neverIgnoreAnnotationsOn(methodAnnos.returnType);
@@ -428,7 +429,7 @@ public class WholeProgramInferenceScenesStorage
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = fieldAnnos.tlAnnotationsHere.add(sceneAnno);
-    if (wpiDefaults.isAliasForTypeQualifier(anno)) {
+    if (redundancyRemover.isAliasForTypeQualifier(anno)) {
       neverIgnoreAnnotationsOn(fieldAnnos.type);
     }
     return isNewAnnotation;
@@ -452,7 +453,7 @@ public class WholeProgramInferenceScenesStorage
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = paramAnnos.tlAnnotationsHere.add(sceneAnno);
-    if (wpiDefaults.isAliasForTypeQualifier(anno)) {
+    if (redundancyRemover.isAliasForTypeQualifier(anno)) {
       neverIgnoreAnnotationsOn(paramAnnos);
     }
     return isNewAnnotation;
@@ -571,7 +572,7 @@ public class WholeProgramInferenceScenesStorage
     if (elt.getAnnotation(InvisibleQualifier.class) != null) {
       return true;
     }
-    return wpiDefaults.isRedundant(am, defaulted);
+    return redundancyRemover.isRedundant(am, defaulted);
   }
 
   /**

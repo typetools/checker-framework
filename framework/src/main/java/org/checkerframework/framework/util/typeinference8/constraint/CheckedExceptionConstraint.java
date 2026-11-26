@@ -59,7 +59,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
    * {@inheritDoc}
    *
    * <p>The input variables of a checked exception constraint are those of the corresponding
-   * expression constraint, plus the inference variables mentioned by the function type's return
+   * expression constraint, plus the inference variables contained in the function type's return
    * type.
    */
   @Override
