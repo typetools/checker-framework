@@ -693,7 +693,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * TreePathCacher to share between subcheckers. Initialized either in {@link #getTreePathCacher()}
    * or {@link #instantiateSubcheckers(Map)}.
    */
-  protected TreePathCacher treePathCacher = null;
+  protected @MonotonicNonNull TreePathCacher treePathCacher = null;
 
   /** Creates a source checker. */
   protected SourceChecker() {}
