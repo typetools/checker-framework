@@ -99,7 +99,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierUpperBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -239,6 +242,22 @@ public abstract class CFAbstractTransfer<
           // `min` boxes the loop's primitive element, as in `for (Integer x : intArray)`.  Adapt
           // the element's annotations for boxing, as a boxing conversion elsewhere does.
           at = factory.getBoxedType(primitiveElement);
+        } else if (min.isUnboxing()) {
+          // `min` unboxes the loop's element, as in `for (int x : integerList)`.  Adapt the
+          // element's annotations for unboxing, as an unboxing conversion elsewhere does.
+          // Otherwise, an annotation that the unboxing conversion removes would be restored.
+          AnnotatedTypeMirror boxedElement = at;
+          while (boxedElement instanceof AnnotatedTypeVariable
+              || boxedElement instanceof AnnotatedWildcardType) {
+            boxedElement =
+                boxedElement instanceof AnnotatedTypeVariable typeVar
+                    ? typeVar.getUpperBound()
+                    : ((AnnotatedWildcardType) boxedElement).getExtendsBound();
+          }
+          if (boxedElement instanceof AnnotatedDeclaredType declaredElement
+              && TypesUtils.isBoxedPrimitive(declaredElement.getUnderlyingType())) {
+            at = factory.getUnboxedType(declaredElement);
+          }
         }
       } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {
         ExpressionTree array = aan.getArrayExpression();
@@ -1798,15 +1817,15 @@ public abstract class CFAbstractTransfer<
         }
       } catch (JavaExpressionParseException e) {
         // report errors here
-        // A method call in a custom CFG might have no tree; then report at the method.
-        Object errorLocation = invocationTree != null ? invocationTree : executableElement;
+        // A call in a custom CFG might have no tree; then, report at the called method.
+        Object errorSource = invocationTree != null ? invocationTree : executableElement;
         if (e.isFlowParseError()) {
           Object[] args = new Object[e.args.length + 1];
           args[0] = ElementUtils.getSimpleSignature(executableElement);
           System.arraycopy(e.args, 0, args, 1, e.args.length);
-          analysis.checker.reportError(errorLocation, "flowexpr.parse.error.postcondition", args);
+          analysis.checker.reportError(errorSource, "flowexpr.parse.error.postcondition", args);
         } else {
-          analysis.checker.report(errorLocation, new DiagMessage(e));
+          analysis.checker.report(errorSource, new DiagMessage(e));
         }
       }
     }
@@ -1988,8 +2007,11 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
-   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
-   * This is only called at an unboxing conversion.
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations} and
+   * limited to the qualifier upper bound of {@code type} (see {@link
+   * QualifierUpperBounds#limitToBound}). For example, the Lock Checker unboxes a
+   * {@code @GuardedBy("lock")} value to a {@code @GuardedBy({}) int}, because an {@code int} is a
+   * copy that no lock guards. This is only called at an unboxing conversion.
    *
    * @param type the primitive type to unbox to
    * @param annotatedValue a value to unbox
@@ -2005,13 +2027,15 @@ public abstract class CFAbstractTransfer<
     AnnotationMirrorSet unboxedAnnos =
         analysis.atypeFactory.getUnboxedAnnotations(
             annotatedValue.getAnnotations(), type.getKind());
-    return analysis.createAbstractValue(unboxedAnnos, type);
+    return analysis.createAbstractValue(
+        analysis.atypeFactory.getQualifierUpperBounds().limitToBound(type, unboxedAnnos), type);
   }
 
   /**
    * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
-   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations}. This
-   * is only called at a boxing conversion.
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations} and
+   * limited to the qualifier upper bound of {@code type} (see {@link
+   * QualifierUpperBounds#limitToBound}). This is only called at a boxing conversion.
    *
    * @param type the boxed primitive type to box to, such as {@code Integer}
    * @param annotatedValue a value to box
@@ -2027,7 +2051,8 @@ public abstract class CFAbstractTransfer<
     AnnotationMirrorSet boxedAnnos =
         analysis.atypeFactory.getBoxedAnnotations(
             annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
-    return analysis.createAbstractValue(boxedAnnos, type);
+    return analysis.createAbstractValue(
+        analysis.atypeFactory.getQualifierUpperBounds().limitToBound(type, boxedAnnos), type);
   }
 
   @Override

@@ -198,8 +198,9 @@ public class AliasingTransfer extends CFTransfer {
               + " is different from the"
               + " number of parameters for the method declaration: "
               + methodElement.getSimpleName();
-      // When `in` has two stores, getRegularStore() returns a new join, and the superclass
-      // recomputes that join from `in`.  So, clear values in each store that `in` keeps.
+      // Clear values in the stores that super.visitMethodInvocation reads.  If `in` has a
+      // then-store and an else-store, then `in.getRegularStore()` returns a new store each time,
+      // so clearing a value in it would have no effect.
       List<CFStore> stores =
           in.containsTwoStores()
               ? List.of(in.getThenStore(), in.getElseStore())
