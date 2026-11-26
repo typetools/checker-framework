@@ -31,7 +31,6 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.ThrowTree;
@@ -2154,7 +2153,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports errors found during purity checking.
+   * Reports errors found during purity checking of a method body.
+   *
+   * <p>This method calls {@link #reportPurityErrors(PurityResult, EnumSet, Map)}, which is also
+   * called for a lambda body. To customize the reporting of every purity error, override that
+   * method rather than this one.
    *
    * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the method
@@ -2164,15 +2167,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports errors found during purity checking. Each error message names the methods in {@code
-   * requirements} that require the purity kind that the checked code lacks.
+   * Reports errors found during purity checking of a method body or a lambda body. Each error
+   * message names the methods in {@code requirements} that require the purity kind that the checked
+   * code lacks.
    *
    * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the checked code
    * @param requirements methods whose purity annotations require {@code expectedKinds}, each with
    *     its purity kinds, or an empty map to name no method; used for diagnostics
    */
-  private void reportPurityErrors(
+  protected void reportPurityErrors(
       PurityResult result,
       EnumSet<PurityKind> expectedKinds,
       Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
@@ -3370,7 +3374,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>Each error message, such as {@code purity.call}, names the methods whose annotations require
    * the purity kind that the body lacks. Such a method might be a method of a superinterface or of
-   * another bound of an intersection cast, rather than the functional interface method.
+   * another bound of an intersection target type, rather than the functional interface method.
    *
    * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of those methods from
    * the lambda's body.
@@ -3496,8 +3500,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * overrides, and each abstract method that the functional interface inherits from another
    * superinterface, as {@code A.run} and {@code B.run} in {@code interface C extends A, B}.
    *
-   * <p>If the lambda or method reference is cast to an intersection type, as in {@code (A & B)
-   * C::m}, the result also includes each method of the other bounds and of their supertypes that is
+   * <p>If the target of the lambda or method reference is an intersection type, as in {@code (A &
+   * B) C::m} or as for an argument whose parameter type is {@code T} where {@code <T extends A &
+   * B>}, the result also includes each method of the other bounds and of their supertypes that is
    * override-equivalent to the functional interface method. The object that the lambda or method
    * reference evaluates to has every bound's type, so a call through any of those methods can run
    * it.
@@ -3533,13 +3538,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   List<CallableDeclaration> callableDeclarationsThatRun(
       Tree tree, ExecutableElement functionalMethod) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    List<DeclaredType> castBounds = intersectionCastBounds(tree);
+    List<DeclaredType> targetBounds = intersectionTargetBounds(tree);
     TypeElement owner = (TypeElement) functionalMethod.getEnclosingElement();
     TypeMirror erasedOwner = types.erasure(owner.asType());
     // The type that the functional method is a member of.  Its type arguments matter only for an
-    // intersection cast, in which case they are the cast's.
+    // intersection target, in which case they are those of one of its ground bounds.
     DeclaredType targetType = null;
-    for (DeclaredType bound : castBounds) {
+    for (DeclaredType bound : targetBounds) {
       if (types.isSubtype(types.erasure(bound), erasedOwner)) {
         targetType = bound;
         break;
@@ -3577,14 +3582,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    if (!castBounds.isEmpty()) {
-      // The bounds' type arguments are the ones in the cast, so compare against the functional
-      // method as a member of the target type, whose type arguments are also the cast's.  The
-      // target type is one of `castBounds`, because one of the bounds declares or inherits the
-      // functional method.
+    if (!targetBounds.isEmpty()) {
+      // The bounds' type arguments are the ones that javac grounded, so compare against the
+      // functional method as a member of the target type, whose type arguments are also grounded
+      // by javac.  The target type is one of `targetBounds`, because one of the bounds declares or
+      // inherits the functional method.
       ExecutableType targetMethodType =
           (ExecutableType) types.asMemberOf(targetType, functionalMethod);
-      for (DeclaredType bound : castBounds) {
+      for (DeclaredType bound : targetBounds) {
         for (TypeElement supertype :
             ElementUtils.getAllSupertypes((TypeElement) bound.asElement(), env)) {
           if (!visited.add(supertype) || TypesUtils.isObject(supertype.asType())) {
@@ -3630,26 +3635,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the given lambda or method reference is cast to an intersection type, returns the bounds of
-   * that type that are class or interface types. Otherwise, returns an empty list.
+   * If the target of the given lambda or method reference is an intersection type, returns the
+   * bounds of that type that are class or interface types. Otherwise, returns an empty list.
    *
-   * <p>Each bound is replaced by its non-wildcard parameterization (JLS 9.9), as javac does when it
-   * determines which methods the lambda or method reference implements. For example, the bound
-   * {@code Open<? super Callback>} becomes {@code Open<Callback>}.
+   * <p>The target is an intersection type if the lambda or method reference is cast to one, or if
+   * it is an argument whose inferred target is one, as for a parameter of type {@code T} where
+   * {@code <T extends A & B>}.
+   *
+   * <p>The bounds are those of javac's type for the lambda or method reference, which are ground
+   * (JLS 9.9, 15.27.3): javac has replaced each wildcard-parameterized bound of the written type,
+   * such as {@code Open<? super Callback>}, by a parameterization without wildcards, such as {@code
+   * Open<Callback>}. These are the bounds that javac uses when it determines which methods the
+   * lambda or method reference implements. For robustness, this method also replaces any remaining
+   * wildcard-parameterized bound by its non-wildcard parameterization.
    *
    * @param tree a lambda or a method reference
-   * @return the non-wildcard parameterizations of the bounds of the intersection type that {@code
-   *     tree} is cast to, or an empty list
+   * @return the ground bounds of the intersection type that is the target of {@code tree}, or an
+   *     empty list
    */
-  private List<DeclaredType> intersectionCastBounds(Tree tree) {
-    TreePath path = atypeFactory.getPath(tree);
-    TreePath parent = path == null ? null : path.getParentPath();
-    while (parent != null && parent.getLeaf() instanceof ParenthesizedTree) {
-      parent = parent.getParentPath();
-    }
-    if (parent == null
-        || !(parent.getLeaf() instanceof TypeCastTree cast)
-        || !(TreeUtils.typeOf(cast.getType()) instanceof IntersectionType intersection)) {
+  private List<DeclaredType> intersectionTargetBounds(Tree tree) {
+    if (!(TreeUtils.typeOf(tree) instanceof IntersectionType intersection)) {
       return Collections.emptyList();
     }
     List<DeclaredType> result = new ArrayList<>();
