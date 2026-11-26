@@ -9,8 +9,6 @@
 
 Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
 `-AintellijAnnotations` command-line option.
-
-A stub or ajava file that cannot be read yields a warning rather than a note.
 An IntelliJ IDEA annotation file that cannot be read yields an error.
 
 An archive, or a directory that cannot be listed, within a directory that is
@@ -28,6 +26,9 @@ well as a `.jar` archive.  An ajava file within an archive is read as a stub
 file; it is never treated as corresponding to a source file.
 
 ### Changes for type system implementers
+
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
