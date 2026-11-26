@@ -90,7 +90,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param am a @NegativeIndexFor or @SearchIndexFor annotation
    * @return the {@code value} field/element of the given annotation
    */
-  @Shrinkable List<String> getValueElement(AnnotationMirror am) {
+  private @Shrinkable List<String> getValueElement(AnnotationMirror am) {
     if (areSameByClass(am, NegativeIndexFor.class)) {
       return AnnotationUtils.getElementValueArray(am, negativeIndexForValueElement, String.class);
     } else if (areSameByClass(am, SearchIndexFor.class)) {

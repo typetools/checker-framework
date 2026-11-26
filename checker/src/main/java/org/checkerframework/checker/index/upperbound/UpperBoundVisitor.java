@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
@@ -380,53 +379,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
       result = null;
     }
     return result;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Also permits the reassignment if, for each sequence {@code b} in {@code requiredType},
-   * {@code currentType} has the same offsets for {@code b} or for a sequence that has the same
-   * length as {@code b} before the reassignment. For example, if {@code i} is
-   * {@code @LTLengthOf("a")} and {@code b} is {@code @SameLen("a")}, then after {@code a = b},
-   * {@code i} is still {@code @LTLengthOf("a")}. This relaxation applies only to the primary
-   * annotation; the rest of the type, such as the bounds of a type variable, must satisfy the
-   * default check.
-   */
-  @Override
-  protected boolean isValidAfterReassignment(
-      VariableElement variable,
-      AnnotatedTypeMirror currentType,
-      AnnotatedTypeMirror requiredType,
-      ExpressionTree reassignmentTree) {
-    if (super.isValidAfterReassignment(variable, currentType, requiredType, reassignmentTree)) {
-      return true;
-    }
-    UpperBoundChecker ubChecker = (UpperBoundChecker) checker;
-    UBQualifier currentQual =
-        UBQualifier.createUBQualifier(currentType, atypeFactory.UNKNOWN, ubChecker);
-    UBQualifier requiredQual =
-        UBQualifier.createUBQualifier(requiredType, atypeFactory.UNKNOWN, ubChecker);
-    if (!(currentQual instanceof LessThanLengthOf currentLtl)
-        || !(requiredQual instanceof LessThanLengthOf requiredLtl)) {
-      return false;
-    }
-    SameLenAnnotatedTypeFactory sameLenFactory = atypeFactory.getSameLenAnnotatedTypeFactory();
-    AnnotationMirror requiredAnno =
-        requiredType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWN);
-    if (requiredAnno == null
-        || !currentLtl.impliesUpToSameLen(
-            requiredLtl,
-            sequence ->
-                sameLenFactory.getSameLensFromString(
-                    sequence, reassignmentTree, getCurrentPath()))) {
-      return false;
-    }
-    // The primary annotation is valid.  Check the rest of the type without relaxation.
-    AnnotatedTypeMirror relaxedCurrentType = currentType.deepCopy();
-    relaxedCurrentType.replaceAnnotation(requiredAnno);
-    return super.isValidAfterReassignment(
-        variable, relaxedCurrentType, requiredType, reassignmentTree);
   }
 
   /*

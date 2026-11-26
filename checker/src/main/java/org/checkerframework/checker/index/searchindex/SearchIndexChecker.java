@@ -1,7 +1,6 @@
 package org.checkerframework.checker.index.searchindex;
 
 import java.util.Set;
-import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -33,8 +32,6 @@ public class SearchIndexChecker extends BaseTypeChecker {
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(ValueChecker.class);
-    // SearchIndexVisitor uses the SameLen Checker's facts.
-    checkers.add(SameLenChecker.class);
     return checkers;
   }
 }

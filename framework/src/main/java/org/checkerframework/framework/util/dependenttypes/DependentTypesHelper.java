@@ -1463,38 +1463,6 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Returns true if a Java expression in a dependent type annotation anywhere in {@code atm} (not
-   * just in its primary annotations) might name {@code variable}. See {@link
-   * #mightName(AnnotationMirror, JavaExpression, TreePath)}.
-   *
-   * @param atm an annotated type
-   * @param variable a local variable, such as {@code a}, or a field access, such as {@code this.f}
-   * @param path the location at which to parse the expressions in {@code atm}, or null to examine
-   *     only their text
-   * @return true if a Java expression in a dependent type annotation in {@code atm} might name
-   *     {@code variable}
-   */
-  public boolean mightName(
-      AnnotatedTypeMirror atm, JavaExpression variable, @Nullable TreePath path) {
-    if (!hasDependentType(atm)) {
-      return false;
-    }
-    AnnotatedTypeScanner<Boolean, Void> scanner =
-        new SimpleAnnotatedTypeScanner<>(
-            (type, __) -> {
-              for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
-                if (mightName(anno, variable, path)) {
-                  return true;
-                }
-              }
-              return false;
-            },
-            Boolean::logicalOr,
-            false);
-    return scanner.visit(atm);
-  }
-
-  /**
    * Returns a regular expression that matches text that might name {@code variable} in a
    * standardized Java expression. See {@link #mightName(AnnotationMirror, JavaExpression,
    * TreePath)}.
@@ -1530,42 +1498,4 @@ public class DependentTypesHelper {
    * #namePattern}.
    */
   private final Map<String, Pattern> fieldNamePatterns = new HashMap<>();
-
-  /**
-   * Returns a copy of {@code atm} in which each Java expression in a dependent type annotation has
-   * each occurrence of {@code from} replaced by {@code to}. Each expression is parsed at {@code
-   * path}. For example, if {@code atm} is {@code @LTLengthOf("a") int}, {@code from} is {@code a},
-   * and {@code to} is {@code c}, then the result is {@code @LTLengthOf("c") int}.
-   *
-   * <p>An expression that cannot be parsed at {@code path} is replaced by an error string (see
-   * {@link DependentTypesError}), which contains the original text of the expression.
-   *
-   * @param atm an annotated type whose dependent type annotations are standardized
-   * @param from the expression to replace
-   * @param to the expression with which to replace {@code from}
-   * @param path the location at which to parse the expressions in {@code atm}
-   * @return a copy of {@code atm} in which {@code from} is replaced by {@code to}
-   */
-  public AnnotatedTypeMirror substitute(
-      AnnotatedTypeMirror atm, JavaExpression from, JavaExpression to, TreePath path) {
-    AnnotatedTypeMirror result = atm.deepCopy();
-    if (!hasDependentType(result)) {
-      return result;
-    }
-    JavaExpressionConverter replacer =
-        new JavaExpressionConverter() {
-          @Override
-          public JavaExpression convert(JavaExpression javaExpr) {
-            if (javaExpr.syntacticEquals(from)) {
-              return to;
-            }
-            return super.convert(javaExpr);
-          }
-        };
-    convertAnnotatedTypeMirror(
-        stringExpr ->
-            replacer.convert(StringToJavaExpression.atPath(stringExpr, path, factory.getChecker())),
-        result);
-    return result;
-  }
 }

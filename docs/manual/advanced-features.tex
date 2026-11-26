@@ -1451,86 +1451,16 @@ systems) ``\code{<self>}''.
 A type that names a variable describes the variable's current value.  For
 example, \<@IndexFor("a") int i> states that \<i> is a valid index for the
 array that \<a> currently refers to.  If \<a> is reassigned, the type of
-\<i> refers to the new array, so the type might no longer be true.  The
-Checker Framework handles a reassignment as follows.
+\<i> refers to the new array, so the type might no longer be true.
 
-\begin{itemize}
-\item
-  A refined type (Section~\ref{type-refinement}) that names the reassigned
-  variable is discarded.  For example, within the \<then> branch of
-  \code{if (i < a.length)}, the type of \<i> is refined to
-  \<@LTLengthOf("a")>; after \<a = c;>, the type of \<i> reverts to its
-  declared type.
+A refined type (Section~\ref{type-refinement}) that names the reassigned
+variable is discarded.  For example, within the \<then> branch of
+\code{if (i < a.length)}, the type of \<i> is refined to
+\<@LTLengthOf("a")>; after \<a = c;>, the type of \<i> reverts to its
+declared type.
 
-\item
-  An assignment to a variable that the declared type of a local variable or
-  formal parameter names is an error (\<reassignment.invalidates.type>),
-  unless the declared type still holds after the assignment.  The checker
-  replaces the reassigned variable by the assigned expression in the
-  declared type, then checks that the variable's current type is a subtype
-  of the result.  For example:
-
-\begin{Verbatim}
-  void m(@IndexFor("#2") int i, int[] a, int @SameLen("#2") [] b, int[] c) {
-    a = b;  // OK: b has the same length as a
-    a = c;  // error: i might not be an index for c, and c might not have the same length as b
-  }
-\end{Verbatim}
-
-  If a declared type names the reassigned variable, then an increment, a
-  decrement, a compound assignment such as \<a += 2>, or an assignment
-  whose right-hand side cannot be expressed as a Java expression (such as a
-  call to a method that is not deterministic, or \<new int[n]>) is an
-  error.  A self-assignment such as \<a = a> is always permitted.
-\end{itemize}
-
-In a constructor, a formal parameter's type that names a field refers to
-the field's value at the beginning of the constructor, which is the field's
-default value (such as \<null>), not to the value that the constructor
-assigns to the field.  Assigning the field is then an error.  To relate one
-formal parameter to another, name the other one with the \<\#> syntax,
-such as \<@SameLen("\#2")>.
-
-If the field's own declared type names the field, then no type for the
-formal parameter avoids an error:
-
-\begin{Verbatim}
-  HashMap<T, List<@KeyFor("childMap") T>> childMap;
-
-  Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
-    this.childMap = childMap;  // error: reassignment.invalidates.type
-  }
-\end{Verbatim}
-
-\noindent
-Writing \<@KeyFor("\#1")> in the formal parameter's type instead makes the
-assignment incompatible with the field's type.  In this case, suppress the
-warning (Chapter~\ref{suppressing-warnings}) by writing
-\<@SuppressWarnings("keyfor:reassignment.invalidates.type")> on the
-constructor.
-
-Likewise, no types for the formal parameters avoid an error if the declared
-types of two fields name each other:
-
-\begin{Verbatim}
-  long @SameLen("names") [] transitions;
-  String @SameLen("transitions") [] names;
-
-  C(long @SameLen("names") [] transitions, String @SameLen("transitions") [] names) {
-    this.transitions = transitions;  // error: reassignment.invalidates.type
-    this.names = names;
-  }
-\end{Verbatim}
-
-\noindent
-Writing \<@SameLen("\#2")> and \<@SameLen("\#1")> in the formal parameters'
-types instead makes the first field assignment incompatible with the
-field's type, because the other field still has its default value.  In
-this case, too, suppress the warning.
-
-The checker does not check a reassignment against the declared type of a
-field, and it does not account for a method call that reassigns a field
-that a type names.
+The checker does not check that a declared type that names the reassigned
+variable still holds after the reassignment.
 
 
 \subsectionAndLabel{Limitations}{java-expressions-limitations}

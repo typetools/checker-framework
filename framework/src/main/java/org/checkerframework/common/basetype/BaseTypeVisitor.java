@@ -10,7 +10,6 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -18,7 +17,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.IntersectionTypeTree;
@@ -34,12 +32,9 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchExpressionTree;
-import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
@@ -96,7 +91,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
@@ -152,7 +146,6 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -2701,7 +2694,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
     commonAssignmentCheck(tree.getVariable(), tree.getExpression(), "assignment");
-    checkDependentTypesOfReassignedVariable(tree.getVariable(), tree.getExpression(), tree);
     return super.visitAssignment(tree, p);
   }
 
@@ -3573,7 +3565,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               ? "unary.increment"
               : "unary.decrement";
       commonAssignmentCheck(varType, valueType, tree, errorKey);
-      checkDependentTypesOfReassignedVariable(tree.getExpression(), null, tree);
     }
     return super.visitUnary(tree, p);
   }
@@ -3586,284 +3577,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // but the "s + expr" tree does not exist.  So instead, check that
     // s += expr can be assigned to s.
     commonAssignmentCheck(tree.getVariable(), tree, "compound.assignment");
-    checkDependentTypesOfReassignedVariable(tree.getVariable(), null, tree);
     return super.visitCompoundAssignment(tree, p);
-  }
-
-  /**
-   * Reports an error if reassigning {@code variableTree} might make the declared type of a local
-   * variable or formal parameter false. That is the case when the declared type names the
-   * reassigned variable. For example, after {@code a = c}, the declared type {@code @IndexFor("a")}
-   * of a parameter {@code i} claims that {@code i} is an index for the array that {@code a} now
-   * refers to.
-   *
-   * <p>The assignment is permitted if the variable's current type (its type in the store before the
-   * assignment, or its declared type) is a subtype of its declared type with each occurrence of the
-   * reassigned variable replaced by {@code valueTree}, according to {@link
-   * #isValidAfterReassignment}. If {@code valueTree} is null or cannot be expressed as a {@link
-   * JavaExpression}, the assignment is permitted only if no declared type in scope names the
-   * reassigned variable.
-   *
-   * <p>Only reassignments of local variables (including formal parameters) and of fields are
-   * checked, and only the declared types of local variables, formal parameters, and pattern
-   * variables in scope are checked. The declared type of a field that names another field is not
-   * checked. Within a local or anonymous class, the declared types of the variables of the
-   * enclosing methods are also checked; a reassignment of a field that such a type might name is an
-   * error, because the type is not expressed in terms of the class's own variables.
-   *
-   * @param variableTree the variable that {@code reassignmentTree} assigns, such as {@code a} in
-   *     {@code a = c}
-   * @param valueTree the new value of {@code variableTree}, such as {@code c} in {@code a = c}, or
-   *     null if the new value is not given by a single expression, as for {@code a++}
-   * @param reassignmentTree an assignment, compound assignment, increment, or decrement
-   */
-  protected void checkDependentTypesOfReassignedVariable(
-      ExpressionTree variableTree,
-      @Nullable ExpressionTree valueTree,
-      ExpressionTree reassignmentTree) {
-    DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
-    if (!dependentTypesHelper.hasDependentAnnotations()) {
-      return;
-    }
-    JavaExpression target = JavaExpression.fromTree(variableTree);
-    if (!(target instanceof LocalVariable || target instanceof FieldAccess)) {
-      return;
-    }
-    JavaExpression value = valueTree == null ? null : JavaExpression.fromTree(valueTree);
-    if (value != null) {
-      if (value.syntacticEquals(target)) {
-        // A self-assignment such as `a = a` does not change the value of `a`.
-        return;
-      }
-      if (value.containsUnknown() || !value.isDeterministic(atypeFactory)) {
-        value = null;
-      }
-    }
-
-    TreePath path = getCurrentPath();
-    @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
-    CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(reassignmentTree);
-    List<VariableTree> localVariables = new ArrayList<>();
-    List<VariableTree> capturedVariables = new ArrayList<>();
-    collectVariablesInScope(path, localVariables, capturedVariables);
-    for (VariableTree declTree : localVariables) {
-      VariableElement varElt = TreeUtils.variableElementFromTree(declTree);
-      if (target instanceof LocalVariable targetLocal && targetLocal.getElement().equals(varElt)) {
-        continue;
-      }
-      AnnotatedTypeMirror declaredType = atypeFactory.getAnnotatedType(varElt);
-      if (!dependentTypesHelper.mightName(declaredType, target, path)) {
-        continue;
-      }
-      AnnotatedTypeMirror currentType = declaredType.deepCopy();
-      if (store != null) {
-        @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
-        CFAbstractValue<?> currentValue = store.getValue(new LocalVariable(varElt));
-        if (currentValue != null) {
-          currentType.replaceAnnotations(currentValue.getAnnotations());
-        }
-      }
-      AnnotatedTypeMirror requiredType =
-          value == null ? null : dependentTypesHelper.substitute(declaredType, target, value, path);
-      if (requiredType == null
-          // The new value is expressed in terms of the old value of the target, as in `a = a.f`.
-          || dependentTypesHelper.mightName(requiredType, target, path)
-          || !isValidAfterReassignment(varElt, currentType, requiredType, reassignmentTree)) {
-        checker.reportError(
-            reassignmentTree,
-            "reassignment.invalidates.type",
-            varElt.getSimpleName(),
-            target,
-            currentType,
-            requiredType == null ? "unknown" : requiredType);
-      }
-    }
-    // A local or anonymous class cannot reassign a local variable of an enclosing method, which is
-    // effectively final.  It can reassign a field.
-    if (target instanceof FieldAccess) {
-      for (VariableTree declTree : capturedVariables) {
-        VariableElement varElt = TreeUtils.variableElementFromTree(declTree);
-        AnnotatedTypeMirror declaredType = atypeFactory.getAnnotatedType(varElt);
-        // Parse the expressions in the declared type where they were written.
-        if (dependentTypesHelper.mightName(declaredType, target, atypeFactory.getPath(declTree))) {
-          checker.reportError(
-              reassignmentTree,
-              "reassignment.invalidates.type",
-              varElt.getSimpleName(),
-              target,
-              declaredType,
-              "unknown");
-        }
-      }
-    }
-  }
-
-  /**
-   * Returns true if a variable whose type is {@code currentType} has the type {@code requiredType}
-   * after the reassignment {@code reassignmentTree}. {@code requiredType} is the variable's
-   * declared type, with the reassigned variable replaced by its new value. Both types are evaluated
-   * in the store before {@code reassignmentTree}.
-   *
-   * <p>The default implementation returns true if {@code currentType} is a subtype of {@code
-   * requiredType}. A subclass can override it to use other facts, such as that two arrays have the
-   * same length.
-   *
-   * @param variable a local variable whose declared type names the reassigned variable
-   * @param currentType the type of {@code variable} before the reassignment
-   * @param requiredType the type that {@code variable} must have after the reassignment
-   * @param reassignmentTree the assignment, compound assignment, increment, or decrement
-   * @return true if {@code variable} has the type {@code requiredType} after the reassignment
-   */
-  protected boolean isValidAfterReassignment(
-      VariableElement variable,
-      AnnotatedTypeMirror currentType,
-      AnnotatedTypeMirror requiredType,
-      ExpressionTree reassignmentTree) {
-    return typeHierarchy.isSubtype(currentType, requiredType);
-  }
-
-  /**
-   * Collects the declarations of the local variables, formal parameters, and pattern variables that
-   * are in scope at {@code path}. Those of the innermost enclosing method, including the formal
-   * parameters of enclosing lambda expressions, are added to {@code localVariables}. Those of the
-   * methods that enclose a local or anonymous class that encloses {@code path} are added to {@code
-   * capturedVariables}.
-   *
-   * <p>The result for pattern variables is conservative: it contains every pattern variable that
-   * might be in scope at {@code path}, such as {@code s} in {@code if (!(o instanceof String s))
-   * return;}, and it can contain a pattern variable that is not in scope.
-   *
-   * @param path a path to a tree in a method body
-   * @param localVariables a list to which to add the declarations of the innermost method
-   * @param capturedVariables a list to which to add the declarations of enclosing methods
-   */
-  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  private void collectVariablesInScope(
-      TreePath path, List<VariableTree> localVariables, List<VariableTree> capturedVariables) {
-    List<VariableTree> result = localVariables;
-    Tree child = path.getLeaf();
-    for (TreePath p = path.getParentPath(); p != null; p = p.getParentPath()) {
-      Tree parent = p.getLeaf();
-      if (parent instanceof ClassTree) {
-        // A local or anonymous class can use the effectively final local variables of the methods
-        // that enclose it.
-        result = capturedVariables;
-      } else if (parent instanceof MethodTree methodTree) {
-        result.addAll(methodTree.getParameters());
-      } else if (parent instanceof LambdaExpressionTree lambdaTree) {
-        result.addAll(lambdaTree.getParameters());
-      } else if (parent instanceof BlockTree blockTree) {
-        addVariablesBefore(blockTree.getStatements(), child, result);
-      } else if (parent instanceof CaseTree caseTree) {
-        List<? extends StatementTree> statements = caseTree.getStatements();
-        if (statements != null) {
-          addVariablesBefore(statements, child, result);
-        }
-      } else if ((parent instanceof SwitchTree || parent instanceof SwitchExpressionTree)
-          && child instanceof CaseTree) {
-        // A local variable that is declared in an earlier case is in scope.  No case declaration
-        // is in scope in the selector expression.
-        List<? extends CaseTree> cases =
-            parent instanceof SwitchTree switchTree
-                ? switchTree.getCases()
-                : ((SwitchExpressionTree) parent).getCases();
-        for (CaseTree caseTree : cases) {
-          if (caseTree == child) {
-            break;
-          }
-          List<? extends StatementTree> statements = caseTree.getStatements();
-          if (statements != null) {
-            addVariablesBefore(statements, null, result);
-          }
-        }
-      } else if (parent instanceof ForLoopTree forLoopTree) {
-        addVariablesBefore(forLoopTree.getInitializer(), child, result);
-      } else if (parent instanceof EnhancedForLoopTree enhancedForLoopTree) {
-        if (child != enhancedForLoopTree.getExpression()) {
-          result.add(enhancedForLoopTree.getVariable());
-        }
-      } else if (parent instanceof CatchTree catchTree) {
-        result.add(catchTree.getParameter());
-      } else if (parent instanceof TryTree tryTree) {
-        // A resource is in scope in the try body and in later resources, but not in a catch or
-        // finally block.
-        if (child == tryTree.getBlock() || tryTree.getResources().contains(child)) {
-          addVariablesBefore(tryTree.getResources(), child, result);
-        }
-      }
-      if (!(parent instanceof ClassTree
-          || parent instanceof MethodTree
-          || parent instanceof CompilationUnitTree)) {
-        addPatternVariablesBefore(parent, child, result);
-      }
-      child = parent;
-    }
-  }
-
-  /**
-   * Adds to {@code result} the declaration of each pattern variable in {@code parent} that precedes
-   * {@code child} and that might be in scope at {@code child}. The pattern variables within {@code
-   * child}, and those within a block, lambda expression, or class within {@code parent}, are not in
-   * scope at {@code child}. For example, if {@code parent} is {@code if (o instanceof String s) {
-   * ... } else { ... }}, then {@code s} is added for either branch.
-   *
-   * @param parent a tree
-   * @param child a child of {@code parent}
-   * @param result a list to which to add pattern variable declarations
-   */
-  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  private static void addPatternVariablesBefore(
-      Tree parent, Tree child, List<VariableTree> result) {
-    new TreeScanner<Void, Void>() {
-      // True if this scanner has reached `child`.
-      private boolean reachedChild = false;
-
-      @Override
-      public Void scan(@Nullable Tree tree, Void p) {
-        if (tree == null || reachedChild) {
-          return null;
-        }
-        if (tree == child) {
-          // The scanner visits a tree's children in source order.
-          reachedChild = true;
-          return null;
-        }
-        if (tree != parent
-            && (tree instanceof BlockTree
-                || tree instanceof LambdaExpressionTree
-                || tree instanceof ClassTree)) {
-          return null;
-        }
-        return super.scan(tree, p);
-      }
-
-      @Override
-      public Void visitBindingPattern(BindingPatternTree tree, Void p) {
-        result.add(tree.getVariable());
-        return super.visitBindingPattern(tree, p);
-      }
-    }.scan(parent, null);
-  }
-
-  /**
-   * Adds to {@code result} each variable declaration in {@code trees} that precedes {@code stop}.
-   *
-   * @param trees statements, for-loop initializers, or try-with-resources resources
-   * @param stop the tree at which to stop, or null to add the variable declarations of all of
-   *     {@code trees}
-   * @param result a list to which to add variable declarations
-   */
-  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  private static void addVariablesBefore(
-      List<? extends Tree> trees, @Nullable Tree stop, List<VariableTree> result) {
-    for (Tree tree : trees) {
-      if (tree == stop) {
-        return;
-      }
-      if (tree instanceof VariableTree variableTree) {
-        result.add(variableTree);
-      }
-    }
   }
 
   // **********************************************************************

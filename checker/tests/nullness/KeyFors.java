@@ -83,10 +83,6 @@ public class KeyFors {
     HashMap<T, List<@KeyFor("childMap") T>> childMap;
 
     public Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
-      // The parameter type names the field, whose value here is its default value.  The type
-      // cannot name the parameter instead (`@KeyFor("#1")`), because the field's type names the
-      // field, so the assignment would be incompatible.
-      // :: error: [reassignment.invalidates.type]
       this.childMap = childMap;
     }
 

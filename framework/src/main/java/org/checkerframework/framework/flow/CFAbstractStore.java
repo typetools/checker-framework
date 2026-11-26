@@ -1109,9 +1109,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * the length of the new array, but it was established for the old one.
    *
    * <p>This removes the whole value, so a local variable reverts to its declared type. That is
-   * sound only if the declared type does not depend on the old value of {@code variable}; {@link
-   * org.checkerframework.common.basetype.BaseTypeVisitor} reports an error at an assignment that
-   * might invalidate the declared type of a local variable in scope.
+   * sound only if the declared type does not depend on the old value of {@code variable}.
    *
    * <p>The whole value is removed, even its annotations in other qualifier hierarchies. Replacing
    * only the annotations that name {@code variable} by top would be less precise, because a top
