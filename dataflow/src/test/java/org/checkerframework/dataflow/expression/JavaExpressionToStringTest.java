@@ -170,6 +170,24 @@ public class JavaExpressionToStringTest {
   }
 
   @Test
+  public void binaryOperationOnUnknown() {
+    Unknown conditional = new Unknown(intType, "b ? x : y");
+    Assert.assertEquals(
+        "1 + (b ? x : y)",
+        new BinaryOperation(intType, Tree.Kind.PLUS, intLiteral(1), conditional).toString());
+    Assert.assertEquals(
+        "(b ? x : y) + 1",
+        new BinaryOperation(intType, Tree.Kind.PLUS, conditional, intLiteral(1)).toString());
+  }
+
+  @Test
+  public void unaryOperationOnUnknown() {
+    Unknown conditional = new Unknown(intType, "b ? x : y");
+    Assert.assertEquals(
+        "-(b ? x : y)", new UnaryOperation(intType, Tree.Kind.UNARY_MINUS, conditional).toString());
+  }
+
+  @Test
   public void fieldAccessOnUnknown() {
     FieldAccess access = new FieldAccess(new Unknown(integerType, "(Integer) o"), valueField);
     Assert.assertEquals("((Integer) o).value", access.toString());
