@@ -201,11 +201,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Maps a package name, such as {@code java.util}, to the compilation units of the stub file that
-   * declare that package. A stub file has one compilation unit per {@code package} declaration, so
-   * different compilation units can declare types in different packages. It omits the compilation
-   * units in the unnamed package, because a type in the unnamed package cannot be referred to from
-   * another package. It is empty for a converter that the public constructor creates, which knows
-   * only the compilation unit in which each name is written.
+   * declare that package. It omits the compilation units in the unnamed package, because a type in
+   * the unnamed package cannot be referred to from another package.
    */
   private final Map<String, List<CompilationUnit>> compilationUnitsByPackage = new HashMap<>();
 
