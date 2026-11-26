@@ -60,7 +60,10 @@ public class MethodInvocationNode extends Node {
    */
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
-  /** A kind of boxing conversion that a method invocation can perform. */
+  /**
+   * Whether a method invocation is a boxing or unboxing conversion that the CFG builder inserted
+   * for an implicit conversion in the source code.
+   */
   public enum BoxingConversion {
     /**
      * The method invocation is not a boxing or unboxing conversion that the CFG builder inserted.
@@ -80,7 +83,9 @@ public class MethodInvocationNode extends Node {
     UNBOXING
   }
 
-  /** The boxing or unboxing conversion that this MethodInvocationNode performs, if any. */
+  /**
+   * The implicit boxing or unboxing conversion that this MethodInvocationNode represents, if any.
+   */
   protected final BoxingConversion boxingConversion;
 
   /**

@@ -95,8 +95,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getAnnotations();
+
         // The type that `annos` describes.
         TypeMirror annosTM = initType.getUnderlyingType();
+        // This code may modify `annosTM` to account for (un)boxing.
         boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
         if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
           // The initializer is boxed or unboxed (JLS 5.2).
@@ -241,13 +243,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * @return the kind of the primitive type that {@code type} unboxes to
    */
   private TypeKind unboxedKind(TypeMirror type, TypeMirror primitiveTarget) {
-    try {
-      // Erase `type` so that a type variable or intersection type unboxes to the primitive type of
-      // its boxed-primitive bound.
-      return atypeFactory.types.unboxedType(atypeFactory.types.erasure(type)).getKind();
-    } catch (IllegalArgumentException e) {
-      return primitiveTarget.getKind();
-    }
+    // Erase `type` so that a type variable or intersection type unboxes to the primitive type of
+    // its boxed-primitive bound.
+    TypeMirror erased = atypeFactory.types.erasure(type);
+    return TypesUtils.isBoxedPrimitive(erased)
+        ? atypeFactory.types.unboxedType(erased).getKind()
+        : primitiveTarget.getKind();
   }
 
   /**
