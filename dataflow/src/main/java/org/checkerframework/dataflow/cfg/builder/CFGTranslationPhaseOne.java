@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -348,15 +349,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Class declarations that have been encountered when building the control-flow graph for a
-   * method.
+   * method. It is a set because the CFG builder translates a finally block more than once, so it
+   * encounters a class declaration in a finally block more than once.
    */
-  private final List<ClassTree> declaredClasses;
+  private final Set<ClassTree> declaredClasses;
 
   /**
    * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
-   * initializer.
+   * initializer. It is a set because the CFG builder translates a finally block more than once, so
+   * it encounters a lambda in a finally block more than once.
    */
-  private final List<LambdaExpressionTree> declaredLambdas;
+  private final Set<LambdaExpressionTree> declaredLambdas;
 
   /** The ArithmeticException type. */
   protected final TypeMirror arithmeticExceptionType;
@@ -462,8 +465,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     breakLabels = new HashMap<>(4);
     continueLabels = new HashMap<>(4);
     returnNodes = new ArrayList<>();
-    declaredClasses = new ArrayList<>();
-    declaredLambdas = new ArrayList<>();
+    declaredClasses = new LinkedHashSet<>();
+    declaredLambdas = new LinkedHashSet<>();
 
     arithmeticExceptionType = getTypeMirror(ArithmeticException.class);
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
@@ -539,8 +542,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           returnNodes,
           regularExitLabel,
           exceptionalExitLabel,
-          declaredClasses,
-          declaredLambdas,
+          new ArrayList<>(declaredClasses),
+          new ArrayList<>(declaredLambdas),
           types);
     } finally {
       this.path = null;
@@ -2153,12 +2156,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
-   * enhanced for loop over an {@code Iterable}.
+   * Returns the declaration of a new, uniquely named variable that is initialized to the iterator
+   * of an enhanced for loop.
    *
-   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
-   * @param variableElement the element of the loop variable of the enhanced for loop; the new
-   *     variable has the same enclosing element
+   * @param iteratorCall the call to {@code iterator()} on the iterable expression of an enhanced
+   *     for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
    * @return the declaration of the new iterator variable
    */
   protected VariableTree createIteratorVariableForEnhancedForLoop(
@@ -2176,13 +2180,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
-   * for loop over an array.
+   * Returns the declaration of a new, uniquely named variable that is initialized to the array of
+   * an enhanced for loop.
    *
-   * @param expression an array expression of an enhanced for loop, which initializes the new
-   *     variable
-   * @param variableElement the element of the loop variable of the enhanced for loop; the new
-   *     variable has the same enclosing element
+   * @param expression the array expression of an enhanced for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
    * @return the declaration of the new array variable
    */
   protected VariableTree createArrayVariableForEnhancedForLoop(
@@ -2952,7 +2955,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       addLabelForNextNode(closeLabel);
     }
 
-    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE, extraExceptionTypes);
+    // The current path leads to the try statement.  The path of the close() call leads to the
+    // resource, which is a child of the try statement.
+    TreePath resourcePath = new TreePath(getCurrentPath(), resourceDeclarationTree);
+    extendWithArtificialCall(
+        closeCall, receiverNode, NullReceiver.IMPOSSIBLE, extraExceptionTypes, resourcePath);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -2984,7 +2991,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private MethodInvocationNode extendWithArtificialCall(
       MethodInvocationTree call, Node receiver, NullReceiver nullReceiver) {
-    return extendWithArtificialCall(call, receiver, nullReceiver, Collections.emptySet());
+    return extendWithArtificialCall(
+        call, receiver, nullReceiver, Collections.emptySet(), getCurrentPath());
   }
 
   /**
@@ -2999,19 +3007,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param extraExceptionTypes types that label exceptional edges of the call, in addition to the
    *     types of the exceptions that the call might throw; the call follows those edges whenever it
    *     throws an exception (see {@link MethodInvocationNode#getAnyExceptionTypes()})
+   * @param path the path to the call
    * @return the node for the call
    */
   private MethodInvocationNode extendWithArtificialCall(
       MethodInvocationTree call,
       Node receiver,
       NullReceiver nullReceiver,
-      Set<TypeMirror> extraExceptionTypes) {
+      Set<TypeMirror> extraExceptionTypes,
+      TreePath path) {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
     extendWithNode(accessNode, nullReceiver == NullReceiver.THROWS && mayBeNull(receiver));
     MethodInvocationNode callNode =
-        new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
+        new MethodInvocationNode(call, accessNode, Collections.emptyList(), path);
     callNode.setInSource(false);
     callNode.setAnyExceptionTypes(extraExceptionTypes);
     extendWithInvocationNode(callNode, callNode.getTarget().getMethod(), extraExceptionTypes);
