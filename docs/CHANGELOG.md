@@ -7,9 +7,10 @@
 
 ### User-visible changes
 
-An annotation file that cannot be read yields a warning rather than a note.
-
 ### Changes for type system implementers
+
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
