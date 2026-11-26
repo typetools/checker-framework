@@ -114,7 +114,7 @@ public class ArrayAccess extends JavaExpression {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
-    result.append(array.toString());
+    result.append(array.toStringAsPostfixOperand());
     result.append('[');
     result.append(index.toString());
     result.append(']');
