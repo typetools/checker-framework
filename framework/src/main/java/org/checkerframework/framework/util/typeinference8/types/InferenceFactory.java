@@ -1145,7 +1145,8 @@ public class InferenceFactory {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
     IgnoredAnnotations.copyPrimaryAnnotations(
         atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(samePrimaryAnnotations, atm);
+    // Compare the enclosing types too, which the type hierarchy does not.
+    return context.areMutualSubtypesIncludingEnclosingTypes(samePrimaryAnnotations, atm);
   }
 
   /**
@@ -1229,7 +1230,10 @@ public class InferenceFactory {
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(compared.type1(), compared.type2());
+    // Compare the enclosing types too, which the type hierarchy does not.  Otherwise, an origin
+    // could be kept that, when instantiations are applied again, would replace the annotations of
+    // an enclosing type of the result by those of `properType`.
+    return context.areMutualSubtypesIncludingEnclosingTypes(compared.type1(), compared.type2());
   }
 
   /**
@@ -1540,12 +1544,19 @@ public class InferenceFactory {
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
+    // Each use of a variable in `instantiated` is replaced by its own copy of the instantiation,
+    // with the use's primary annotations, if any, replacing the instantiation's (see
+    // TypeVariableSubstitutor#substituteTypeVariable).  Copying also keeps the substitution from
+    // mutating the instantiation.  A use of a variable in `variables` is replaced by the fresh type
+    // variable itself, without copying, which keeps the identity links between fresh type variables
+    // whose bounds refer to one another.
+    List<TypeVariable> copiedTypeVars = new ArrayList<>(instantiated.size());
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      // A copy, because the substitution below does not copy and can mutate what it substitutes.
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      copiedTypeVars.add(variable.getJavaType());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does
@@ -1559,16 +1570,16 @@ public class InferenceFactory {
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
         AnnotatedTypeMirror upperBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getUpperBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getUpperBound());
         AnnotatedTypeMirror lowerBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getLowerBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
       } else {
-        subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
+        subs = typeVarSubstitutor.substituteCopyingSomeTypeArguments(map, copiedTypeVars, type);
       }
       subsTypeArgs.add(new ProperType(subs, context));
     }

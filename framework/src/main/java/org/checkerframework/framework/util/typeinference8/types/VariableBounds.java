@@ -198,22 +198,30 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type}.
+   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type},
+   * including in the annotations of their enclosing types.
    *
    * @param type the proper type to which this variable is instantiated; it must be a reference
    *     type, because an inference variable can only be instantiated to a reference type
+   * @return true if {@code instantiation} changed
    */
-  private void setInstantiation(ProperType type) {
+  private boolean setInstantiation(ProperType type) {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
     // ProperType#equals compares ignoreAnnotations, so an instantiation that ignores annotations is
-    // replaced by an otherwise-equal one that does not.
-    if (type.equals(instantiation)) {
+    // replaced by an otherwise-equal one that does not.  ProperType#equals does not compare
+    // enclosing types, so compare them separately; otherwise, a refreshed instantiation that
+    // differs only in the annotations of an enclosing type would be discarded.
+    if (instantiation != null
+        && type.equals(instantiation)
+        && context.enclosingTypesAreMutualSubtypes(
+            type.getAnnotatedType(), instantiation.getAnnotatedType())) {
       // Leave instantiationChanges unchanged; see its Javadoc.
-      return;
+      return false;
     }
     instantiation = type;
     instantiationChanges++;
+    return true;
   }
 
   /**
@@ -847,8 +855,9 @@ public class VariableBounds {
           refreshedInstantiation != null
               ? refreshedInstantiation
               : instantiation.applyInstantiations();
-      if (refreshed != instantiation) {
-        setInstantiation((ProperType) refreshed);
+      // Report progress only if the stored instantiation changes; otherwise, a refresh that yields
+      // a new but equal instantiation would report progress on every round of incorporation.
+      if (refreshed != instantiation && setInstantiation((ProperType) refreshed)) {
         changed = true;
       }
     }
@@ -871,6 +880,27 @@ public class VariableBounds {
       for (AbstractType bound : boundList) {
         contained.addAll(bound.getInferenceVariables());
       }
+    }
+    return contained;
+  }
+
+  /**
+   * Returns the variables that the origins (see {@link AbstractType#getOriginInferenceVariables})
+   * of the bounds against this variable, and of its instantiation, contain. Their instantiations
+   * determine the ignored positions of those bounds, so these are dependencies for annotations
+   * only: resolution of the Java types does not depend on them.
+   *
+   * @return the variables that the origins of this variable's bounds and instantiation contain
+   */
+  public Collection<Variable> getVariablesContainedInBoundOrigins() {
+    List<Variable> contained = new ArrayList<>();
+    for (Set<AbstractType> boundList : bounds.values()) {
+      for (AbstractType bound : boundList) {
+        contained.addAll(bound.getOriginInferenceVariables());
+      }
+    }
+    if (instantiation != null) {
+      contained.addAll(instantiation.getOriginInferenceVariables());
     }
     return contained;
   }
