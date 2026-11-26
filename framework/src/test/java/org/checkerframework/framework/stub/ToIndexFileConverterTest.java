@@ -1018,6 +1018,46 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand from a type in another package makes available a protected member type that
+   * the type inherits, if the import is in the package that declares the member type. A
+   * package-private member type is not inherited by a subclass in another package.
+   */
+  @Test
+  public void testOnDemandImportOfProtectedInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Sub.*;",
+            "class Use {",
+            "  void m(N x) {}",
+            "  void n(Integer i) {}",
+            "}",
+            "public class Base {",
+            "  protected static class N {}",
+            "  static class Integer {}",
+            "}",
+            "package q;",
+            "public class Sub extends p.Base {}");
+    assertMethod(jaif, "Use", "m(Lp/Base$N;)V");
+    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+
+    // The same, for classes on the classpath.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "import org.checkerframework.framework.stub.inheritanceb.ProtectedSub.*;",
+            "class Use {",
+            "  void m(ProtectedInner x) {}",
+            "  void n(Integer i) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "Use",
+        "m(Lorg/checkerframework/framework/stub/inheritancea/ProtectedBase$ProtectedInner;)V");
+    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+  }
+
+  /**
    * An import on demand does not make available an inaccessible member type, so the member type
    * does not shadow a type in {@code java.lang}.
    */
