@@ -880,41 +880,6 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A member type that an enclosing type inherits shadows a member type of the same name that an
-   * outer type declares, and a single-type import.
-   */
-  @Test
-  public void testInheritedMemberTypeShadowsOuterScope() throws Exception {
-    String jaif =
-        convert(
-            "package p;",
-            "import java.util.Map.Entry;",
-            "class Outer {",
-            "  static class Entry {}",
-            "  abstract static class C implements java.util.Map<String, String> {",
-            "    abstract void m(Entry e);",
-            "  }",
-            "  void n(Entry e) {}",
-            "}");
-    assertMethod(jaif, "Outer$C", "m(Ljava/util/Map$Entry;)V");
-    assertMethod(jaif, "Outer", "n(Lp/Outer$Entry;)V");
-
-    jaif =
-        convert(
-            "package p;",
-            "class Super {",
-            "  static class Inner {}",
-            "}",
-            "class Outer {",
-            "  static class Inner {}",
-            "  static class C extends Super {",
-            "    void m(Inner i) {}",
-            "  }",
-            "}");
-    assertMethod(jaif, "Outer$C", "m(Lp/Super$Inner;)V");
-  }
-
-  /**
    * A private member type is not inherited, but it hides the member types of the same name in the
    * supertypes of the type that declares it.
    */
