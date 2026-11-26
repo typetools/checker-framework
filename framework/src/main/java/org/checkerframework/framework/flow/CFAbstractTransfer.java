@@ -84,6 +84,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierUpperBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -1573,8 +1574,11 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
-   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations}.
-   * This is only called at an unboxing conversion.
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations} and
+   * limited to the qualifier upper bound of {@code type} (see {@link
+   * QualifierUpperBounds#limitToBound}). For example, the Lock Checker unboxes a
+   * {@code @GuardedBy("lock")} value to a {@code @GuardedBy({}) int}, because an {@code int} is a
+   * copy that no lock guards. This is only called at an unboxing conversion.
    *
    * @param type the primitive type to unbox to
    * @param annotatedValue a value to unbox
@@ -1590,13 +1594,15 @@ public abstract class CFAbstractTransfer<
     AnnotationMirrorSet unboxedAnnos =
         analysis.atypeFactory.getUnboxedAnnotations(
             annotatedValue.getAnnotations(), type.getKind());
-    return analysis.createAbstractValue(unboxedAnnos, type);
+    return analysis.createAbstractValue(
+        analysis.atypeFactory.getQualifierUpperBounds().limitToBound(type, unboxedAnnos), type);
   }
 
   /**
    * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
-   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations}. This
-   * is only called at a boxing conversion.
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations} and
+   * limited to the qualifier upper bound of {@code type} (see {@link
+   * QualifierUpperBounds#limitToBound}). This is only called at a boxing conversion.
    *
    * @param type the boxed primitive type to box to, such as {@code Integer}
    * @param annotatedValue a value to box
@@ -1612,7 +1618,8 @@ public abstract class CFAbstractTransfer<
     AnnotationMirrorSet boxedAnnos =
         analysis.atypeFactory.getBoxedAnnotations(
             annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
-    return analysis.createAbstractValue(boxedAnnos, type);
+    return analysis.createAbstractValue(
+        analysis.atypeFactory.getQualifierUpperBounds().limitToBound(type, boxedAnnos), type);
   }
 
   @Override

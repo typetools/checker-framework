@@ -302,6 +302,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * finally block, and that rethrows the exception after the finally block completes normally. An
    * extra copy is one other than the first exceptional copy of a given finally block. See {@link
    * #handleFinally}.
+   *
+   * <p>The test {@code checker/tests/nullness/FinallyCopyBudget.java} uses up this budget. If you
+   * increase it, check that the test still uses it up.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
@@ -1051,7 +1054,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (!TypesUtils.isString(node.getType())) {
       Node converted = new StringConversionNode(node.getTree(), node, stringType);
       addToImplicitlyConvertedLookupMap(converted);
-      insertNodeAfter(converted, node);
+      TypeMirror type = node.getType();
+      if (type.getKind().isPrimitive()
+          || type.getKind() == TypeKind.NULL
+          || TypesUtils.isBoxedPrimitive(type)) {
+        insertNodeAfter(converted, node);
+      } else {
+        // The conversion may invoke an arbitrary toString() method, which may throw.
+        insertNodeWithExceptionsAfter(converted, uncheckedExceptionTypes, node);
+      }
       return converted;
     } else {
       return node;
@@ -2182,12 +2193,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
-   * enhanced for loop over an {@code Iterable}.
+   * Returns the declaration of a new, uniquely named variable that is initialized to the iterator
+   * of an enhanced for loop.
    *
-   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
-   * @param variableElement the element of the loop variable of the enhanced for loop; the new
-   *     variable has the same enclosing element
+   * @param iteratorCall the call to {@code iterator()} on the iterable expression of an enhanced
+   *     for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
    * @return the declaration of the new iterator variable
    */
   protected VariableTree createIteratorVariableForEnhancedForLoop(
@@ -2230,13 +2242,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
-   * for loop over an array.
+   * Returns the declaration of a new, uniquely named variable that is initialized to the array of
+   * an enhanced for loop.
    *
-   * @param expression an array expression of an enhanced for loop, which initializes the new
-   *     variable
-   * @param variableElement the element of the loop variable of the enhanced for loop; the new
-   *     variable has the same enclosing element
+   * @param expression the array expression of an enhanced for loop
+   * @param variableElement the element of the loop's variable; the new variable has the same
+   *     enclosing element
    * @return the declaration of the new array variable
    */
   protected VariableTree createArrayVariableForEnhancedForLoop(
@@ -3066,7 +3077,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param extraExceptionTypes types that label exceptional edges of the call, in addition to the
    *     types of the exceptions that the call might throw; the call follows those edges whenever it
    *     throws an exception (see {@link MethodInvocationNode#getAnyExceptionTypes()})
-   * @param path the path to the call
+   * @param treePath the path to the call
    * @return the node for the call
    */
   private MethodInvocationNode extendWithArtificialCall(
@@ -3074,13 +3085,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node receiver,
       NullReceiver nullReceiver,
       Set<TypeMirror> extraExceptionTypes,
-      TreePath path) {
+      TreePath treePath) {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
     extendWithNode(accessNode, nullReceiver == NullReceiver.THROWS && mayBeNull(receiver));
     MethodInvocationNode callNode =
-        new MethodInvocationNode(call, accessNode, Collections.emptyList(), path);
+        new MethodInvocationNode(call, accessNode, Collections.emptyList(), treePath);
     callNode.setInSource(false);
     callNode.setAnyExceptionTypes(extraExceptionTypes);
     extendWithInvocationNode(callNode, callNode.getTarget().getMethod(), extraExceptionTypes);
@@ -3210,25 +3221,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // `groups` partitions the types of the exceptions that reach the finally block.  For each
     // group, a copy of the finally block starts at the group's entry labels, which exceptions of
     // the group's types jump to when they reach the finally block, and the copy rethrows the
-    // group's types after the finally block completes normally.  Types that go to the same places
-    // share a copy, because the analysis merges their stores there anyway.  The number of copies
-    // grows exponentially with the depth of the nesting of finally blocks in finally blocks, with
-    // a base that grows with the number of copies per finally block.
+    // group's types after the finally block completes normally.
     //
-    // As an optimization, until the budget described below is used up, two types share a copy if
-    // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
-    // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
-    // copy.  Types that go to different places get different copies, so that the analysis does not
-    // merge stores of paths that never meet.  For example, the Resource Leak Checker would
-    // otherwise report a leak when an exception thrown while a resource is open is caught by a
-    // catch block that closes the resource, and another exception, thrown after the resource is
-    // closed, propagates out of the method.
+    // For precision, until the budget described below is used up, two types share a copy if and
+    // only if the copy rethrows them to the same places:  the same catch blocks, or the exit, past
+    // any enclosing finally blocks.  The analysis merges the stores of the paths that reach a copy.
+    // Types that go to the same places lose no precision by sharing a copy, because the analysis
+    // merges their stores at those places anyway.  Types that go to different places get different
+    // copies, so that the analysis does not merge stores of paths that never meet.  For example,
+    // the Resource Leak Checker would otherwise report a leak when an exception thrown while a
+    // resource is open is caught by a catch block that closes the resource, and another exception,
+    // thrown after the resource is closed, propagates out of the method.
     //
-    // As a further optimization, to bound growth, once the copies beyond the first copy for each
-    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
-    // do not yet have a copy share a single copy, which rethrows each of their exceptions.  A
-    // finally block that the CFG builder translates after that point has a single exceptional
-    // copy, which all of its groups share, as if all of its exceptions went to the same places.
+    // The number of copies grows exponentially with the depth of the nesting of finally blocks in
+    // finally blocks, with a base that grows with the number of copies per finally block.  To
+    // bound that growth, once the copies beyond the first copy for each finally block have
+    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that do not yet have a
+    // copy share a single copy, which rethrows each of their exceptions.  A finally block that the
+    // CFG builder translates after that point has a single exceptional copy, which all of its
+    // groups share, as if all of its exceptions went to the same places.
     List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
 
     for (int i = 0; i < groups.size(); i++) {
@@ -3629,11 +3640,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node expression = scan(tree.getExpression(), p);
     TypeMirror exception = expression.getType();
     if (exception.getKind() == TypeKind.NULL) {
-      // `throw null` throws a NullPointerException (JLS 14.18).
+      // `throw null` throws a NullPointerException (JLS 14.18).  The null type must not reach
+      // TryCatchFrame.possibleLabels, which requires a declared type or a type variable.
       exception = nullPointerExceptionType;
     }
     ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
-    NodeWithExceptionsHolder exNode = extendWithNodeWithException(throwsNode, exception);
+    NodeWithExceptionsHolder exNode;
+    if (exception.getKind() == TypeKind.NULL) {
+      // `throw null` throws a NullPointerException (JLS 14.18).
+      exNode = extendWithNodeWithException(throwsNode, nullPointerExceptionType);
+    } else if (mayBeNull(expression)) {
+      // Throwing null throws a NullPointerException instead (JLS 14.18).
+      Set<TypeMirror> causes = new ArraySet<>(2);
+      causes.add(exception);
+      causes.add(nullPointerExceptionType);
+      exNode = extendWithNodeWithExceptions(throwsNode, causes);
+    } else {
+      exNode = extendWithNodeWithException(throwsNode, exception);
+    }
     exNode.setTerminatesExecution(true);
     return throwsNode;
   }
