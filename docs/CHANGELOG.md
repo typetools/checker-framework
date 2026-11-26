@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
+
 New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
 qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
