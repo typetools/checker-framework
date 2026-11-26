@@ -3,8 +3,8 @@
 
 The Delegation Checker verifies that a class that is written as a
 \emph{delegator} really does delegate.  A delegator is a class that
-implements each method that overrides a supertype method by calling the
-same method on some other object, called the \emph{delegate}.  Delegation
+implements each method $m$ that overrides a supertype method by calling $m$
+on the \emph{delegate}.  Delegation
 is an alternative to
 inheritance:  rather than reusing a superclass's implementation, the
 delegator forwards each call to an object that it wraps.
@@ -64,8 +64,8 @@ The Delegation Checker uses the following declaration annotations:
 \begin{description}
 \item[\refqualclass{common/delegation/qual}{Delegate}]
   is written on a field.  It indicates that the field is the delegate of
-  the class that declares it:  each method of the enclosing class that
-  overrides a supertype method is implemented by calling the same method on
+  the class that declares it:  each implementation of an overriding method
+  calls the same method on
   the field.  A class can have at most one \<@Delegate> field.
 \iffalse % Remove this conditional when the Delegation Checker checks @DelegatorMustOverride.
 \item[\refqualclass{common/delegation/qual}{DelegatorMustOverride}]
