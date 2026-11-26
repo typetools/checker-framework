@@ -45,14 +45,15 @@ public class ValueLiteral extends JavaExpression {
   }
 
   /**
-   * Returns the negation of this literal. Throws an exception if negation is not possible.
+   * Returns the negation of this literal. Throws an exception if this literal's type is not a
+   * primitive numeric type other than char.
    *
    * @return the negation of this literal
    */
   public ValueLiteral negate() {
-    if (TypesUtils.isIntegralPrimitive(type)) {
+    if (TypesUtils.isNumericPrimitive(type)) {
       if (value == null) {
-        throw new BugInCF("null value of integral type " + type);
+        throw new BugInCF("null value of numeric type " + type);
       }
       return new ValueLiteral(type, negateBoxedPrimitive(value));
     }
