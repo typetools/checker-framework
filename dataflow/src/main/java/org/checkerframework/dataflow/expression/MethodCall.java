@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.ElementUtils;
 
 /** A call to a @Deterministic method. */
 public class MethodCall extends JavaExpression {
@@ -189,7 +190,9 @@ public class MethodCall extends JavaExpression {
   @Override
   public String toString() {
     StringBuilder preParen = new StringBuilder();
-    if (receiver instanceof ClassName className) {
+    if (receiver instanceof ClassName className && ElementUtils.isStatic(method)) {
+      // The receiver of a static method prints as a type name.  The receiver of an instance method
+      // that is a ClassName is a class literal, such as `Foo.class`.
       preParen.append(className.getTypeString());
     } else {
       preParen.append(receiver.toStringAsPostfixOperand());
