@@ -327,8 +327,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param identifier the simple name of a member type
    * @param mixedPackages true if the type declaration and its subtypes along the inheritance path
    *     are not all in one package
-   * @param importPackage the package of an import on demand to which the member type must also be
-   *     accessible, or null if there is no such import
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import; the unnamed package is {@code ""}
    */
   private record InheritedMemberTypeKey(
       String identifier, boolean mixedPackages, @Nullable String importPackage) {}
@@ -1584,7 +1584,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           memberClass(
               prefixClass,
               identifiers[0],
-              importPathPackage(prefixClass.getPackageName(), cu),
+              prefixClass.getPackageName(),
               true,
               packageName,
               new HashSet<>());
@@ -1630,8 +1630,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // hide one, from a later supertype, that is accessible.
     Object first = memberTypeDeclaration(prefixDecl, identifiers[0]);
     if (first == null) {
-      String pathPackage = importPathPackage(stubPackage(prefixDecl), cu);
-      first = inheritedMemberType(prefixDecl, identifiers[0], pathPackage == null, packageName(cu));
+      first =
+          inheritedMemberType(
+              prefixDecl, identifiers[0], /* mixedPackages= */ false, packageName(cu));
     }
     // An import on demand makes available only the accessible member types (JLS 7.5.2).  An
     // inaccessible one does not shadow a type that a later import on demand makes available.
@@ -1639,22 +1640,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     return memberChainBinaryName(first, identifiers, packageName(cu));
-  }
-
-  /**
-   * Returns the package of an inheritance path, as for the {@code packageName} argument of {@link
-   * #memberClass(Class, String, String, boolean, String, Set)}, for the member types that an import
-   * on demand in {@code cu} imports from a type. A package-private member type is accessible to the
-   * import only if it is in the import's package, so the import acts as the first subtype along the
-   * path.
-   *
-   * @param typePackage the package of the type that the import on demand imports from
-   * @param cu the stub file's compilation unit in which the import is written, or null for the
-   *     converter's import context
-   * @return {@code typePackage} if it is the package of {@code cu}, and otherwise null
-   */
-  private @Nullable String importPathPackage(String typePackage, @Nullable CompilationUnit cu) {
-    return typePackage.equals(packageName(cu)) ? typePackage : null;
   }
 
   /**
@@ -1874,9 +1859,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param identifier the simple name of a member type
    * @param mixedPackages true if {@code declaration} and its subtypes along the inheritance path
    *     are not all in one package
-   * @param importPackage the package of an import on demand to which the member type must also be
-   *     accessible, as for {@link #memberClass(Class, String, String, boolean, String, Set)}, or
-   *     null if there is no such import
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import, as for {@link #memberClass(Class, String,
+   *     String, boolean, String, Set)}
    * @return the inherited member type: a {@link TypeDeclaration} if the stub file declares it, a
    *     {@link Class} if it is on the classpath, or null if there is none or it cannot be
    *     determined
@@ -1936,7 +1921,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param identifier the simple name of a member type
    * @param mixedPackages true if {@code declaration} and its subtypes along the inheritance path
    *     are not all in one package
-   * @param importPackage the package of an import on demand to which the member type must also be
+   * @param importPackage the package of the import on demand to which the member type must also be
    *     accessible, or null if there is no such import
    * @return the inherited member type: a {@link TypeDeclaration} if the stub file declares it, a
    *     {@link Class} if it is on the classpath, or null if there is none or it cannot be
@@ -2031,8 +2016,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param pathPackage the package of every subtype of {@code declaringType} along the inheritance
    *     path, or null if they are not all in one package
    * @param importPackage the package of an import on demand to which {@code member} must also be
-   *     accessible, so that a protected member type counts only if it is in that package, or null
-   *     if there is no such import
+   *     accessible, or null if there is no such import; a protected or package-private member type
+   *     is accessible to the import only if it is in {@code importPackage}
    * @return true if {@code member} is inherited along the inheritance path
    */
   private boolean isInheritedStubMemberType(
@@ -2048,10 +2033,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (member.isPrivate()) {
       return false;
     }
-    return member.isPublic()
-        || (member.isProtected()
-            && (importPackage == null || stubPackage(member).equals(importPackage)))
-        || stubPackage(member).equals(pathPackage);
+    if (member.isPublic()) {
+      return true;
+    }
+    String memberPackage = stubPackage(member);
+    if (importPackage != null && !memberPackage.equals(importPackage)) {
+      return false;
+    }
+    return member.isProtected() || memberPackage.equals(pathPackage);
   }
 
   /**
@@ -2433,9 +2422,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * null if there is none, as for {@link #memberClass(Class, String, String, boolean, Set)}.
    *
    * <p>If {@code importPackage} is non-null, then an inherited member type must also be accessible
-   * to an import on demand in package {@code importPackage}: a protected member type counts only if
-   * it is in that package. (A package-private member type is accessible to the import only if it is
-   * in that package, which the caller ensures via {@code packageName}.) An inaccessible member type
+   * to an import on demand written in {@code importPackage}: a protected or package-private member
+   * type counts only if it is declared in that package (JLS 6.6.1). An inaccessible member type
    * that a class declares still hides the member types of the same name in that class's supertypes.
    *
    * @param clazz a class on the classpath, or null
@@ -2445,7 +2433,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     unnamed package; or null if those classes are not all in the same package
    * @param inherited if true, the member types that {@code clazz} declares are themselves inherited
    *     by the class whose members are sought, so they must be accessible from {@code packageName}
-   * @param importPackage the package of an import on demand to which the member type must also be
+   * @param importPackage the package of the import on demand to which the member type must also be
    *     accessible, or null if there is no such import; the unnamed package is {@code ""}
    * @param visited the classes that have already been searched; this method adds {@code clazz} to
    *     it
@@ -2493,8 +2481,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param packageName a package name, the empty string for the unnamed package, or null for no
    *     package
    * @param importPackage the package of an import on demand to which {@code member} must also be
-   *     accessible, so that a protected member type counts only if it is in that package, or null
-   *     if there is no such import
+   *     accessible, or null if there is no such import; a protected or package-private member type
+   *     is accessible to the import only if it is in {@code importPackage}
    * @return true if {@code member} is accessible from {@code packageName}
    */
   private static boolean isAccessible(
@@ -2505,12 +2493,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return true;
     }
     int modifiers = member.getModifiers();
-    if (Modifier.isPublic(modifiers)
-        || (Modifier.isProtected(modifiers)
-            && (importPackage == null || member.getPackageName().equals(importPackage)))) {
+    if (Modifier.isPublic(modifiers)) {
       return true;
     }
-    return !Modifier.isPrivate(modifiers) && member.getPackageName().equals(packageName);
+    if (Modifier.isPrivate(modifiers)) {
+      return false;
+    }
+    String memberPackage = member.getPackageName();
+    if (importPackage != null && !memberPackage.equals(importPackage)) {
+      return false;
+    }
+    return Modifier.isProtected(modifiers) || memberPackage.equals(packageName);
   }
 
   /**
