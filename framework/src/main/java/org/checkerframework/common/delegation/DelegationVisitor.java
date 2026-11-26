@@ -16,13 +16,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.delegation.qual.Delegate;
+import org.checkerframework.common.delegation.qual.DelegatorMustOverride;
 import org.checkerframework.framework.source.SourceVisitor;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -42,6 +49,12 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
   /** The checker that is using this visitor. */
   private final DelegationChecker checker;
 
+  /** The processing environment. */
+  private final ProcessingEnvironment processingEnv;
+
+  /** Reads declaration annotations. */
+  private final AnnotationProvider annotationProvider;
+
   /**
    * For each class that encloses the tree currently being visited, its field that is annotated with
    * {@link Delegate}. The innermost class is the last element. An element is null if the
@@ -57,6 +70,8 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
   public DelegationVisitor(DelegationChecker checker) {
     super(checker);
     this.checker = checker;
+    this.processingEnv = checker.getProcessingEnvironment();
+    this.annotationProvider = checker.getAnnotationProvider();
   }
 
   /**
@@ -86,6 +101,9 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     VariableTree delegate = delegateFields.size() == 1 ? delegateFields.get(0) : null;
     delegates.add(delegate);
     try {
+      if (delegate != null) {
+        checkDelegatorMustOverrideMethods(tree);
+      }
       return super.visitClass(tree, p);
     } finally {
       delegates.remove(delegates.size() - 1);
@@ -94,8 +112,37 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
 
   @Override
   public Void visitMethod(MethodTree tree, Void p) {
+    checkMustOverrideIsOverridable(tree);
     checkDelegatedCall(tree);
     return super.visitMethod(tree, p);
+  }
+
+  /**
+   * Issues an error if the given method is annotated with {@link DelegatorMustOverride} but cannot
+   * be overridden. No delegator could satisfy such a requirement.
+   *
+   * @param tree a method declaration
+   */
+  private void checkMustOverrideIsOverridable(MethodTree tree) {
+    ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+    if (methodElt != null
+        && annotationProvider.getDeclAnnotation(methodElt, DelegatorMustOverride.class) != null
+        && !isOverridable(methodElt)) {
+      checker.reportError(tree, "mustoverride.not.overridable", tree.getName());
+    }
+  }
+
+  /**
+   * Returns true if the given method can be overridden by a method in a subclass.
+   *
+   * @param methodElt a method
+   * @return true if the given method can be overridden by a method in a subclass
+   */
+  private static boolean isOverridable(ExecutableElement methodElt) {
+    Set<Modifier> modifiers = methodElt.getModifiers();
+    return !modifiers.contains(Modifier.STATIC)
+        && !modifiers.contains(Modifier.PRIVATE)
+        && !modifiers.contains(Modifier.FINAL);
   }
 
   /**
@@ -286,5 +333,61 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     Class<?> exceptionClass =
         TypesUtils.getClassFromType(TreeUtils.typeOf(throwStmt.getExpression()));
     return exceptionClass == clazz;
+  }
+
+  /**
+   * Issues a warning if the given class does not override every method of a supertype that is
+   * annotated with {@link DelegatorMustOverride}.
+   *
+   * <p>A delegator need not override every method of a supertype: for many methods, the inherited
+   * implementation is correct for the delegator as well. A method is annotated with {@link
+   * DelegatorMustOverride} if its specification would not be satisfied by an inherited
+   * implementation.
+   *
+   * @param tree a class that has a field annotated with {@link Delegate}
+   */
+  private void checkDelegatorMustOverrideMethods(ClassTree tree) {
+    TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
+    if (classElt == null) {
+      return;
+    }
+    List<ExecutableElement> declaredMethods =
+        ElementFilter.methodsIn(classElt.getEnclosedElements());
+    List<ExecutableElement> notOverridden = new ArrayList<>();
+    for (TypeElement supertypeElt : ElementUtils.getAllSupertypes(classElt, processingEnv)) {
+      if (supertypeElt.equals(classElt)) {
+        continue;
+      }
+      for (ExecutableElement supertypeMethod :
+          ElementFilter.methodsIn(supertypeElt.getEnclosedElements())) {
+        if (annotationProvider.getDeclAnnotation(supertypeMethod, DelegatorMustOverride.class)
+                == null
+            || !isOverridable(supertypeMethod)) {
+          continue;
+        }
+        boolean isOverridden =
+            declaredMethods.stream()
+                .anyMatch(m -> ElementUtils.isMethod(m, supertypeMethod, processingEnv));
+        if (!isOverridden) {
+          notOverridden.add(supertypeMethod);
+        }
+      }
+    }
+    // A supertype method and a method that overrides it may both be annotated with
+    // @DelegatorMustOverride.  They are one method as far as the delegator is concerned, so list
+    // only the most specific one.
+    StringJoiner mostSpecific = new StringJoiner(", ");
+    for (ExecutableElement method : notOverridden) {
+      boolean hasMoreSpecific =
+          notOverridden.stream()
+              .anyMatch(m -> !m.equals(method) && ElementUtils.isMethod(m, method, processingEnv));
+      if (!hasMoreSpecific) {
+        mostSpecific.add(ElementUtils.getSimpleDescription(method));
+      }
+    }
+    if (mostSpecific.length() != 0) {
+      checker.reportWarning(
+          tree, "delegate.override", tree.getSimpleName(), mostSpecific.toString());
+    }
   }
 }
