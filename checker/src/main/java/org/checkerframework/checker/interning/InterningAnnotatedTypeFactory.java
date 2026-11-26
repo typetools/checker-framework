@@ -253,8 +253,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Replaces any interning type annotation with @Interned, since all primitives can safely use ==.
-   * See case 4 in the class comments.
+   * Returns a copy of {@code annos} in which @Interned replaces the interning type annotation, if
+   * any, because all primitives can safely use ==. See case 4 in the class comments.
    *
    * <p>{@inheritDoc}
    */
@@ -265,11 +265,12 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Replaces any interning type annotation with @UnknownInterned, since a boxed value need not be
-   * interned, even though every primitive is. For example, {@code Integer.valueOf(1000) ==
-   * Integer.valueOf(1000)} can be false. The exceptions are {@code boolean} and {@code byte}:
-   * {@code Boolean.valueOf()} and {@code Byte.valueOf()} return a cached object for every value, so
-   * a boxed {@code boolean} or {@code byte} is @Interned.
+   * Returns a copy of {@code annos} in which @UnknownInterned replaces the interning type
+   * annotation, if any, because a boxed value need not be interned, even though every primitive is.
+   * For example, {@code Integer.valueOf(1000) == Integer.valueOf(1000)} can be false. The
+   * exceptions are {@code boolean} and {@code byte}: {@code Boolean.valueOf()} and {@code
+   * Byte.valueOf()} return a cached object for every value, so a boxed {@code boolean} or {@code
+   * byte} is @Interned.
    *
    * <p>{@inheritDoc}
    */
