@@ -13,9 +13,6 @@ public class BinarySearchTest {
     // `@SameLen("#2")`), because then neither field could be assigned first.
     // :: error: [reassignment.invalidates.type]
     iTransitions = transitions;
-    // TODO: `nameKeys` has the same length as `iTransitions`, so the declared type of
-    // `transitions` still holds.
-    // :: error: [reassignment.invalidates.type]
     iNameKeys = nameKeys;
   }
 

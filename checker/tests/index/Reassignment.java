@@ -10,9 +10,11 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
+import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
+import org.checkerframework.checker.index.qual.SubstringIndexFor;
 
 public class Reassignment {
 
@@ -223,6 +225,18 @@ public class Reassignment {
     a[i] = 0;
   }
 
+  // `b` has the same length as `a`, so `i` is still an index for `a` after `a = b`.
+  void sameLenArray(@IndexFor("#2") int i, int[] a, int @SameLen("#2") [] b) {
+    a = b;
+    a[i] = 0;
+  }
+
+  // `b` and `c` have the same length as `a`, so `b` still has the same length as `a` after `a = c`.
+  void sameLenOfSameLen(int[] a, int @SameLen("#1") [] b, int @SameLen("#1") [] c) {
+    a = c;
+    int @SameLen("a") [] x = b;
+  }
+
   // `i` is less than the length of `c`, so `i` is still an index for `a` after `a = c`.
   void refinedForNewValue(@IndexFor("#2") int i, int[] a, int[] c) {
     if (i < c.length) {
@@ -288,6 +302,22 @@ public class Reassignment {
         a = c;
       }
     };
+  }
+
+  // `b` has the same length as `a`, so `i` is still a search index for `a` after `a = b`.
+  void sameLenSearchIndex(@SearchIndexFor("#2") int i, int[] a, int @SameLen("#2") [] b) {
+    a = b;
+  }
+
+  // `b` has the same length as `a`, so `i` is still a negative index for `a` after `a = b`.
+  void sameLenNegativeIndex(@NegativeIndexFor("#2") int i, int[] a, int @SameLen("#2") [] b) {
+    a = b;
+  }
+
+  // `b` has the same length as `a`, so `i` is still a substring index for `a` after `a = b`.
+  void sameLenSubstringIndex(
+      @SubstringIndexFor(value = "#2", offset = "-1") int i, String a, @SameLen("#2") String b) {
+    a = b;
   }
 
   // `c` might not have the same length as `a`.  Both the Search Index Checker and the Upper Bound

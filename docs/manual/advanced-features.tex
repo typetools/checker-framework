@@ -1471,8 +1471,9 @@ Checker Framework handles a reassignment as follows.
   of the result.  For example:
 
 \begin{Verbatim}
-  void m(@IndexFor("#2") int i, int[] a, int[] c) {
-    a = c;  // error: i might not be an index for c
+  void m(@IndexFor("#2") int i, int[] a, int @SameLen("#2") [] b, int[] c) {
+    a = b;  // OK: b has the same length as a
+    a = c;  // error: i might not be an index for c, and c might not have the same length as b
   }
 \end{Verbatim}
 

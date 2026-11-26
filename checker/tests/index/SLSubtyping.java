@@ -17,8 +17,6 @@ public class SLSubtyping {
   }
 
   void subtype2(int[] a, int @SameLen("#1") [] b) {
-    // TODO: `b` has the same length as `a`, so the declared type of `b` still holds.
-    // :: error: [reassignment.invalidates.type]
     a = b;
     int @SameLen("b") [] c = b;
     int @SameLen("f") [] d = f;
