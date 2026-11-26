@@ -1036,6 +1036,32 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
   }
 
+  /**
+   * A {@code $} in the name of a stub-declared supertype can be part of an identifier, rather than
+   * a separator between a member type and its enclosing type.
+   */
+  @Test
+  public void testInheritedMemberTypeOfPackageQualifiedSupertypeWithDollarInName()
+      throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Sub extends p.Base$Generated {}",
+            "class DeepSub extends p.Base$Generated.Deep {}",
+            "public class Base$Generated {",
+            "  public static class Inner {}",
+            "  public static class Deep {",
+            "    public static class DeepInner {}",
+            "  }",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(DeepSub.DeepInner x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Generated$Inner;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Base$Generated$Deep$DeepInner;)V");
+  }
+
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicInheritance() throws Exception {
