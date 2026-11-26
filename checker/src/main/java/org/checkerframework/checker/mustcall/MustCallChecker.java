@@ -64,8 +64,11 @@ public class MustCallChecker extends BaseTypeChecker {
   private static final SetOfTypes DEFAULT_IGNORED_EXCEPTIONS =
       SetOfTypes.anyOfTheseNames(
           ImmutableSet.of(
-              // Any method call has a CFG edge for Throwable/RuntimeException/Error
-              // to represent run-time misbehavior. Ignore it.
+              // Any method call has a CFG edge for RuntimeException and Error to represent
+              // run-time misbehavior.  Ignore them.  A CFG edge for exactly Throwable comes from
+              // code that throws a value of unknown exception type, such as a `throw` statement
+              // whose expression has static type Throwable or a call to a method whose `throws`
+              // clause names Throwable, such as `MethodHandle.invoke`.  Ignore it too.
               Throwable.class.getCanonicalName(),
               Error.class.getCanonicalName(),
               RuntimeException.class.getCanonicalName(),

@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -295,6 +296,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * finally block, and that rethrows the exception after the finally block completes normally. An
    * extra copy is one other than the first exceptional copy of a given finally block. See {@link
    * #handleFinally}.
+   *
+   * <p>The test {@code checker/tests/nullness/FinallyCopyBudget.java} uses up this budget. If you
+   * increase it, check that the test still uses it up.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
@@ -342,15 +346,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Class declarations that have been encountered when building the control-flow graph for a
-   * method.
+   * method. It is a set because the CFG builder translates a finally block more than once, so it
+   * encounters a class declaration in a finally block more than once.
    */
-  private final List<ClassTree> declaredClasses;
+  private final Set<ClassTree> declaredClasses;
 
   /**
    * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
-   * initializer.
+   * initializer. It is a set because the CFG builder translates a finally block more than once, so
+   * it encounters a lambda in a finally block more than once.
    */
-  private final List<LambdaExpressionTree> declaredLambdas;
+  private final Set<LambdaExpressionTree> declaredLambdas;
 
   /** The ArithmeticException type. */
   protected final TypeMirror arithmeticExceptionType;
@@ -456,8 +462,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     breakLabels = new HashMap<>(4);
     continueLabels = new HashMap<>(4);
     returnNodes = new ArrayList<>();
-    declaredClasses = new ArrayList<>();
-    declaredLambdas = new ArrayList<>();
+    declaredClasses = new LinkedHashSet<>();
+    declaredLambdas = new LinkedHashSet<>();
 
     arithmeticExceptionType = getTypeMirror(ArithmeticException.class);
     arrayIndexOutOfBoundsExceptionType = getTypeMirror(ArrayIndexOutOfBoundsException.class);
@@ -533,8 +539,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           returnNodes,
           regularExitLabel,
           exceptionalExitLabel,
-          declaredClasses,
-          declaredLambdas,
+          new ArrayList<>(declaredClasses),
+          new ArrayList<>(declaredLambdas),
           types);
     } finally {
       this.path = null;
@@ -2861,9 +2867,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
     closeAccessNode.setInSource(false);
     extendWithNode(closeAccessNode);
+    // The current path leads to the try statement.  The path of the close() call leads to the
+    // resource, which is a child of the try statement.
+    TreePath resourcePath = new TreePath(getCurrentPath(), resourceDeclarationTree);
     MethodInvocationNode closeCallNode =
-        new MethodInvocationNode(
-            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
+        new MethodInvocationNode(closeCall, closeAccessNode, Collections.emptyList(), resourcePath);
     closeCallNode.setInSource(false);
     closeCallNode.setAnyExceptionTypes(extraExceptionTypes);
     extendWithInvocationNode(
@@ -2997,25 +3005,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // `groups` partitions the types of the exceptions that reach the finally block.  For each
     // group, a copy of the finally block starts at the group's entry labels, which exceptions of
     // the group's types jump to when they reach the finally block, and the copy rethrows the
-    // group's types after the finally block completes normally.  Types that go to the same places
-    // share a copy, because the analysis merges their stores there anyway.  The number of copies
-    // grows exponentially with the depth of the nesting of finally blocks in finally blocks, with
-    // a base that grows with the number of copies per finally block.
+    // group's types after the finally block completes normally.
     //
-    // As an optimization, until the budget described below is used up, two types share a copy if
-    // and only if the copy rethrows them to the same places:  the same catch blocks, or the exit,
-    // past any enclosing finally blocks.  The analysis merges the stores of the paths that reach a
-    // copy.  Types that go to different places get different copies, so that the analysis does not
-    // merge stores of paths that never meet.  For example, the Resource Leak Checker would
-    // otherwise report a leak when an exception thrown while a resource is open is caught by a
-    // catch block that closes the resource, and another exception, thrown after the resource is
-    // closed, propagates out of the method.
+    // For precision, until the budget described below is used up, two types share a copy if and
+    // only if the copy rethrows them to the same places:  the same catch blocks, or the exit, past
+    // any enclosing finally blocks.  The analysis merges the stores of the paths that reach a copy.
+    // Types that go to the same places lose no precision by sharing a copy, because the analysis
+    // merges their stores at those places anyway.  Types that go to different places get different
+    // copies, so that the analysis does not merge stores of paths that never meet.  For example,
+    // the Resource Leak Checker would otherwise report a leak when an exception thrown while a
+    // resource is open is caught by a catch block that closes the resource, and another exception,
+    // thrown after the resource is closed, propagates out of the method.
     //
-    // As a further optimization, to bound growth, once the copies beyond the first copy for each
-    // finally block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that
-    // do not yet have a copy share a single copy, which rethrows each of their exceptions.  A
-    // finally block that the CFG builder translates after that point has a single exceptional
-    // copy, which all of its groups share, as if all of its exceptions went to the same places.
+    // The number of copies grows exponentially with the depth of the nesting of finally blocks in
+    // finally blocks, with a base that grows with the number of copies per finally block.  To
+    // bound that growth, once the copies beyond the first copy for each finally block have
+    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that do not yet have a
+    // copy share a single copy, which rethrows each of their exceptions.  A finally block that the
+    // CFG builder translates after that point has a single exceptional copy, which all of its
+    // groups share, as if all of its exceptions went to the same places.
     List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
 
     for (int i = 0; i < groups.size(); i++) {
