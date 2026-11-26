@@ -556,14 +556,14 @@ public final class PurityChecker {
    * implementation has is the union of those methods' purity kinds. The result is empty if {@code
    * type} has no implementation of {@code paramFunction}.
    *
-   * <p>The first element of the result is {@link #implementationOf}. If that method is abstract, the
-   * result also contains every other abstract method of {@code type} that each object implements
-   * with the same method; see {@link #isSameImplementation}. For example, in {@code interface Both
-   * extends Getter, SefGetter}, every implementation of {@code Getter.get} also implements {@code
-   * SefGetter.get}, so it has the purity that {@code SefGetter.get}'s annotations promise, even if
-   * {@code Getter.get} has no purity annotation. The code that implements both methods, whether a
-   * lambda, a method reference, or a method of a class, is checked against every method that it
-   * implements.
+   * <p>The first element of the result is {@link #implementationOf}. If that method is abstract,
+   * the result also contains every other abstract method of {@code type} that each object
+   * implements with the same method; see {@link #isSameImplementation}. For example, in {@code
+   * interface Both extends Getter, SefGetter}, every implementation of {@code Getter.get} also
+   * implements {@code SefGetter.get}, so it has the purity that {@code SefGetter.get}'s annotations
+   * promise, even if {@code Getter.get} has no purity annotation. The code that implements both
+   * methods, whether a lambda, a method reference, or a method of a class, is checked against every
+   * method that it implements.
    *
    * @param type a type, such as the type of an argument or of a formal parameter
    * @param paramFunction a functional interface's functional method, such as {@code Function.apply}
@@ -630,17 +630,17 @@ public final class PurityChecker {
    *
    * <p>Override-equivalence as members of {@code type} itself does not suffice, because the class
    * of an object determines which method implements each one, and the class can be generic. Given
-   * {@code class Split<X> implements Generic<X>, Specific}, where {@code Generic<T>} declares {@code
-   * apply(T)} and {@code Specific} declares {@code apply(String)}, the two methods have the same
-   * signature as members of {@code Split<String>}, but {@code Split} can implement them with two
-   * different methods, {@code apply(X)} and {@code apply(String)}. Therefore, if {@code type} is a
-   * class or interface type, this method compares the two methods as members of the generic
+   * {@code class Split<X> implements Generic<X>, Specific}, where {@code Generic<T>} declares
+   * {@code apply(T)} and {@code Specific} declares {@code apply(String)}, the two methods have the
+   * same signature as members of {@code Split<String>}, but {@code Split} can implement them with
+   * two different methods, {@code apply(X)} and {@code apply(String)}. Therefore, if {@code type}
+   * is a class or interface type, this method compares the two methods as members of the generic
    * declaration of that class or interface, in terms of its own type parameters: every class whose
    * objects have type {@code type} is a subtype of that declaration, and sees the two methods as a
-   * substitution instance of how the declaration sees them. If {@code type} is an intersection type,
-   * a class that implements every bound need not be a subtype of any one declaration; then the two
-   * methods must also have the same erased parameter types, because no class can declare two
-   * methods with the same name and erasure (JLS 8.4.8.3).
+   * substitution instance of how the declaration sees them. If {@code type} is an intersection
+   * type, a class that implements every bound need not be a subtype of any one declaration; then
+   * the two methods must also have the same erased parameter types, because no class can declare
+   * two methods with the same name and erasure (JLS 8.4.8.3).
    *
    * @param function a method of {@code type}, such as its functional method
    * @param other another method
@@ -692,8 +692,8 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns true if the two methods' formal parameters have the same erased types, so that no
-   * class can implement them with two different methods.
+   * Returns true if the two methods' formal parameters have the same erased types, so that no class
+   * can implement them with two different methods.
    *
    * @param method a method
    * @param other another method

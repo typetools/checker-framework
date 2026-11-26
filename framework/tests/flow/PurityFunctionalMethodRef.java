@@ -431,7 +431,9 @@ public class PurityFunctionalMethodRef {
     Object get();
   }
 
-  /** Every implementation of {@code ObjectGetter.get} also implements {@code SefObjectGetter.get}. */
+  /**
+   * Every implementation of {@code ObjectGetter.get} also implements {@code SefObjectGetter.get}.
+   */
   @FunctionalInterface
   interface PlainFirstGetter extends ObjectGetter, SefObjectGetter {}
 
