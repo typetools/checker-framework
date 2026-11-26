@@ -1529,6 +1529,34 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand from a stub-declared type makes available a member type that the type
+   * inherits through a supertype that the stub file declares but whose classpath counterpart has
+   * supertypes that the stub file omits. Among the member types of that counterpart's supertypes,
+   * one that is inaccessible to the import does not hide one, from a later supertype, that is
+   * accessible.
+   */
+  @Test
+  public void testOnDemandImportThroughOmittedSupertypesSkipsInaccessibleOne() throws Exception {
+    // The classpath's ProtectedSubWithInterface extends ProtectedBase, whose ProtectedInner is
+    // protected, and implements ProtectedInnerInterface, whose ProtectedInner is public.
+    String jaif =
+        convert(
+            "package q;",
+            "import q.X.*;",
+            "class X extends org.checkerframework.framework.stub.inheritanceb"
+                + ".ProtectedSubWithInterface {}",
+            "class Use {",
+            "  void m(ProtectedInner x) {}",
+            "}",
+            "package org.checkerframework.framework.stub.inheritanceb;",
+            "public class ProtectedSubWithInterface {}");
+    assertMethod(
+        jaif,
+        "Use",
+        "m(Lorg/checkerframework/framework/stub/inheritanceb/ProtectedInnerInterface$ProtectedInner;)V");
+  }
+
+  /**
    * A member type that a classpath type declares is inherited even if the stub file declares the
    * type and omits the member type.
    */

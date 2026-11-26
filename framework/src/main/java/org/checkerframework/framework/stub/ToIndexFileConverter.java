@@ -287,9 +287,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param packageName the package of the stub declaration whose members are sought, or the empty
    *     string for the unnamed package; or null if the classes along the inheritance path from it
    *     are not all in one package
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import
    */
   private record ClasspathMemberQuery(
-      String identifier, boolean inherited, @Nullable String packageName) {}
+      String identifier,
+      boolean inherited,
+      @Nullable String packageName,
+      @Nullable String importPackage) {}
 
   /**
    * A cache for {@link #classpathMemberClass}. Maps a type declaration of the stub file, and the
@@ -1756,7 +1761,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (inherited != null) {
       return inherited;
     }
-    return classpathMemberClass(declaration, identifier, false, stubPackage(declaration));
+    return classpathMemberClass(declaration, identifier, false, stubPackage(declaration), null);
   }
 
   /**
@@ -1977,11 +1982,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           // The stub file often omits a supertype that the classpath counterpart of
           // `superTypeDecl` has.
           Class<?> classpathMember =
-              classpathMemberClass(superTypeDecl, identifier, true, pathPackage);
-          // `classpathMemberClass` does not apply `importPackage`, so check it here.
-          if (classpathMember != null
-              && (importPackage == null
-                  || isAccessible(classpathMember, pathPackage, importPackage))) {
+              classpathMemberClass(superTypeDecl, identifier, true, pathPackage, importPackage);
+          if (classpathMember != null) {
             return classpathMember;
           }
         } else if (superDecl instanceof Class<?> superClass) {
@@ -2275,16 +2277,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param packageName the package of the stub declaration whose members are sought, or the empty
    *     string for the unnamed package; or null if the classes along the inheritance path from it
    *     are not all in one package
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import
    * @return the member type named {@code identifier}, or null
    */
   private @Nullable Class<?> classpathMemberClass(
       TypeDeclaration<?> declaration,
       String identifier,
       boolean inherited,
-      @Nullable String packageName) {
+      @Nullable String packageName,
+      @Nullable String importPackage) {
     Map<ClasspathMemberQuery, @Nullable Class<?>> cache =
         classpathMemberClassCache.computeIfAbsent(declaration, d -> new HashMap<>());
-    ClasspathMemberQuery query = new ClasspathMemberQuery(identifier, inherited, packageName);
+    ClasspathMemberQuery query =
+        new ClasspathMemberQuery(identifier, inherited, packageName, importPackage);
     if (cache.containsKey(query)) {
       return cache.get(query);
     }
@@ -2303,7 +2309,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     inheritanceCycleCut = false;
     try {
       Class<?> result =
-          classpathMemberClassUncached(declaration, identifier, inherited, packageName);
+          classpathMemberClassUncached(
+              declaration, identifier, inherited, packageName, importPackage);
       if (outermost || !inheritanceCycleCut) {
         cache.put(query, result);
       } else {
@@ -2334,13 +2341,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param packageName the package of the stub declaration whose members are sought, or the empty
    *     string for the unnamed package; or null if the classes along the inheritance path from it
    *     are not all in one package
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import
    * @return the member type named {@code identifier}, or null
    */
   private @Nullable Class<?> classpathMemberClassUncached(
       TypeDeclaration<?> declaration,
       String identifier,
       boolean inherited,
-      @Nullable String packageName) {
+      @Nullable String packageName,
+      @Nullable String importPackage) {
     if (!classpathInheritanceVisiting.add(declaration)) {
       // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.
       inheritanceCycleCut = true;
@@ -2361,16 +2371,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // member types of the same name in the supertypes of `counterpart`.  Every member type that
       // memberClass finds in a supertype is accessible, so the check below can reject only a
       // member type that `counterpart` declares.
-      Class<?> result = memberClass(counterpart, identifier, packageName, false, new HashSet<>());
+      Class<?> result =
+          memberClass(counterpart, identifier, packageName, false, importPackage, new HashSet<>());
       if (result != null) {
-        return (!inherited || isAccessible(result, packageName, null)) ? result : null;
+        return (!inherited || isAccessible(result, packageName, importPackage)) ? result : null;
       }
       for (ClassOrInterfaceType supertype : supertypes(declaration)) {
         Object superDecl = resolveSupertype(supertype);
         if (superDecl instanceof TypeDeclaration<?> superTypeDecl) {
-          result = classpathMemberClass(superTypeDecl, identifier, true, packageName);
+          result =
+              classpathMemberClass(superTypeDecl, identifier, true, packageName, importPackage);
         } else if (superDecl instanceof Class<?> superClass) {
-          result = memberClass(superClass, identifier, packageName, true, new HashSet<>());
+          result =
+              memberClass(
+                  superClass, identifier, packageName, true, importPackage, new HashSet<>());
         }
         if (result != null) {
           return result;
