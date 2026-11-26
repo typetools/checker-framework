@@ -4546,7 +4546,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // significant, unlike that of the other inherited declaration annotations.  A method that
     // overrides methods in two supertypes inherits the union of what they permit it to
     // side-effect, rather than the "first one wins" rule of `addOrMerge`;
-    // `BaseTypeVisitor.OverrideChecker` reports any override that thereby side-effects more than a
+    // `OverrideChecker` reports any override that thereby side-effects more than a
     // supertype permits.  Furthermore, each expression must be remembered along with the method
     // that declares it, because the expression is parsed in that method's scope.  A
     // `@SideEffectsOnly` written on `elt` itself is authoritative, so in that case nothing is
