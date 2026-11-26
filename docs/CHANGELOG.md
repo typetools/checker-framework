@@ -74,6 +74,12 @@ boolean operator, `visitValueLiteral()`.  A subclass that overrides
 function of the lambda's result node; it uses the value that the result node
 already computed.
 
+`BaseTypeVisitor.OverrideChecker` is now a top-level class,
+`org.checkerframework.common.basetype.OverrideChecker`.  Its constructor takes a
+new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
+inner class of a visitor can pass the visitor, as in
+`super(MyVisitor.this, overriderTree, ...)`.
+
 Deprecated methods:
 
 * `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
