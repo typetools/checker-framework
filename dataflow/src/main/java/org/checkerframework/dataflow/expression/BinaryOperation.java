@@ -170,13 +170,17 @@ public class BinaryOperation extends JavaExpression {
     String leftString = left.toString();
     // Binary operators are left-associative, so a left operand needs parentheses only if its
     // operator binds less tightly, but a right operand also needs them if its operator binds
-    // equally tightly:  "a - (b - c)" differs from "a - b - c".
-    if (left instanceof BinaryOperation leftOp && precedence(leftOp.operationKind) < precedence) {
+    // equally tightly:  "a - (b - c)" differs from "a - b - c".  An unknown expression, such as a
+    // conditional expression "b ? x : y", might bind less tightly than every binary operator.
+    if (left instanceof Unknown
+        || (left instanceof BinaryOperation leftOp
+            && precedence(leftOp.operationKind) < precedence)) {
       leftString = "(" + leftString + ")";
     }
     String rightString = right.toString();
-    if (right instanceof BinaryOperation rightOp
-        && precedence(rightOp.operationKind) <= precedence) {
+    if (right instanceof Unknown
+        || (right instanceof BinaryOperation rightOp
+            && precedence(rightOp.operationKind) <= precedence)) {
       rightString = "(" + rightString + ")";
     }
     return leftString + " " + operationKindToString(operationKind) + " " + rightString;
