@@ -236,12 +236,57 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       topLevelTypeCache = new IdentityHashMap<>();
 
   /**
+   * A cache for {@link #classpathDeclaredMemberType}. Maps a type declaration of the stub file to
+   * the class on the classpath that has the same binary name, or to null if there is none. It is an
+   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
+   * subtree.
+   */
+  private final IdentityHashMap<TypeDeclaration<?>, @Nullable Class<?>> classpathClassCache =
+      new IdentityHashMap<>();
+
+  /**
    * The type declarations of the stub file whose inherited member types are being sought by {@link
    * #inheritedMemberType}. It prevents infinite recursion on a malformed stub file whose
    * inheritance is cyclic.
    */
   private final Set<TypeDeclaration<?>> inheritanceVisiting =
       Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
+   * True if, during the current call to {@link #inheritedMemberType}, cyclic inheritance cut a
+   * search short because {@link #inheritanceVisiting} already contained a type. The result of such
+   * a call is not stored in {@link #inheritedMemberTypesCache}, unless the call is the outermost
+   * one.
+   */
+  private boolean inheritanceCycleCut = false;
+
+  /**
+   * A cache for {@link #inheritedMemberType}. Maps a type declaration of the stub file to a map
+   * from the other arguments of {@link #inheritedMemberType} to its result.
+   */
+  private final IdentityHashMap<TypeDeclaration<?>, Map<InheritedMemberTypeKey, @Nullable Object>>
+      inheritedMemberTypesCache = new IdentityHashMap<>();
+
+  /**
+   * The results of the calls to {@link #inheritedMemberType}, during the current outermost call,
+   * that cyclic inheritance cut short. Such a result depends on the types whose search was in
+   * progress, so it is not stored in {@link #inheritedMemberTypesCache}. Reusing it within the
+   * outermost call ensures that each type is searched at most once per outermost call, even if many
+   * paths lead from it back to a type whose search is in progress. This map is cleared when the
+   * outermost call completes. Cyclic inheritance is illegal, so its result need only be some
+   * plausible type.
+   */
+  private final IdentityHashMap<TypeDeclaration<?>, Map<InheritedMemberTypeKey, @Nullable Object>>
+      inheritedMemberTypesCycleCache = new IdentityHashMap<>();
+
+  /**
+   * The arguments of {@link #inheritedMemberType}, other than the type declaration.
+   *
+   * @param identifier the simple name of a member type
+   * @param mixedPackages true if the type declaration and its subtypes along the inheritance path
+   *     are not all in one package
+   */
+  private record InheritedMemberTypeKey(String identifier, boolean mixedPackages) {}
 
   /**
    * Creates a new ToIndexFileConverter for one compilation unit of a stub file. The converter does
@@ -1800,8 +1845,39 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the non-private member type named {@code identifier} that a type declaration of the
-   * stub file inherits from its supertypes.
+   * Returns the member type named {@code identifier} that the classpath class with the same binary
+   * name as a type declaration of the stub file declares, whether or not it is inherited. A stub
+   * file often omits some members of a type.
+   *
+   * @param declaration a type declaration in the stub file
+   * @param identifier the simple name of a member type
+   * @return the member type named {@code identifier} that the classpath class declares, or null if
+   *     there is none or it cannot be determined
+   */
+  private @Nullable Class<?> classpathDeclaredMemberType(
+      TypeDeclaration<?> declaration, String identifier) {
+    Class<?> clazz;
+    if (classpathClassCache.containsKey(declaration)) {
+      clazz = classpathClassCache.get(declaration);
+    } else {
+      @SuppressWarnings("signature") // the binary name of a class
+      @ClassGetName String binaryName = qualifiedStubBinaryName(declaration);
+      clazz = loadClass(binaryName);
+      classpathClassCache.put(declaration, clazz);
+    }
+    if (clazz == null) {
+      return null;
+    }
+    try {
+      return declaredMemberType(clazz, identifier);
+    } catch (NoClassDefFoundError | SecurityException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that a type declaration of the stub file
+   * inherits from its supertypes.
    *
    * @param declaration a type declaration in the stub file
    * @param identifier the simple name of a member type
@@ -1810,29 +1886,126 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     determined
    */
   private @Nullable Object inheritedMemberType(TypeDeclaration<?> declaration, String identifier) {
+    return inheritedMemberType(declaration, identifier, false);
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that a type declaration of the stub file
+   * inherits from its supertypes, and that is inherited by the subtypes of {@code declaration}
+   * along an inheritance path (as defined at {@link #classMemberType(Class, String, String,
+   * String)}).
+   *
+   * <p>Applying the constraint of the whole inheritance path while choosing among the supertypes,
+   * rather than afterward, lets a member type that a subtype along the path does not inherit yield
+   * to one, from a later supertype, that every subtype along the path inherits.
+   *
+   * @param declaration a type declaration in the stub file
+   * @param identifier the simple name of a member type
+   * @param mixedPackages true if {@code declaration} and its subtypes along the inheritance path
+   *     are not all in one package
+   * @return the inherited member type: a {@link TypeDeclaration} if the stub file declares it, a
+   *     {@link Class} if it is on the classpath, or null if there is none or it cannot be
+   *     determined
+   */
+  private @Nullable Object inheritedMemberType(
+      TypeDeclaration<?> declaration, String identifier, boolean mixedPackages) {
+    Map<InheritedMemberTypeKey, @Nullable Object> cache =
+        inheritedMemberTypesCache.computeIfAbsent(declaration, d -> new HashMap<>());
+    InheritedMemberTypeKey key = new InheritedMemberTypeKey(identifier, mixedPackages);
+    if (cache.containsKey(key)) {
+      return cache.get(key);
+    }
+    Map<InheritedMemberTypeKey, @Nullable Object> cycleCache =
+        inheritedMemberTypesCycleCache.computeIfAbsent(declaration, d -> new HashMap<>());
+    if (cycleCache.containsKey(key)) {
+      // That result was cut short by cyclic inheritance, so the caller's result is too.
+      inheritanceCycleCut = true;
+      return cycleCache.get(key);
+    }
+    boolean outermost = inheritanceVisiting.isEmpty();
+    boolean enclosingCycleCut = inheritanceCycleCut;
+    inheritanceCycleCut = false;
+    try {
+      Object result = inheritedMemberTypeUncached(declaration, identifier, mixedPackages);
+      // A result is incomplete if cyclic inheritance cut its search short at a type whose search
+      // was already in progress.  The outermost call's search includes those types, so its result
+      // is complete.
+      if (outermost || !inheritanceCycleCut) {
+        cache.put(key, result);
+      } else {
+        cycleCache.put(key, result);
+      }
+      inheritanceCycleCut |= enclosingCycleCut;
+      return result;
+    } finally {
+      if (outermost) {
+        inheritedMemberTypesCycleCache.clear();
+        inheritanceCycleCut = false;
+      }
+    }
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that a type declaration of the stub file
+   * inherits from its supertypes, and that is inherited by the subtypes of {@code declaration}
+   * along an inheritance path, without consulting the cache.
+   *
+   * @param declaration a type declaration in the stub file
+   * @param identifier the simple name of a member type
+   * @param mixedPackages true if {@code declaration} and its subtypes along the inheritance path
+   *     are not all in one package
+   * @return the inherited member type: a {@link TypeDeclaration} if the stub file declares it, a
+   *     {@link Class} if it is on the classpath, or null if there is none or it cannot be
+   *     determined
+   */
+  private @Nullable Object inheritedMemberTypeUncached(
+      TypeDeclaration<?> declaration, String identifier, boolean mixedPackages) {
     if (!inheritanceVisiting.add(declaration)) {
+      inheritanceCycleCut = true;
       return null;
     }
     try {
+      // The package of `declaration` and of every subtype along the inheritance path, as for the
+      // `subclassPackage` argument of `classMemberType`.
+      String pathPackage = mixedPackages ? MIXED_PACKAGES : stubPackage(declaration);
       for (ClassOrInterfaceType supertype : supertypes(declaration)) {
         Object superDecl = resolveSupertype(supertype);
         if (superDecl instanceof TypeDeclaration<?> superTypeDecl) {
+          // A member type that is not inherited along the path, because it is inaccessible, does
+          // not hide a member type of a later supertype.
           TypeDeclaration<?> nestedType = memberTypeDeclaration(superTypeDecl, identifier);
           if (nestedType != null) {
-            // A private member type is not inherited, but it hides every member type of the same
-            // name in the supertypes of `superTypeDecl` (JLS 8.5).
-            if (!nestedType.isPrivate()) {
+            if (isInheritedStubMemberType(superTypeDecl, nestedType, pathPackage)) {
               return nestedType;
             }
+            // `nestedType` is not inherited, but it hides every member type of the same name in the
+            // supertypes of `superTypeDecl` (JLS 8.5).
             continue;
           }
-          Object inherited = inheritedMemberType(superTypeDecl, identifier);
+          // A stub file often omits some member types of a type that is on the classpath.
+          Class<?> classpathNestedType = classpathDeclaredMemberType(superTypeDecl, identifier);
+          Class<?> classpathDeclaringType =
+              classpathNestedType == null ? null : classpathNestedType.getDeclaringClass();
+          if (classpathNestedType != null && classpathDeclaringType != null) {
+            if (isInheritedMemberType(
+                classpathDeclaringType,
+                classpathNestedType,
+                classpathDeclaringType.getPackageName().equals(pathPackage),
+                null)) {
+              return classpathNestedType;
+            }
+            // As above, a member type that is not inherited hides the member types of the same
+            // name in the supertypes.
+            continue;
+          }
+          Object inherited =
+              inheritedMemberType(
+                  superTypeDecl, identifier, !stubPackage(superTypeDecl).equals(pathPackage));
           if (inherited != null) {
             return inherited;
           }
         } else if (superDecl instanceof Class<?> superClass) {
-          Class<?> nestedType =
-              classMemberType(superClass, identifier, stubPackage(declaration), null);
+          Class<?> nestedType = classMemberType(superClass, identifier, pathPackage, null);
           if (nestedType != null) {
             return nestedType;
           }
@@ -1840,12 +2013,38 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       if (declaration instanceof EnumDeclaration) {
         // The implicit superclass of an enum declares the member type `Enum.EnumDesc`.
-        return classMemberType(Enum.class, identifier, stubPackage(declaration), null);
+        return classMemberType(Enum.class, identifier, pathPackage, null);
       }
       return null;
     } finally {
       inheritanceVisiting.remove(declaration);
     }
+  }
+
+  /**
+   * Returns true if a member type that a type declaration of the stub file declares is inherited
+   * along an inheritance path. As for {@link #isInheritedMemberType}, a member type is inherited
+   * only if it is not private and it is accessible in every subtype along the path (JLS 8.5): it is
+   * public or protected, it is a member of an interface or annotation interface (and so implicitly
+   * public), or every subtype along the path is in its package.
+   *
+   * @param declaringType a type declaration of the stub file
+   * @param member a member type that {@code declaringType} declares
+   * @param pathPackage the package of every subtype of {@code declaringType} along the inheritance
+   *     path, or {@link #MIXED_PACKAGES} if they are not all in one package
+   * @return true if {@code member} is inherited along the inheritance path
+   */
+  private boolean isInheritedStubMemberType(
+      TypeDeclaration<?> declaringType, TypeDeclaration<?> member, String pathPackage) {
+    if ((declaringType instanceof ClassOrInterfaceDeclaration classDecl && classDecl.isInterface())
+        || declaringType instanceof AnnotationDeclaration) {
+      // A member type of an interface is implicitly public.
+      return true;
+    }
+    if (member.isPrivate()) {
+      return false;
+    }
+    return member.isPublic() || member.isProtected() || stubPackage(member).equals(pathPackage);
   }
 
   /**

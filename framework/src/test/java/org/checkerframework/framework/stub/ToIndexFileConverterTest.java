@@ -565,6 +565,55 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * Searching for a member type in a deep hierarchy of interfaces whose supertypes form diamonds
+   * takes time that is linear, not exponential, in the depth of the hierarchy, even for a name,
+   * such as {@code String}, that no type in the hierarchy declares.
+   */
+  @Test(timeout = 60_000)
+  public void testInheritedMemberTypeInDiamondHierarchy() throws Exception {
+    int depth = 30;
+    List<String> lines = new ArrayList<>();
+    lines.add("package p;");
+    lines.add("class MyClass implements A0 {");
+    lines.add("  void myMethod(MyClass.Member m, MyClass.Missing s) {}");
+    lines.add("}");
+    for (int i = 0; i < depth; i++) {
+      String supertypes = "A" + (i + 1) + ", B" + (i + 1);
+      lines.add("interface A" + i + " extends " + supertypes + " {}");
+      lines.add("interface B" + i + " extends " + supertypes + " {}");
+    }
+    lines.add("interface A" + depth + " { class Member {} }");
+    lines.add("interface B" + depth + " {}");
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "MyClass", "myMethod(Lp/A" + depth + "$Member;Lp/MyClass$Missing;)V");
+  }
+
+  /**
+   * Searching for a member type in a deep hierarchy of interfaces whose supertypes form diamonds,
+   * and whose deepest interfaces extend the first one, takes time that is not exponential in the
+   * depth of the hierarchy, even though every path leads back to a type whose search is in
+   * progress. Such cyclic inheritance is illegal.
+   */
+  @Test(timeout = 60_000)
+  public void testInheritedMemberTypeInCyclicDiamondHierarchy() throws Exception {
+    int depth = 30;
+    List<String> lines = new ArrayList<>();
+    lines.add("package p;");
+    lines.add("class MyClass implements A0 {");
+    lines.add("  void myMethod(MyClass.Missing s) {}");
+    lines.add("}");
+    for (int i = 0; i < depth; i++) {
+      String supertypes = "A" + (i + 1) + ", B" + (i + 1);
+      lines.add("interface A" + i + " extends " + supertypes + " {}");
+      lines.add("interface B" + i + " extends " + supertypes + " {}");
+    }
+    lines.add("interface A" + depth + " extends A0 {}");
+    lines.add("interface B" + depth + " extends A0 {}");
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "MyClass", "myMethod(Lp/MyClass$Missing;)V");
+  }
+
+  /**
    * In package {@code p}, the name {@code q.Outer} does not refer to a type in subpackage {@code
    * p.q}, even if the stub file declares one.
    */
@@ -1114,6 +1163,72 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * A package-private member type of a supertype in another package is not inherited, so it does
+   * not hide a member type of a later supertype. A member type of an interface is implicitly
+   * public, so it is inherited from another package.
+   */
+  @Test
+  public void testInaccessibleInheritedMemberTypeOfStubSupertype() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class C extends p.Base implements I {",
+            "  void m(C.Inner x) {}",
+            "}",
+            "interface I {",
+            "  class Inner {}",
+            "}",
+            "class D implements p.J {",
+            "  void m(D.JInner x) {}",
+            "}",
+            "class E extends p.Base {",
+            "  void m(E.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  static class Inner {}",
+            "}",
+            "public interface J {",
+            "  class JInner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$Inner;)V");
+    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
+    // `E` inherits no member type `Inner`, so `Inner` is not resolved to `p.Base.Inner`.
+    assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
+  }
+
+  /**
+   * A package-private member type that a supertype inherits within its own package is not inherited
+   * by a subtype in another package, so the search continues to a member type, of a later
+   * supertype, that the subtype does inherit. Within the package, the package-private member type
+   * is inherited.
+   */
+  @Test
+  public void testInaccessibleMemberTypeInheritedThroughIntermediateStubSupertype()
+      throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "public interface I {",
+            "  class N {}",
+            "}",
+            "class C extends p.B {",
+            "  void m(C.N x) {}",
+            "}",
+            "package p;",
+            "class A {",
+            "  static class N {}",
+            "}",
+            "public class B extends A implements q.I {}",
+            "class E extends A {}",
+            "class F extends E {",
+            "  void m(F.N x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$N;)V");
+    assertMethod(jaif, "F", "m(Lp/A$N;)V");
+  }
+
+  /**
    * An import on demand of the member types of a class on the classpath makes available the member
    * types that the class declares and the ones that it inherits.
    */
@@ -1147,6 +1262,27 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
     assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * A member type that a classpath type declares is inherited even if the stub file declares the
+   * type and omits the member type.
+   */
+  @Test
+  public void testInheritedClasspathMemberTypeOmittedByStub() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "abstract class C extends java.util.AbstractMap {",
+            "  void m(C.SimpleEntry x) {}",
+            "  void n(C.SimpleEntry x) {}",
+            "  void o(C.Entry x) {}",
+            "}",
+            "package java.util;",
+            "public abstract class AbstractMap<K, V> implements Map<K, V> {}");
+    assertMethod(jaif, "C", "m(Ljava/util/AbstractMap$SimpleEntry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+    assertMethod(jaif, "C", "o(Ljava/util/Map$Entry;)V");
   }
 
   /**
