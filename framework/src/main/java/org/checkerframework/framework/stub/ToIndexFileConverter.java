@@ -285,9 +285,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param inherited true if the type declaration is a supertype of the class whose members are
    *     sought
    * @param packageName the package of the stub declaration whose members are sought, or the empty
-   *     string for the unnamed package
+   *     string for the unnamed package; or null if the classes along the inheritance path from it
+   *     are not all in one package
    */
-  private record ClasspathMemberQuery(String identifier, boolean inherited, String packageName) {}
+  private record ClasspathMemberQuery(
+      String identifier, boolean inherited, @Nullable String packageName) {}
 
   /**
    * A cache for {@link #classpathMemberClass}. Maps a type declaration of the stub file, and the
@@ -1987,6 +1989,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           if (inherited != null) {
             return inherited;
           }
+          // The stub file often omits a supertype that the classpath counterpart of
+          // `superTypeDecl` has.
+          Class<?> classpathMember =
+              classpathMemberClass(superTypeDecl, identifier, true, pathPackage);
+          // `classpathMemberClass` does not apply `importPackage`, so check it here.
+          if (classpathMember != null
+              && (importPackage == null
+                  || isAccessible(classpathMember, pathPackage, importPackage))) {
+            return classpathMember;
+          }
         } else if (superDecl instanceof Class<?> superClass) {
           Class<?> nestedType =
               memberClass(
@@ -2272,11 +2284,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param inherited if true, {@code declaration} is a supertype of the class whose members are
    *     sought, so only a member type that is accessible from {@code packageName} is inherited
    * @param packageName the package of the stub declaration whose members are sought, or the empty
-   *     string for the unnamed package
+   *     string for the unnamed package; or null if the classes along the inheritance path from it
+   *     are not all in one package
    * @return the member type named {@code identifier}, or null
    */
   private @Nullable Class<?> classpathMemberClass(
-      TypeDeclaration<?> declaration, String identifier, boolean inherited, String packageName) {
+      TypeDeclaration<?> declaration,
+      String identifier,
+      boolean inherited,
+      @Nullable String packageName) {
     Map<ClasspathMemberQuery, @Nullable Class<?>> cache =
         classpathMemberClassCache.computeIfAbsent(declaration, d -> new HashMap<>());
     ClasspathMemberQuery query = new ClasspathMemberQuery(identifier, inherited, packageName);
@@ -2327,11 +2343,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param inherited if true, {@code declaration} is a supertype of the class whose members are
    *     sought, so only a member type that is accessible from {@code packageName} is inherited
    * @param packageName the package of the stub declaration whose members are sought, or the empty
-   *     string for the unnamed package
+   *     string for the unnamed package; or null if the classes along the inheritance path from it
+   *     are not all in one package
    * @return the member type named {@code identifier}, or null
    */
   private @Nullable Class<?> classpathMemberClassUncached(
-      TypeDeclaration<?> declaration, String identifier, boolean inherited, String packageName) {
+      TypeDeclaration<?> declaration,
+      String identifier,
+      boolean inherited,
+      @Nullable String packageName) {
     if (!classpathInheritanceVisiting.add(declaration)) {
       // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.
       inheritanceCycleCut = true;
