@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -1013,6 +1014,44 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns a test for expressions whose values might change after the given operand of a
+   * comparison produces its value and before the comparison completes. Returns null if no variable,
+   * field, or array element is written in that time.
+   *
+   * <p>A client uses the test for an expression that the abstract value of the operand depends on,
+   * such as {@code a} in {@code @LTLengthOf("a")}. If the test returns true, the abstract value
+   * might not be valid when the comparison completes. For example, in {@code a.length == (i =
+   * replaceA())}, the abstract value of {@code a.length} depends on {@code a}, which {@code
+   * replaceA()} might write.
+   *
+   * <p>If {@code operand} is an assignment, the writes include those of its targets, which happen
+   * after its value is computed. The test does not consider changes to the abstract value of the
+   * object that an expression denotes.
+   *
+   * @param operand an operand of a comparison
+   * @return a test for whether the value of an expression might change after {@code operand}
+   *     produces its value and before the comparison completes, or null if no location is written
+   *     in that time
+   */
+  protected @Nullable Predicate<JavaExpression> mayChangeAfterOperand(Node operand) {
+    WrittenLocations written = locationsWrittenUntilComparison(operand);
+    Node n = operand;
+    while (n instanceof AssignmentNode assignment) {
+      written.add(JavaExpression.fromNode(assignment.getTarget()));
+      Tree tree = assignment.getTree();
+      if (tree != null) {
+        // A compound assignment `+=` might perform a string conversion.
+        written.addOwnWrites(tree);
+      }
+      n = assignment.getExpression();
+    }
+    if (written.isEmpty()) {
+      return null;
+    }
+    return expr -> written.valueMayChange(expr, false);
+  }
+
+  /**
    * Returns the nodes that have the value of the given node when the comparison that contains the
    * node completes. The comparison is a binary comparison such as {@code ==} or {@code <}, and the
    * caller refines each node in the result according to the outcome of the comparison.
@@ -1298,7 +1337,7 @@ public abstract class CFAbstractTransfer<
    * @param node a node
    * @return the path to the source tree that {@code node} represents, or null if there is none
    */
-  private @Nullable TreePath sourcePath(Node node) {
+  protected @Nullable TreePath sourcePath(Node node) {
     Tree tree = node.getTree();
     if (tree != null) {
       TreePath path = analysis.atypeFactory.getPath(tree);
@@ -1560,7 +1599,10 @@ public abstract class CFAbstractTransfer<
      * a field changes only accesses of the same field, and method calls. A write to an array
      * element changes only accesses of arrays that might alias the written array, and method calls.
      * A call to {@code String.length()} changes only if its receiver changes, because a {@code
-     * String} is immutable. If side effects unrefine aliases (see {@link
+     * String} is immutable. A string concatenation with an operand whose string conversion calls
+     * {@code toString()} on a possibly mutable object, as in {@code "p" + box}, changes like a
+     * method call. A change to the abstract value of a receiver, index, argument, or operand does
+     * not matter (see {@link #valueMayChange}). If side effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes every expression whose abstract value other code can modify (see {@link
      * JavaExpression#isModifiableByOtherCode}).
@@ -1584,34 +1626,60 @@ public abstract class CFAbstractTransfer<
         // writes, so its abstract value is the one that was stored.
         return true;
       }
+      return valueMayChange(expr, ignoreOwnLocation);
+    }
+
+    /**
+     * Returns true if writing these locations might change the value of {@code expr}, as for {@link
+     * #mayChange}, but ignoring changes to the abstract value of the object that {@code expr}
+     * denotes. For example, if {@code expr} is {@code a}, a write to {@code a} changes it, but a
+     * write to {@code a.f} or {@code a[0]} does not.
+     *
+     * <p>This is the right check for a subexpression of a candidate, such as the receiver or index
+     * of an array access: only the value of the subexpression determines which location the
+     * candidate denotes, so a change to its abstract value does not matter.
+     *
+     * @param expr an expression
+     * @param ignoreOwnLocation true if a write to the location that {@code expr} denotes does not
+     *     matter; see {@link #mayChange}
+     * @return true if evaluating {@code expr} after writing these locations might yield a different
+     *     value than evaluating it before
+     */
+    boolean valueMayChange(JavaExpression expr, boolean ignoreOwnLocation) {
       if (expr instanceof LocalVariable) {
         return !ignoreOwnLocation && locals.contains(expr);
       } else if (expr instanceof FieldAccess fa) {
-        return (!ignoreOwnLocation && mayWriteField(fa)) || mayChange(fa.getReceiver(), false);
+        return (!ignoreOwnLocation && mayWriteField(fa)) || valueMayChange(fa.getReceiver(), false);
       } else if (expr instanceof ArrayAccess aa) {
         return (!ignoreOwnLocation && mayWriteArrayElement(aa))
-            || mayChange(aa.getArray(), false)
-            || mayChange(aa.getIndex(), false);
+            || valueMayChange(aa.getArray(), false)
+            || valueMayChange(aa.getIndex(), false);
       } else if (expr instanceof MethodCall mc) {
         if (mc.getElement().equals(stringLength)) {
-          return mayChange(mc.getReceiver(), false);
+          return valueMayChange(mc.getReceiver(), false);
         }
-        if (anyHeapLocation
-            || !fields.isEmpty()
-            || !arrayElements.isEmpty()
-            || mayChange(mc.getReceiver(), false)) {
+        if (mayWriteHeap() || valueMayChange(mc.getReceiver(), false)) {
           return true;
         }
         for (JavaExpression arg : mc.getArguments()) {
-          if (mayChange(arg, false)) {
+          if (valueMayChange(arg, false)) {
             return true;
           }
         }
         return false;
       } else if (expr instanceof UnaryOperation uo) {
-        return mayChange(uo.getOperand(), false);
+        return valueMayChange(uo.getOperand(), false);
       } else if (expr instanceof BinaryOperation bo) {
-        return mayChange(bo.getLeft(), false) || mayChange(bo.getRight(), false);
+        if (bo.getOperationKind() == Tree.Kind.PLUS
+            && TypesUtils.isString(bo.getType())
+            && (toStringMayReadHeap(bo.getLeft().getType())
+                || toStringMayReadHeap(bo.getRight().getType()))
+            && mayWriteHeap()) {
+          // The string conversion of an operand calls its `toString()` method, whose result might
+          // depend on any field or array element, as for a method call.
+          return true;
+        }
+        return valueMayChange(bo.getLeft(), false) || valueMayChange(bo.getRight(), false);
       } else {
         // An Unknown or ArrayCreation might be changed.
         return !(expr instanceof ClassName
@@ -1620,6 +1688,36 @@ public abstract class CFAbstractTransfer<
             || expr instanceof ThisReference
             || expr instanceof ValueLiteral);
       }
+    }
+
+    /**
+     * Returns true if these locations might include a field or an array element.
+     *
+     * @return true if these locations might include a field or an array element
+     */
+    private boolean mayWriteHeap() {
+      return anyHeapLocation || !fields.isEmpty() || !arrayElements.isEmpty();
+    }
+
+    /**
+     * Returns true if no location is written.
+     *
+     * @return true if no location is written
+     */
+    boolean isEmpty() {
+      return !anyHeapLocation && locals.isEmpty() && fields.isEmpty() && arrayElements.isEmpty();
+    }
+
+    /**
+     * Returns true if the result of the string conversion of a value of the given type might depend
+     * on a field or an array element. That is the case if the conversion calls {@code toString()}
+     * on an object that might be mutable: not a {@code String} or a boxed primitive.
+     *
+     * @param type the type of an operand of a string concatenation
+     * @return true if the string conversion of a value of {@code type} might read the heap
+     */
+    private boolean toStringMayReadHeap(TypeMirror type) {
+      return callsToString(type) && !TypesUtils.isBoxedPrimitive(type);
     }
 
     /**
