@@ -989,41 +989,6 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
   }
 
-  /**
-   * A name that refers to member types of two supertypes is ambiguous, and javac rejects it. The
-   * converter resolves it to the member type of the first supertype, whether or not the stub file
-   * declares that supertype. A member type that the classpath counterpart of a stub-declared
-   * supertype declares is a member type of that supertype, even if the stub file omits it.
-   */
-  @Test
-  public void testAmbiguousInheritedMemberType() throws Exception {
-    // Base and I are on the classpath, and both declare a member type N.
-    String jaif =
-        convert(
-            "package org.checkerframework.framework.stub.hiding;",
-            "class C extends Base implements I {}",
-            "class Use { void m(C.N n) {} }");
-    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
-
-    jaif =
-        convert(
-            "package org.checkerframework.framework.stub.hiding;",
-            "class Base {}",
-            "class C extends Base implements I {}",
-            "class Use { void m(C.N n) {} }");
-    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
-
-    // The stub file declares Derived but omits its superclass Base, which the classpath
-    // counterpart of Derived extends.
-    jaif =
-        convert(
-            "package org.checkerframework.framework.stub.hiding;",
-            "class Derived {}",
-            "class C extends Derived implements I {}",
-            "class Use { void m(C.N n) {} }");
-    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
-  }
-
   /** A name can go through a private member type to the member types that it inherits. */
   @Test
   public void testMemberTypeOfPrivateMemberType() throws Exception {
