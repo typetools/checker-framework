@@ -46,6 +46,7 @@ import org.checkerframework.dataflow.expression.JavaExpressionParseException.Jav
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.javacparse.JavacParse;
@@ -70,6 +71,10 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
           Tree.Kind.LESS_THAN_EQUAL,
           Tree.Kind.GREATER_THAN,
           Tree.Kind.GREATER_THAN_EQUAL);
+
+  /** The shift operators. */
+  private static final Set<Tree.Kind> SHIFT_OPERATORS =
+      EnumSet.of(Tree.Kind.LEFT_SHIFT, Tree.Kind.RIGHT_SHIFT, Tree.Kind.UNSIGNED_RIGHT_SHIFT);
 
   /** The processing environment. */
   private final ProcessingEnvironment env;
@@ -885,6 +890,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     JavaExpression rightJe = exprTree.getRightOperand().accept(this, null);
     TypeMirror leftType = leftJe.getType();
     TypeMirror rightType = rightJe.getType();
+    TypeMirror leftUnboxedType = unboxedTypeOrSelf(leftType);
+    TypeMirror rightUnboxedType = unboxedTypeOrSelf(rightType);
     TypeMirror type;
     // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
     if (operator == Tree.Kind.PLUS
@@ -892,6 +899,27 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // JLS 15.18.1 says, "If only one operand expression is of type String, then string
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
+    } else if (SHIFT_OPERATORS.contains(operator)
+        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
+        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+      // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
+      // promotion, which converts a byte, short, or char to int.
+      type =
+          types.getPrimitiveType(
+              TypeKindUtils.widenedNumericType(leftUnboxedType.getKind(), TypeKind.INT));
+    } else if (TypesUtils.isNumericPrimitive(leftUnboxedType)
+        && TypesUtils.isNumericPrimitive(rightUnboxedType)) {
+      // Binary numeric promotion (JLS 5.6), after unboxing if necessary:  for example, the sum of
+      // two shorts is an int, and the sum of an Integer and a long is a long.
+      type =
+          COMPARISON_OPERATORS.contains(operator)
+              ? booleanTypeMirror
+              : types.getPrimitiveType(
+                  TypeKindUtils.widenedNumericType(leftUnboxedType, rightUnboxedType));
+    } else if (leftUnboxedType.getKind() == TypeKind.BOOLEAN
+        && rightUnboxedType.getKind() == TypeKind.BOOLEAN) {
+      // An operation on two booleans, after unboxing if necessary, such as == or &&.
+      type = booleanTypeMirror;
     } else if (COMPARISON_OPERATORS.contains(operator)) {
       if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
         type = booleanTypeMirror;
@@ -913,6 +941,17 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
               String.format("inconsistent types %s %s for %s", leftType, rightType, exprTree)));
     }
     return new BinaryOperation(type, operator, leftJe, rightJe);
+  }
+
+  /**
+   * Returns the primitive type that unboxing conversion converts the given type to, or the given
+   * type itself if it is not a boxed primitive type.
+   *
+   * @param type a type, such as {@code Integer} or {@code int}
+   * @return the unboxed type, such as {@code int} for {@code Integer}, or {@code type} itself
+   */
+  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
+    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
   }
 
   /**
