@@ -2050,7 +2050,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Returns the declaration of a new, uniquely named variable that holds the iterator of an
    * enhanced for loop over an {@code Iterable}.
    *
-   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
+   * @param iteratorCall a call to {@code iterator()} on the iterable expression of an enhanced for
+   *     loop; the call initializes the new variable
    * @param variableElement the element of the loop variable of the enhanced for loop; the new
    *     variable has the same enclosing element
    * @return the declaration of the new iterator variable
@@ -2098,8 +2099,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
    * for loop over an array.
    *
-   * @param expression an array expression of an enhanced for loop, which initializes the new
-   *     variable
+   * @param expression the expression, of array type, that an enhanced for loop iterates over; the
+   *     expression initializes the new variable
    * @param variableElement the element of the loop variable of the enhanced for loop; the new
    *     variable has the same enclosing element
    * @return the declaration of the new array variable
