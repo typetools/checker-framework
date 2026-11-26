@@ -39,10 +39,11 @@ inner class of a visitor can pass the visitor, as in
 
 New method `BaseTypeVisitor.reportPurityErrors(PurityResult, EnumSet, Map)`
 reports purity errors that name the methods whose annotations require the
-missing purity.  It reports the purity errors of a lambda.  A visitor that
-overrides `reportPurityErrors(PurityResult, EnumSet)` to customize purity
-diagnostics should override the new method instead, so that the customization
-also applies to lambdas.
+missing purity.  It reports the purity errors of a lambda body, and the
+existing two-argument `reportPurityErrors` calls it.  A visitor that overrides
+`reportPurityErrors(PurityResult, EnumSet)` to customize purity diagnostics
+should override the new method instead, so that the customization also applies
+to lambdas.
 
 Deprecated methods:
 

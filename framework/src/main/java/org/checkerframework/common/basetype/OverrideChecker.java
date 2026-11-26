@@ -230,6 +230,13 @@ public class OverrideChecker {
    */
   public boolean checkOverride() {
     if (visitor.checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+      // Skip the qualifier checks against the overridden method.  Still check a method
+      // reference's purity, which `-AskipUses` does not affect, as it does not affect a lambda's
+      // purity check.  The method reference might implement methods of other types as well, such
+      // as other bounds of an intersection type.
+      if (isMethodReference) {
+        checkMethodReferencePurity();
+      }
       return true;
     }
 
@@ -256,6 +263,10 @@ public class OverrideChecker {
    * <p>Reports an error for each of those methods that requires a purity kind that the referenced
    * method lacks, except a method whose missing kinds are among those of another reported method.
    * Thus, the errors together name every missing kind, and no error is redundant.
+   *
+   * <p>Like the purity check of a lambda body, this check is performed even if a method's declaring
+   * type is in {@code -AskipUses}. That option suppresses checks of uses of a type, but the purity
+   * of the code that implements a method is not a use of the type that declares the method.
    *
    * <p>Only a method reference needs this check. A method that overrides another one inherits its
    * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
@@ -305,7 +316,7 @@ public class OverrideChecker {
                 : AnnotatedTypes.asMemberOf(
                     types, visitor.atypeFactory, overriddenType, declaration);
       } else {
-        // The declaration is in the hierarchy of another bound of an intersection cast.
+        // The declaration is in the hierarchy of another bound of an intersection target.
         declarationOwnerType = visitor.atypeFactory.getAnnotatedType(declaringType);
         declarationType = visitor.atypeFactory.getAnnotatedType(declaration);
       }
@@ -657,6 +668,8 @@ public class OverrideChecker {
         // These don't have receivers
         return true;
     }
+    assert receiverDecl != null
+        : "@AssumeAssertion(nullness): each remaining kind refers to a method with a receiver";
 
     boolean success = visitor.typeHierarchy.isSubtype(receiverArg, receiverDecl);
     if (!success) {
@@ -688,8 +701,8 @@ public class OverrideChecker {
   }
 
   /**
-   * Returns the type of {@code this} at the given method reference, which must be in a context
-   * that has a {@code this}.
+   * Returns the type of {@code this} at the given method reference, which must be in a context that
+   * has a {@code this}.
    *
    * @param memberTree a method reference whose kind is {@code SUPER} or {@code IMPLICIT_INNER}
    * @return the type of {@code this} at {@code memberTree}
@@ -902,8 +915,8 @@ public class OverrideChecker {
   }
 
   /**
-   * Issues an error message or log message about checking an overriding parameter type: an error
-   * if the check failed, and a log message if {@code -Ashowchecks} was passed.
+   * Issues an error message or log message about checking an overriding parameter type: an error if
+   * the check failed, and a log message if {@code -Ashowchecks} was passed.
    *
    * @param success true if the overridden method's parameter type at {@code index} is a subtype of
    *     the overriding method's parameter type at {@code index}
@@ -1146,8 +1159,8 @@ public class OverrideChecker {
    *
    * @param contractSet a set of contracts
    * @param methodType the type of the method that the contracts are for
-   * @param methodTree the method declaration where the contracts are used, which might or might
-   *     not be where they are defined. For example, {@code methodTree} might be an overriding
+   * @param methodTree the method declaration where the contracts are used, which might or might not
+   *     be where they are defined. For example, {@code methodTree} might be an overriding
    *     declaration, and the contracts might be those of the method that it overrides.
    * @return localized contracts
    */

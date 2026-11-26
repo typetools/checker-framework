@@ -5023,21 +5023,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the ground target type that javac computed for the given lambda or method reference, as
    * an instantiation of the given functional interface.
    *
-   * <p>If {@code tree}'s target is an intersection type, as in {@code (Serializable & Supplier<?
-   * extends String>) () -> ""}, then javac's type for {@code tree} is an intersection type, whose
-   * bound that instantiates {@code functionalType} is the result.
+   * <p>The ground target type is the parameterization of the target's functional interface that has
+   * no wildcard type arguments. For example, the ground target type of {@code Supplier<? extends
+   * String>} is {@code Supplier<String>}.
    *
+   * <p>If {@code tree}'s target is an intersection type, as in {@code (Serializable & Supplier<?
+   * extends String>) () -> ""}, then javac's type for {@code tree} is an intersection type. This
+   * method returns the bound of that intersection type that instantiates {@code functionalType}.
+   *
+   * @see "JLS 9.9"
    * @param tree a lambda or a method reference
    * @param functionalType the functional interface type that is the target of {@code tree}, or the
    *     bound of {@code tree}'s target that is a functional interface
    * @return javac's ground target type of {@code tree}, as an instantiation of {@code
    *     functionalType}
+   * @throws BugInCF if javac's type for {@code tree} is an intersection type and none of its bounds
+   *     instantiates {@code functionalType}
    */
   private DeclaredType groundTargetJavaType(Tree tree, DeclaredType functionalType) {
     TypeMirror javaType = TreeUtils.typeOf(tree);
-    if (!(javaType instanceof IntersectionType intersection)) {
+    if (javaType.getKind() != TypeKind.INTERSECTION) {
       return (DeclaredType) javaType;
     }
+    // javac's representation of an intersection type is also a DeclaredType, so casting
+    // javaType to DeclaredType would not fail.  But the type arguments of that DeclaredType are
+    // not those of functionalType, so makeGroundTargetType would crash.
+    IntersectionType intersection = (IntersectionType) javaType;
     TypeMirror erasedFunctionalType = types.erasure(functionalType);
     for (TypeMirror bound : intersection.getBounds()) {
       if (types.isSameType(types.erasure(bound), erasedFunctionalType)) {
@@ -5072,8 +5083,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * and {@code B<T>} declares {@code T get()}, the function type is that of {@code B.get}.
    *
    * @param tree the tree of the lambda or method reference, or of an expression that contains it
-   * @param fnElement the functional interface method that the lambda or method reference
-   *     implements
+   * @param fnElement the functional interface method that the lambda or method reference implements
    * @return the functional interface type or a type argument from a raw type
    */
   private AnnotatedTypeMirror getFunctionalInterfaceType(Tree tree, ExecutableElement fnElement) {
@@ -5089,6 +5099,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
         if (castATM.getKind() == TypeKind.INTERSECTION) {
           AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
+          // Return the bound that declares or inherits the functional method.  It is not
+          // necessarily the first bound that is a functional interface:  in
+          // `(Wide & Narrow<String>) () -> ""`, where `Wide` declares `Object get()` and
+          // `Narrow<T>` declares `T get()`, the functional method is `Narrow.get`, whose return
+          // type is more specific.  A bound that is a marker interface, such as `Serializable`,
+          // never declares or inherits the functional method.
           TypeMirror erasedFnOwner = types.erasure(fnElement.getEnclosingElement().asType());
           for (AnnotatedTypeMirror t : itype.directSupertypes()) {
             if (types.isSubtype(types.erasure(t.getUnderlyingType()), erasedFnOwner)) {
@@ -5098,8 +5114,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // We should never reach here: the functional interface method is a member of the
           // intersection type, so one of its bounds declares or inherits it.
           throw new BugInCF(
-              "Expected the type of a cast tree in an assignment context to contain"
-                  + " a bound that declares or inherits %s."
+              "Expected a bound of the type of a cast tree to declare or inherit %s."
                   + " Found type: %s for tree: %s in lambda tree: %s",
               fnElement, castATM, cast, tree);
         }

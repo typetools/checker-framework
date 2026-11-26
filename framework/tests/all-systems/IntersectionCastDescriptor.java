@@ -1,29 +1,33 @@
 // A lambda or a method reference whose target is an intersection type, in which the functional
 // interface method is not declared by the first bound that is a functional interface.  javac
-// chooses `Generic.get`, whose return type is the most specific, as the functional interface
-// method.
+// chooses `Narrow.get`, whose return type is more specific than that of `Wide.get`, as the
+// functional interface method.
+
+import java.io.Serializable;
 
 public class IntersectionCastDescriptor {
 
-  interface Plain {
+  interface Wide {
     Object get();
   }
 
-  interface Generic<T> {
+  interface Narrow<T> {
     T get();
   }
 
-  static String m() {
-    return "";
+  static String s() {
+    return "ok";
   }
 
   void lambdas() {
-    Object o1 = (Plain & Generic<String>) () -> "";
-    Object o2 = (Generic<String> & Plain) () -> "";
+    Object o1 = (Wide & Narrow<String>) () -> "ok";
+    Object o2 = (Narrow<String> & Wide) () -> "ok";
+    Object o3 = (Serializable & Wide & Narrow<String>) () -> "ok";
   }
 
   void methodReferences() {
-    Object o1 = (Plain & Generic<String>) IntersectionCastDescriptor::m;
-    Object o2 = (Generic<String> & Plain) IntersectionCastDescriptor::m;
+    Object o1 = (Wide & Narrow<String>) IntersectionCastDescriptor::s;
+    Object o2 = (Narrow<String> & Wide) IntersectionCastDescriptor::s;
+    Object o3 = (Serializable & Wide & Narrow<String>) IntersectionCastDescriptor::s;
   }
 }
