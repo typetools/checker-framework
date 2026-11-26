@@ -6,14 +6,15 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 // `typeVarWithTypeVarUB`.  The type of each formal parameter is a use of a type variable, and a
 // primary annotation on such a use overrides the type variable's bounds.  Therefore, whole-program
 // inference writes `@AinferDefaultType` even though it is the default qualifier.
-@SuppressWarnings("annotation.not.allowed.in.src") // `@AinferDefaultType` on type-variable uses
 public class TypeVariablesTest<T1 extends @AinferParent Object, T2 extends @AinferParent Object> {
 
+  @SuppressWarnings("annotation.not.allowed.in.src") // WPI writes `@AinferDefaultType` on `a`, `b`
   public static <A extends @AinferParent Object, B extends @AinferParent Object>
       TypeVariablesTest<A, B> foo(A a, B b) {
     return null;
   }
 
+  @SuppressWarnings("annotation.not.allowed.in.src") // WPI writes `@AinferDefaultType` on `a`, `b`
   public static <A extends @AinferParent Object, B extends A> void typeVarWithTypeVarUB(A a, B b) {}
 
   void test1() {

@@ -1089,8 +1089,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         return;
       }
     }
-    storage.updateStorageLocationFromAtm(
-        rhsATM, lhsATM, annotationsToUpdate, defLoc, ignoreIfAnnotated);
+    storage.updateStorageLocationFromAtm(rhsATM, lhsATM, annotationsToUpdate, ignoreIfAnnotated);
     storage.setFileModified(file);
   }
 

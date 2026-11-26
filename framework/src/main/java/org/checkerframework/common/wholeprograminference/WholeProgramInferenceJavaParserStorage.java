@@ -91,7 +91,6 @@ import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -567,7 +566,6 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
       AnnotatedTypeMirror typeToUpdate,
-      TypeUseLocation defLoc,
       boolean ignoreIfAnnotated) {
     // Only update the AnnotatedTypeMirror if there are no explicit annotations
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
@@ -599,7 +597,6 @@ public class WholeProgramInferenceJavaParserStorage
           newAAT.getComponentType(),
           oldAAT.getComponentType(),
           aatToUpdate.getComponentType(),
-          defLoc,
           ignoreIfAnnotated);
     }
   }

@@ -119,20 +119,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
    * Returns true if writing {@code anno} at a location would be redundant, because the location has
    * that qualifier even when no annotation is written there.
    *
-   * <p>Returns false if {@code atm} is a type variable or a wildcard. A primary annotation on a use
-   * of a type variable or wildcard overrides its bounds, so it is never redundant.
+   * <p>Returns false if the location's type is a type variable or a wildcard. A primary annotation
+   * on a use of a type variable or wildcard overrides its bounds, so it is never redundant. The
+   * location's type, not the inferred type, determines this: for example, a type-variable argument
+   * can be passed to a formal parameter of type {@code Object}.
    *
    * @param anno a qualifier that whole-program inference inferred for a location
-   * @param atm the inferred type of the location, whose primary annotations include {@code anno}
    * @param defaulted the type that the location has when no annotation is written there, or null if
    *     that type is not known
    * @return true if writing {@code anno} at the location would be redundant
    */
   /*package-private*/ boolean isRedundant(
-      AnnotationMirror anno, AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
+      AnnotationMirror anno, @Nullable AnnotatedTypeMirror defaulted) {
     if (defaulted == null
-        || atm.getKind() == TypeKind.TYPEVAR
-        || atm.getKind() == TypeKind.WILDCARD) {
+        || defaulted.getKind() == TypeKind.TYPEVAR
+        || defaulted.getKind() == TypeKind.WILDCARD) {
       return false;
     }
     AnnotationMirror defaultedAnno = defaulted.getPrimaryAnnotationInHierarchy(anno);
@@ -153,7 +154,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
       return;
     }
     for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
-      if (isRedundant(anno, atm, defaulted)) {
+      if (isRedundant(anno, defaulted)) {
         atm.removePrimaryAnnotation(anno);
       }
     }

@@ -12,6 +12,9 @@
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+`WholeProgramInferenceStorage.updateStorageLocationFromAtm()` no longer takes a
+`TypeUseLocation` argument.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

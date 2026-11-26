@@ -24,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -35,7 +36,9 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
-import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.testchecker.nontopdefault.NTDChecker;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDMiddle;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDSide;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -69,6 +72,7 @@ public class WholeProgramInferenceScenesStorageTest {
           "  String unaliasedMethod() {",
           "    return \"x\";",
           "  }",
+          "  <T> void genericMethod(T typeVarParam, Object objectParam) {}",
           "  static class Inner {",
           "    void innerMethod() {",
           "      int innerLocal = 0;",
@@ -94,6 +98,16 @@ public class WholeProgramInferenceScenesStorageTest {
   /** The type factory of {@link #checker}. */
   private static final AnnotatedTypeFactory typeFactory;
 
+  /**
+   * A second checker, whose default qualifier {@code @NTDMiddle} is visible. The default qualifier
+   * of {@link #checker}, {@code @UnknownVal}, is invisible, so whole-program inference never writes
+   * it, whether or not it is redundant.
+   */
+  private static final NTDChecker ntdChecker = new NTDChecker();
+
+  /** The type factory of {@link #ntdChecker}. */
+  private static final AnnotatedTypeFactory ntdTypeFactory;
+
   static {
     Context context = new Context();
     ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
@@ -106,6 +120,10 @@ public class WholeProgramInferenceScenesStorageTest {
     checker.init(env);
     checker.initChecker();
     typeFactory = checker.getTypeFactory();
+
+    ntdChecker.init(env);
+    ntdChecker.initChecker();
+    ntdTypeFactory = ntdChecker.getTypeFactory();
   }
 
   /** The directory that whole-program inference writes its results into. */
@@ -257,6 +275,82 @@ public class WholeProgramInferenceScenesStorageTest {
   }
 
   /**
+   * An annotation that is redundant in one update of a location is written to the output file if a
+   * later update of the location makes it non-redundant.
+   */
+  @Test
+  public void annotationRedundantInEarlierUpdateIsWritten() throws IOException {
+    WholeProgramInferenceScenesStorage storage = newStorage();
+    ExecutableElement unaliasedMethod = methodNamed("unaliasedMethod");
+    inferRedundantReturnType(storage, unaliasedMethod);
+    AnnotatedTypeMirror inferredType = annotatedStringType(stringValAnnotation("x", "y"));
+    AnnotatedTypeMirror declaredType = annotatedStringType(stringValAnnotation("x"));
+    storage.updateStorageLocationFromAtm(
+        inferredType,
+        declaredType,
+        storage.getReturnAnnotations(unaliasedMethod, inferredType, typeFactory),
+        false);
+    String jaifContents = writeJaif(storage, unaliasedMethod);
+    Assert.assertTrue(
+        "@StringVal is not on the return type of unaliasedMethod in the .jaif file:"
+            + System.lineSeparator()
+            + jaifContents,
+        jaifContents.contains("StringVal"));
+  }
+
+  /**
+   * Whether an inferred annotation is redundant depends on the type of the location, not on the
+   * inferred type. The inferred type of a formal parameter whose type is {@code Object} can be a
+   * type variable, such as the type of an argument; the default qualifier is redundant on the
+   * formal parameter nonetheless.
+   */
+  @Test
+  public void redundancyDependsOnTypeOfLocation() throws IOException {
+    WholeProgramInferenceScenesStorage storage =
+        new WholeProgramInferenceScenesStorage(
+            ntdTypeFactory, outputDirectory.getRoot().toString());
+    ExecutableElement genericMethod = methodNamed("genericMethod");
+    VariableElement objectParam = (VariableElement) elements.get("objectParam");
+    Assert.assertNotNull("no element named objectParam", objectParam);
+    AnnotatedTypeMirror inferredType =
+        AnnotatedTypeMirror.createType(typeOf("typeVarParam"), ntdTypeFactory, false);
+    inferredType.addAnnotation(
+        AnnotationBuilder.fromClass(ntdTypeFactory.getElementUtils(), NTDMiddle.class));
+    // The current type of the formal parameter does not have the default qualifier, as when an
+    // earlier round of inference wrote a different qualifier.  Otherwise, the default qualifier
+    // would be omitted because the current type already has it.
+    AnnotatedTypeMirror declaredType =
+        AnnotatedTypeMirror.createType(typeOf("objectParam"), ntdTypeFactory, false);
+    declaredType.addAnnotation(
+        AnnotationBuilder.fromClass(ntdTypeFactory.getElementUtils(), NTDSide.class));
+    storage.updateStorageLocationFromAtm(
+        inferredType,
+        declaredType,
+        storage.getParameterAnnotations(
+            genericMethod, 2, declaredType, objectParam, ntdTypeFactory),
+        false);
+    // Without a non-redundant annotation, the .jaif file would contain nothing about genericMethod.
+    TypeElement outer = (TypeElement) elements.get("Outer");
+    Assert.assertNotNull("no element named Outer", outer);
+    Assert.assertTrue(
+        "did not add @Deprecated to the Scene for genericMethod",
+        storage.addMethodDeclarationAnnotation(genericMethod, deprecatedAnnotation(outer)));
+    storage.setFileModified(storage.getFileForElement(genericMethod));
+    storage.writeResultsToFile(OutputFormat.JAIF, ntdChecker);
+    Path jaifFile = outputDirectoryPath().resolve("testpkg.Outer.jaif");
+    Assert.assertTrue("did not write " + jaifFile, Files.exists(jaifFile));
+    String jaifContents = new String(Files.readAllBytes(jaifFile), StandardCharsets.UTF_8);
+    Assert.assertTrue(
+        "genericMethod is absent from the .jaif file:" + System.lineSeparator() + jaifContents,
+        jaifContents.contains("method genericMethod("));
+    Assert.assertFalse(
+        "the redundant @NTDMiddle was written to the .jaif file:"
+            + System.lineSeparator()
+            + jaifContents,
+        jaifContents.contains("NTDMiddle"));
+  }
+
+  /**
    * Returns the method in {@link #SOURCE} whose name is {@code methodName}.
    *
    * @param methodName the name of a method declared in {@link #SOURCE}
@@ -278,14 +372,13 @@ public class WholeProgramInferenceScenesStorageTest {
    */
   private void inferRedundantReturnType(
       WholeProgramInferenceScenesStorage storage, ExecutableElement methodElt) {
-    AnnotationMirror stringVal = stringValAnnotation();
+    AnnotationMirror stringVal = stringValAnnotation("x");
     AnnotatedTypeMirror inferredType = annotatedStringType(stringVal);
     AnnotatedTypeMirror declaredType = annotatedStringType(stringVal);
     storage.updateStorageLocationFromAtm(
         inferredType,
         declaredType,
         storage.getReturnAnnotations(methodElt, inferredType, typeFactory),
-        TypeUseLocation.RETURN,
         false);
   }
 
@@ -332,15 +425,16 @@ public class WholeProgramInferenceScenesStorageTest {
   }
 
   /**
-   * Returns a {@code @StringVal("x")} annotation, which is a type qualifier of the Constant Value
+   * Returns a {@code @StringVal} annotation, which is a type qualifier of the Constant Value
    * Checker.
    *
-   * @return a {@code @StringVal("x")} annotation
+   * @param values the strings that the annotation lists, such as "x"
+   * @return a {@code @StringVal} annotation whose elements are {@code values}
    */
-  private static AnnotationMirror stringValAnnotation() {
+  private static AnnotationMirror stringValAnnotation(String... values) {
     AnnotationBuilder builder =
         new AnnotationBuilder(typeFactory.getProcessingEnv(), StringVal.class);
-    builder.setValue("value", new String[] {"x"});
+    builder.setValue("value", values);
     return builder.build();
   }
 

@@ -11,7 +11,6 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -229,7 +228,6 @@ public interface WholeProgramInferenceStorage<T> {
    * @param curATM the annotations currently stored at the location, used to check if the element
    *     that will be updated has explicit annotations in source code
    * @param storageLocationToUpdate the storage location that will be updated
-   * @param defLoc the location where the annotation will be added
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */
@@ -237,7 +235,6 @@ public interface WholeProgramInferenceStorage<T> {
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
       T storageLocationToUpdate,
-      TypeUseLocation defLoc,
       boolean ignoreIfAnnotated);
 
   /**

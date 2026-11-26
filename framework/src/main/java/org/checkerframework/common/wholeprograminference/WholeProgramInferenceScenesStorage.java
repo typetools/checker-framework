@@ -42,7 +42,6 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInference.O
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -557,13 +556,11 @@ public class WholeProgramInferenceScenesStorage
    * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
    *
    * @param am an annotation to test for whether it should be inserted into source code
-   * @param atm the inferred type that {@code am} is a primary annotation of
    * @param defaulted the type that the location has when no annotation is written there, or null if
    *     that type is not known
    * @return true if am should not be inserted into source code, or if am is invisible
    */
-  private boolean shouldIgnore(
-      AnnotationMirror am, AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
+  private boolean shouldIgnore(AnnotationMirror am, @Nullable AnnotatedTypeMirror defaulted) {
     Element elt = am.getAnnotationType().asElement();
     // Checks if am is an implementation detail (a type qualifier used
     // internally by the type system and not meant to be seen by the user).
@@ -574,7 +571,7 @@ public class WholeProgramInferenceScenesStorage
     if (elt.getAnnotation(InvisibleQualifier.class) != null) {
       return true;
     }
-    return wpiDefaults.isRedundant(am, atm, defaulted);
+    return wpiDefaults.isRedundant(am, defaulted);
   }
 
   /**
@@ -669,7 +666,6 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
       ATypeElement typeToUpdate,
-      TypeUseLocation defLoc,
       boolean ignoreIfAnnotated) {
     updateTypeElementFromATM(
         typeToUpdate, newATM, curATM, ignoreIfAnnotated, defaultedTypes.get(typeToUpdate));
@@ -758,7 +754,7 @@ public class WholeProgramInferenceScenesStorage
    * called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore, it
    * is not a problem to remove all annotations before inserting the new annotations.
    *
-   * @param typeToUpdate the ATypeElement that will be updated
+   * @param typeToUpdate a type element of a scene, which this method updates
    * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement
    * @param curATM used to check if the element which will be updated has explicit annotations in
    *     source code
@@ -791,8 +787,7 @@ public class WholeProgramInferenceScenesStorage
     // overrides its bounds, so it is not redundant even if a bound has the same annotation.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
+        addAnnotationsToATypeElement(typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -804,8 +799,7 @@ public class WholeProgramInferenceScenesStorage
           // Other hierarchies are still handled, so this is `continue` rather than `break`.
           continue;
         }
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
+        addAnnotationsToATypeElement(typeToUpdate, am, curATM.hasPrimaryAnnotation(am), defaulted);
       }
     }
 
@@ -846,9 +840,7 @@ public class WholeProgramInferenceScenesStorage
    * #annosToIgnore}, which prevents it from being written to the .jaif or stub file. It makes no
    * such record for a type element in {@link #neverIgnore}.
    *
-   * @param newATM the AnnotatedTypeMirror that {@code am} is a primary annotation of; used only to
-   *     determine whether {@code am} should be ignored
-   * @param typeToUpdate the ATypeElement that will be updated
+   * @param typeToUpdate a type element of a scene, which this method updates
    * @param am the annotation to add to {@code typeToUpdate}
    * @param isEffectiveAnnotation true if {@code am} is already a primary annotation of the type in
    *     the source code, in which case writing it into the source code would be redundant
@@ -856,14 +848,13 @@ public class WholeProgramInferenceScenesStorage
    *     written there, or null if that type is not known
    */
   private void addAnnotationsToATypeElement(
-      AnnotatedTypeMirror newATM,
       ATypeElement typeToUpdate,
       AnnotationMirror am,
       boolean isEffectiveAnnotation,
       @Nullable AnnotatedTypeMirror defaulted) {
     Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
     typeToUpdate.tlAnnotationsHere.add(anno);
-    if ((isEffectiveAnnotation || shouldIgnore(am, newATM, defaulted))
+    if ((isEffectiveAnnotation || shouldIgnore(am, defaulted))
         && !neverIgnore.contains(typeToUpdate)) {
       Set<String> annosIgnored =
           annosToIgnore.computeIfAbsent(typeToUpdate, k -> new HashSet<>(MapsP.mapCapacity(1)));
