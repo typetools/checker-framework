@@ -173,11 +173,6 @@ if (rootProject.ext.testJdkVersion >= 22) {
   testDataflowAnalysis("unnamedPatternTest", "java22/unnamed-pattern", "reachingdef.ReachingDefinition", true)
 }
 
-test {
-  // The tests are run by allDataflowTests.
-  exclude("**/*")
-}
-
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */

@@ -42,7 +42,12 @@ public class MethodInvocationNode extends Node {
   /** The arguments of the method invocation. */
   protected final List<Node> arguments;
 
-  /** The tree path to the method invocation. */
+  /**
+   * The tree path to the method invocation. For an invocation that is not in the source code (see
+   * {@link #getInSource()}), such as the invocation of {@code iterator()} that an enhanced for loop
+   * desugars to, the path to a tree in the source code that is or contains the construct that the
+   * invocation implements, such as the enhanced for loop.
+   */
   protected final TreePath treePath;
 
   /**
@@ -107,7 +112,7 @@ public class MethodInvocationNode extends Node {
    * @param tree the tree for the method invocation
    * @param target the MethodAccessNode for the method being invoked
    * @param arguments arguments of the method invocation
-   * @param treePath path to the method invocation
+   * @param treePath path to the method invocation; see {@link #getTreePath()}
    */
   public MethodInvocationNode(
       @Nullable MethodInvocationTree tree,
@@ -157,6 +162,14 @@ public class MethodInvocationNode extends Node {
     return arguments.get(i);
   }
 
+  /**
+   * Returns the tree path to the method invocation. For an invocation that is not in the source
+   * code (see {@link #getInSource()}), such as the invocation of {@code iterator()} that an
+   * enhanced for loop desugars to, the path to a tree in the source code that is or contains the
+   * construct that the invocation implements, such as the enhanced for loop.
+   *
+   * @return the tree path to the method invocation
+   */
   public TreePath getTreePath() {
     return treePath;
   }

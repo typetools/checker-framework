@@ -1370,6 +1370,7 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    boolean refineSelectorExpr = canRefineSelectorExpression(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -1377,9 +1378,11 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (refineSelectorExpr) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1397,6 +1400,24 @@ public abstract class CFAbstractTransfer<
       }
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the given case may refine the switch selector expression, not just the
+   * synthetic variable that holds the value of the selector expression.
+   *
+   * <p>A case tests the value of the selector expression when the switch began. A guard of an
+   * earlier case might have changed the current value of the selector expression since then, for
+   * example by setting a field to null. A guard cannot assign a local variable, so the current
+   * value of a selector expression that is not {@link JavaExpression#isAssignableByOtherCode()
+   * assignable by other code} is the value that the case tests.
+   *
+   * @param n a case node
+   * @return true if the case may refine the selector expression
+   */
+  protected boolean canRefineSelectorExpression(CaseNode n) {
+    return !n.selectorExprMayHaveChanged()
+        || !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
   }
 
   // /**

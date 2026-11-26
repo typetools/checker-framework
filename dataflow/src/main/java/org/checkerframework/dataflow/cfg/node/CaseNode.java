@@ -36,7 +36,15 @@ public class CaseNode extends Node {
   protected final List<Node> caseExprs;
 
   /**
-   * Creates a new CaseNode.
+   * True if code that might have side effects, such as the guard of an earlier case, might execute
+   * between the evaluation of the switch selector expression and this case. If true, the current
+   * value of the selector expression might differ from the value that this case tests.
+   */
+  protected final boolean selectorExprMayHaveChanged;
+
+  /**
+   * Creates a new CaseNode for a case such that no code executes between the evaluation of the
+   * switch selector expression and the case.
    *
    * @param tree the tree for this node
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
@@ -46,10 +54,32 @@ public class CaseNode extends Node {
    */
   public CaseNode(
       CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
+    this(tree, selectorExprAssignment, caseExprs, false, types);
+  }
+
+  /**
+   * Creates a new CaseNode.
+   *
+   * @param tree the tree for this node
+   * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
+   *     a synthetic local variable
+   * @param caseExprs the case expression(s) to match the switch expression against
+   * @param selectorExprMayHaveChanged true if code that might have side effects, such as the guard
+   *     of an earlier case, might execute between the evaluation of the switch selector expression
+   *     and this case
+   * @param types a factory of utility methods for operating on types
+   */
+  public CaseNode(
+      CaseTree tree,
+      AssignmentNode selectorExprAssignment,
+      List<Node> caseExprs,
+      boolean selectorExprMayHaveChanged,
+      Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
+    this.selectorExprMayHaveChanged = selectorExprMayHaveChanged;
   }
 
   /**
@@ -60,6 +90,19 @@ public class CaseNode extends Node {
    */
   public AssignmentNode getSwitchOperand() {
     return selectorExprAssignment;
+  }
+
+  /**
+   * Returns true if code that might have side effects, such as the guard of an earlier case, might
+   * execute between the evaluation of the switch selector expression and this case. If so, the
+   * current value of the selector expression might differ from the value that this case tests,
+   * which is the value of the synthetic variable that is the target of {@link #getSwitchOperand()}.
+   * For example, a guard might set a field that is the selector expression to null.
+   *
+   * @return true if the selector expression might have changed since it was evaluated
+   */
+  public boolean selectorExprMayHaveChanged() {
+    return selectorExprMayHaveChanged;
   }
 
   /**

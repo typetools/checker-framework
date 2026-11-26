@@ -20,6 +20,9 @@ value of the boolean variable.
 
 ### Changes for type system implementers
 
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
 A default that a type system registers for an element through
 `QualifierDefaults.addElementDefault()` is now treated like a
 `@DefaultQualifier` annotation on that element.  Formerly, it
@@ -35,6 +38,12 @@ qualifiers of the converted value, as adapted by the new methods
 `AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
 qualifiers at boxing or unboxing should override those methods rather than
 `getBoxedType()` and `getUnboxedType()`.
+
+New method `CaseNode.selectorExprMayHaveChanged()` returns true if a guard of an
+earlier case might have changed the value of the switch selector expression.
+If so, `CFAbstractTransfer.visitCase()` does not refine a selector expression
+that other code can assign, such as a non-final field.  New method
+`CFAbstractTransfer.canRefineSelectorExpression()` implements this test.
 
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
