@@ -53,6 +53,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IPair;
 
 /**
@@ -105,11 +106,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       BaseTypeChecker checker,
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
-    List<JavaExpression> fromAnnotation = new ArrayList<>(sideEffectsOnlyExpressions.size());
-    for (JavaExpression expr : sideEffectsOnlyExpressions) {
-      fromAnnotation.add(JavaExpression.superToThis(expr));
-    }
-    this.sideEffectsOnlyExpressionsFromAnnotation = fromAnnotation;
+    this.sideEffectsOnlyExpressionsFromAnnotation =
+        CollectionsP.mapList(JavaExpression::superToThis, sideEffectsOnlyExpressions);
     this.checker = checker;
     LocalAssignmentScanner localAssignments = new LocalAssignmentScanner();
     for (Tree tree : checkedCode) {
