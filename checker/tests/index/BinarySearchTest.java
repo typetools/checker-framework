@@ -8,7 +8,14 @@ public class BinarySearchTest {
 
   private BinarySearchTest(
       long @SameLen("iNameKeys") [] transitions, String @SameLen("iTransitions") [] nameKeys) {
+    // The parameter types name the fields, whose values here are their default values, not the
+    // values that this constructor assigns.  The types cannot name the parameters instead (as in
+    // `@SameLen("#2")`), because then neither field could be assigned first.
+    // :: error: [reassignment.invalidates.type]
     iTransitions = transitions;
+    // TODO: `nameKeys` has the same length as `iTransitions`, so the declared type of
+    // `transitions` still holds.
+    // :: error: [reassignment.invalidates.type]
     iNameKeys = nameKeys;
   }
 

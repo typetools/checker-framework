@@ -235,6 +235,10 @@ or
 \sunjavadoc{java.base/java/util/Map.html\#containsKey(java.lang.Object)}{containsKey}.
 For more details about type refinement, see Section~\ref{type-refinement}.
 
+Reassigning \<m> is an error if the declared type of a local variable or
+formal parameter in scope is \<@KeyFor("m")> and the type might not hold for
+the new map; see Section~\ref{java-expressions-reassignment}.
+
 Suppose we have these declarations:
 
 \begin{verbatim}
