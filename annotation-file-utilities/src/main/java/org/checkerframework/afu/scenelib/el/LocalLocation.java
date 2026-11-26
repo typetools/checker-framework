@@ -73,7 +73,10 @@ public final class LocalLocation {
    * @param scopeLength the bytecode length of the variable's lifetime
    * @param index the offset of the variable in the stack frame
    */
-  @SuppressWarnings({"NarrowingCompoundAssignment", "CatchAndPrintStackTrace"}) // TODO
+  @SuppressWarnings({
+    "NarrowingCompoundAssignment", // TODO
+    "CatchAndPrintStackTrace", // TODO
+  })
   public LocalLocation(int scopeStart, int scopeLength, int index) {
     Label startLabel = new Label();
     Label endLabel = new Label();
@@ -87,17 +90,18 @@ public final class LocalLocation {
       bytecodeOffsetField.setAccessible(true);
       FLAG_RESOLVED_FIELD.setAccessible(true);
       // Label.FLAG_RESOLVED is int, but its value is 4 and `Label.flags` is short
-      short FLAG_RESOLVED = (short) (int) (Integer) FLAG_RESOLVED_FIELD.get(null);
+      @SuppressWarnings("nullness:argument") // getInt ignores its argument for a static field
+      short FLAG_RESOLVED = (short) FLAG_RESOLVED_FIELD.getInt(null);
 
-      short flags = (Short) flagsField.get(startLabel);
+      short flags = flagsField.getShort(startLabel);
       flags |= FLAG_RESOLVED;
-      flagsField.set(startLabel, flags);
-      bytecodeOffsetField.set(startLabel, scopeStart);
+      flagsField.setShort(startLabel, flags);
+      bytecodeOffsetField.setInt(startLabel, scopeStart);
 
-      flags = (Short) flagsField.get(endLabel);
+      flags = flagsField.getShort(endLabel);
       flags |= FLAG_RESOLVED;
-      flagsField.set(endLabel, flags);
-      bytecodeOffsetField.set(endLabel, scopeStart + scopeLength);
+      flagsField.setShort(endLabel, flags);
+      bytecodeOffsetField.setInt(endLabel, scopeStart + scopeLength);
     } catch (Exception e) {
       throw new Error(e);
     }
