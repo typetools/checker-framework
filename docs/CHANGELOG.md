@@ -22,6 +22,9 @@ operand's type depends on might change before the comparison completes.
 `TypesUtils.canAlias()`.  To change the aliasing judgment, override
 `CFAbstractAnalysis.canAlias()`.
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator.
+
 New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
 qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
 
@@ -43,6 +46,12 @@ only for a literal.  New method
 constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
 assignment conversion does.  New method `TreeUtils.isCompileTimeConstant()`
 returns true if a tree is a constant expression.
+
+`BaseTypeVisitor.OverrideChecker` is now a top-level class,
+`org.checkerframework.common.basetype.OverrideChecker`.  Its constructor takes a
+new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
+inner class of a visitor can pass the visitor, as in
+`super(MyVisitor.this, overriderTree, ...)`.
 
 Deprecated methods:
 
