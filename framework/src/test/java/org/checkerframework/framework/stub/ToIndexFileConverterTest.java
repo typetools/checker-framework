@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import java.io.ByteArrayInputStream;
@@ -525,6 +526,77 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Local;)V");
   }
 
+  /** A type that another package of the stub file declares gets its binary name. */
+  @Test
+  public void testTypeDeclaredInOtherPackageOfStubFile() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Outer;",
+            "class MyClass {",
+            "  void myMethod(Outer.Inner i, q.Outer.Inner j) {}",
+            "}",
+            "package q;",
+            "class Outer {",
+            "  class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer$Inner;Lq/Outer$Inner;)V");
+  }
+
+  /**
+   * A member type that the stub file does not declare, of a type that another compilation unit of
+   * the stub file declares, gets the binary name that it would get if the same compilation unit
+   * declared that type.
+   */
+  @Test
+  public void testUndeclaredMemberOfTypeInOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Outer;",
+            "class MyClass {",
+            "  void myMethod(Outer.Missing m, q.Outer.Missing n, B.Missing o) {}",
+            "}",
+            "package q;",
+            "class Outer {}",
+            "package p;",
+            "class B {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer$Missing;Lq/Outer$Missing;Lp/B$Missing;)V");
+  }
+
+  /**
+   * In package {@code p}, the name {@code q.Outer} does not refer to a type in subpackage {@code
+   * p.q}, even if the stub file declares one.
+   */
+  @Test
+  public void testStubFileSubpackageIsNotInCurrentPackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(q.Outer o) {}",
+            "}",
+            "package p.q;",
+            "class Outer {}",
+            "package q;",
+            "class Outer {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer;)V");
+  }
+
+  /** A type that the stub file declares in {@code java.lang} is implicitly imported. */
+  @Test
+  public void testStubFileJavaLangTypeIsImplicitlyImported() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(StubOnlyType t) {}",
+            "}",
+            "package java.lang;",
+            "public class StubOnlyType {}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/StubOnlyType;)V");
+  }
+
   /**
    * A type that the stub file declares is qualified by the stub file's package, even where it is
    * used before its declaration.
@@ -613,6 +685,50 @@ public class ToIndexFileConverterTest {
             "package mypackage;",
             "class MyClass {",
             "  void myMethod(mypackage.MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /**
+   * A name that is qualified by the stub file's package does not name a type of the stub file if
+   * the rest of the name repeats the package.
+   */
+  @Test
+  public void testPackageQualifiedNameIsNotQualifiedTwice() throws Exception {
+    String jaif =
+        convert(
+            "package p;", "class MyClass {", "  void myMethod(p.p.Foo f) {}", "}", "class Foo {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/p/Foo;)V");
+  }
+
+  /** A single-type import of a type that the stub file declares is resolved. */
+  @Test
+  public void testSingleTypeImportOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import mypackage.MyOtherClass.MyNestedClass;",
+            "class MyClass {",
+            "  void myMethod(MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /** An import-on-demand of types that the stub file declares is resolved. */
+  @Test
+  public void testOnDemandImportOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import mypackage.MyOtherClass.*;",
+            "class MyClass {",
+            "  void myMethod(MyNestedClass c) {}",
             "}",
             "class MyOtherClass {",
             "  class MyNestedClass {}",
@@ -808,6 +924,157 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand does not make available an inaccessible member type, so the member type
+   * does not shadow a type in {@code java.lang}.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Integer i) {}",
+            "  void o(Pub x) {}",
+            "}",
+            "package p;",
+            "public class Outer {",
+            "  private static class String {}",
+            "  static class Integer {}",
+            "  public static class Pub {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    // A package-private member type is not accessible in another package.
+    assertMethod(jaif, "C", "n(Ljava/lang/Integer;)V");
+    assertMethod(jaif, "C", "o(Lp/Outer$Pub;)V");
+
+    // A package-private member type is accessible in its own package, but a private one is not.
+    jaif =
+        convert(
+            "package p;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Integer i) {}",
+            "}",
+            "class Outer {",
+            "  private static class String {}",
+            "  static class Integer {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    assertMethod(jaif, "C", "n(Lp/Outer$Integer;)V");
+  }
+
+  /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * another package, so the top-level type does not shadow a type in {@code java.lang}.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Pub x) {}",
+            "}",
+            "package p;",
+            "class String {}",
+            "public class Pub {}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    assertMethod(jaif, "C", "n(Lp/Pub;)V");
+  }
+
+  /**
+   * A member type that a type inherits from a supertype in another compilation unit of the stub
+   * file is found.
+   */
+  @Test
+  public void testInheritedMemberTypeFromOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Sub extends p.Base {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Inner;)V");
+  }
+
+  /**
+   * The supertype of a supertype in another compilation unit of the stub file is resolved using
+   * that compilation unit's package, not that of the subtype's compilation unit. Neither {@code
+   * Parent} is imported, and {@code p.Parent} is declared in a different compilation unit than
+   * {@code Base}, so only the package determines which {@code Parent} {@code Base} extends.
+   */
+  @Test
+  public void testSupertypeOfSupertypeUsesItsCompilationUnitsPackage() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Parent {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends p.Base {",
+            "  void m(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base extends Parent {}",
+            "package p;",
+            "public class Parent {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lp/Parent$Inner;)V");
+  }
+
+  /**
+   * The supertype of a supertype in another compilation unit of the stub file is resolved using
+   * that compilation unit's imports.
+   */
+  @Test
+  public void testSupertypeOfSupertypeUsesItsCompilationUnitsImports() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Parent {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends p.Base {",
+            "  void m(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "import r.Parent;",
+            "public class Base extends Parent {}",
+            "package r;",
+            "public class Parent {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lr/Parent$Inner;)V");
+  }
+
+  /**
+   * A detached type declaration, which is in no compilation unit, is in the package that the
+   * converter's constructor received.
+   */
+  @Test
+  public void testDetachedDeclarationUsesConstructorPackage() {
+    AScene scene = new AScene();
+    ToIndexFileConverter detachedConverter =
+        new ToIndexFileConverter(
+            StaticJavaParser.parsePackageDeclaration("package p;"), Collections.emptyList(), scene);
+    TypeDeclaration<?> decl =
+        StaticJavaParser.parseTypeDeclaration("class C { class N {} void m(N x) {} }");
+    decl.accept(detachedConverter, scene.classes.getVivify("p.C"));
+    Assert.assertNotNull(scene.classes.get("p.C").methods.get("m(Lp/C$N;)V"));
+  }
+
+  /**
    * A class's member types are not in scope in the class's header, such as in the bounds of its
    * type parameters, but they are in scope in its body.
    */
@@ -855,6 +1122,24 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;Ljava/lang/Object;)V");
     assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Object;)V");
+  }
+
+  /**
+   * A single-type import shadows a type of the same package that another compilation unit of the
+   * stub file declares.
+   */
+  @Test
+  public void testSingleTypeImportShadowsStubFileTypeOfSamePackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class List {}",
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void m(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "m(Ljava/util/List;)V");
   }
 
   /** A single-type import that does not match a name does not prevent resolving the name. */
