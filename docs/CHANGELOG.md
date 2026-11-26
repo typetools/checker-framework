@@ -18,7 +18,9 @@ Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
 result omits each node that might have a different value by the time the
 enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
 result can be empty.  A subclass that overrides `splitAssignments()` must
-override `nodesWithValueOf()` instead.
+override `nodesWithValueOf()` instead.  New method
+`CFAbstractTransfer.mayChangeAfterOperand()` tells whether an expression that an
+operand's type depends on might change before the comparison completes.
 
 `CFAbstractStore.canAlias()` is now final.  It calls the new method
 `CFAbstractAnalysis.canAlias()`, which calls the new method

@@ -23,4 +23,18 @@ public class Test {
       }
     }
   }
+
+  public Runnable lambdaAndClassInFinallyBlock(boolean b) {
+    try {
+      if (b) {
+        return null;
+      }
+      System.out.println("!");
+    } finally {
+      Runnable r = () -> System.out.println("!");
+      class Local {}
+      r.run();
+    }
+    return null;
+  }
 }
