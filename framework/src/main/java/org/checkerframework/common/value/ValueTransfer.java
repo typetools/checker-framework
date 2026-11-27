@@ -1425,7 +1425,9 @@ public class ValueTransfer extends CFTransfer {
       AnnotationMirror newAnno =
           qualHierarchy.greatestLowerBoundShallow(
               convertToTypeOf(anno, internal), je.getType(), currentAnno, je.getType());
-      store.insertValue(je, newAnno);
+      if (newAnno != null) {
+        store.insertValue(je, newAnno);
+      }
 
       if (internal instanceof FieldAccessNode fieldNode) {
         refineArrayAtLengthAccess(fieldNode, store);

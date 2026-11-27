@@ -1,5 +1,7 @@
 package org.checkerframework.checker.index.searchindex;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
@@ -65,11 +67,28 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     if (leftValue != null && leftValue == valueToCompareTo) {
       AnnotationMirror rightSIF =
           atypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
-      if (rightSIF != null) {
+      // If a sequence named by `rightSIF` might change after `right` is evaluated and before the
+      // comparison completes, then the refinement might not hold for the new sequence.
+      if (rightSIF != null
+          && !containsExpressionChangedBeforeComparisonCompletes(rightSIF, right)) {
         List<String> arrays =
             AnnotationUtils.getElementValueArray(
                 rightSIF, atypeFactory.searchIndexForValueElement, String.class);
-        AnnotationMirror nif = atypeFactory.createNegativeIndexFor(arrays);
+        // The SearchIndexFor annotation describes the arrays as they were when `right` was
+        // evaluated. Omit each array that might change before the comparison completes, as `a` in
+        // `(copy = index) < (a = new int[0]).length`.
+        List<String> unchangedArrays = new ArrayList<>(arrays.size());
+        for (String array : arrays) {
+          AnnotationMirror arrayNif =
+              atypeFactory.createNegativeIndexFor(Collections.singletonList(array));
+          if (!containsExpressionChangedBeforeComparisonCompletes(arrayNif, right)) {
+            unchangedArrays.add(array);
+          }
+        }
+        if (unchangedArrays.isEmpty()) {
+          return;
+        }
+        AnnotationMirror nif = atypeFactory.createNegativeIndexFor(unchangedArrays);
         insertValueForNodesWithValueOf(store, right, nif);
       }
     }

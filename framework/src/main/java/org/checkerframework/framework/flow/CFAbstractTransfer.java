@@ -36,6 +36,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -152,7 +153,10 @@ public abstract class CFAbstractTransfer<
   /** True if whole-program inference is on. */
   private final boolean infer;
 
-  /** The method {@code Object.toString()}, which a string conversion calls. */
+  /**
+   * The method {@code Object.toString()}, which a string conversion calls if no more specific
+   * override is known.
+   */
   private final ExecutableElement objectToString;
 
   /**
@@ -1075,10 +1079,11 @@ public abstract class CFAbstractTransfer<
    * evaluated. (A client such as the SameLen Checker can relate an operation such as {@code "x" +
    * i} to other expressions, even though no store holds a value for it.) A candidate's value can
    * change when code that is evaluated after the candidate writes a variable, field, or array
-   * element that the candidate reads. That code is the rest of the assignment, and the code in the
+   * element that the candidate reads. That code is the rest of the assignment; the code in the
    * enclosing expressions that is evaluated after {@code node} and before the comparison completes,
-   * such as the right operand of the comparison if {@code node} is in its left operand. For
-   * example:
+   * such as the right operand of the comparison if {@code node} is in its left operand; and, if
+   * {@code node} is a unary or binary operation, the code in {@code node} itself, such as the call
+   * to {@code obj.toString()} in {@code prefix + obj}. For example:
    *
    * <ul>
    *   <li>The result for {@code n = n.next} is just {@code n}, because after the assignment {@code
@@ -1152,16 +1157,32 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns the nodes that have the value of the given node when the comparison that contains the
-   * node completes.
+   * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
+   * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
+   * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
+   * lhs and rhs do).
    *
-   * @param node a node in an operand of a comparison, possibly an assignment or a cast
-   * @return the nodes that have the value of {@code node} when the comparison completes
-   * @deprecated use {@link #nodesWithValueOf}
+   * <p>The result is purely structural: it may contain a node that does not have the value of
+   * {@code node} when an enclosing comparison completes, such as {@code a[i]} in {@code i = a[i]}.
+   * To refine the operands of a comparison, use {@link #nodesWithValueOf} instead.
+   *
+   * @param node possibly an assignment node
+   * @return a list containing all the right- and left-hand sides in the given assignment node; it
+   *     contains just the node itself if it is not an assignment
+   * @deprecated use {@link #nodesWithValueOf}. This method is final, because the framework does not
+   *     call it; override {@link #nodesWithValueOf} instead.
    */
   @Deprecated // 2026-11-13
-  protected List<Node> splitAssignments(Node node) {
-    return nodesWithValueOf(node);
+  @SideEffectFree
+  protected final List<Node> splitAssignments(Node node) {
+    if (node instanceof AssignmentNode a) {
+      List<Node> result = new ArrayList<>(2);
+      result.add(a.getTarget());
+      result.addAll(splitAssignments(a.getExpression()));
+      return result;
+    } else {
+      return Collections.singletonList(node);
+    }
   }
 
   /**
@@ -1278,6 +1299,15 @@ public abstract class CFAbstractTransfer<
       if (isCheckedCandidate(expr)) {
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
+          // If `node` is a unary or binary operation, it is the only candidate, and it might write
+          // a location after reading it, as in `prefix + obj` where `obj.toString()` writes
+          // `prefix`. Scanning all of `node` also includes writes that precede the reads, which
+          // is conservative.
+          Tree tree = node.getTree();
+          if (!(node instanceof AssignmentNode)
+              && (tree instanceof BinaryTree || tree instanceof UnaryTree)) {
+            locationsWrittenUntilComparison.scan(tree, null);
+          }
         }
         if (locationsWrittenUntilComparison.mayChange(expr, false)) {
           if (expr instanceof FieldAccess fieldAccess
@@ -1578,12 +1608,20 @@ public abstract class CFAbstractTransfer<
    * expressions that an annotation of {@code node} contains, rather than {@code node} itself, use
    * {@link #containsExpressionChangedBeforeComparisonCompletes}.
    *
+   * <p>If {@code node} is an assignment, cast, or conversion, its value is the value of its operand
+   * (see {@link #valueSource}), so this method checks whether the operand might change after it is
+   * evaluated, including by the writes of the assignment. For example, returns false for {@code
+   * (limit = a.length)} in {@code (limit = a.length) > i}, but true if the right operand writes
+   * {@code a}.
+   *
    * @param node an operand of a comparison
    * @return true if the code that is evaluated after {@code node} and before the comparison
    *     completes might change the value of {@code node}
    */
   protected boolean mayBeChangedByLaterOperand(Node node) {
-    return locationsWrittenUntilComparison(node).mayChange(JavaExpression.fromNode(node), false);
+    Node source = valueSource(node);
+    return locationsWrittenUntilComparison(source)
+        .mayChange(JavaExpression.fromNode(source), false);
   }
 
   /**
@@ -1903,11 +1941,47 @@ public abstract class CFAbstractTransfer<
     private void addStringConversions(ExpressionTree left, ExpressionTree right) {
       TypeMirror leftType = TreeUtils.typeOf(left);
       TypeMirror rightType = TreeUtils.typeOf(right);
-      if ((TypesUtils.isString(leftType) || TypesUtils.isString(rightType))
-          && (callsToString(leftType) || callsToString(rightType))) {
-        // Every override of `toString()` has the purity annotations of `Object.toString()`.
-        addCall(objectToString);
+      if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
+        addStringConversion(leftType);
+        addStringConversion(rightType);
       }
+    }
+
+    /**
+     * Adds the writes of the string conversion of a value of the given type, which is an operand of
+     * a string concatenation.
+     *
+     * @param type the type of an operand of a string concatenation
+     */
+    private void addStringConversion(TypeMirror type) {
+      // The `toString()` method of a boxed primitive, whose class is final, has no side effects.
+      if (callsToString(type) && !TypesUtils.isBoxedPrimitive(type)) {
+        addCall(toStringMethod(type));
+      }
+    }
+
+    /**
+     * Returns the {@code toString()} method that a string conversion of a value of the given type
+     * calls, as far as is known statically: the most specific declaration of {@code toString()} in
+     * the erasure of {@code type} or its superclasses. An override in a subclass of {@code type} is
+     * assumed to have the purity annotations of the returned method.
+     *
+     * @param type a reference type that is not {@code String}
+     * @return the {@code toString()} method that a string conversion of {@code type} calls
+     */
+    private ExecutableElement toStringMethod(TypeMirror type) {
+      TypeElement element = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+      while (element != null) {
+        for (ExecutableElement method : ElementFilter.methodsIn(element.getEnclosedElements())) {
+          if (method.getSimpleName().contentEquals("toString")
+              && method.getParameters().isEmpty()
+              && !ElementUtils.isStatic(method)) {
+            return method;
+          }
+        }
+        element = TypesUtils.getTypeElement(element.getSuperclass());
+      }
+      return objectToString;
     }
 
     /**

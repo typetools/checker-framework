@@ -53,4 +53,62 @@ public class UpperBoundComparisonChangesSequence {
       int x = this.a[i];
     }
   }
+
+  // The left operand is an assignment whose value, `this.a.length`, does not change.
+  void gtAssignmentOperand(@NonNegative int k) {
+    int limit;
+    if ((limit = this.a.length) > k) {
+      int x = this.a[k];
+    }
+  }
+
+  void gteAssignmentOperand(@NonNegative int k) {
+    int limit;
+    if ((limit = this.a.length) >= k) {
+      @LTEqLengthOf("this.a") int j = k;
+    }
+  }
+
+  // The right operand reassigns `this.a`, so the bound from the left operand does not hold.
+  void gtAssignmentOperandChanged(@NonNegative int k) {
+    int limit;
+    if ((limit = this.a.length) > k + replaceAndReturnTwo()) {
+      // :: error: (array.access.unsafe.high)
+      int x = this.a[k];
+    }
+  }
+
+  // If a has length 10 and b has length 1, then the comparison is 10 > 1, but x is 1 and a has
+  // length 1 after the comparison.
+  void gtChanged(int[] a, int[] b) {
+    int x;
+    if (a.length > (x = (a = b).length)) {
+      // :: error: (array.access.unsafe.high)
+      int y = a[x];
+    }
+  }
+
+  void gtUnchanged(int[] a, int[] b) {
+    int x;
+    if (a.length > (x = b.length)) {
+      int y = a[x];
+    }
+  }
+
+  // If a has length 10 and b has length 1, then the comparison is 10 >= 1, but x is 1 and a has
+  // length 1 after the comparison.
+  void gteChanged(int[] a, int[] b) {
+    int x;
+    if (a.length >= (x = (a = b).length + 1)) {
+      // :: error: (assignment)
+      @LTEqLengthOf("a") int y = x;
+    }
+  }
+
+  void gteUnchanged(int[] a, int[] b) {
+    int x;
+    if (a.length >= (x = b.length + 1)) {
+      @LTEqLengthOf("a") int y = x;
+    }
+  }
 }

@@ -24,8 +24,9 @@ denotes, as in `n.next = (n = o)`.
 Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
 result omits each node that might have a different value by the time the
 enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
-result can be empty.  A subclass that overrides `splitAssignments()` must
-override `nodesWithValueOf()` instead.  `insertValueForNodesWithValueOf()` and
+result can be empty.  `splitAssignments()` is deprecated and final; a subclass
+that overrides it must override `nodesWithValueOf()` instead.
+`insertValueForNodesWithValueOf()` and
 `hasRefinableSide()` (which the default `strengthenAnnotationOfEqualTo()`
 uses) do not call `nodesWithValueOf()`, so they ignore such an override; a
 subclass that needs its override to affect refinements must also override

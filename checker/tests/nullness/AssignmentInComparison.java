@@ -301,8 +301,16 @@ public class AssignmentInComparison {
   static void arrayTarget(@Nullable Object[] a, @Nullable Object[] b) {
     if ((a[0] = b[1]) != null) {
       a[0].toString();
-      // If `a` and `b` alias, the assignment stores into `b[1]` the value it already has.
+      // Even if `a` and `b` alias, the assignment writes element 0, not element 1.
       b[1].toString();
+    }
+  }
+
+  static void arrayTargetSameIndex(@Nullable Object[] a, @Nullable Object[] b) {
+    if ((a[0] = b[0]) != null) {
+      a[0].toString();
+      // If `a` and `b` alias, the assignment stores into `b[0]` the value it already has.
+      b[0].toString();
     }
   }
 
