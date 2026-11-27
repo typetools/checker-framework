@@ -1115,6 +1115,9 @@ public class InferenceFactory {
           && differsOnlyInPrimaryAnnotations((ProperType) b, atm)) {
         return fromB;
       }
+      // If neither input has the annotations of the result, then the origin of `a` does not
+      // reproduce them.  The result still has them, and its parts do too as long as no
+      // instantiation changes (see ProperType#withAnnotationsOf).
       return fromA;
     }
     return fromA != null ? fromA : fromB;
