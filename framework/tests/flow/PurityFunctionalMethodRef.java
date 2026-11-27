@@ -426,6 +426,40 @@ public class PurityFunctionalMethodRef {
   }
 
   @FunctionalInterface
+  interface GenericFunction<X> {
+    String apply(X x);
+  }
+
+  @FunctionalInterface
+  interface StringFunction {
+    Object apply(String s);
+  }
+
+  /**
+   * Every implementation of {@code GenericFunction<String>.apply} also implements {@code
+   * StringFunction.apply}, though the two methods' erasures differ.
+   */
+  @FunctionalInterface
+  interface FixedFunction extends GenericFunction<String>, StringFunction {}
+
+  @SideEffectFree
+  static boolean callStringFunction(StringFunction f) {
+    return f.apply("x") == null;
+  }
+
+  @FunctionalInterface
+  interface FixedMarkerCaller {
+    @SideEffectFree
+    <T extends FixedFunction & java.io.Serializable> boolean call(T f);
+  }
+
+  void intersectionWithMarker() {
+    // The FixedFunction bound alone makes every argument implement both methods with one method,
+    // so the marker bound does not prevent a call from checking StringFunction.apply.
+    FixedMarkerCaller a = PurityFunctionalMethodRef::callStringFunction;
+  }
+
+  @FunctionalInterface
   interface SefObjectGetter {
     @SideEffectFree
     Object get();
