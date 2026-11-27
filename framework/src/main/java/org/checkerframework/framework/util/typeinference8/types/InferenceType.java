@@ -275,28 +275,16 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Returns true if this type contains a variable in {@code instantiated} whose instantiation
-   * ignores annotations (see {@link AbstractType#ignoreAnnotations}) or has an origin (see {@link
-   * ProperType#getOrigin}).
+   * Returns true if any of {@code instantiations} ignores annotations (see {@link
+   * AbstractType#ignoreAnnotations}) or has an origin (see {@link ProperType#getOrigin}).
    *
-   * @param instantiated variables, each of which has an instantiation
-   * @param instantiations the up-to-date instantiations of {@code instantiated}; a parallel list
-   * @return true if this type contains a variable in {@code instantiated} whose instantiation
-   *     ignores annotations or has an origin
+   * @param instantiations instantiations of variables that this type contains
+   * @return true if any of {@code instantiations} ignores annotations or has an origin
    */
-  private boolean appliesIgnoredAnnotations(
-      List<Variable> instantiated, List<ProperType> instantiations) {
-    // Computed only if needed, because computing it traverses this type.
-    Collection<Variable> variablesInThisType = null;
-    for (int i = 0; i < instantiated.size(); i++) {
-      ProperType instantiation = instantiations.get(i);
+  private static boolean appliesIgnoredAnnotations(List<ProperType> instantiations) {
+    for (ProperType instantiation : instantiations) {
       if (instantiation.ignoreAnnotations || instantiation.getOrigin() != null) {
-        if (variablesInThisType == null) {
-          variablesInThisType = getInferenceVariables();
-        }
-        if (variablesInThisType.contains(instantiated.get(i))) {
-          return true;
-        }
+        return true;
       }
     }
     return false;
@@ -318,7 +306,11 @@ public final class InferenceType extends AbstractType {
     // The up-to-date instantiations of `instantiated`; a parallel list.
     List<ProperType> instantiations = new ArrayList<>();
 
-    for (Variable alpha : map.values()) {
+    // Only the variables that this type contains affect the result, so only their instantiations
+    // are refreshed: refreshing an instantiation can apply instantiations to its origin, which can
+    // refresh further instantiations.  The function type is derived from this type, so it contains
+    // no other variables.
+    for (Variable alpha : getInferenceVariables()) {
       ProperType storedInstantiation = alpha.getInstantiation();
       if (storedInstantiation != null) {
         // The stored instantiation may be out of date, if its origin depends on an instantiation
@@ -351,7 +343,7 @@ public final class InferenceType extends AbstractType {
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
-    if (appliesIgnoredAnnotations(instantiated, instantiations)) {
+    if (appliesIgnoredAnnotations(instantiations)) {
       if (!newAbstractType.isProper()) {
         // Only a proper type records an origin, so applying instantiations now would lose the
         // record of the ignored positions.  Leave the instantiations unapplied until the result is
