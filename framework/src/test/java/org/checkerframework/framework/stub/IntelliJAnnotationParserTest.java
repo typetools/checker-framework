@@ -267,6 +267,16 @@ public class IntelliJAnnotationParserTest {
   }
 
   @Test
+  public void testParsePrimitiveLiteralIntToChar() {
+    // An int literal is converted to char by value, not by spelling.
+    Assert.assertEquals(Character.valueOf('A'), parsePrimitive("65", TypeKind.CHAR));
+    Assert.assertEquals(Character.valueOf((char) 7), parsePrimitive("7", TypeKind.CHAR));
+    Assert.assertEquals(Character.valueOf('7'), parsePrimitive("'7'", TypeKind.CHAR));
+    Assert.assertNull(parsePrimitive("-1", TypeKind.CHAR));
+    Assert.assertNull(parsePrimitive("65536", TypeKind.CHAR));
+  }
+
+  @Test
   public void testParsePrimitiveLiteralIntegralWidth() {
     // An unsuffixed integral literal has type int, even if the element type is long.
     Assert.assertEquals(Long.valueOf(-1), parsePrimitive("0xFFFFFFFF", TypeKind.LONG));

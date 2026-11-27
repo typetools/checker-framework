@@ -16,6 +16,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -120,12 +121,12 @@ public final class IntelliJAnnotationParser {
       doc.getDocumentElement().normalize();
     } catch (IOException e) {
       // The file exists but could not be read, so all of its annotations would be lost.
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.ERROR,
           String.format("Could not read annotations XML %s: %s", filename, e.getMessage()));
       return;
     } catch (ParserConfigurationException | SAXException e) {
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.WARNING,
           String.format("Could not parse annotations XML %s: %s", filename, e.getMessage()));
       return;
@@ -155,7 +156,7 @@ public final class IntelliJAnnotationParser {
         } catch (BugInCF e) {
           throw e;
         } catch (Exception e) {
-          checker.message(
+          checker.messageOnce(
               Diagnostic.Kind.WARNING,
               String.format(
                   "Could not apply annotation item '%s' in %s: %s",
@@ -171,6 +172,9 @@ public final class IntelliJAnnotationParser {
    * <p>An IntelliJ annotation file is always supplied on the command line, so this warns by
    * default, as {@link AnnotationFileParser} does for a command-line file.
    *
+   * <p>Every checker of a compound checker reads the annotation file, so this and the other
+   * diagnostics about the file's contents are issued only once.
+   *
    * @param checker the source checker
    * @param message the warning message
    */
@@ -178,7 +182,7 @@ public final class IntelliJAnnotationParser {
     if (!checker.hasOption("stubNoWarnIfNotFound")) {
       Diagnostic.Kind kind =
           checker.hasOption("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
-      checker.message(kind, message);
+      checker.messageOnce(kind, message);
     }
   }
 
@@ -366,7 +370,7 @@ public final class IntelliJAnnotationParser {
       String valStr = valElem.getAttribute("val").trim();
       String problem = setBuilderValue(builder, memberName, valStr, annoTypeElt, processingEnv);
       if (problem != null) {
-        checker.message(
+        checker.messageOnce(
             Diagnostic.Kind.WARNING,
             String.format("Ignoring annotation @%s on %s: %s", canonicalName, context, problem));
         return null;
@@ -377,7 +381,7 @@ public final class IntelliJAnnotationParser {
     for (ExecutableElement annoElt : ElementFilter.methodsIn(annoTypeElt.getEnclosedElements())) {
       String elementName = annoElt.getSimpleName().toString();
       if (annoElt.getDefaultValue() == null && !writtenElements.contains(elementName)) {
-        checker.message(
+        checker.messageOnce(
             Diagnostic.Kind.WARNING,
             String.format(
                 "Ignoring annotation @%s on %s: no value for element '%s', which has no default",
@@ -557,6 +561,14 @@ public final class IntelliJAnnotationParser {
         return parseBoolean(s);
       }
       case CHAR -> {
+        if (!isQuoted(trimmedVal)) {
+          // An int literal is converted to char by value, as Java's assignment conversion of a
+          // constant would, so 65 is 'A' and 7 is (char) 7, not '7'.
+          Long value = parseIntegralLiteral(s, false);
+          if (value != null) {
+            return convertConstant((int) (long) value, kind);
+          }
+        }
         return parseChar(s);
       }
       case LONG -> {
@@ -712,10 +724,38 @@ public final class IntelliJAnnotationParser {
     if (owner == null) {
       return null;
     }
-    String fieldName = s.substring(lastDot + 1);
-    for (VariableElement field : ElementFilter.fieldsIn(owner.getEnclosedElements())) {
-      if (field.getSimpleName().contentEquals(fieldName)) {
-        return field.getConstantValue();
+    VariableElement field = findField(owner, s.substring(lastDot + 1), false);
+    return field == null ? null : field.getConstantValue();
+  }
+
+  /**
+   * Returns the field with the given name that is a member of {@code type}, whether it is declared
+   * in {@code type} or inherited. A field declared in a type hides a field of the same name in its
+   * supertypes.
+   *
+   * @param type a type
+   * @param fieldName a field name
+   * @param inherited true if {@code type} is a proper supertype of the type whose member is sought,
+   *     in which case a private field of {@code type} is not a member
+   * @return the field of {@code type} named {@code fieldName}, or null if there is none
+   */
+  private static @Nullable VariableElement findField(
+      TypeElement type, String fieldName, boolean inherited) {
+    for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
+      if (field.getSimpleName().contentEquals(fieldName)
+          && !(inherited && field.getModifiers().contains(Modifier.PRIVATE))) {
+        return field;
+      }
+    }
+    List<TypeMirror> supertypes = new ArrayList<>(type.getInterfaces());
+    supertypes.add(0, type.getSuperclass());
+    for (TypeMirror supertype : supertypes) {
+      if (supertype.getKind() == TypeKind.DECLARED) {
+        VariableElement field =
+            findField((TypeElement) ((DeclaredType) supertype).asElement(), fieldName, true);
+        if (field != null) {
+          return field;
+        }
       }
     }
     return null;
@@ -1278,7 +1318,7 @@ public final class IntelliJAnnotationParser {
     SourceChecker checker = atypeFactory.getChecker();
 
     if (parsed.isMalformed()) {
-      checker.message(
+      checker.messageOnce(
           Diagnostic.Kind.WARNING,
           String.format("Cannot parse item name '%s' in %s", itemSignature, filename));
       return;

@@ -482,8 +482,10 @@ original library classes.  For example:
 
 Each stub path entry is a stub file, a directory, or an archive (ending
 with \<.jar> or \<.zip>).  A stub file that is named directly conventionally
-ends with \<.astub>; it may have any other name, except that its name must
-not end with \<.ajava>.
+ends with \<.astub>; it may have any other name (such as one ending with
+\<.stub>), except that its name must not end with \<.ajava>, and a name
+ending with \<.jar> or \<.zip>, in any case, denotes an archive rather than
+a stub file.
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
 \code{.astub}, with two exceptions.  First, an archive within a directory is
@@ -1128,9 +1130,13 @@ path-separated list of IntelliJ IDEA annotation files, directories, and
 An annotation file that is named directly may have any name (but a name
 ending with \<.jar> or \<.zip>, in any case, denotes an archive).
 Within a directory or archive, every file named \code{annotations.xml} is
-read, wherever it appears, and no other file is read, with two exceptions.
+read, wherever it appears, and no other file is read, with three exceptions.
 First, an archive within a directory is not read; the Checker Framework
-issues a note about it.  Name each archive in the list.  Second, a file
+issues a note about it.  Name each archive in the list.  Second, a
+directory within a directory that cannot be listed is not read; the Checker
+Framework issues a note about it, but no warning if it found an
+\code{annotations.xml} file elsewhere.  If annotations seem to be missing,
+make the directory readable and re-run the checker.  Third, a file
 within a hidden directory (one whose name starts with ``\<.>'') within a
 directory or archive is not read, such as \<.backup/annotations.xml>.
 (By convention, IntelliJ IDEA places each \code{annotations.xml} file in a

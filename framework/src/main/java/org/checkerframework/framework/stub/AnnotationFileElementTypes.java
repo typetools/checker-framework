@@ -208,7 +208,10 @@ public class AnnotationFileElementTypes {
       }
 
       // 6. Annotations provided via -AintellijAnnotations command-line option
-      String intellijAnnotationsOption = checker.getOption("intellijAnnotations");
+      // Do not consider options passed only to a subchecker, such as
+      // -ASubchecker_intellijAnnotations=..., which apply only to that subchecker.
+      String intellijAnnotationsOption =
+          checker.getOptionsNoSubcheckers().get("intellijAnnotations");
       if (intellijAnnotationsOption != null) {
         parseIntellijAnnotations(
             SystemUtil.pathSeparatorSplitter.splitToList(intellijAnnotationsOption));
