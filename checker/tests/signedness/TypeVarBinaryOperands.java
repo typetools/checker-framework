@@ -1,3 +1,4 @@
+import java.util.List;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
@@ -10,6 +11,16 @@ public class TypeVarBinaryOperands {
 
   <T extends Character> long charDivideWidenedToLong(T c) {
     return c / 2L;
+  }
+
+  // The type of l.get(0) is a captured type variable whose upper bound is Character.
+  int capturedCharDivide(List<? extends Character> l) {
+    return l.get(0) / 2;
+  }
+
+  void capturedUnsignedDivide(List<? extends @Unsigned Integer> l) {
+    // :: error: [operation.unsignedlhs]
+    int quotient = l.get(0) / 2;
   }
 
   <T extends @Unsigned Integer> void unsignedDivide(T i) {

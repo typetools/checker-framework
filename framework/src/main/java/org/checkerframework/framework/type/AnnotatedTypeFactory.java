@@ -3507,10 +3507,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns the primitive kind of the given type if it is a numeric primitive or unboxing
    * conversion (see {@link TypesUtils#boxedPrimitiveForUnboxing}) converts it to a numeric
-   * primitive, or {@code NONE} if {@code type} is not a numeric primitive and does not unbox to one
+   * primitive, or {@code NONE} if {@code type} is not a numeric primitive and does not unbox to
+   * one.
    *
    * @param type a type, such as {@code int}, {@code Integer}, or {@code T extends Integer}
-   * @return the numeric primitive kind of {@code type}, such as {@code INT},
+   * @return the numeric primitive kind of {@code type}, such as {@code INT}, or {@code NONE}
    */
   private TypeKind numericTypeKind(AnnotatedTypeMirror type) {
     TypeKind kind = TypesUtils.unboxedTypeOrSelf(type.getUnderlyingType(), types).getKind();
