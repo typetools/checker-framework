@@ -353,6 +353,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /**
    * Case 8: if x &lt; y, and y has a type that is related to the length of an array, then x has the
    * same type, with an offset that is one less.
+   *
+   * <p>Each annotation omits the bounds that might not hold when the comparison completes (see
+   * {@link #removeBoundsChangedAfter}).
    */
   @Override
   protected void refineGT(
@@ -369,20 +372,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       return;
     }
     // larger > smaller
-    UBQualifier largerQual =
-        qualifierWhenComparisonCompletes(
-            UBQualifier.createUBQualifier(
-                largerAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-            larger);
+    UBQualifier largerQual = qualifierWhenComparisonCompletes(largerAnno, larger);
     // larger + 1 >= smaller
     UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
     // `smaller` might be the left operand, as in `(i = n) < shrinkAndGetLength()`, so its own
     // qualifier might not hold when the comparison completes either.
-    UBQualifier rightQualifier =
-        qualifierWhenComparisonCompletes(
-            UBQualifier.createUBQualifier(
-                smallerAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-            smaller);
+    UBQualifier rightQualifier = qualifierWhenComparisonCompletes(smallerAnno, smaller);
     UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
     if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -398,6 +393,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /**
    * Case 9: if x &le; y, and y has a type that is related to the length of an array, then x has the
    * same type.
+   *
+   * <p>Each annotation omits the bounds that might not hold when the comparison completes (see
+   * {@link #removeBoundsChangedAfter}).
    */
   @Override
   protected void refineGTE(
@@ -413,16 +411,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     if (mayBeChangedByLaterOperand(left)) {
       return;
     }
-    UBQualifier leftQualifier =
-        qualifierWhenComparisonCompletes(
-            UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-            left);
+    UBQualifier leftQualifier = qualifierWhenComparisonCompletes(leftAnno, left);
     // `right` might be the left operand of the comparison, so its own qualifier might not hold when
     // the comparison completes either.
-    UBQualifier rightQualifier =
-        qualifierWhenComparisonCompletes(
-            UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-            right);
+    UBQualifier rightQualifier = qualifierWhenComparisonCompletes(rightAnno, right);
     UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
     if (leftQualifier.isLessThanLengthQualifier()) {
@@ -463,7 +455,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
       Node minuend = subtractionNode.getLeftOperand();
       UBQualifier minuendQual =
-          qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend);
+          removeBoundsChangedAfter(
+              qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend), minuend);
       Node subtrahend = subtractionNode.getRightOperand();
       UBQualifier subtrahendQual =
           qualifierWhenComparisonCompletes(getUBQualifier(subtrahend, in), subtrahend);
@@ -534,20 +527,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    */
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {
-    UBQualifier leftQualifier =
-        removeBoundsChangedAfter(
-            qualifierWhenComparisonCompletes(
-                UBQualifier.createUBQualifier(
-                    leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-                left),
-            left);
-    UBQualifier rightQualifier =
-        removeBoundsChangedAfter(
-            qualifierWhenComparisonCompletes(
-                UBQualifier.createUBQualifier(
-                    rightAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-                right),
-            right);
+    UBQualifier leftQualifier = qualifierWhenComparisonCompletes(leftAnno, left);
+    UBQualifier rightQualifier = qualifierWhenComparisonCompletes(rightAnno, right);
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
@@ -620,13 +601,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         // The comparison used the length of the sequence before it changed.
         return;
       }
-      UBQualifier otherQualifier =
-          removeBoundsChangedAfter(
-              qualifierWhenComparisonCompletes(
-                  UBQualifier.createUBQualifier(
-                      otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker()),
-                  otherNode),
-              otherNode);
+      UBQualifier otherQualifier = qualifierWhenComparisonCompletes(otherNodeAnno, otherNode);
       String sequence = receiver.toString();
       // Check if otherNode + c - 1 < receiver.length
       if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -638,6 +613,25 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             store, otherNode, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
       }
     }
+  }
+
+  /**
+   * Returns the qualifier for the given annotation of an operand of a comparison, or UNKNOWN if it
+   * might not hold when the comparison completes (see {@link
+   * #qualifierWhenComparisonCompletes(UBQualifier, Node)}), without the bounds that might not hold
+   * when the comparison completes (see {@link #removeBoundsChangedAfter}).
+   *
+   * @param anno the upper bound annotation of {@code operand}
+   * @param operand an operand of a comparison
+   * @return the qualifier for {@code anno}, or UNKNOWN, without the bounds that might not hold when
+   *     the comparison completes
+   */
+  private UBQualifier qualifierWhenComparisonCompletes(AnnotationMirror anno, Node operand) {
+    return removeBoundsChangedAfter(
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(anno, (UpperBoundChecker) atypeFactory.getChecker()),
+            operand),
+        operand);
   }
 
   /**

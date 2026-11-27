@@ -3,6 +3,7 @@
 // comparison in changedLater, s is "ab3" but "x" + i is "x3".
 
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public class SameLenComparisonChangesOperand {
 
@@ -76,18 +77,18 @@ public class SameLenComparisonChangesOperand {
 
   static Holder current = new Holder();
 
-  static class Swapper {
-    @Override
-    public String toString() {
-      current = new Holder();
-      return "";
-    }
+  // Not side-effect-free.
+  static String swap() {
+    current = new Holder();
+    return "";
   }
 
-  // The `+=` evaluates `current` before it converts `sw` to a string, and that conversion
-  // reassigns `current`.  So the assignment stores into the `text` field of the old `current`.
-  void stringConversionInCompoundAssignmentReassignsReceiver(String peer, Swapper sw) {
-    if ((current.text += sw).length() == peer.length()) {
+  // The `+=` evaluates `current` before it evaluates `swap()`, which reassigns `current`.  So the
+  // assignment stores into the `text` field of the old `current`.  (A string conversion cannot
+  // reassign `current` this way:  the analysis assumes that every `toString()` method is
+  // side-effect-free, like `Object.toString()`.)
+  void compoundAssignmentReassignsReceiver(String peer) {
+    if ((current.text += swap()).length() == peer.length()) {
       for (int k = 0; k < peer.length(); k++) {
         // :: error: (argument)
         current.text.charAt(k);
@@ -99,6 +100,7 @@ public class SameLenComparisonChangesOperand {
     String text = "";
 
     @Override
+    @SideEffectFree
     public String toString() {
       return text;
     }
@@ -127,6 +129,28 @@ public class SameLenComparisonChangesOperand {
       String u = "p" + box;
       for (int k = 0; k < u.length(); k++) {
         s.charAt(k);
+      }
+    }
+  }
+
+  static String prefix = "";
+
+  static class PrefixSetter {
+    @Override
+    public String toString() {
+      prefix = "long";
+      return "x";
+    }
+  }
+
+  // The concatenation reads `prefix` before its string conversion of `setter` reassigns `prefix`.
+  // So after the comparison, prefix + setter might be longer than t.
+  void concatenationChangesOperand(PrefixSetter setter, String t) {
+    if ((prefix + setter).length() == t.length()) {
+      String u = prefix + setter;
+      for (int k = 0; k < u.length(); k++) {
+        // :: error: (argument)
+        t.charAt(k);
       }
     }
   }

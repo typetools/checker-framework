@@ -59,8 +59,7 @@ public class SearchIndexTests {
   }
 
   // The right operand reassigns `a` but not `b`.
-  void otherOperandReassignsOneArray(
-      int[] a, int[] b, @SearchIndexFor({"#1", "#2"}) int xyz) {
+  void otherOperandReassignsOneArray(int[] a, int[] b, @SearchIndexFor({"#1", "#2"}) int xyz) {
     int copy;
     if ((copy = xyz) < zero(a = new int[0])) {
       @NegativeIndexFor("b") int w = copy;
