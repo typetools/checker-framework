@@ -10,6 +10,7 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -438,13 +439,18 @@ public class AnnotationFileElementTypes {
 
       @Override
       public InputStream getInputStream() throws IOException {
-        return url.openStream();
+        URLConnection connection = url.openConnection();
+        // Without this, a "jar:" URL reads from a JarFile that the JDK caches and never closes,
+        // so the jar stays open (and, on Windows, locked) after the compilation ends.
+        connection.setUseCaches(false);
+        return connection.getInputStream();
       }
     };
   }
 
   /**
-   * Parses the given annotation file as a stub file. Issues a warning if it cannot be read.
+   * Parses the given annotation file as a stub file. Issues a warning if it cannot be read. Does
+   * nothing if the file consists only of whitespace.
    *
    * @param resource an annotation file
    * @param parseType the file type to parse {@code resource} as; a stub file type
@@ -465,7 +471,7 @@ public class AnnotationFileElementTypes {
       return;
     }
     // Is it necessary to also skip files that consist only of Java comments?
-    if (new String(contents, StandardCharsets.UTF_8).isBlank()) {
+    if (isBlank(contents)) {
       return;
     }
     AnnotationFileParser.parseStubFile(
@@ -496,6 +502,26 @@ public class AnnotationFileElementTypes {
       reason = ": the name of an ajava file must end with .ajava";
     }
     factory.getChecker().messageOnce(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
+  }
+
+  /**
+   * Returns true if the given UTF-8 text consists only of whitespace.
+   *
+   * @param contents UTF-8 text
+   * @return true if {@code contents} consists only of whitespace
+   */
+  private static boolean isBlank(byte[] contents) {
+    for (int i = 0; i < contents.length; i++) {
+      byte b = contents[i];
+      if (b < 0) {
+        // A non-ASCII character, which might be whitespace. Decode only the rest of the text.
+        return new String(contents, i, contents.length - i, StandardCharsets.UTF_8).isBlank();
+      }
+      if (!Character.isWhitespace(b)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
