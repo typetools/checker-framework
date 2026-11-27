@@ -3,6 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor.CallableDeclaration;
 import org.checkerframework.common.basetype.BaseTypeVisitor.FoundRequired;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.DiagMessage;
@@ -44,6 +46,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
@@ -231,10 +234,11 @@ public class OverrideChecker {
    */
   public boolean checkOverride() {
     if (visitor.checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+      // Skip the qualifier checks against the overridden method.  Still check a method
+      // reference's purity, which `-AskipUses` does not affect, as it does not affect a lambda's
+      // purity check.  The method reference might implement methods of other types as well, such
+      // as other bounds of an intersection type.
       if (isMethodReference) {
-        // A call through a method of another type, such as another bound of an intersection cast,
-        // can also run the referenced method.  The purity check applies -AskipUses to each such
-        // method separately.
         checkMethodReferencePurity();
       }
       return true;
@@ -266,6 +270,10 @@ public class OverrideChecker {
    * method lacks, except a method whose missing kinds are among those of another reported method.
    * Thus, the errors together name every missing kind, and no error is redundant.
    *
+   * <p>Like the purity check of a lambda body, this check is performed even if a method's declaring
+   * type is in {@code -AskipUses}. That option suppresses checks of uses of a type, but the purity
+   * of the code that implements a method is not a use of the type that declares the method.
+   *
    * <p>Only a method reference needs this check. A method that overrides another one inherits its
    * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
    *
@@ -284,17 +292,25 @@ public class OverrideChecker {
     // treated like a lambda whose body calls the referenced method.  Like such a call, a
     // side-effect-free referenced method that returns void is deterministic.
     EnumSet<PurityKind> subPurity = visitor.implementationPurityKinds(overrider.getElement());
+    // `f::get`, where `f` is a functional-interface parameter of the enclosing method, denotes the
+    // code that the caller of that method was required to check, as in `checkFunctionalArgument`.
+    // The guarantee is empty for any other qualifier, such as a local variable or a reassigned
+    // parameter.
+    TreePath referencePath = visitor.atypeFactory.getPath(overriderTree);
+    if (referencePath != null) {
+      subPurity.addAll(
+          PurityChecker.functionalParameterCallPurity(
+              visitor.atypeFactory,
+              ((MemberReferenceTree) overriderTree).getQualifierExpression(),
+              overrider.getElement(),
+              TreePathUtil.enclosingMethod(referencePath),
+              visitor.atypeFactory.getProcessingEnv()));
+    }
     // The methods to report, each paired with the purity kinds that it requires and the
     // referenced method lacks.  No element's kinds are a subset of another element's kinds.
     Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();
-    // As for an override, skip each method of a type that -AskipUses matches.
     List<CallableDeclaration> declarations =
-        visitor.callableDeclarationsThatRun(overriderTree, overridden.getElement()).stream()
-            .filter(callable -> !visitor.checker.shouldSkipUses(callable.declaration()))
-            .toList();
-    if (declarations.isEmpty()) {
-      return;
-    }
+        visitor.callableDeclarationsThatRun(overriderTree, overridden.getElement());
     for (CallableDeclaration callable : declarations) {
       ExecutableElement declaration = callable.declaration();
       EnumSet<PurityKind> missing = PurityUtils.getPurityKinds(visitor.atypeFactory, declaration);
@@ -322,7 +338,7 @@ public class OverrideChecker {
                 : AnnotatedTypes.asMemberOf(
                     types, visitor.atypeFactory, overriddenType, declaration);
       } else {
-        // The declaration is in the hierarchy of another bound of an intersection cast.
+        // The declaration is in the hierarchy of another bound of an intersection target.
         declarationOwnerType = visitor.atypeFactory.getAnnotatedType(declaringType);
         declarationType = visitor.atypeFactory.getAnnotatedType(declaration);
       }
@@ -625,6 +641,8 @@ public class OverrideChecker {
     // These act like a traditional override
     if (methodRefKind == MemberReferenceKind.UNBOUND) {
       AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
+      assert overriderReceiver != null
+          : "@AssumeAssertion(nullness): an unbound method reference refers to an instance method";
       AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
       boolean success = visitor.typeHierarchy.isSubtype(overriddenReceiver, overriderReceiver);
       if (!success) {
@@ -652,6 +670,8 @@ public class OverrideChecker {
         receiverArg = visitor.atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
 
         AnnotatedTypeMirror selfType = visitor.atypeFactory.getSelfType(memberTree);
+        assert selfType != null
+            : "@AssumeAssertion(nullness): a method reference that uses super is within a class";
         receiverArg.replaceAnnotations(selfType.getPrimaryAnnotations());
         break;
       case BOUND:
@@ -670,9 +690,14 @@ public class OverrideChecker {
         // enclosing type or "this" has an enclosing type that is that type.
         receiverDecl = overrider.getReceiverType();
         receiverArg = visitor.atypeFactory.getSelfType(memberTree);
+        assert receiverDecl != null && receiverArg != null
+            : "@AssumeAssertion(nullness): an inner class constructor has a receiver, and its"
+                + " method reference is within a class";
         while (!TypesUtils.isErasedSubtype(
             receiverArg.getUnderlyingType(), receiverDecl.getUnderlyingType(), types)) {
           receiverArg = ((AnnotatedDeclaredType) receiverArg).getEnclosingType();
+          assert receiverArg != null
+              : "@AssumeAssertion(nullness): JLS 15.13.1 requires an enclosing type to exist";
         }
 
         break;
@@ -684,6 +709,8 @@ public class OverrideChecker {
         // These don't have receivers
         return true;
     }
+    assert receiverDecl != null
+        : "@AssumeAssertion(nullness): each remaining kind refers to a method with a receiver";
 
     boolean success = visitor.typeHierarchy.isSubtype(receiverArg, receiverDecl);
     if (!success) {
@@ -708,6 +735,8 @@ public class OverrideChecker {
   protected boolean checkReceiverOverride() {
     AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
     AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
+    assert overriderReceiver != null && overriddenReceiver != null
+        : "@AssumeAssertion(nullness): only an instance method overrides another method";
     // Check the receiver type.
     // Just check primary annotations rather than using `isSubtype()`.  `isSubtype()` requires its
     // arguments to be actual subtypes with respect to the JLS, but an overrider receiver is not a
@@ -898,6 +927,15 @@ public class OverrideChecker {
     return result;
   }
 
+  /**
+   * Issues an error about the parameter at {@code index} if it is not valid. If {@code
+   * -Ashowchecks} is passed, also prints a message about the check.
+   *
+   * @param success true if the parameter at {@code index} is valid
+   * @param index the index of the parameter that was checked
+   * @param overriderParams the parameter types of the overriding method
+   * @param overriddenParams the parameter types of the overridden method
+   */
   private void checkParametersMsg(
       boolean success,
       int index,
@@ -1103,11 +1141,14 @@ public class OverrideChecker {
           overriderAnno = strongRelevantAnnos;
         }
 
+        MethodTree methodTree = visitor.methodTree;
+        assert methodTree != null
+            : "@AssumeAssertion(nullness): contracts are checked only for a method declaration";
         visitor.checker.reportError(
-            visitor.methodTree,
+            methodTree,
             messageKey,
             jexpr,
-            visitor.methodTree.getName(),
+            methodTree.getName(),
             overriddenTypeString,
             overriddenAnno,
             overriderTypeString,
@@ -1143,6 +1184,8 @@ public class OverrideChecker {
     // where the contract was defined.  For example, methodTree might be an overriding
     // definition, and the contract might be for a superclass.
     MethodTree methodTree = visitor.methodTree;
+    assert methodTree != null
+        : "@AssumeAssertion(nullness): contracts are checked only for a method declaration";
 
     StringToJavaExpression stringToJavaExpr =
         expression -> {

@@ -218,6 +218,27 @@ public class PurityLambdaSam {
     Object f6 = (PlainFunc & java.io.Serializable) () -> impure();
   }
 
+  /** Like {@link SefFunc}, but with a less specific return type. */
+  @FunctionalInterface
+  interface SefObjectFunc {
+    @SideEffectFree
+    Object get();
+  }
+
+  static <T extends SefObjectFunc & PlainFunc> void takesSefObjectAndPlain(T f) {}
+
+  void intersectionTargets() {
+    // The functional method is PlainFunc.get, whose return type is more specific than that of
+    // SefObjectFunc.get.  A call through SefObjectFunc.get can run the lambda.
+    // :: error: [purity.call]
+    Object f1 = (SefObjectFunc & PlainFunc) () -> impure();
+    Object f2 = (SefObjectFunc & PlainFunc) () -> sefNotDeterministic();
+    // The target is an intersection type that is inferred rather than written in a cast.
+    // :: error: [purity.call]
+    takesSefObjectAndPlain(() -> impure());
+    takesSefObjectAndPlain(() -> sefNotDeterministic());
+  }
+
   // Lambdas that are accepted.
 
   void accepted(String s) {

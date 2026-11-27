@@ -136,8 +136,8 @@ public class WholeProgramInferenceJavaParserStorage
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
-  /** Determines which inferred qualifiers are redundant. */
-  private final WholeProgramInferenceDefaults wpiDefaults;
+  /** Removes inferred qualifiers that are redundant. */
+  private final WholeProgramInferenceRedundancyRemover redundancyRemover;
 
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
@@ -245,7 +245,7 @@ public class WholeProgramInferenceJavaParserStorage
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
-    this.wpiDefaults = new WholeProgramInferenceDefaults(atypeFactory);
+    this.redundancyRemover = new WholeProgramInferenceRedundancyRemover(atypeFactory);
     this.elements = atypeFactory.getElementUtils();
     this.types = atypeFactory.getProcessingEnv().getTypeUtils();
     try {
@@ -1004,8 +1004,7 @@ public class WholeProgramInferenceJavaParserStorage
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
       if (fieldAnnos.type != null
           && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
-        wpiDefaults.removeRedundantPrimaryAnnotations(
-            fieldAnnos.type, wpiDefaults.defaultedType(fieldAnnos.element));
+        redundancyRemover.removeRedundantPrimaryAnnotations(fieldAnnos.type, fieldAnnos.element);
       }
     }
 
@@ -1035,12 +1034,10 @@ public class WholeProgramInferenceJavaParserStorage
     // method's return type.
     if (methodAnnos.returnType != null
         && !containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
-      wpiDefaults.removeRedundantPrimaryAnnotations(
-          methodAnnos.returnType, wpiDefaults.defaultedReturnType(methodElt));
+      redundancyRemover.removeRedundantReturnTypeAnnotations(methodAnnos.returnType, methodElt);
     }
     if (methodAnnos.receiverType != null) {
-      wpiDefaults.removeRedundantPrimaryAnnotations(
-          methodAnnos.receiverType, wpiDefaults.defaultedReceiverType(methodElt));
+      redundancyRemover.removeRedundantReceiverAnnotations(methodAnnos.receiverType, methodElt);
     }
     if (methodAnnos.parameterTypes != null) {
       List<? extends VariableElement> paramElts = methodElt.getParameters();
@@ -1049,8 +1046,7 @@ public class WholeProgramInferenceJavaParserStorage
         if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
           // The parameter's own element is used, rather than the method's type, so that a
           // `@DefaultQualifier` annotation written on the parameter declaration is respected.
-          wpiDefaults.removeRedundantPrimaryAnnotations(
-              paramType, wpiDefaults.defaultedType(paramElts.get(i)));
+          redundancyRemover.removeRedundantPrimaryAnnotations(paramType, paramElts.get(i));
         }
       }
     }
@@ -1072,7 +1068,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
     for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
       if (paramDeclAnno.index1based() == index1based
-          && wpiDefaults.isAliasForTypeQualifier(paramDeclAnno.annotation())) {
+          && redundancyRemover.isAliasForTypeQualifier(paramDeclAnno.annotation())) {
         return true;
       }
     }
@@ -1094,7 +1090,7 @@ public class WholeProgramInferenceJavaParserStorage
       return false;
     }
     for (AnnotationMirror anno : declarationAnnotations) {
-      if (wpiDefaults.isAliasForTypeQualifier(anno)) {
+      if (redundancyRemover.isAliasForTypeQualifier(anno)) {
         return true;
       }
     }

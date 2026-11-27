@@ -3,7 +3,6 @@
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -19,6 +18,14 @@ public class IntersectionCastWildcard {
   }
 
   static void take(Object o) {}
+
+  // Generic, so that a method reference to it is compatible with a raw functional interface, whose
+  // parameter type has the top qualifier in every type system.
+  static <T> void takeAny(T t) {}
+
+  static <T> T identity(T t) {
+    return t;
+  }
 
   void methodReferences() {
     Object o1 = (Serializable & Supplier<? extends String>) IntersectionCastWildcard::m;
@@ -46,8 +53,8 @@ public class IntersectionCastWildcard {
   @SuppressWarnings("rawtypes")
   void rawTypes() {
     Object o1 = (Serializable & Supplier) IntersectionCastWildcard::m;
-    Object o2 = (Serializable & Consumer) Objects::hashCode;
-    Object o3 = (Serializable & Function) String::valueOf;
+    Object o2 = (Serializable & Consumer) IntersectionCastWildcard::takeAny;
+    Object o3 = (Serializable & Function) IntersectionCastWildcard::identity;
     Object o4 = (Serializable & Supplier) () -> "";
     Object o5 = (Serializable & Consumer) s -> {};
     Object o6 = (Serializable & Function) s -> s;

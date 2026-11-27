@@ -733,6 +733,10 @@ public final class TypesUtils {
    * @param env the processing environment
    * @return the non-wildcard parameterization of {@code type}
    */
+  @SuppressWarnings({
+    "interning:not.interned", // removeWildcards returns its argument if it has no wildcard
+    "TypeEquals"
+  })
   public static DeclaredType nonWildcardParameterization(
       DeclaredType type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
@@ -748,8 +752,7 @@ public final class TypesUtils {
     // substitute its type arguments for the outer type variables that a type parameter's bound,
     // and hence the new type arguments, can mention.
     com.sun.tools.javac.util.List<Type> typeArgs =
-        javacTypes.subst(
-            result.getTypeArguments(), outer.tsym.type.allparams(), outer.allparams());
+        javacTypes.subst(result.getTypeArguments(), outer.tsym.type.allparams(), outer.allparams());
     return new ClassType(outer, typeArgs, result.tsym);
   }
 

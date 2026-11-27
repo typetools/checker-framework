@@ -5093,18 +5093,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
         if (castATM.getKind() == TypeKind.INTERSECTION) {
           AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
+          // Return the bound that declares or inherits the functional method.  It is not
+          // necessarily the first bound that is a functional interface:  in
+          // `(Wide & Narrow<String>) () -> ""`, where `Wide` declares `Object get()` and
+          // `Narrow<T>` declares `T get()`, the functional method is `Narrow.get`, whose return
+          // type is more specific.  A bound that is a marker interface, such as `Serializable`,
+          // never declares or inherits the functional method.
+          ExecutableElement fnElement =
+              TreeUtils.findFunction(TreeUtils.withoutParens(cast.getExpression()), processingEnv);
+          TypeMirror erasedFnOwner = types.erasure(fnElement.getEnclosingElement().asType());
           for (AnnotatedTypeMirror t : itype.directSupertypes()) {
-            if (TypesUtils.isFunctionalInterface(t.getUnderlyingType(), getProcessingEnv())) {
+            if (types.isSubtype(types.erasure(t.getUnderlyingType()), erasedFnOwner)) {
               return t;
             }
           }
-          // We should never reach here: isFunctionalInterface performs the same check
-          // and would have raised an error already.
+          // We should never reach here: one of the bounds declares or inherits the functional
+          // method.
           throw new BugInCF(
-              "Expected the type of a cast tree in an assignment context to contain"
-                  + " a functional interface bound."
+              "Expected a bound of the type of a cast tree to declare or inherit %s."
                   + " Found type: %s for tree: %s in lambda tree: %s",
-              castATM, cast, tree);
+              fnElement, castATM, cast, tree);
         }
         return castATM;
       }

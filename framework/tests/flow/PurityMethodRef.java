@@ -1,7 +1,8 @@
 // Test that a method reference is checked against the purity annotations on the functional
 // interface method that it implements.  This is the method-reference analog of
-// PurityLambdaSam.java; the check is performed by OverrideChecker#checkPurity,
-// which treats the referenced method as an override of the functional method.
+// PurityLambdaSam.java; the check is performed by
+// OverrideChecker#checkMethodReferencePurity, which treats the referenced method as an override
+// of the functional method.
 //
 // This test lives here, rather than in all-systems, because the check requires
 // -AcheckPurityAnnotations, which the all-systems suite is not run with.  That purity annotations
@@ -114,6 +115,27 @@ public class PurityMethodRef {
     // The first bound is not a functional interface.
     // :: error: [purity.methodref]
     Object f5 = (java.io.Serializable & SefFunc) PurityMethodRef::myMethod;
+  }
+
+  /** Like {@link SefFunc}, but with a less specific return type. */
+  @FunctionalInterface
+  interface SefObjectFunc {
+    @SideEffectFree
+    Object doNothing();
+  }
+
+  static <T extends SefObjectFunc & PlainFunc> void takesSefObjectAndPlain(T f) {}
+
+  void intersectionTargets() {
+    // The functional method is PlainFunc.doNothing, whose return type is more specific than that of
+    // SefObjectFunc.doNothing.  A call through SefObjectFunc.doNothing can run the reference.
+    // :: error: [purity.methodref]
+    Object f1 = (SefObjectFunc & PlainFunc) PurityMethodRef::myMethod;
+    Object f2 = (SefObjectFunc & PlainFunc) PurityMethodRef::mySideEffectFreeMethod;
+    // The target is an intersection type that is inferred rather than written in a cast.
+    // :: error: [purity.methodref]
+    takesSefObjectAndPlain(PurityMethodRef::myMethod);
+    takesSefObjectAndPlain(PurityMethodRef::mySideEffectFreeMethod);
   }
 
   @FunctionalInterface
