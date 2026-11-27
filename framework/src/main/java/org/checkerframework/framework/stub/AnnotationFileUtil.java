@@ -18,7 +18,6 @@ import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -392,29 +391,6 @@ public class AnnotationFileUtil {
     }
 
     return null;
-  }
-
-  /**
-   * Returns annotation files found at a given file system location (does not look on classpath).
-   *
-   * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
-   *     a jar or zip archive, or a directory. Look for it as described in {@link
-   *     #findFileSystemLocation}. The annotation files are those that {@link
-   *     #forEachAnnotationFile} finds.
-   * @param fileType file type of files to collect
-   * @return annotation files with the given file type found in the file system (does not look on
-   *     classpath). Returns null if the file system location does not exist; the caller might wish
-   *     to issue a warning in that case.
-   */
-  public static @Nullable List<AnnotationFileResource> allAnnotationFiles(
-      String location, AnnotationFileType fileType) {
-    File file = findFileSystemLocation(location);
-    if (file == null) {
-      return null;
-    }
-    List<AnnotationFileResource> resources = new ArrayList<>();
-    forEachAnnotationFile(file, fileType, resources::add, skipped -> {});
-    return resources;
   }
 
   /**
