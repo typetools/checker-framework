@@ -50,8 +50,11 @@ and else-store:  the result's then-store and else-store are both their least
 upper bound.  Use it when the input's then-store and else-store describe an
 earlier node, such as an operand.  New method
 `CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
-then-store and else-store; use it when they describe the current node, as for a
-cast.
+then-store and else-store.  Use it when they describe the current node, as for
+a cast.  Also use it when the current node forwards an earlier node's stores,
+unchanged, to a later node that uses them.  For example, in `isNN(o) == true`,
+the literal `true` forwards the stores of `isNN(o)` to `==`; merging them at the
+literal would lose the fact that `o` is non-null when `isNN(o)` is true.
 
 These methods of `CFAbstractTransfer` no longer call `visitNode()`:
 `visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
