@@ -231,7 +231,7 @@ public class AnnotationFileElementTypesTest {
   /** Tests that a named file whose name does not suit its file type yields a warning. */
   @Test
   public void unusableNamedFile() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
+    File ajava = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
     assertHasDiagnostic(
         "WARNING: Ignoring " + ajava.getPath() + ", which is an ajava file; supply it via -Aajava",
         diagnostics(ajava.getPath()));
@@ -243,7 +243,7 @@ public class AnnotationFileElementTypesTest {
    */
   @Test
   public void unusableNamedFileCompoundChecker() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
+    File ajava = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Foo.ajava"), "package p;");
     assertOneWarning(
         "Ignoring " + ajava.getPath() + ", which is an ajava file; supply it via -Aajava",
         diagnostics(
@@ -259,7 +259,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unusableNamedClasspathFile() throws IOException {
     File classpathDir = tmp.newFolder();
-    write(new File(classpathDir, "Foo.ajava"), "package p;");
+    AnnotationFileTestUtil.write(new File(classpathDir, "Foo.ajava"), "package p;");
     assertHasDiagnostic(
         "WARNING: Ignoring checker.jar/Foo.ajava, which is an ajava file; supply it via -Aajava",
         diagnostics("checker.jar/Foo.ajava", classpathDir));
@@ -286,7 +286,8 @@ public class AnnotationFileElementTypesTest {
   /** Tests that a named stub file whose name does not end with {@code .astub} is used. */
   @Test
   public void namedStubFileWithOtherName() throws IOException {
-    File stub = write(new File(tmp.getRoot(), "Foo.stub"), UNKNOWN_CLASS_STUB);
+    File stub =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Foo.stub"), UNKNOWN_CLASS_STUB);
     List<String> diagnostics = diagnostics(stub.getPath());
     assertNotIgnoredOrFailed(diagnostics);
     assertHasDiagnostic("WARNING: " + stub.getPath() + ":", diagnostics);
@@ -351,7 +352,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unlistableDirectory() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(dir.setReadable(false));
     try {
@@ -372,7 +373,7 @@ public class AnnotationFileElementTypesTest {
   public void unlistableDirectoryInDirectory() throws IOException {
     File dir = tmp.newFolder("stubdir");
     File sub = new File(dir, "sub");
-    write(new File(sub, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(sub, "A.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(sub.setReadable(false));
     try {
@@ -417,7 +418,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void leadingWhitespaceOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    write(
+    AnnotationFileTestUtil.write(
         new File(classpathDir, "Padded.astub"),
         " ".repeat(150) + "package p; class NoSuchClass {}");
     assertHasDiagnostic(
@@ -428,7 +429,8 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unreadableFileOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    File stub = write(new File(classpathDir, "Unreadable.astub"), "package p;");
+    File stub =
+        AnnotationFileTestUtil.write(new File(classpathDir, "Unreadable.astub"), "package p;");
     Assume.assumeTrue(stub.setReadable(false));
     // Making a file unreadable has no effect for the root user.
     Assume.assumeFalse(Files.isReadable(stub.toPath()));

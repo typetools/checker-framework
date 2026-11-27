@@ -103,7 +103,8 @@ public class AnnotationFileUtilTest {
    */
   @Test
   public void explicitFileIsUsedRegardlessOfName() throws IOException {
-    File stub = write(new File(tmp.getRoot(), "my-stubs.txt"), "package java.lang;");
+    File stub =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "my-stubs.txt"), "package java.lang;");
 
     Assert.assertEquals(
         Arrays.asList(stub.getAbsolutePath()),
@@ -130,10 +131,10 @@ public class AnnotationFileUtilTest {
   @Test
   public void directoryUsesOnlyFilesWithMatchingName() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
-    write(new File(dir, "notes.txt"), "not a stub file");
-    File b = write(new File(dir, "sub/B.astub"), "package p;");
-    write(new File(dir, "sub/C.ajava"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "notes.txt"), "not a stub file");
+    File b = AnnotationFileTestUtil.write(new File(dir, "sub/B.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "sub/C.ajava"), "package p;");
 
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath(), b.getAbsolutePath()),
@@ -158,7 +159,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void archiveInDirectoryIsNotOpened() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     writeZip(new File(dir, "backup.zip"), "A.astub");
     writeZip(new File(dir, "sub/lib.jar"), "B.astub");
 
@@ -180,8 +181,8 @@ public class AnnotationFileUtilTest {
         descriptions(jar, AnnotationFileType.COMMAND_LINE_STUB));
 
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
-    write(new File(dir, "._A.astub"), "not a stub file");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "._A.astub"), "not a stub file");
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
@@ -190,8 +191,10 @@ public class AnnotationFileUtilTest {
   /** Tests that an ajava file named explicitly is used only if its name ends with ".ajava". */
   @Test
   public void explicitAjavaFileMustNotBeRenamed() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
-    File renamed = write(new File(tmp.getRoot(), "Foo-annotations.txt"), "package p;");
+    File ajava =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
+    File renamed =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Foo-annotations.txt"), "package p;");
 
     Assert.assertEquals(
         Arrays.asList(ajava.getAbsolutePath()), descriptions(ajava, AnnotationFileType.AJAVA));
@@ -201,7 +204,8 @@ public class AnnotationFileUtilTest {
   /** Tests that an ajava file named explicitly as a stub file is not used. */
   @Test
   public void explicitAjavaFileIsNotAStubFile() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
+    File ajava =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
 
     Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
   }
@@ -210,8 +214,8 @@ public class AnnotationFileUtilTest {
   @Test
   public void hiddenDirectoriesAreNotSearched() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
-    write(new File(dir, ".history/A_20231010.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, ".history/A_20231010.astub"), "package p;");
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
@@ -246,7 +250,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void explicitHiddenDirectoryIsSearched() throws IOException {
     File dir = tmp.newFolder(".stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
@@ -256,7 +260,7 @@ public class AnnotationFileUtilTest {
   @Test
   public void archiveInDirectoryIsReported() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    write(new File(dir, "A.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     File backup = writeZip(new File(dir, "backup.zip"), "A.astub");
     File lib = writeZip(new File(dir, "sub/lib.jar"), "B.astub");
 
@@ -273,9 +277,9 @@ public class AnnotationFileUtilTest {
   @Test
   public void unlistableDirectoryInDirectoryIsReported() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    File a = write(new File(dir, "A.astub"), "package p;");
+    File a = AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
     File sub = new File(dir, "sub");
-    write(new File(sub, "B.astub"), "package p;");
+    AnnotationFileTestUtil.write(new File(sub, "B.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(sub.setReadable(false));
     try {
@@ -297,8 +301,9 @@ public class AnnotationFileUtilTest {
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
   @Test
   public void explicitHiddenFileIsUsed() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), ".Foo-checker.ajava"), "package p;");
-    File stub = write(new File(tmp.getRoot(), ".Foo.astub"), "package p;");
+    File ajava =
+        AnnotationFileTestUtil.write(new File(tmp.getRoot(), ".Foo-checker.ajava"), "package p;");
+    File stub = AnnotationFileTestUtil.write(new File(tmp.getRoot(), ".Foo.astub"), "package p;");
 
     Assert.assertEquals(
         Arrays.asList(ajava.getAbsolutePath()), descriptions(ajava, AnnotationFileType.AJAVA));
@@ -315,8 +320,8 @@ public class AnnotationFileUtilTest {
   @Test
   public void intellijAnnotationsFiles() throws IOException {
     File dir = tmp.newFolder("intellijdir");
-    File xml = write(new File(dir, "java/lang/annotations.xml"), "<root/>");
-    File other = write(new File(dir, "java/lang/other.xml"), "<root/>");
+    File xml = AnnotationFileTestUtil.write(new File(dir, "java/lang/annotations.xml"), "<root/>");
+    File other = AnnotationFileTestUtil.write(new File(dir, "java/lang/other.xml"), "<root/>");
 
     Assert.assertEquals(
         Arrays.asList(xml.getAbsolutePath()),
