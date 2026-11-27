@@ -1007,14 +1007,15 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
-      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      @Nullable V thenValue = processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
+      @Nullable V elseValue = processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      @Nullable V targetValue = (thenValue == null || elseValue == null) ? null : thenValue;
       return new ConditionalTransferResult<>(
-          finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
+          finishValue(targetValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, lhs, rhs, store, rhsValue);
-      return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+      @Nullable V targetValue = processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      return new RegularTransferResult<>(finishValue(targetValue, store), store);
     }
   }
 
@@ -1070,8 +1071,10 @@ public abstract class CFAbstractTransfer<
    * @param rhs the right-hand side of the assignment
    * @param store the regular input store (from {@code in})
    * @param rhsValue the value of the right-hand side of the assignment
+   * @return the value that the store now holds for the target, or null if it holds none; this is
+   *     also the value of the assignment expression
    */
-  protected void processCommonAssignment(
+  protected @Nullable V processCommonAssignment(
       TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
     @Nullable V targetValue = rhsValue;
@@ -1091,6 +1094,7 @@ public abstract class CFAbstractTransfer<
 
     // update information in the store
     store.updateForAssignment(lhs, targetValue);
+    return targetValue;
   }
 
   @Override
