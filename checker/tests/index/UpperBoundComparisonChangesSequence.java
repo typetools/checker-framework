@@ -21,6 +21,15 @@ public class UpperBoundComparisonChangesSequence {
     return 1;
   }
 
+  // If this.a has length 2 before the call, then i is 2 but this.a has length 0 after the call.
+  void eqChanged() {
+    int i;
+    if (this.a.length == (i = replaceAndReturnTwo())) {
+      // :: error: (assignment)
+      @LTEqLengthOf("this.a") int j = i;
+    }
+  }
+
   void eqUnchanged(int k) {
     int i;
     if (this.a.length == (i = k)) {
