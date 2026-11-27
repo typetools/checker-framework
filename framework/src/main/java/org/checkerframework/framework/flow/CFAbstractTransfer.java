@@ -1116,6 +1116,13 @@ public abstract class CFAbstractTransfer<
     // look up the call's value in the store (if possible)
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    if (n.isBoxing() && n.getIterableExpression() != null) {
+      // For a boxing conversion of the element of an enhanced for loop, `factoryValue` is the
+      // element type before boxing, such as `@Interned int` for `for (Integer x : intArray)`.  It
+      // does not describe the boxed value, so ignore it.  The operand, which is the primitive
+      // element, has the same qualifiers, and the code below adapts them for boxing.
+      resValue = storeValue;
+    }
     if (n.isUnboxing()) {
       // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type
       // factory computes for the call) comes from the declared return type of `intValue()`, which
