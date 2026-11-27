@@ -3430,8 +3430,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *   <li>A shift operation applies unary numeric promotion (JLS 5.6) to each operand separately
    *       (JLS 15.19). For example, the operands of {@code i << 1L} have types {@code int} and
    *       {@code long}, if {@code i} has type {@code int} or {@code Integer}.
+   *   <li>An {@code ==} or {@code !=} whose operands both have reference types, such as {@code
+   *       Integer}, compares references (JLS 15.21.3) and does not convert its operands.
    *   <li>Any other operation applies binary numeric promotion (JLS 5.6) if both operands have
-   *       numeric primitive types: it widens both operands to a common primitive type.
+   *       numeric primitive or boxed primitive types: it unboxes each boxed operand, such as one of
+   *       type {@code Character}, and widens both operands to a common primitive type.
+   *   <li>Any other operation whose operands both have type {@code boolean} or {@code Boolean},
+   *       such as {@code b == p} or {@code b & p} for {@code Boolean b} and {@code boolean p},
+   *       unboxes each {@code Boolean} operand (JLS 15.21.2, 15.22.2, 15.23, 15.24).
    * </ul>
    *
    * Operands to which no promotion applies are returned unchanged.
@@ -3452,11 +3458,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           UNSIGNED_RIGHT_SHIFT_ASSIGNMENT -> {
         return new BinaryArgTypes(unaryNumericPromotion(left), unaryNumericPromotion(right));
       }
+      case EQUAL_TO, NOT_EQUAL_TO -> {
+        if (!left.getKind().isPrimitive() && !right.getKind().isPrimitive()) {
+          return new BinaryArgTypes(left, right);
+        }
+      }
       default -> {}
     }
     TypeKind promotedKind =
-        TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
+        TypeKindUtils.widenedNumericType(numericTypeKind(left), numericTypeKind(right));
     if (!TypeKindUtils.isNumericPrimitive(promotedKind)) {
+      if (TypesUtils.isBooleanType(left.getUnderlyingType())
+          && TypesUtils.isBooleanType(right.getUnderlyingType())) {
+        // A boolean equality (JLS 15.21.2), logical (JLS 15.22.2), or conditional (JLS 15.23,
+        // 15.24) operation unboxes each operand.  Reference equality of two boxed operands was
+        // handled above.
+        return new BinaryArgTypes(applyUnboxing(left), applyUnboxing(right));
+      }
       return new BinaryArgTypes(left, right);
     }
     return new BinaryArgTypes(

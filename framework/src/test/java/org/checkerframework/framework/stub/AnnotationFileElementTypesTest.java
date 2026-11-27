@@ -1,5 +1,7 @@
 package org.checkerframework.framework.stub;
 
+import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilterInputStream;
@@ -279,7 +281,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unlistableDirectory() throws IOException {
     File dir = tmp.newFolder("stubdir");
-    AnnotationFileTestUtil.write(new File(dir, "A.astub"), "package p;");
+    write(new File(dir, "A.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(dir.setReadable(false));
     try {
@@ -300,7 +302,7 @@ public class AnnotationFileElementTypesTest {
   public void unlistableDirectoryInDirectory() throws IOException {
     File dir = tmp.newFolder("stubdir");
     File sub = new File(dir, "sub");
-    AnnotationFileTestUtil.write(new File(sub, "A.astub"), "package p;");
+    write(new File(sub, "A.astub"), "package p;");
     // Making a directory unreadable has no effect for the root user.
     Assume.assumeTrue(sub.setReadable(false));
     try {
