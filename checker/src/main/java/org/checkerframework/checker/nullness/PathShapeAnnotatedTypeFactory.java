@@ -230,21 +230,56 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   //
 
   /**
+   * If the method that the given invocation invokes overrides a method in {@code Path} or {@code
+   * File}, returns the overridden method. Otherwise, returns the invoked method. Thus, an override
+   * is treated like the method that it overrides, whose specification it must satisfy.
+   *
+   * @param tree a method invocation
+   * @return the method in {@code Path} or {@code File} that the invoked method overrides, or the
+   *     invoked method itself
+   */
+  /*package-private*/ ExecutableElement getPathOrFileMethod(MethodInvocationTree tree) {
+    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    if (method.getModifiers().contains(Modifier.STATIC)) {
+      return method;
+    }
+    AnnotatedTypeMirror receiverType = getReceiverType(tree);
+    return getPathOrFileMethod(
+        method, receiverType == null ? null : receiverType.getUnderlyingType());
+  }
+
+  /**
    * If the given method overrides a method in {@code Path} or {@code File}, returns the overridden
    * method. Otherwise, returns the given method. Thus, an override is treated like the method that
    * it overrides, whose specification it must satisfy.
    *
+   * <p>The override is determined in the context of the receiver type. A method can implement a
+   * {@code Path} method in a subtype of {@code Path} even if the method is declared in (and
+   * inherited from) a class that is not a subtype of {@code Path}.
+   *
    * @param method a method
+   * @param receiverType the type of the receiver of an invocation of {@code method}, or null if
+   *     unknown
    * @return the method in {@code Path} or {@code File} that {@code method} overrides, or {@code
    *     method} itself
    */
-  /*package-private*/ ExecutableElement getPathOrFileMethod(ExecutableElement method) {
+  /*package-private*/ ExecutableElement getPathOrFileMethod(
+      ExecutableElement method, @Nullable TypeMirror receiverType) {
     if (method.getModifiers().contains(Modifier.STATIC)) {
       return method;
     }
-    TypeElement clazz = (TypeElement) method.getEnclosingElement();
-    if (clazz.equals(pathElement) || clazz.equals(fileElement)) {
+    TypeElement declaringClass = (TypeElement) method.getEnclosingElement();
+    if (declaringClass.equals(pathElement) || declaringClass.equals(fileElement)) {
       return method;
+    }
+    // The class in which to check for overriding:  the receiver's class if it is known, otherwise
+    // the class that declares the method.
+    TypeElement clazz = null;
+    if (receiverType != null) {
+      clazz = TypesUtils.getTypeElement(types.erasure(receiverType));
+    }
+    if (clazz == null) {
+      clazz = declaringClass;
     }
     TypeMirror erased = types.erasure(clazz.asType());
     for (TypeElement jdkClass : Arrays.asList(pathElement, fileElement)) {
@@ -252,7 +287,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         continue;
       }
       for (ExecutableElement jdkMethod : ElementFilter.methodsIn(jdkClass.getEnclosedElements())) {
-        if (jdkMethod.getSimpleName() == method.getSimpleName()
+        if (jdkMethod.getSimpleName().equals(method.getSimpleName())
             && elements.overrides(method, jdkMethod, clazz)) {
           return jdkMethod;
         }
@@ -268,11 +303,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * {@code Path.getFileName()} on a {@code @HasName} receiver.
    *
    * @param tree a method invocation
-   * @param method the method that {@code tree} invokes
    * @return true if {@code tree} returns a non-null value because of the path shape of its receiver
    */
-  public boolean returnsNonNullPathComponent(MethodInvocationTree tree, ExecutableElement method) {
-    method = getPathOrFileMethod(method);
+  public boolean returnsNonNullPathComponent(MethodInvocationTree tree) {
+    ExecutableElement method = getPathOrFileMethod(tree);
     PathShape required;
     if (method.equals(pathGetParent)
         || method.equals(fileGetParent)

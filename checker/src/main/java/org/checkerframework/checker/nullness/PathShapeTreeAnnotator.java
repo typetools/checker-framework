@@ -36,7 +36,7 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
     // An override is treated like the method in Path or File that it overrides.
-    ExecutableElement method = factory.getPathOrFileMethod(TreeUtils.elementFromUse(tree));
+    ExecutableElement method = factory.getPathOrFileMethod(tree);
     Element clazz = method.getEnclosingElement();
     if (clazz.equals(factory.pathElement)) {
       visitPathMethod(tree, method, type);

@@ -485,7 +485,7 @@ public class NullnessTransfer
     if (usePathShape
         && nullnessTypeFactory
             .<PathShapeAnnotatedTypeFactory>getTypeFactoryOfSubchecker(PathShapeSubchecker.class)
-            .returnsNonNullPathComponent(tree, method)) {
+            .returnsNonNullPathComponent(tree)) {
       makeNonNull(result, n);
       refineToNonNull(result);
     }

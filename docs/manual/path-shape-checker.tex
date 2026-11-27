@@ -99,6 +99,12 @@ The Nullness Checker refines the result of these methods to \<@NonNull>:
   \<Path.getFileName()>, when the receiver is \<@HasName>.
 \end{itemize}
 
+\noindent
+The receiver's path shape is often inferred.  For example,
+\<Path.toAbsolutePath()> and \<File.getAbsoluteFile()> return a
+\<@HasParent> value when the receiver is \<@HasName>.  Therefore,
+\<p.toAbsolutePath().getParent()> is non-\<null> when \<p> is \<@HasName>.
+
 
 \sectionAndLabel{Limitations}{path-shape-limitations}
 
