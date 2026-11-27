@@ -1,5 +1,7 @@
 package org.checkerframework.checker.index.searchindex;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
@@ -72,7 +74,21 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
         List<String> arrays =
             AnnotationUtils.getElementValueArray(
                 rightSIF, atypeFactory.searchIndexForValueElement, String.class);
-        AnnotationMirror nif = atypeFactory.createNegativeIndexFor(arrays);
+        // The SearchIndexFor annotation describes the arrays as they were when `right` was
+        // evaluated. Omit each array that might change before the comparison completes, as `a` in
+        // `(copy = index) < (a = new int[0]).length`.
+        List<String> unchangedArrays = new ArrayList<>(arrays.size());
+        for (String array : arrays) {
+          AnnotationMirror arrayNif =
+              atypeFactory.createNegativeIndexFor(Collections.singletonList(array));
+          if (!containsExpressionChangedBeforeComparisonCompletes(arrayNif, right)) {
+            unchangedArrays.add(array);
+          }
+        }
+        if (unchangedArrays.isEmpty()) {
+          return;
+        }
+        AnnotationMirror nif = atypeFactory.createNegativeIndexFor(unchangedArrays);
         insertValueForComparedNode(store, right, nif);
       }
     }
