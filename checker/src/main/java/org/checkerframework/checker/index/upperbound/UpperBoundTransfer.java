@@ -531,6 +531,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * <p>Omits an annotation that might not hold when the comparison completes (see {@link
    * #qualifierWhenComparisonCompletes}), and each bound that might not hold when the comparison
    * completes (see {@link #removeBoundsChangedAfter}).
+   *
+   * @param left the left operand of the comparison
+   * @param leftAnno the upper bound annotation of {@code left}
+   * @param right the right operand of the comparison
+   * @param rightAnno the upper bound annotation of {@code right}
+   * @param store the store to refine
    */
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {

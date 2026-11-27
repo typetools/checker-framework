@@ -65,7 +65,10 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
     if (leftValue != null && leftValue == valueToCompareTo) {
       AnnotationMirror rightSIF =
           atypeFactory.getAnnotationMirror(right.getTree(), SearchIndexFor.class);
-      if (rightSIF != null) {
+      // If a sequence named by `rightSIF` might change after `right` is evaluated and before the
+      // comparison completes, then the refinement might not hold for the new sequence.
+      if (rightSIF != null
+          && !containsExpressionChangedBeforeComparisonCompletes(rightSIF, right)) {
         List<String> arrays =
             AnnotationUtils.getElementValueArray(
                 rightSIF, atypeFactory.searchIndexForValueElement, String.class);
