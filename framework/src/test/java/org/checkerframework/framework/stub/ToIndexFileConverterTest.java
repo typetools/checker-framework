@@ -938,6 +938,39 @@ public class ToIndexFileConverterTest {
             "class Use { void m(C.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
 
+    // The stub file declares the supertypes but omits their member types, which their classpath
+    // counterparts declare.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Base {}",
+            "class Middle extends Base {}",
+            "interface I {}",
+            "class C extends Middle implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
+    // The stub file declares Middle but omits its private member type, which its classpath
+    // counterpart declares.  Base and I are on the classpath.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Middle extends Base {}",
+            "class C extends Middle implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
+    // A private member type that the stub file declares hides a member type of a classpath
+    // supertype.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class B extends Base { private static class N {} }",
+            "interface I {}",
+            "class C extends B implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
     // A private member type hides even in the class that declares it.
     jaif =
         convert(
@@ -956,6 +989,24 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
   }
 
+  /**
+   * A package-private member type is not inherited through a class in another package, even if the
+   * class that seeks it is in the member type's package.
+   */
+  @Test
+  public void testPackagePrivateMemberTypeNotInheritedThroughOtherPackage() throws Exception {
+    // q.X is not on the classpath, so only the stub file declares it.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class C extends q.X {}",
+            "class Use { void m(C.N n) {} }",
+            "package q;",
+            "public class X extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle {}");
+    assertNoMethod(
+        jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PackagePrivateMiddle$N;)V");
+  }
+
   /** A name can go through a private member type to the member types that it inherits. */
   @Test
   public void testMemberTypeOfPrivateMemberType() throws Exception {
@@ -965,6 +1016,42 @@ public class ToIndexFileConverterTest {
             "class C implements org.checkerframework.framework.stub.hiding.I {}",
             "class Use { void m(C.N.P.N n) {} }");
     assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
+  }
+
+  /**
+   * A private member type that a supertype declares, in the stub file or in its classpath
+   * counterpart, hides the member types of the same name in the supertypes of that supertype. So a
+   * simple name in a subtype resolves to the member type that an enclosing type declares.
+   */
+  @Test
+  public void testPrivateMemberTypeHidesInheritedMemberTypeFromOuterScope() throws Exception {
+    // The stub file declares the private member type.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Outer {",
+            "  static class N {}",
+            "  static class S extends Base { private static class N {} }",
+            "  static class C extends S {",
+            "    void m(N n) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
+
+    // The classpath counterpart of Middle declares the private member type, which the stub file
+    // omits.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class Base { static class N {} }",
+            "class Middle extends Base {}",
+            "class Outer {",
+            "  static class N {}",
+            "  static class C extends Middle {",
+            "    void m(N n) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "Outer$C", "m(Lorg/checkerframework/framework/stub/hiding/Outer$N;)V");
   }
 
   /**
@@ -1720,6 +1807,134 @@ public class ToIndexFileConverterTest {
             "  void myMethod(Entry e) {}",
             "}");
     assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
+  }
+
+  /**
+   * In a stub file that declares a cyclic inheritance hierarchy, which is not legal Java, a search
+   * for a member type of a classpath counterpart, which the cycle cuts short, does not prevent a
+   * later search from finding that member type. Here, the search for {@code X.Entry} searches
+   * {@code Y}, and that search of {@code Y} is cut short when it reaches {@code X} again, so it
+   * does not find {@code Entry}. The search of {@code X} then finds {@code Entry} in the classpath
+   * counterpart of {@code java.util.Map}. The search for {@code W.Entry} searches {@code Y} again,
+   * and finds {@code Entry} via {@code X}.
+   */
+  @Test
+  public void testCyclicInheritanceCutsShortSearchOfClasspathCounterpart() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "interface Map {}",
+            "package p;",
+            "interface X extends Y, java.util.Map {}",
+            "interface Y extends X {}",
+            "interface W extends Y {}",
+            "class MyClass {",
+            "  void myMethod(X.Entry x, W.Entry w) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A qualified name whose later identifiers the stub file omits is resolved within the classpath
+   * counterpart of the stub file's declaration.
+   */
+  @Test
+  public void testQualifiedNameIsResolvedWithinClasspathCounterpart() throws Exception {
+    // java.util.AbstractMap inherits Entry from java.util.Map.
+    String jaif =
+        convert(
+            "package java.util;",
+            "abstract class AbstractMap {}",
+            "class MyClass {",
+            "  void myMethod(AbstractMap.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type that the stub file omits from the enclosing class is found on the classpath. */
+  @Test
+  public void testOmittedMemberTypeOfEnclosingClass() throws Exception {
+    // java.util.HashMap declares a package-private member type named Node.
+    String jaif =
+        convert("package java.util;", "class HashMap {", "  void myMethod(Node n) {}", "}");
+    assertMethod(jaif, "HashMap", "myMethod(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * A member type that the stub file omits from a supertype that the stub file declares is found on
+   * the classpath.
+   */
+  @Test
+  public void testOmittedMemberTypeOfStubSupertype() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "abstract class AbstractMap {}",
+            "abstract class MyMap extends AbstractMap {",
+            "  void myMethod(SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "MyMap", "myMethod(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * A member type that the stub file omits from a supertype that the stub file declares, but that
+   * the supertype's classpath counterpart declares, is inherited. It hides the member types of the
+   * same name in the supertypes of that supertype.
+   */
+  @Test
+  public void testOmittedMemberTypeOfStubSupertypeHidesInheritedMemberType() throws Exception {
+    // PublicMiddle declares a member type N that hides Base.N.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.hiding;",
+            "class PublicMiddle extends Base {}",
+            "class C extends PublicMiddle {",
+            "  void m(N n) {}",
+            "}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "C", "m(Lorg/checkerframework/framework/stub/hiding/PublicMiddle$N;)V");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PublicMiddle$N;)V");
+
+    // A subclass in another package inherits the public PublicMiddle.N, but not the private
+    // Middle.N.
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.PublicMiddle {}",
+            "class D extends org.checkerframework.framework.stub.hiding.Middle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use {",
+            "  void m(C.N n) {}",
+            "  void m(D.N n) {}",
+            "}",
+            "package org.checkerframework.framework.stub.hiding;",
+            "public class PublicMiddle extends Base {}",
+            "public class Middle extends Base {}");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PublicMiddle$N;)V");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+  }
+
+  /**
+   * A member type that the classpath counterpart of a class declares shadows a member type that the
+   * class inherits from a supertype that the stub file declares.
+   */
+  @Test
+  public void testCounterpartMemberTypeShadowsInheritedStubMemberType() throws Exception {
+    // java.util.HashMap declares a package-private member type named Node.
+    String jaif =
+        convert(
+            "package java.util;",
+            "class MySuper {",
+            "  static class Node {}",
+            "}",
+            "class HashMap extends MySuper {",
+            "  void myMethod(Node n) {}",
+            "}",
+            "class MyClass {",
+            "  void myMethod(HashMap.Node n) {}",
+            "}");
+    assertMethod(jaif, "HashMap", "myMethod(Ljava/util/HashMap$Node;)V");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/HashMap$Node;)V");
   }
 
   /**
