@@ -1,5 +1,7 @@
 package org.checkerframework.framework.stub;
 
+import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
