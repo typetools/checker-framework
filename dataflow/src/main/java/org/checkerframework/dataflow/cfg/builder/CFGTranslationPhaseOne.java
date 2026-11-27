@@ -80,6 +80,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -170,6 +171,7 @@ import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.AssertMethod;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -2362,6 +2364,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private boolean guardBuilt = false;
 
     /**
+     * True if the CFG for a case label that is a record pattern whose matching might have side
+     * effects has been built. Matching a record pattern invokes the record's component accessors,
+     * which might change the value of the selector expression. The CFG does not represent these
+     * invocations, so dataflow analysis does not account for their side effects.
+     */
+    private boolean sideEffectingPatternBuilt = false;
+
+    /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
@@ -2493,6 +2503,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * Integer}, or a type variable whose upper bound is a primitive wrapper class, the unboxing
      * throws it. For any other reference selector that might be null, the assigned expression is a
      * {@link NullChkNode} of the selector expression.
+     *
+     * <p>A {@link NullChkNode} of the selector expression refines the selector expression to
+     * non-null. If matching a record pattern of some case might change the value of the selector
+     * expression (see {@link #recordPatternMayChangeSelector}), then that refinement could be
+     * stale in a case body. In that case, the null check is instead of the synthetic variable,
+     * after the assignment to it. It still throws NullPointerException if the selector is null.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2517,18 +2533,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(selectorVarUseNode);
 
       Node selectorExprNode = scan(selectorExprTree, null);
+      // If true, null-check the synthetic variable after the assignment to it, rather than
+      // null-checking the selector expression.
+      boolean nullCheckSelectorVar = false;
       // A switch without a null label throws NullPointerException when its selector is null.
       if (!selectorExprType.getKind().isPrimitive() && !TreeUtils.hasNullCaseLabel(switchTree)) {
         if (TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(selectorExprType))) {
-          // Unboxing throws the NullPointerException.
+          // Unboxing throws the NullPointerException.  (A record pattern cannot match a boxed
+          // primitive, so no record accessor can make the resulting refinement stale.)
           selectorExprNode = unbox(selectorExprNode, true);
         } else if (mayBeNull(selectorExprNode)) {
-          UnaryTree nullCheckTree = treeBuilder.buildNullCheck(selectorExprTree);
-          handleArtificialTree(nullCheckTree);
-          NullChkNode nullCheckNode = new NullChkNode(nullCheckTree, selectorExprNode);
-          nullCheckNode.setInSource(false);
-          extendWithNodeWithException(nullCheckNode, nullPointerExceptionType);
-          selectorExprNode = nullCheckNode;
+          if (recordPatternMayChangeSelector()) {
+            nullCheckSelectorVar = true;
+          } else {
+            selectorExprNode = buildNullCheck(selectorExprTree, selectorExprNode);
+          }
         }
       }
 
@@ -2538,6 +2557,96 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
       extendWithNode(selectorExprAssignment);
+
+      if (nullCheckSelectorVar) {
+        IdentifierTree selectorVarUseTree2 = treeBuilder.buildVariableUse(selectorVarTree);
+        handleArtificialTree(selectorVarUseTree2);
+        LocalVariableNode selectorVarUseNode2 = new LocalVariableNode(selectorVarUseTree2);
+        selectorVarUseNode2.setInSource(false);
+        extendWithNode(selectorVarUseNode2);
+        buildNullCheck(selectorVarUseTree2, selectorVarUseNode2);
+      }
+    }
+
+    /**
+     * Extends the CFG with a {@link NullChkNode}, which throws NullPointerException if its operand
+     * is null.
+     *
+     * @param operandTree the tree for the operand of the null check
+     * @param operandNode the node for the operand of the null check
+     * @return the null check node
+     */
+    private NullChkNode buildNullCheck(ExpressionTree operandTree, Node operandNode) {
+      UnaryTree nullCheckTree = treeBuilder.buildNullCheck(operandTree);
+      handleArtificialTree(nullCheckTree);
+      NullChkNode nullCheckNode = new NullChkNode(nullCheckTree, operandNode);
+      nullCheckNode.setInSource(false);
+      extendWithNodeWithException(nullCheckNode, nullPointerExceptionType);
+      return nullCheckNode;
+    }
+
+    /**
+     * Returns true if matching a record pattern in a case label of {@link #switchTree} might change
+     * the value of the selector expression. That is the case if the selector expression can be
+     * assigned by other code and some record component accessor that the matching invokes might
+     * have side effects.
+     *
+     * @return true if matching a record pattern might change the value of the selector expression
+     */
+    private boolean recordPatternMayChangeSelector() {
+      if (!JavaExpression.fromTree(selectorExprTree).isAssignableByOtherCode()) {
+        return false;
+      }
+      for (CaseTree caseTree : caseTrees) {
+        if (labelsMayHaveSideEffect(caseTree)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Returns true if matching the labels of the given case might have side effects, by invoking a
+     * record component accessor that might have side effects.
+     *
+     * @param caseTree a case tree
+     * @return true if matching the labels of {@code caseTree} might have side effects
+     */
+    private boolean labelsMayHaveSideEffect(CaseTree caseTree) {
+      for (Tree label : CaseUtils.getLabels(caseTree)) {
+        if (patternMayHaveSideEffect(label)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Returns true if matching the given case label might have side effects, by invoking a record
+     * component accessor that might have side effects. Examines nested patterns.
+     *
+     * @param label a case label, such as a pattern or a constant
+     * @return true if matching {@code label} might have side effects
+     */
+    private boolean patternMayHaveSideEffect(Tree label) {
+      if (!TreeUtils.isDeconstructionPatternTree(label)) {
+        return false;
+      }
+      TypeElement recordElement = TypesUtils.getTypeElement(TreeUtils.typeOf(label));
+      if (recordElement == null) {
+        return true;
+      }
+      for (RecordComponentElement component : recordElement.getRecordComponents()) {
+        if (!annotationProvider.isSideEffectFree(component.getAccessor())) {
+          return true;
+        }
+      }
+      for (Tree nested : DeconstructionPatternUtils.getNestedPatterns(label)) {
+        if (patternMayHaveSideEffect(nested)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /**
@@ -2592,10 +2701,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
+        // Matching the labels, which precedes the CaseNode, might invoke record accessors.
+        if (labelsMayHaveSideEffect(caseTree)) {
+          sideEffectingPatternBuilt = true;
+        }
+
         if (!isLastCaseOfExhaustive) {
           extendWithNode(
               new CaseNode(
-                  caseTree, selectorExprAssignment, exprs, guardBuilt, env.getTypeUtils()));
+                  caseTree,
+                  selectorExprAssignment,
+                  exprs,
+                  guardBuilt || sideEffectingPatternBuilt,
+                  env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);

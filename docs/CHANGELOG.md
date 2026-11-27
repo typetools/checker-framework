@@ -43,7 +43,8 @@ qualifiers at boxing or unboxing should override those methods rather than
 `getBoxedType()` and `getUnboxedType()`.
 
 New method `CaseNode.selectorExprMayHaveChanged()` returns true if a guard of an
-earlier case might have changed the value of the switch selector expression.
+earlier case, or a record component accessor invoked by matching a record
+pattern, might have changed the value of the switch selector expression.
 If so, `CFAbstractTransfer.visitCase()` does not refine a selector expression
 that other code can assign, such as a non-final field.  New method
 `CFAbstractTransfer.canRefineSelectorExpression()` implements this test.
