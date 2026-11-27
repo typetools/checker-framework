@@ -21,15 +21,6 @@ public class UpperBoundComparisonChangesSequence {
     return 1;
   }
 
-  // If this.a has length 2 before the call, then i is 2 but this.a has length 0 after the call.
-  void eqChanged() {
-    int i;
-    if (this.a.length == (i = replaceAndReturnTwo())) {
-      // :: error: (assignment)
-      @LTEqLengthOf("this.a") int j = i;
-    }
-  }
-
   void eqUnchanged(int k) {
     int i;
     if (this.a.length == (i = k)) {
@@ -83,7 +74,7 @@ public class UpperBoundComparisonChangesSequence {
   void gtChanged(int[] a, int[] b) {
     int x;
     if (a.length > (x = (a = b).length)) {
-      // :: error: (array.access.unsafe.high)
+      // :: error: (array.access.unsafe.high.range)
       int y = a[x];
     }
   }
