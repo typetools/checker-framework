@@ -92,8 +92,8 @@ public class CFGConstruction {
   }
 
   /**
-   * Checks that the given blocks together rethrow exactly IOException, RuntimeException, and
-   * Error, each to a different catch block.
+   * Checks that the given blocks together rethrow exactly IOException, RuntimeException, and Error,
+   * each to a different catch block.
    *
    * @param copyEnds the blocks that end the exceptional copies of a finally block
    */
