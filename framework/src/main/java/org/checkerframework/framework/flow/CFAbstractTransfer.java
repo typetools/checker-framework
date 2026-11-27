@@ -1083,7 +1083,7 @@ public abstract class CFAbstractTransfer<
    * enclosing expressions that is evaluated after {@code node} and before the comparison completes,
    * such as the right operand of the comparison if {@code node} is in its left operand; and, if
    * {@code node} is a unary or binary operation, the code in {@code node} itself, such as the call
-   * to {@code obj.toString()} in {@code prefix + obj}. For example:
+   * to {@code f()} in {@code i + f()}. For example:
    *
    * <ul>
    *   <li>The result for {@code n = n.next} is just {@code n}, because after the assignment {@code
@@ -1300,9 +1300,8 @@ public abstract class CFAbstractTransfer<
         if (locationsWrittenUntilComparison == null) {
           locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
           // If `node` is a unary or binary operation, it is the only candidate, and it might write
-          // a location after reading it, as in `prefix + obj` where `obj.toString()` writes
-          // `prefix`. Scanning all of `node` also includes writes that precede the reads, which
-          // is conservative.
+          // a location after reading it, as in `i + f()` where `f()` writes `i`. Scanning all of
+          // `node` also includes writes that precede the reads, which is conservative.
           Tree tree = node.getTree();
           if (!(node instanceof AssignmentNode)
               && (tree instanceof BinaryTree || tree instanceof UnaryTree)) {
