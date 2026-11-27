@@ -1,0 +1,5 @@
+LambdaPurityRequiredBy.java:38:37: compiler.err.proc.messager: [purity.call] call to side-effecting LambdaPurityRequiredBy::impure not allowed in side-effect-free method (required by SefFunc.doNothing)
+LambdaPurityRequiredBy.java:39:37: compiler.err.proc.messager: [purity.call] call to non-deterministic side-effecting LambdaPurityRequiredBy::impure not allowed in deterministic side-effect-free method (required by PureFunc.doNothing, SefFunc.doNothing)
+LambdaPurityRequiredBy.java:40:51: compiler.err.proc.messager: [purity.call] call to side-effecting LambdaPurityRequiredBy::impure not allowed in side-effect-free method (required by SefFunc.doNothing)
+LambdaPurityRequiredBy.java:45:5: compiler.err.proc.messager: [purity.assign.field] field assignment not allowed in side-effect-free method
+4 errors

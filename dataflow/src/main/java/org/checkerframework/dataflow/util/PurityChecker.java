@@ -702,7 +702,8 @@ public final class PurityChecker {
      * <p>The body's effects occur where the lambda's functional method is invoked, and that
      * invocation is checked like any other method call. Therefore, do not scan the body. The body
      * is checked elsewhere, against the purity annotations on the functional method that the lambda
-     * implements; see {@code BaseTypeVisitor#checkLambdaPurity}.
+     * implements and on the other methods through which a call can run the lambda; see {@code
+     * BaseTypeVisitor#checkLambdaPurity}.
      *
      * @param tree a lambda expression
      * @param ignore an unused parameter

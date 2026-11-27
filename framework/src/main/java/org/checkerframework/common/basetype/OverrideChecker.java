@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -228,6 +230,13 @@ public class OverrideChecker {
    */
   public boolean checkOverride() {
     if (visitor.checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+      // Skip the qualifier checks against the overridden method.  Still check a method
+      // reference's purity, which `-AskipUses` does not affect, as it does not affect a lambda's
+      // purity check.  The method reference might implement methods of other types as well, such
+      // as other bounds of an intersection type.
+      if (isMethodReference) {
+        checkMethodReferencePurity();
+      }
       return true;
     }
 
@@ -247,14 +256,24 @@ public class OverrideChecker {
   }
 
   /**
-   * Checks that the referenced method is at least as pure as the functional interface method that
-   * the method reference implements.
+   * Checks that the referenced method is at least as pure as each method through which a call can
+   * run it: the functional interface method that the method reference implements, and the other
+   * methods that {@link BaseTypeVisitor#methodsThatRun} returns.
+   *
+   * <p>Reports an error for each of those methods that requires a purity kind that the referenced
+   * method lacks, except a method whose missing kinds are among those of another reported method.
+   * Thus, the errors together name every missing kind, and no error is redundant.
+   *
+   * <p>Like the purity check of a lambda body, this check is performed even if a method's declaring
+   * type is in {@code -AskipUses}. That option suppresses checks of uses of a type, but the purity
+   * of the code that implements a method is not a use of the type that declares the method.
    *
    * <p>Only a method reference needs this check. A method that overrides another one inherits its
    * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
    *
-   * <p>Under {@code -Ainfer}, reports no error. {@link BaseTypeVisitor#inferMethodReferencePurity}
-   * instead uses the method reference to infer the purity of the functional interface method.
+   * <p>Under {@code -Ainfer}, reports no error. Instead, {@link
+   * BaseTypeVisitor#inferMethodReferencePurity} uses the method reference to infer the purity of
+   * the same methods.
    */
   private void checkMethodReferencePurity() {
     // Do not report errors while inferring.  The purity annotations on the functional interface
@@ -263,22 +282,54 @@ public class OverrideChecker {
     if (!visitor.checkPurityAnnotations || visitor.infer) {
       return;
     }
-    EnumSet<PurityKind> superPurity =
-        PurityUtils.getPurityKinds(visitor.atypeFactory, overridden.getElement());
     // Apply the command-line assumptions to the referenced method, so that a method reference is
     // treated like a lambda whose body calls the referenced method.  Like such a call, a
     // side-effect-free referenced method that returns void is deterministic.
     EnumSet<PurityKind> subPurity = visitor.implementationPurityKinds(overrider.getElement());
-    if (!subPurity.containsAll(superPurity)) {
+    // The methods to report, each paired with the purity kinds that it requires and the
+    // referenced method lacks.  No element's kinds are a subset of another element's kinds.
+    Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();
+    for (ExecutableElement declaration :
+        visitor.methodsThatRun(overriderTree, overridden.getElement())) {
+      EnumSet<PurityKind> missing = PurityUtils.getPurityKinds(visitor.atypeFactory, declaration);
+      missing.removeAll(subPurity);
+      if (missing.isEmpty()
+          || toReport.values().stream().anyMatch(kinds -> kinds.containsAll(missing))) {
+        continue;
+      }
+      toReport.values().removeIf(missing::containsAll);
+      toReport.put(declaration, missing);
+    }
+
+    for (ExecutableElement declaration : toReport.keySet()) {
+      TypeElement declaringType = (TypeElement) declaration.getEnclosingElement();
+      // The type that the error message says declares `declaration`.
+      AnnotatedTypeMirror declarationOwnerType;
+      AnnotatedExecutableType declarationType;
+      if (types.isSubtype(
+          types.erasure(overriddenType.getUnderlyingType()),
+          types.erasure(declaringType.asType()))) {
+        declarationOwnerType = overriddenType;
+        declarationType =
+            declaration.equals(overridden.getElement())
+                ? overridden
+                : AnnotatedTypes.asMemberOf(
+                    types, visitor.atypeFactory, overriddenType, declaration);
+      } else {
+        // The declaration is in the hierarchy of another bound of an intersection target.
+        declarationOwnerType = visitor.atypeFactory.getAnnotatedType(declaringType);
+        declarationType = visitor.atypeFactory.getAnnotatedType(declaration);
+      }
       visitor.checker.reportError(
           overriderTree,
           "purity.methodref",
           overriderType,
           BaseTypeVisitor.purityKindsToString(subPurity),
           overrider,
-          overriddenType,
-          BaseTypeVisitor.purityKindsToString(superPurity),
-          overridden);
+          declarationOwnerType,
+          BaseTypeVisitor.purityKindsToString(
+              PurityUtils.getPurityKinds(visitor.atypeFactory, declaration)),
+          declarationType);
     }
   }
 
