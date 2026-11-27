@@ -1,0 +1,18 @@
+package ajavatestarchive;
+
+import org.checkerframework.framework.testchecker.util.Odd;
+
+public class AjavaArchive {
+  void use(@Odd String p) {
+    Object o =
+        new Object() {
+          @Odd String id(@Odd String s) {
+            return s;
+          }
+
+          void check() {
+            @Odd String x = id(p);
+          }
+        };
+  }
+}

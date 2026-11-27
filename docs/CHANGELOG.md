@@ -7,7 +7,19 @@
 
 ### User-visible changes
 
+An archive, or a directory that cannot be listed, within a directory that is
+named in the `-Astubs` or `-Aajava` command-line option is ignored, with a
+note.  Within a directory or archive,
+hidden files and directories (whose names start with `.`), such as the
+`._Foo.astub` files that macOS creates, are ignored.
+
+The `-Astubs` and `-Aajava` command-line options accept a `.zip` archive as
+well as a `.jar` archive.
+
 ### Changes for type system implementers
+
+`AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
+`AnnotationFileResource` rather than a path.
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
@@ -39,6 +51,10 @@ returns true if a tree is a constant expression.
 new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
 inner class of a visitor can pass the visitor, as in
 `super(MyVisitor.this, overriderTree, ...)`.
+
+Removed `SystemUtil.isWhitespaceOnly()` and `SystemUtil.readCodePoint()`.
+Removed `AnnotationFileUtil.allAnnotationFiles()`; use
+`AnnotationFileUtil.forEachAnnotationFile()` instead.
 
 Deprecated methods:
 

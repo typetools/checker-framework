@@ -1,18 +1,26 @@
 package org.checkerframework.framework.stub;
 
+import static org.checkerframework.framework.stub.AnnotationFileTestUtil.write;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.annotation.processing.Processor;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -58,6 +66,25 @@ public class AnnotationFileElementTypesTest {
   }
 
   /**
+   * Compiles a trivial class with the Value Checker and the given {@code -Astubs} command-line
+   * option, and returns the compiler's diagnostics.
+   *
+   * @param stubs the argument to the {@code -Astubs} command-line option
+   * @param extraClasspath a directory to prepend to the classpath from which the checker is loaded,
+   *     so that the checker finds the annotation files in it
+   * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
+   *     "WARNING: Ignoring Foo.stub: ..."
+   * @throws IOException if the source file cannot be written or the compiler cannot be run
+   */
+  private List<String> diagnostics(String stubs, File extraClasspath) throws IOException {
+    try (URLClassLoader checkerLoader =
+        new URLClassLoader(
+            checkerClasspath(extraClasspath), ClassLoader.getPlatformClassLoader())) {
+      return diagnostics(CHECKER, checkerLoader, "-Astubs=" + stubs);
+    }
+  }
+
+  /**
    * Compiles a trivial class named {@code Test} with the given checker and command-line options,
    * and returns the compiler's diagnostics.
    *
@@ -69,6 +96,7 @@ public class AnnotationFileElementTypesTest {
    * @return the diagnostics, each formatted as its kind, a colon, and its message, such as
    *     "WARNING: Ignoring Foo.stub: ..."
    * @throws IOException if the source file cannot be written or the compiler cannot be run
+   * @throws AssertionError if the compilation fails
    */
   private List<String> diagnostics(
       String checker, @Nullable ClassLoader checkerLoader, String... checkerOptions)
@@ -91,6 +119,7 @@ public class AnnotationFileElementTypesTest {
             System.getProperty("java.class.path")));
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
+    boolean success;
     try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
       Iterable<? extends JavaFileObject> javaFiles = fileManager.getJavaFileObjects(sourceFile);
       JavaCompiler.CompilationTask task =
@@ -102,7 +131,7 @@ public class AnnotationFileElementTypesTest {
             (Processor) checkerLoader.loadClass(checker).getDeclaredConstructor().newInstance();
         task.setProcessors(Collections.singletonList(processor));
       }
-      task.call();
+      success = task.call();
     } catch (UncheckedIOException e) {
       throw e.getCause();
     } catch (ReflectiveOperationException e) {
@@ -112,7 +141,29 @@ public class AnnotationFileElementTypesTest {
     for (Diagnostic<? extends JavaFileObject> diagnostic : collector.getDiagnostics()) {
       result.add(diagnostic.getKind() + ": " + diagnostic.getMessage(Locale.ROOT));
     }
+    // No test expects the compilation to fail, so a failure indicates a problem that the expected
+    // diagnostics might otherwise mask.
+    Assert.assertTrue("Compilation failed; diagnostics: " + result, success);
     return result;
+  }
+
+  /**
+   * Returns the given directory followed by this JVM's classpath. A class loader whose classpath is
+   * this, and that does not delegate to the application class loader, loads classes that find
+   * resources in {@code extraClasspath}.
+   *
+   * @param extraClasspath a directory
+   * @return the URLs of {@code extraClasspath} and of the entries of this JVM's classpath
+   * @throws IOException if a classpath entry cannot be converted to a URL
+   */
+  private static URL[] checkerClasspath(File extraClasspath) throws IOException {
+    List<URL> urls = new ArrayList<>();
+    urls.add(extraClasspath.toURI().toURL());
+    for (String entry :
+        SystemUtil.pathSeparatorSplitter.split(System.getProperty("java.class.path"))) {
+      urls.add(new File(entry).toURI().toURL());
+    }
+    return urls.toArray(new URL[0]);
   }
 
   /**
@@ -131,24 +182,7 @@ public class AnnotationFileElementTypesTest {
      * @throws IOException if a classpath entry cannot be converted to a URL
      */
     CloseFailingClassLoader(File extraClasspath) throws IOException {
-      super(classpath(extraClasspath), ClassLoader.getPlatformClassLoader());
-    }
-
-    /**
-     * Returns the given directory followed by this JVM's classpath.
-     *
-     * @param extraClasspath a directory
-     * @return the URLs of {@code extraClasspath} and of the entries of this JVM's classpath
-     * @throws IOException if a classpath entry cannot be converted to a URL
-     */
-    private static URL[] classpath(File extraClasspath) throws IOException {
-      List<URL> urls = new ArrayList<>();
-      urls.add(extraClasspath.toURI().toURL());
-      for (String entry :
-          SystemUtil.pathSeparatorSplitter.split(System.getProperty("java.class.path"))) {
-        urls.add(new File(entry).toURI().toURL());
-      }
-      return urls.toArray(new URL[0]);
+      super(checkerClasspath(extraClasspath), ClassLoader.getPlatformClassLoader());
     }
 
     @Override
@@ -165,6 +199,21 @@ public class AnnotationFileElementTypesTest {
         }
       };
     }
+  }
+
+  /**
+   * Asserts that one of the given diagnostics starts with the given text.
+   *
+   * @param prefix the expected start of a diagnostic, such as "WARNING: Ignoring"
+   * @param diagnostics the diagnostics that the compiler issued
+   */
+  private static void assertHasDiagnostic(String prefix, List<String> diagnostics) {
+    for (String diagnostic : diagnostics) {
+      if (diagnostic.startsWith(prefix)) {
+        return;
+      }
+    }
+    Assert.fail("No diagnostic starts with \"" + prefix + "\"; diagnostics: " + diagnostics);
   }
 
   /**
@@ -188,12 +237,112 @@ public class AnnotationFileElementTypesTest {
     Assert.assertTrue(matching.get(0), matching.get(0).startsWith("WARNING: "));
   }
 
+  /** Tests that an archive within a named directory yields a note. */
+  @Test
+  public void archiveInDirectory() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File jar = new File(dir, "lib.jar");
+    try (OutputStream os = Files.newOutputStream(jar.toPath());
+        ZipOutputStream zos = new ZipOutputStream(os)) {
+      zos.putNextEntry(new ZipEntry("A.astub"));
+      zos.closeEntry();
+    }
+    assertHasDiagnostic("NOTE: Not reading archive " + jar, diagnostics(dir.getPath()));
+  }
+
+  /**
+   * Tests that a compound checker, each of whose checkers searches the named directory, yields one
+   * note about an archive within the directory.
+   */
+  @Test
+  public void archiveInDirectoryCompoundChecker() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File jar = new File(dir, "lib.jar");
+    try (OutputStream os = Files.newOutputStream(jar.toPath());
+        ZipOutputStream zos = new ZipOutputStream(os)) {
+      zos.putNextEntry(new ZipEntry("A.astub"));
+      zos.closeEntry();
+    }
+    List<String> diagnostics =
+        diagnostics(
+            "org.checkerframework.framework.testchecker.compound.CompoundChecker",
+            null,
+            "-Astubs=" + dir.getPath());
+    int count = 0;
+    for (String diagnostic : diagnostics) {
+      if (diagnostic.startsWith("NOTE: Not reading archive " + jar)) {
+        count++;
+      }
+    }
+    Assert.assertEquals(diagnostics.toString(), 1, count);
+  }
+
+  /** Tests that a named directory that cannot be listed yields a warning. */
+  @Test
+  public void unlistableDirectory() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    write(new File(dir, "A.astub"), "package p;");
+    // Making a directory unreadable has no effect for the root user.
+    Assume.assumeTrue(dir.setReadable(false));
+    try {
+      Assume.assumeTrue(dir.listFiles() == null);
+      assertOneWarning(
+          "Could not read annotation resource: " + dir.getPath() + ": ",
+          diagnostics(dir.getPath()));
+    } finally {
+      dir.setReadable(true);
+    }
+  }
+
+  /**
+   * Tests that a directory that cannot be listed, within a named directory, yields a note rather
+   * than a warning.
+   */
+  @Test
+  public void unlistableDirectoryInDirectory() throws IOException {
+    File dir = tmp.newFolder("stubdir");
+    File sub = new File(dir, "sub");
+    write(new File(sub, "A.astub"), "package p;");
+    // Making a directory unreadable has no effect for the root user.
+    Assume.assumeTrue(sub.setReadable(false));
+    try {
+      Assume.assumeTrue(sub.listFiles() == null);
+      List<String> diagnostics = diagnostics(dir.getPath());
+      assertHasDiagnostic("NOTE: Not reading directory " + sub, diagnostics);
+      for (String diagnostic : diagnostics) {
+        Assert.assertFalse(diagnostic, diagnostic.startsWith("WARNING: Could not read"));
+      }
+    } finally {
+      sub.setReadable(true);
+    }
+  }
+
   /** Tests that a named archive that cannot be opened yields one warning. */
   @Test
   public void corruptArchive() throws IOException {
     File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
     assertOneWarning(
         "Could not read annotation resource: " + jar.getPath() + ": ", diagnostics(jar.getPath()));
+  }
+
+  /**
+   * Tests that a named ajava archive that cannot be opened yields a warning, and that nothing is
+   * printed to standard error.
+   */
+  @Test
+  public void corruptAjavaArchive() throws IOException {
+    File zip = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "ajava.zip"), "not a zip file");
+    ByteArrayOutputStream err = new ByteArrayOutputStream();
+    PrintStream originalErr = System.err;
+    List<String> diagnostics;
+    System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
+    try {
+      diagnostics = diagnostics(CHECKER, null, "-Aajava=" + zip.getPath());
+    } finally {
+      System.setErr(originalErr);
+    }
+    assertOneWarning("Could not read annotation resource: " + zip.getPath() + ": ", diagnostics);
+    Assert.assertEquals("", err.toString(StandardCharsets.UTF_8));
   }
 
   /**
@@ -209,6 +358,54 @@ public class AnnotationFileElementTypesTest {
             "org.checkerframework.framework.testchecker.compound.CompoundChecker",
             null,
             "-Astubs=" + jar.getPath()));
+  }
+
+  /** The contents of an annotation file that starts with more than 100 whitespace characters. */
+  private static final String PADDED_STUB = " ".repeat(150) + "package p; class NoSuchClass {}";
+
+  /**
+   * Tests that an annotation file in the file system that starts with much whitespace is parsed,
+   * not skipped as if it were empty.
+   */
+  @Test
+  public void leadingWhitespaceInFile() throws IOException {
+    File stub = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Padded.astub"), PADDED_STUB);
+    assertHasDiagnostic("WARNING: " + stub.getAbsolutePath() + ":", diagnostics(stub.getPath()));
+  }
+
+  /**
+   * Tests that an annotation file in a jar archive that starts with much whitespace is parsed, not
+   * skipped as if it were empty.
+   */
+  @Test
+  public void leadingWhitespaceInArchive() throws IOException {
+    File jar =
+        AnnotationFileTestUtil.writeJar(
+            new File(tmp.getRoot(), "stubs.jar"), "Padded.astub", PADDED_STUB);
+    assertHasDiagnostic("WARNING: " + jar.getPath() + "!Padded.astub:", diagnostics(jar.getPath()));
+  }
+
+  /** Tests that a classpath annotation file that starts with much whitespace is parsed. */
+  @Test
+  public void leadingWhitespaceOnClasspath() throws IOException {
+    File classpathDir = tmp.newFolder();
+    AnnotationFileTestUtil.write(new File(classpathDir, "Padded.astub"), PADDED_STUB);
+    assertHasDiagnostic(
+        "WARNING: /Padded.astub:", diagnostics("checker.jar/Padded.astub", classpathDir));
+  }
+
+  /** Tests that a classpath annotation file that cannot be read yields a warning. */
+  @Test
+  public void unreadableFileOnClasspath() throws IOException {
+    File classpathDir = tmp.newFolder();
+    File stub =
+        AnnotationFileTestUtil.write(new File(classpathDir, "Unreadable.astub"), "package p;");
+    Assume.assumeTrue(stub.setReadable(false));
+    // Making a file unreadable has no effect for the root user.
+    Assume.assumeFalse(Files.isReadable(stub.toPath()));
+    assertOneWarning(
+        "Could not read annotation resource: /Unreadable.astub: ",
+        diagnostics("checker.jar/Unreadable.astub", classpathDir));
   }
 
   /**
