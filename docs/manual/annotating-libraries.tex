@@ -1138,6 +1138,12 @@ directory whose path matches the package name of the elements it annotates,
 but the Checker Framework does not require that layout.)
 The path separator is colon on Unix and semicolon on Windows.
 
+An annotation that the checker treats as an alias of one of its own
+qualifiers, when the alias's meaning does not depend on its element values,
+is used even if the alias is not on the classpath.  An example is
+\<@org.jetbrains.annotations.NotNull>, which the Nullness Checker treats as
+\<@NonNull>.
+
 For example:
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker \

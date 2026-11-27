@@ -328,7 +328,7 @@ public class AnnotationFileElementTypes {
       for (String path : intellijAnnotationPaths) {
         File location = AnnotationFileUtil.findFileSystemLocation(path);
         if (location == null) {
-          checker.message(
+          checker.messageOnce(
               Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
           continue;
         }
@@ -343,19 +343,26 @@ public class AnnotationFileElementTypes {
               numResources[0]++;
               parseIntellijAnnotationResource(resource);
             },
-            archive ->
-                checker.message(
+            skipped ->
+                checker.messageOnce(
                     Diagnostic.Kind.NOTE,
-                    "Not reading archive "
-                        + archive
-                        + ", which is within directory "
-                        + path
-                        + "; to read it, name the archive itself"));
+                    skipped.isDirectory()
+                        ? "Not reading directory "
+                            + skipped
+                            + ", which is within directory "
+                            + path
+                            + ", because it cannot be listed"
+                        : "Not reading archive "
+                            + skipped
+                            + ", which is within directory "
+                            + path
+                            + "; to read it, name the archive itself"));
         if (numResources[0] == 0) {
           // The path exists but contains no annotations.xml file, so the user gets no
           // annotations from it.  That is most likely a mistake, so warn rather than issuing a
           // note, which javac does not display by default.
-          checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
+          checker.messageOnce(
+              Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
         }
       }
     } finally {
@@ -380,7 +387,7 @@ public class AnnotationFileElementTypes {
     } catch (IOException e) {
       factory
           .getChecker()
-          .message(
+          .messageOnce(
               Diagnostic.Kind.ERROR,
               "Could not read IntelliJ IDEA annotations: " + resource.getDescription() + ": " + e);
     }

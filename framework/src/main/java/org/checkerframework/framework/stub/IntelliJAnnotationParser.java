@@ -268,15 +268,18 @@ public final class IntelliJAnnotationParser {
       }
       annoName = annoName.trim();
 
+      // The annotation might be an alias that is identified by name, such as
+      // org.jetbrains.annotations.NotNull.  Its canonical annotation does not depend on the alias's
+      // element values, so the alias is used whatever its element values are, and whether or not
+      // the alias is on the classpath.
+      AnnotationMirror aliasCanonical = atypeFactory.canonicalAnnotationForAliasName(annoName);
+      if (aliasCanonical != null) {
+        result.add(aliasCanonical);
+        continue;
+      }
       TypeElement annoTypeElt = getTypeElement(annoName, elements);
       if (annoTypeElt == null) {
-        // The annotation may be an alias that is not on the classpath, such as
-        // org.jetbrains.annotations.NotNull.  An alias that is identified by name does not depend
-        // on the alias's element values, so it can be resolved without the alias's class.
-        AnnotationMirror aliasCanonical = atypeFactory.canonicalAnnotationForAliasName(annoName);
-        if (aliasCanonical != null) {
-          result.add(aliasCanonical);
-        } else if (isUnknownToCompoundChecker(annoName, atypeFactory)) {
+        if (isUnknownToCompoundChecker(annoName, atypeFactory)) {
           warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
         }
         continue;
