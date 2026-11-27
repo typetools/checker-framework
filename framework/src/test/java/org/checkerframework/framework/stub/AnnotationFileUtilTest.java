@@ -22,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for {@link AnnotationFileUtil#forEachAnnotationFile}. */
+/** Tests for {@link AnnotationFileUtil}. */
 public class AnnotationFileUtilTest {
 
   /** A temporary directory, deleted after each test. */
