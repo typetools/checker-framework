@@ -1142,6 +1142,12 @@ The Checker Framework reads only marker annotations, which have no element
 values.  It ignores an annotation that has element values, such as
 \<@Contract(pure = true)>, and warns if the annotation is one that the
 checker supports.
+The exception is an annotation that the checker treats as an alias of one
+of its own qualifiers, when the alias's meaning does not depend on its
+element values.  An example is
+\<@org.jetbrains.annotations.NotNull("reason")>, which the Nullness Checker
+treats as \<@NonNull>.  The Checker Framework uses such an alias, whatever
+its element values are, and even if the alias is not on the classpath.
 
 For example:
 \begin{Verbatim}

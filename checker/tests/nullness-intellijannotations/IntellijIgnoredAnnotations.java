@@ -18,4 +18,9 @@ public class IntellijIgnoredAnnotations {
   int getPropertyLength() {
     return System.getProperty("user.dir").length();
   }
+
+  // The item for System.getenv has an alias with an element value, which is used.
+  int getenvLength() {
+    return System.getenv("HOME").length();
+  }
 }

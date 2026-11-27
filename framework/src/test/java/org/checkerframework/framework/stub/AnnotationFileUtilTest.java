@@ -315,7 +315,7 @@ public class AnnotationFileUtilTest {
 
   /**
    * Tests that an IntelliJ IDEA annotation file named explicitly is used, whatever its name, and
-   * that a directory contributes only the files in it named {@code annotations.xml}.
+   * that a directory or archive contributes only the files in it named {@code annotations.xml}.
    */
   @Test
   public void intellijAnnotationsFiles() throws IOException {
@@ -337,9 +337,13 @@ public class AnnotationFileUtilTest {
         writeZip(
             new File(tmp.getRoot(), "annotations.zip"),
             "java/lang/annotations.xml",
-            "java/lang/other.xml");
+            "java/lang/other.xml",
+            "java/util/annotations.xml",
+            "pom.xml");
     Assert.assertEquals(
-        Arrays.asList(zip.getPath() + "!java/lang/annotations.xml"),
+        Arrays.asList(
+            zip.getPath() + "!java/lang/annotations.xml",
+            zip.getPath() + "!java/util/annotations.xml"),
         descriptions(zip, AnnotationFileType.INTELLIJ_ANNOTATIONS));
   }
 

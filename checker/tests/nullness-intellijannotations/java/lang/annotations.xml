@@ -15,4 +15,11 @@
     </annotation>
     <annotation name="org.jetbrains.annotations.NotNull" />
   </item>
+  <!-- The Nullness Checker treats @NotNull as an alias of @NonNull whatever its element values
+       are, so it uses this annotation even though the annotation has an element value. -->
+  <item name="java.lang.System java.lang.String getenv(java.lang.String)">
+    <annotation name="org.jetbrains.annotations.NotNull">
+      <val val="&quot;HOME is always set&quot;" />
+    </annotation>
+  </item>
 </root>
