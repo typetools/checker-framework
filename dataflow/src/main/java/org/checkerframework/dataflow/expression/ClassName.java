@@ -23,11 +23,44 @@ public class ClassName extends JavaExpression {
    */
   public ClassName(TypeMirror type) {
     super(type);
-    String typeString = type.toString();
-    if (typeString.endsWith(">")) {
-      typeString = typeString.substring(0, typeString.indexOf('<'));
+    this.typeString = withoutTypeArguments(type.toString());
+  }
+
+  /**
+   * Returns the given printed type, without its type arguments. For example, returns {@code
+   * java.util.HashMap.KeySet} for {@code java.util.HashMap<K,V>.KeySet}.
+   *
+   * @param typeString a printed type
+   * @return the printed type without its type arguments
+   */
+  private static String withoutTypeArguments(String typeString) {
+    if (typeString.indexOf('<') == -1) {
+      return typeString;
     }
-    this.typeString = typeString;
+    StringBuilder result = new StringBuilder(typeString.length());
+    int depth = 0;
+    for (int i = 0; i < typeString.length(); i++) {
+      char c = typeString.charAt(i);
+      if (c == '<') {
+        depth++;
+      } else if (c == '>') {
+        depth--;
+      } else if (depth == 0) {
+        result.append(c);
+      }
+    }
+    return result.toString();
+  }
+
+  /**
+   * Returns the printed form of the raw type of this, such as {@code java.util.List}. Unlike {@link
+   * #toString}, the result does not end with {@code .class}; it is the form that a static field
+   * access or static method invocation uses.
+   *
+   * @return the printed form of the raw type of this
+   */
+  public String getTypeString() {
+    return typeString;
   }
 
   @Override
