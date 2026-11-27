@@ -33,6 +33,25 @@ public class SwitchCaseInterning {
     }
   }
 
+  // In a `case null` case, the selector is the null reference, which is interned.
+  void stringCaseNull(String s) {
+    switch (s) {
+      case null -> {
+        @Interned String x = s;
+      }
+      default -> {}
+    }
+  }
+
+  void boxedCaseNullInterned(Integer i) {
+    switch (i) {
+      case null -> {
+        @Interned Integer x = i;
+      }
+      default -> {}
+    }
+  }
+
   boolean string(String s, @Interned String other) {
     switch (s) {
       case "a" -> {
