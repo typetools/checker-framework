@@ -337,7 +337,8 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if the type of {@code member} contains a path shape qualifier
    */
   private boolean memberHasPathShapeContract(@Nullable TypeMirror receiverType, Element member) {
-    if (containsPathShapeQualifier(fromElement(member))) {
+    // Unlike fromElement, getAnnotatedType applies defaults, such as those from @DefaultQualifier.
+    if (containsPathShapeQualifier(getAnnotatedType(member))) {
       return true;
     }
     if (receiverType == null || ElementUtils.isStatic(member)) {
@@ -470,7 +471,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (result == null) {
       result = false;
       for (TypeParameterElement typeParam : clazz.getTypeParameters()) {
-        if (containsPathShapeQualifier(fromElement(typeParam))) {
+        if (containsPathShapeQualifier(getAnnotatedType(typeParam))) {
           result = true;
           break;
         }

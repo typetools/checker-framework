@@ -18,8 +18,8 @@ class PathShapeReceiverEdgeCasesQualifiedSuper extends PathShapeReceiverEdgeCase
 
 // A member access through a receiver whose type has a wildcard type argument.
 class PathShapeReceiverEdgeCasesWildcard {
-  Object m(List<?> xs) {
-    return xs.get(0);
+  void m(List<?> xs) {
+    xs.get(0);
   }
 
   Object m2(List<? extends Number> xs) {
