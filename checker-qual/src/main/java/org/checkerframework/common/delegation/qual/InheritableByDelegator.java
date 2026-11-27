@@ -56,15 +56,13 @@ import java.lang.annotation.Target;
  * because the inherited implementation of {@code size()} would read the delegator's own, empty,
  * {@code elements} field.
  *
- * <p>The Delegation Checker verifies each method that is annotated with {@code
- * InheritableByDelegator}: the method's body uses its receiver only as the receiver of calls to
- * methods that are overridable or are themselves annotated with {@code InheritableByDelegator}.
+ * <p>The method's body should use its receiver only as the receiver of calls to methods that are
+ * overridable or are themselves annotated with {@code InheritableByDelegator}. The Delegation
+ * Checker does not yet verify this property; it trusts the annotation.
  *
  * <p>A delegator need not override a method that is abstract, final, or static, a default method of
  * an interface (which cannot read instance fields), or a method of {@code Object} (which has no
  * fields). Those methods need not be annotated with {@code InheritableByDelegator}.
- *
- * @checker_framework.manual #delegation-checker Delegation Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

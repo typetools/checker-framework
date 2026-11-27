@@ -36,8 +36,6 @@ import java.lang.annotation.Target;
  * In the example above, {@code MyEnumeration.hasMoreElements()} delegates a call to {@code
  * e.hasMoreElements()}, and {@code MyEnumeration.nextElement()} delegates a call to {@code
  * e.nextElement()}.
- *
- * @checker_framework.manual #delegation-checker Delegation Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
