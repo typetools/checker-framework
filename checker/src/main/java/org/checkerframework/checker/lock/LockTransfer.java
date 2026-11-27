@@ -184,7 +184,8 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
    * @param elseStore the else store after {@code n}
    * @return true if both stores record that the value of {@code n} is @LockHeld
    */
-  private boolean isHeldAfterCall(MethodInvocationNode n, LockStore thenStore, LockStore elseStore) {
+  private boolean isHeldAfterCall(
+      MethodInvocationNode n, LockStore thenStore, LockStore elseStore) {
     CFValue thenValue = thenStore.getValue(n);
     if (thenValue == null || !thenStore.hasLockHeld(thenValue)) {
       return false;
