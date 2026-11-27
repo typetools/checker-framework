@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.Tree;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -121,6 +122,11 @@ public class IteratedCollectionElement extends JavaExpression {
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other);
+  }
+
+  @Override
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    return reference.containsModifiableAliasOf(store, other);
   }
 
   @Override
