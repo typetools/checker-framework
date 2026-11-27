@@ -1303,7 +1303,8 @@ public class InferenceFactory {
     // IgnoredAnnotations#ignoredPositionsStayIgnored).
     //
     // TODO: The annotations of the other type are lost, though.  For example, the greatest lower
-    // bound of `Child<A>` and `Parent<@Nullable String>`, where `Child<T> extends Parent<T>` and the
+    // bound of `Child<A>` and `Parent<@Nullable String>`, where `Child<T> extends Parent<T>` and
+    // the
     // instantiation of A ignores annotations, should have `@Nullable String` as its type argument,
     // but it has the instantiation's.  Fixing this requires matching the positions of the two types
     // in their common supertype (`Parent`) and mapping each back to the corresponding position of
