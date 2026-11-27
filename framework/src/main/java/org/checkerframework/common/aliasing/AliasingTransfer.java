@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -84,16 +85,15 @@ public class AliasingTransfer extends CFTransfer {
    * the store cannot represent it; {@link #visitAssignment} discards that value.
    */
   @Override
-  protected void processCommonAssignment(
+  protected @Nullable CFValue processCommonAssignment(
       TransferInput<CFValue, CFStore> in, Node lhs, Node rhs, CFStore store, CFValue rhsValue) {
     if (isFreshUnique(rhs)) {
-      super.processCommonAssignment(in, lhs, rhs, store, rhsValue);
-      return;
+      return super.processCommonAssignment(in, lhs, rhs, store, rhsValue);
     }
     store.updateForAssignment(lhs, null);
-    // updateForAssignment(lhs, null) does not remove the value of a local variable LHS.
     store.clearValue(JavaExpression.fromNode(lhs));
     store.clearValue(JavaExpression.fromNode(rhs));
+    return null;
   }
 
   /**
