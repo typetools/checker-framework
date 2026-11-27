@@ -2231,8 +2231,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * classpath counterpart of a stub declaration is the class on the classpath that has the same
    * binary name. A stub file often omits some of that class's members.
    *
-   * <p>This method does not consider the member types that the stub file declares, which {@link
-   * #memberTypeDeclaration} finds.
+   * <p>This method does not return a member type that the stub file declares, which {@link
+   * #memberTypeDeclaration} finds, but such a member type hides the member types of the same name
+   * in the supertypes of the type that declares it.
    *
    * @param declaration a type declaration in a stub file
    * @param identifier the simple name of a member type
@@ -2313,13 +2314,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     try {
+      // A member type that `declaration` declares, in the stub file or in its classpath
+      // counterpart, hides every member type of the same name in the supertypes of `declaration`,
+      // even if it is not inherited.
+      if (memberTypeDeclaration(declaration, identifier) != null) {
+        return null;
+      }
       @SuppressWarnings("signature") // a binary name is a valid argument to Class.forName
       @ClassGetName String counterpartName = qualifiedStubBinaryName(declaration);
       Class<?> counterpart = loadClass(counterpartName);
-      Class<?> result =
-          memberClass(counterpart, identifier, packageName, inherited, new HashSet<>());
+      // When its `inherited` argument is false, memberClass returns a member type that
+      // `counterpart` declares even if it is inaccessible, because such a member type hides the
+      // member types of the same name in the supertypes of `counterpart`.  Every member type that
+      // memberClass finds in a supertype is accessible, so the check below can reject only a
+      // member type that `counterpart` declares.
+      Class<?> result = memberClass(counterpart, identifier, packageName, false, new HashSet<>());
       if (result != null) {
-        return result;
+        return (!inherited || isAccessible(result, packageName, null)) ? result : null;
       }
       // A supertype's member type is inherited by `declaration` only if it is accessible from
       // `declaration`, as in memberClass.
