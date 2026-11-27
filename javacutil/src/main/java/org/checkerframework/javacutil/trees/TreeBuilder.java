@@ -122,6 +122,17 @@ public class TreeBuilder {
           "return type %s of %s is not an Iterator", iteratorReturnType, iteratorMethod);
     }
     DeclaredType iteratorType = (DeclaredType) iteratorSuper;
+    if (iteratorType.getTypeArguments().isEmpty()) {
+      // iterator() might return a raw Iterator, even if the iterable expression's type is a
+      // subtype of Iterable<X>, because an overriding method may return a raw type.  JLS 14.14.2
+      // says that the iterator has type Iterator<X> in that case, too.
+      Type iterableSuper = javacTypes.asSuper((Type) exprType, symtab.iterableType.tsym);
+      if (iterableSuper != null && !iterableSuper.getTypeArguments().isEmpty()) {
+        iteratorType =
+            modelTypes.getDeclaredType(
+                (TypeElement) symtab.iteratorType.tsym, iterableSuper.getTypeArguments().get(0));
+      }
+    }
 
     int numIterTypeArgs = iteratorType.getTypeArguments().size();
     assert numIterTypeArgs <= 1 : "expected at most one type argument for Iterator";

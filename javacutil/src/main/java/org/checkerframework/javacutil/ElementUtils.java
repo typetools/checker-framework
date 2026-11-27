@@ -1149,9 +1149,9 @@ public final class ElementUtils {
     // arguments, and inferring them would require a path to the call, which does not exist.
     // The sort is stable, so it otherwise keeps javac's order.
     inOrder.sort(Comparator.comparing((MethodSymbol m) -> !m.getTypeParameters().isEmpty()));
-    List<Type> returnTypes = new ArrayList<>(inOrder.size());
+    List<Type> methodTypes = new ArrayList<>(inOrder.size());
     for (MethodSymbol method : inOrder) {
-      returnTypes.add(javacTypes.memberType(capturedSite, method).getReturnType());
+      methodTypes.add(javacTypes.memberType(capturedSite, method));
     }
     // Like javac, first look for a return type that is a subtype of every other return type.  If
     // there is none, then also permit unchecked conversion, as return-type-substitutability does
@@ -1159,12 +1159,21 @@ public final class ElementUtils {
     for (boolean strict : new boolean[] {true, false}) {
       candidateLoop:
       for (int i = 0; i < inOrder.size(); i++) {
-        Type returnI = returnTypes.get(i);
+        Type methodTypeI = methodTypes.get(i);
+        Type returnI = methodTypeI.getReturnType();
         for (int j = 0; j < inOrder.size(); j++) {
           if (i == j) {
             continue;
           }
-          Type returnJ = returnTypes.get(j);
+          // As javac does, express the return type of method j in terms of the type parameters of
+          // method i, so that the return types of `<T> T value()` and `<U> U value()` are the same.
+          // For a method that is not generic, getTypeArguments() is empty, so this has no effect.
+          Type methodTypeJ = methodTypes.get(j);
+          Type returnJ =
+              javacTypes.subst(
+                  methodTypeJ.getReturnType(),
+                  methodTypeJ.getTypeArguments(),
+                  methodTypeI.getTypeArguments());
           boolean isSubtype =
               strict
                   ? javacTypes.isSubtype(returnI, returnJ)

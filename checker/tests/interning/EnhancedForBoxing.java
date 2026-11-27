@@ -31,6 +31,13 @@ public class EnhancedForBoxing {
     }
   }
 
+  void boxArrayLiteral() {
+    for (Integer x : new int[] {1000}) {
+      // :: error: [assignment]
+      @Interned Integer y = x;
+    }
+  }
+
   void primitiveArray(int[] array) {
     for (int x : array) {
       @Interned int y = x;
@@ -41,6 +48,12 @@ public class EnhancedForBoxing {
   }
 
   // Unboxing an element yields an interned primitive.
+  void unboxArray(Integer[] ints) {
+    for (int x : ints) {
+      @Interned int y = x;
+    }
+  }
+
   void unboxList(List<Integer> list) {
     for (int x : list) {
       @Interned int y = x;

@@ -79,6 +79,26 @@ public class EnhancedForConversion {
     for (String s : strings) {}
   }
 
+  // RawOddIntegers.iterator() returns a raw type, but JLS 14.14.2 says that the loop's iterator
+  // has type Iterator<@Odd Integer>, so the loop unboxes the result of next().
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  abstract static class RawOddIntegers implements Iterable<@Odd Integer> {
+    @Override
+    public abstract Iterator iterator();
+  }
+
+  void unboxRawIterator(RawOddIntegers odds) {
+    for (int x : odds) {
+      @Odd int y = x;
+    }
+  }
+
+  void unboxAndWidenRawIterator(RawOddIntegers odds) {
+    for (long x : odds) {
+      @Odd long y = x;
+    }
+  }
+
   void unboxArray(@Odd Integer[] array) {
     for (int x : array) {
       @Odd int y = x;
