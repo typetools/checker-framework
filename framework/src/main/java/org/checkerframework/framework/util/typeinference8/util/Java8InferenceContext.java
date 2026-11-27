@@ -323,9 +323,9 @@ public class Java8InferenceContext {
    *
    * @param type1 an annotated type
    * @param type2 an annotated type
-   * @param visitedWildcards the wildcards of {@code type1} that have been visited. The type
+   * @param visitedWildcards the wildcards of {@code type1} on the current recursion path. The type
    *     argument of a raw type can be a wildcard that is reachable from its own bound, so stopping
-   *     at a visited wildcard ensures termination.
+   *     at a wildcard that is already on the path ensures termination.
    * @return true if each pair of corresponding enclosing types are mutual subtypes
    */
   private boolean enclosingTypesAreMutualSubtypes(
@@ -369,12 +369,18 @@ public class Java8InferenceContext {
         if (visitedWildcards.put(type1, Boolean.TRUE) != null) {
           return true;
         }
-        AnnotatedWildcardType wt1 = (AnnotatedWildcardType) type1;
-        AnnotatedWildcardType wt2 = (AnnotatedWildcardType) type2;
-        return enclosingTypesAreMutualSubtypes(
-                wt1.getExtendsBound(), wt2.getExtendsBound(), visitedWildcards)
-            && enclosingTypesAreMutualSubtypes(
-                wt1.getSuperBound(), wt2.getSuperBound(), visitedWildcards);
+        try {
+          AnnotatedWildcardType wt1 = (AnnotatedWildcardType) type1;
+          AnnotatedWildcardType wt2 = (AnnotatedWildcardType) type2;
+          return enclosingTypesAreMutualSubtypes(
+                  wt1.getExtendsBound(), wt2.getExtendsBound(), visitedWildcards)
+              && enclosingTypesAreMutualSubtypes(
+                  wt1.getSuperBound(), wt2.getSuperBound(), visitedWildcards);
+        } finally {
+          // Only the wildcards on the current recursion path are marked, so a wildcard that
+          // appears at several positions of `type1` is compared at each of them.
+          visitedWildcards.remove(type1);
+        }
       }
       case INTERSECTION -> {
         List<AnnotatedTypeMirror> bounds1 = ((AnnotatedIntersectionType) type1).getBounds();

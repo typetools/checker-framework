@@ -162,6 +162,13 @@ final class IgnoredAnnotations {
    * of the component types, by calling {@link #replaceIgnoredForSubtype} on them; that call finds
    * the supertype of the component type of {@code sub}.
    *
+   * <p>If array components are invariant (the {@code -AinvariantArrays} command-line option), then
+   * the type hierarchy compares the component types for equality rather than for subtyping. Then
+   * this method replaces their ignored annotations as {@link #replaceIgnoredForEquality} does,
+   * after finding the supertype of the component type of {@code sub}, so that an ignored annotation
+   * is replaced by the corresponding annotation of the other component type rather than by bottom
+   * or top.
+   *
    * @param sub a potential subtype, which is an up-to-date array type (see {@link #upToDate})
    * @param sup the potential supertype, which is an up-to-date array type
    * @param qh the qualifier hierarchy
@@ -178,7 +185,16 @@ final class IgnoredAnnotations {
     if (subComponent == null || supComponent == null) {
       return null;
     }
-    ReplacedTypes components = replaceIgnoredForSubtype(subComponent, supComponent, qh, types);
+    ReplacedTypes components;
+    if (sub.typeFactory.getChecker().hasOption("invariantArrays")) {
+      // DefaultTypeHierarchy compares invariant components for equality.  Bottom or top would
+      // not equal the other component's annotation, so copy that annotation instead.
+      AbstractType subComponentAsSuper =
+          asSuper(upToDate(subComponent), upToDate(supComponent).getJavaType(), types);
+      components = replaceIgnoredForEquality(subComponentAsSuper, supComponent, qh);
+    } else {
+      components = replaceIgnoredForSubtype(subComponent, supComponent, qh, types);
+    }
     AnnotatedArrayType subATM = (AnnotatedArrayType) sub.getAnnotatedType().shallowCopy();
     AnnotatedArrayType supATM = (AnnotatedArrayType) sup.getAnnotatedType().shallowCopy();
     subATM.setComponentType(components.type1());
