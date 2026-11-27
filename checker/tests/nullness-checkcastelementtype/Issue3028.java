@@ -78,7 +78,13 @@ public class Issue3028 {
 
   @SuppressWarnings("unchecked")
   <T extends Issue3028> T castToTypeVariable(Object o) {
+    // The run-time check verifies Issue3028, not the subtype of Issue3028 that T stands for.
+    // :: warning: [cast.unsafe]
     return (T) o;
+  }
+
+  <T extends Issue3028> T castTypeVariableToItself(T t) {
+    return (T) t;
   }
 
   void intersectionCast(Object o) {
@@ -164,6 +170,18 @@ public class Issue3028 {
     ArrayList<?> list = (ArrayList<?>) rawList;
     // :: warning: [cast.unsafe]
     ArrayList<? extends @NonNull Object> list2 = (ArrayList<? extends @NonNull Object>) rawList;
+  }
+
+  @SuppressWarnings("rawtypes")
+  static class Legacy extends ArrayList {}
+
+  // javac 17 treats a cast to `? extends Object` from a non-Object type as unchecked.
+  @SuppressWarnings("unchecked")
+  void rawSupertypeUpcastToWildcard(Legacy legacy) {
+    List<?> list = (List<?>) legacy;
+    // The supertype List of Legacy is raw, so it determines no type arguments.
+    // :: warning: [cast.unsafe]
+    List<? extends @NonNull Object> list2 = (List<? extends @NonNull Object>) legacy;
   }
 
   void primitiveCasts(long l, Integer i) {
@@ -312,5 +330,46 @@ public class Issue3028 {
     B<?> b = (B<?>) a;
     // :: warning: [cast.unsafe]
     B<? extends @NonNull String> b2 = (B<? extends @NonNull String>) a;
+  }
+
+  void unsafeArraySidecast(A<@Nullable String>[] a) {
+    // :: warning: [cast.unsafe]
+    B<@NonNull String>[] b = (B<@NonNull String>[]) a;
+  }
+
+  void safeArraySidecast(A<@NonNull String>[] a) {
+    B<@NonNull String>[] b = (B<@NonNull String>[]) a;
+  }
+
+  interface Fixed extends Iterable<@NonNull String> {}
+
+  void unsafeSidecastToNonGeneric(A<? extends @Nullable CharSequence> a) {
+    // Javac verifies that the Iterable type argument is String, but not that it is non-null.
+    // :: warning: [cast.unsafe]
+    Fixed f = (Fixed) a;
+  }
+
+  void safeSidecastToNonGeneric(A<@NonNull String> a) {
+    Fixed f = (Fixed) a;
+  }
+
+  interface Shared<T> {}
+
+  interface SharedNullable extends Shared<@Nullable String> {}
+
+  interface OverwritesQualifier<T> extends Shared<@Nullable T> {}
+
+  void sidecastThroughOverwrittenQualifier(SharedNullable s) {
+    // Shared<@Nullable T> does not determine the qualifier of T.
+    // :: warning: [cast.unsafe]
+    OverwritesQualifier<@NonNull String> o = (OverwritesQualifier<@NonNull String>) s;
+  }
+
+  interface SharedNonNull extends Shared<@NonNull String> {}
+
+  interface PreservesQualifier<T> extends Shared<T> {}
+
+  void sidecastThroughPreservedQualifier(SharedNonNull s) {
+    PreservesQualifier<@NonNull String> p = (PreservesQualifier<@NonNull String>) s;
   }
 }
