@@ -720,6 +720,24 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the non-wildcard parameterization (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>) of
+   * {@code type}, or {@code type} itself if it has no wildcard type argument. javac uses this
+   * parameterization of each bound of an intersection type when it determines the function type of
+   * a lambda expression or a method reference whose target is that intersection type.
+   *
+   * @param type a class or interface type
+   * @param env the processing environment
+   * @return the non-wildcard parameterization of {@code type}
+   */
+  public static DeclaredType nonWildcardParameterization(
+      DeclaredType type, ProcessingEnvironment env) {
+    Context ctx = ((JavacProcessingEnvironment) env).getContext();
+    com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+    return (DeclaredType) javacTypes.removeWildcards((Type) type);
+  }
+
+  /**
    * Returns true if the given type is a compound type.
    *
    * @param type a type
