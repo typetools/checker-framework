@@ -202,10 +202,10 @@ parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  The requirement is the same for every
 functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
-type is a functional interface is checked:  the method can assume nothing about an
-argument to a parameter whose type is a type variable (unless the type
-variable's upper bound is a functional interface), nor about the elements of a
-varargs array.  How the argument is checked depends on its form.
+type is a functional interface, or a type variable whose upper bound is one,
+is checked:  the method can assume nothing about an argument to a parameter
+whose type is a type variable with no functional-interface upper bound, nor
+about the elements of a varargs array.  How the argument is checked depends on its form.
 Parentheses around the argument are ignored, and so is a cast of a lambda, a
 method reference, a conditional expression, or a switch expression, because
 such a cast does not change the code that the argument denotes.

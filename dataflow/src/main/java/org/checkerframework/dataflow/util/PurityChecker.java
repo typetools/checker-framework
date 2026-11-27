@@ -274,8 +274,9 @@ public final class PurityChecker {
    * declaration does not guarantee; see {@link #guaranteedFunctionalArgumentPurity}. An overridden
    * declaration with no purity annotation guarantees only what the functional method of its
    * parameter promises. One whose parameter at {@code index} is not a functional interface, such as
-   * an unbounded type variable, guarantees only what the implementation of the functional method in
-   * its parameter type, as a member of {@code method}'s class, promises.
+   * a type variable whose upper bound is not a functional interface, guarantees only what the
+   * implementation of the functional method in its parameter type, as a member of {@code method}'s
+   * class, promises.
    *
    * <p>A class can also implement an interface method with a method that it inherits, and a method
    * reference implements a functional method; neither is an override. {@code BaseTypeVisitor}
@@ -427,10 +428,11 @@ public final class PurityChecker {
    * receiver type supplies. Every argument has that type, so its implementation of {@code
    * parameterFunction} has the purity that the type's implementation promises. A call checks its
    * arguments against {@code declaration}'s purity annotation only if the declared type of the
-   * parameter is a functional interface, however. The call checks the argument's implementation of
-   * that type's functional method, which is also its implementation of {@code parameterFunction} if
-   * every object of type {@code parameterType} implements the two methods with the same method (see
-   * {@link #isSameImplementation}), even if not every object of the declared type does.
+   * parameter is a functional interface (or a type variable whose upper bound is one), however. The
+   * call checks the argument's implementation of that type's functional method, which is also its
+   * implementation of {@code parameterFunction} if every object of type {@code parameterType}
+   * implements the two methods with the same method (see {@link #isSameImplementation}), even if
+   * not every object of the declared type does.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method that a call might invoke
@@ -597,9 +599,13 @@ public final class PurityChecker {
    * implements with the same method; see {@link #isSameImplementation}. For example, in {@code
    * interface Both extends Getter, SefGetter}, every implementation of {@code Getter.get} also
    * implements {@code SefGetter.get}, so it has the purity that {@code SefGetter.get}'s annotations
-   * promise, even if {@code Getter.get} has no purity annotation. The code that implements both
-   * methods, whether a lambda, a method reference, or a method of a class, is checked against every
-   * method that it implements.
+   * promise, even if {@code Getter.get} has no purity annotation. This trusts {@code
+   * SefGetter.get}'s annotations exactly as a call through {@code SefGetter.get} does, since every
+   * object of type {@code Both} is a {@code SefGetter}. A lambda or a method reference is checked
+   * against every method that it implements, and so is a method that a class declares. A concrete
+   * method that a class inherits from a superclass is not re-checked against an interface that the
+   * class implements; that gap is not specific to this method, as it equally affects every call
+   * through {@code SefGetter.get}.
    *
    * @param type a type, such as the type of an argument or of a formal parameter
    * @param paramFunction a functional interface's functional method, such as {@code Function.apply}
@@ -674,9 +680,11 @@ public final class PurityChecker {
    * declaration of that class or interface, in terms of its own type parameters: every class whose
    * objects have type {@code type} is a subtype of that declaration, and sees the two methods as a
    * substitution instance of how the declaration sees them. If {@code type} is an intersection
-   * type, a class that implements every bound need not be a subtype of any one declaration; then
-   * the two methods must also have the same erased parameter types, because no class can declare
-   * two methods with the same name and erasure (JLS 8.4.8.3).
+   * type, it suffices that one bound's declaration has both methods as override-equivalent members.
+   * Otherwise, the methods come from different bounds, and a class that implements every bound need
+   * not be a subtype of any one declaration; then the two methods must also have the same erased
+   * parameter types, because no class can declare two methods with the same name and erasure (JLS
+   * 8.4.8.3).
    *
    * @param function a method of {@code type}, such as its functional method
    * @param other another method
@@ -700,27 +708,72 @@ public final class PurityChecker {
       type = TypesUtils.upperBound(type);
     }
     Types types = env.getTypeUtils();
-    List<? extends TypeMirror> bounds;
     if (type.getKind() == TypeKind.DECLARED) {
-      TypeElement typeElement = TypesUtils.getTypeElement(type);
-      if (typeElement == null) {
-        return false;
-      }
-      // The type of the declaration, in terms of its own type parameters.
-      bounds = Collections.singletonList(typeElement.asType());
+      return isSameImplementationInDeclaration(function, other, type, types);
     } else if (type.getKind() == TypeKind.INTERSECTION) {
+      List<? extends TypeMirror> bounds = ((IntersectionType) type).getBounds();
+      // A single bound might have both methods as members, as `Fixed` in `Fixed & Serializable`
+      // where `interface Fixed extends A<String>, B`.  Every object of the intersection type is
+      // an object of that bound, so the bound's guarantee suffices, whatever the erasures.
+      for (TypeMirror bound : bounds) {
+        if (bound.getKind() == TypeKind.DECLARED
+            && isSameImplementationInDeclaration(function, other, bound, types)) {
+          return true;
+        }
+      }
+      // The methods come from separate bounds.
       if (!haveSameErasedParameterTypes(function, other, types)) {
         return false;
       }
       // An object of an intersection type has every bound's methods, as members of one type.
-      bounds = ((IntersectionType) type).getBounds();
+      return isSubsignatureOfEither(bounds, function, other, types);
     } else {
       return false;
     }
+  }
+
+  /**
+   * Returns true if every object of the declared type {@code type} implements {@code function} and
+   * {@code other} with the same method, because the two methods are override-equivalent as members
+   * of the generic declaration of {@code type}. See {@link #isSameImplementation}.
+   *
+   * @param function a method
+   * @param other another method
+   * @param type a declared type
+   * @param types the type utilities
+   * @return true if the two methods are override-equivalent in the declaration of {@code type}
+   */
+  private static boolean isSameImplementationInDeclaration(
+      ExecutableElement function, ExecutableElement other, TypeMirror type, Types types) {
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) {
+      return false;
+    }
+    // The type of the declaration, in terms of its own type parameters.
+    return isSubsignatureOfEither(
+        Collections.singletonList(typeElement.asType()), function, other, types);
+  }
+
+  /**
+   * Returns true if the type of one method is a subsignature of the type of the other, where each
+   * method's type is its type as a member of the first of {@code bounds} that has it as a member.
+   * Returns false if no bound has one of the methods as a member.
+   *
+   * @param bounds the bounds of an intersection type, or a singleton list of a type
+   * @param function a method
+   * @param other another method
+   * @param types the type utilities
+   * @return true if the two methods are override-equivalent as members of {@code bounds}
+   */
+  private static boolean isSubsignatureOfEither(
+      List<? extends TypeMirror> bounds,
+      ExecutableElement function,
+      ExecutableElement other,
+      Types types) {
     ExecutableType functionType = memberType(bounds, function, types);
     ExecutableType otherType = memberType(bounds, other, types);
     if (functionType == null || otherType == null) {
-      // One of the methods is not a member of `type`.
+      // One of the methods is not a member of any of `bounds`.
       return false;
     }
     return types.isSubsignature(functionType, otherType)

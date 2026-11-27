@@ -1709,9 +1709,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * makes, because {@link #checkLambdaPurity} and {@link
    * OverrideChecker#checkMethodReferencePurity} check that.
    *
-   * <p>Only a parameter whose declared type is a functional interface is checked. No implementation
-   * of {@code callee} can assume anything about an argument to any other parameter, such as one
-   * whose type is a type variable or a varargs array; see {@link
+   * <p>Only a parameter whose declared type is a functional interface, or a type variable whose
+   * upper bound is one, is checked. No implementation of {@code callee} can assume anything about
+   * an argument to any other parameter, such as one whose type is a type variable with no
+   * functional-interface upper bound or a varargs array; see {@link
    * PurityChecker#functionalParameterPurity}.
    *
    * @param callee the invoked method or constructor
@@ -2015,11 +2016,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * code, and no use of {@code parameter} in that body relies on the assumption: the body uses
    * {@code parameter} only as an operand of a binary operator such as {@code ==}, as the
    * destination or the value of an assignment, as the value of a variable initializer or of a
-   * return statement, or as the receiver of a call to a method other than {@code
-   * parameterFunction} and its overrides, such as {@code hashCode}. The call runs {@code method}'s own body if it is not dispatched
-   * virtually, as for a method reference {@code super::m}, or if {@code method} cannot be
-   * overridden. Otherwise the result is true, because the body of an override that the checker does
-   * not see might rely on the assumption.
+   * return statement, or as the receiver of a call to a method other than {@code parameterFunction}
+   * and its overrides, such as {@code hashCode}. The call runs {@code method}'s own body if it is
+   * not dispatched virtually, as for a method reference {@code super::m}, or if {@code method}
+   * cannot be overridden. Otherwise the result is true, because the body of an override that the
+   * checker does not see might rely on the assumption.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
