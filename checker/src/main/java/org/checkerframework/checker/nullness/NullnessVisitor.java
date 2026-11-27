@@ -6,6 +6,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -62,6 +63,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The visitor for the nullness type system. */
@@ -414,6 +416,15 @@ public class NullnessVisitor
   public Void visitIf(IfTree tree, Void p) {
     checkForNullability(tree.getCondition(), CONDITION_NULLABLE);
     return super.visitIf(tree, p);
+  }
+
+  @Override
+  public Void visitCase(CaseTree tree, Void p) {
+    ExpressionTree guard = CaseUtils.getGuard(tree);
+    if (guard != null) {
+      checkForNullability(guard, CONDITION_NULLABLE);
+    }
+    return super.visitCase(tree, p);
   }
 
   @Override
