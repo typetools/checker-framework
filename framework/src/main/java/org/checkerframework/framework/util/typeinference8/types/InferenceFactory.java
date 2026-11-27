@@ -1525,9 +1525,11 @@ public class InferenceFactory {
   /**
    * Returns {@code typeArgs}, in which every use of a variable in {@code variables} has been
    * replaced by the corresponding element of {@code typeArgs}, and every use of a variable in
-   * {@code instantiated} has been replaced by its instantiation. An instantiation might contain
-   * another variable that is being resolved at the same time, so the instantiations are not final
-   * until this substitution has been performed.
+   * {@code instantiated} has been replaced by its instantiation. An element of {@code typeArgs}
+   * might contain another variable that is being resolved at the same time, so the elements of
+   * {@code typeArgs} are not final until this substitution has been performed. The instantiation of
+   * a variable in {@code instantiated} is a proper type, so it contains no variable in {@code
+   * variables} (none of which has an instantiation yet), and it needs no substitution.
    *
    * <p>A use of a variable in {@code variables} is replaced by the element of {@code typeArgs}
    * itself, not a copy, so that recursive bounds share the fresh type variables. Each use of a

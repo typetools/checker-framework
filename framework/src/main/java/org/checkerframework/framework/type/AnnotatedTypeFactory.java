@@ -1737,15 +1737,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // type that was not yet known, or from a different inference problem whose outermost tree is
       // the same (see DefaultTypeArgumentInference).  Both the element's type and the type of its
       // declaration are cached, and fromMember consults the latter before reading lambdaParamTypes.
-      elementCache.remove(param);
-      Tree paramDecl = declarationFromElement(param);
-      if (paramDecl != null) {
-        fromMemberTreeCache.remove(paramDecl);
-      }
+      //
       // The type of an expression in the lambda body, such as a use of `param` or a method
-      // invocation whose receiver is `param`, may have been cached by such a request too.  Which
-      // cached expressions depend on `param` is not recorded, so discard them all.
+      // invocation whose receiver is `param`, may have been cached by such a request too.  So may
+      // the type of a declaration in the lambda body whose type depends on `param`, such as `var
+      // alias = param;` (see TypeFromMemberVisitor) or a nested lambda's implicitly typed
+      // parameter.  Which cached types depend on `param` is not recorded, so discard every cached
+      // type of an expression or of a declaration.  Only a local variable or a parameter can
+      // depend on `param`, so other entries of elementCache, which outlives the compilation unit,
+      // are kept.
       fromExpressionTreeCache.clear();
+      fromMemberTreeCache.clear();
+      elementCache
+          .keySet()
+          .removeIf(
+              elt ->
+                  ElementUtils.isLocalVariable(elt)
+                      || elt.getKind() == ElementKind.PARAMETER
+                      || elt.getKind() == ElementKind.BINDING_VARIABLE);
     }
   }
 
