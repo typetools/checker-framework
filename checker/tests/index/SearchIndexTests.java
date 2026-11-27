@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import org.checkerframework.checker.index.qual.*;
+import org.checkerframework.common.value.qual.IntVal;
 
 public class SearchIndexTests {
   public void test(short[] a, short instant) {
