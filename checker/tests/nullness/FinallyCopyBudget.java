@@ -3,7 +3,9 @@
 // CFGTranslationPhaseOne.EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET.  The exceptions that reach such a
 // finally block share one exceptional copy of it, which must rethrow each of them to the place
 // that it goes:  here, a different catch block for each of IOException, RuntimeException, and
-// Error.
+// Error.  This test checks that each catch block is reachable; method
+// finallyCopyAfterBudgetIsUsedUp in dataflow/tests/cfgconstruction/Test.java checks that the
+// exceptional copy is shared.
 //
 // The nested finally blocks at the beginning of the method use up the budget.  If the budget is
 // increased, deepen their nesting so that they still use it up.
