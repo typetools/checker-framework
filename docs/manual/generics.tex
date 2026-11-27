@@ -896,18 +896,28 @@ However, it does make sense to write a single polymorphic qualifier
 \begin{Verbatim}
   void m2a(List<@PolyNull MySubClass> elements)
 \end{Verbatim}
-which is similar to
+Method \<m2a()> can be called with both \code{List<@Nullable MySubClass>}
+and \code{List<@NonNull MySubClass>}, because each call instantiates
+\<@PolyNull> to the element qualifier of the argument.  By contrast, a
+parameter of type \code{List<@Nullable MySubClass>} accepts only the first
+of those lists, and a parameter of type \code{List<@NonNull MySubClass>}
+accepts only the second.
+
+Compare \<m2a()> to
 \begin{Verbatim}
   void m2b(List<? extends @Nullable MySubClass> elements)
 \end{Verbatim}
-Both methods can be called with \code{List<@Nullable MySubClass>} and
-\code{List<@NonNull MySubClass>}.  Each call to \<m2a()> instantiates
-\<@PolyNull> to the element qualifier.  The two signatures differ when the
-element class itself changes.  If \<MySubSubClass> is a proper subtype of
-\<MySubClass>, then \<m2b()> can be called with \code{List<@Nullable
-  MySubSubClass>}.  The \<extends> wildcard admits this list, while the
-invariant type argument of \<m2a()> requires \<MySubClass> for either
-qualifier instantiation, so that list is not a legal argument to \<m2a()>.
+which also accepts both lists.  The two methods differ in what their bodies
+can do.  In the body of \<m2a()>, every element of the list has type
+\<@PolyNull MySubClass>, so the body can store into the list an element
+that it read from the list, as in \code{elements.add(elements.get(0))}.  The
+body of \<m2b()> cannot, because the element type of its list is an unknown
+subtype of \<@Nullable MySubClass>.  The two methods also differ in which
+calls type-check.  If \<MySubSubClass> is a proper subtype of
+\<MySubClass>, then \<m2b()> can be called with an argument of type
+\code{List<@Nullable MySubSubClass>} or \code{List<? extends @NonNull
+  MySubClass>}, but \<m2a()> cannot, because the type argument of its
+parameter is exactly \<MySubClass>.
 
 
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
