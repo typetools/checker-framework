@@ -25,8 +25,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -763,7 +766,7 @@ public class NullnessTransfer
                 return true;
               }
               for (ExecutableElement iteratorMethod : iteratorMethods) {
-                TypeMirror iteratorType = iteratorMethod.getReturnType();
+                TypeMirror iteratorType = returnTypeAsMemberOf(iterableType, iteratorMethod);
                 if (mayHaveSideEffect(iteratorMethod)
                     || noArgMethodMayHaveSideEffect(iteratorType, "hasNext", iteratorHasNext)
                     || noArgMethodMayHaveSideEffect(iteratorType, "next", iteratorNext)) {
@@ -880,6 +883,34 @@ public class NullnessTransfer
               }
             }
             return false;
+          }
+
+          /*
+           * Returns the return type of the given method, viewed as a member of the given type.
+           * Substitutes the type arguments of {@code type}, so that, for example, the return type
+           * {@code I} of {@code Items<I>.iterator()} is {@code PureIterator} for a receiver of
+           * type {@code Items<PureIterator>}.  For a type variable, uses its upper bound.  Returns
+           * the declared return type if the substitution is not possible.
+           *
+           * @param type the static type of the receiver
+           * @param method a method that is a member of {@code type}
+           * @return the return type of {@code method} as a member of {@code type}
+           */
+          private TypeMirror returnTypeAsMemberOf(TypeMirror type, ExecutableElement method) {
+            while (type.getKind() == TypeKind.TYPEVAR) {
+              type = ((TypeVariable) type).getUpperBound();
+            }
+            if (type.getKind() == TypeKind.DECLARED) {
+              try {
+                TypeMirror memberType = analysis.getTypes().asMemberOf((DeclaredType) type, method);
+                if (memberType instanceof ExecutableType executableType) {
+                  return executableType.getReturnType();
+                }
+              } catch (IllegalArgumentException e) {
+                // Fall through to use the declared return type.
+              }
+            }
+            return method.getReturnType();
           }
 
           /*

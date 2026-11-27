@@ -92,6 +92,65 @@ public class ReceiverReassignedByImplicitCall {
     f.toString();
   }
 
+  abstract class BaseIterator implements Iterator<Object> {
+    @Override
+    public boolean hasNext() {
+      f = null;
+      return false;
+    }
+
+    @Override
+    public Object next() {
+      f = null;
+      return "";
+    }
+  }
+
+  abstract class PureIterator extends BaseIterator {
+    @Override
+    @SideEffectFree
+    public boolean hasNext() {
+      return false;
+    }
+
+    @Override
+    @SideEffectFree
+    public Object next() {
+      return "";
+    }
+  }
+
+  abstract class Items<I extends BaseIterator> implements Iterable<Object> {
+    @Override
+    @SideEffectFree
+    public abstract I iterator();
+  }
+
+  void genericIteratorIsPure(int tag, Items<PureIterator> items) {
+    // :: error: (dereference.of.nullable)
+    f.take(
+        switch (tag) {
+          default -> {
+            for (Object ignored : items) {}
+            yield 0;
+          }
+        });
+    f.toString();
+  }
+
+  void genericIteratorClearsReceiver(int tag, Items<BaseIterator> items) {
+    // :: error: (dereference.of.nullable)
+    f.take(
+        switch (tag) {
+          default -> {
+            for (Object ignored : items) {}
+            yield 0;
+          }
+        });
+    // :: error: (dereference.of.nullable)
+    f.toString();
+  }
+
   void arrayLoop(int tag, Object[] array) {
     // :: error: (dereference.of.nullable)
     f.take(
