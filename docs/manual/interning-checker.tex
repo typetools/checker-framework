@@ -36,8 +36,8 @@ and \<Short>.  Every string literal in the program is guaranteed to be interned
 \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method
 performs interning for strings that are computed at run time.
 The \<valueOf> methods in wrapper classes always (\<Boolean>, \<Byte>) or
-sometimes (\<Character>, \<Integer>, \<Short>) return an interned result
-(\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
+sometimes (\<Character>, \<Integer>, \<Short>) return an interned result,
+according to their specifications.
 Users can also write their own interning methods for other types.
 
 It is a proper optimization to use \code{==}, rather than \code{equals()},
@@ -402,15 +402,17 @@ subclasses and superclasses of the given class.
 Boxing a \<char>, \<short>, \<int>, or \<long> value, whether by
 autoboxing or by a call to the \<valueOf> method of \<Character>,
 \<Short>, \<Integer>, or \<Long>, sometimes yields an interned value and
-sometimes a non-interned value, depending on the run-time value
+sometimes a non-interned value, depending on the run-time value.
+If the value is the result of a constant expression, and it is a \<char> from
+\<'\textbackslash u0000'> to \<'\textbackslash u007f'> or an integer from
+-128 to 127, then every boxing of it yields the same object
 (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS
-\S5.1.7}).  Every boxing of a \<char> from \<'\textbackslash u0000'> to
-\<'\textbackslash u007f'>, or of an integer from -128 to 127, yields the
-same object.  The Interning Checker treats the boxing of such a value as
-interned only if the value is a constant expression, as in
-\<@Interned Integer i = 5;>.  It conservatively assumes that the boxing of
-any other value, as in \<@Interned Integer i = n;>, yields a non-interned
-value.  If you know that the value being boxed implies that the result is
+\S5.1.7}).  The Interning Checker treats the boxing of such a constant as
+interned, as in \<@Interned Integer i = 5;>.  It conservatively assumes that
+the boxing of any other value, as in \<@Interned Integer i = n;>, yields a
+non-interned value, even though (for example) the specification of
+\<Integer.valueOf> guarantees that it returns a cached object for every
+argument from -128 to 127.  If you know that the value being boxed implies that the result is
 interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper
 and lower bounds on char, short, int, and long values so that it can more

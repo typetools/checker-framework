@@ -56,6 +56,41 @@ public class CachedBoxedConstants {
     @Interned Integer i4 = Integer.valueOf("5");
   }
 
+  // A method that is not a boxed primitive's valueOf method might not return a cached object.
+  static Integer valueOf(int x) {
+    return x == 5 ? Integer.valueOf(1000 + x) : Integer.valueOf(x);
+  }
+
+  void userDefinedValueOf() {
+    // :: error: [assignment]
+    @Interned Integer i1 = valueOf(5);
+    // :: error: [assignment]
+    @Interned Integer i2 = CachedBoxedConstants.valueOf(5);
+  }
+
+  void cast(int i) {
+    @Interned Integer i1 = (Integer) 5;
+    @Interned Object o1 = (Object) 5;
+    @Interned Character c1 = (Character) 'a';
+    // :: error: [assignment]
+    @Interned Integer i2 = (Integer) 1000;
+    // :: error: [assignment]
+    @Interned Integer i3 = (Integer) i;
+  }
+
+  void array(int i, Integer interned) {
+    @Interned Integer[] a1 = new Integer[] {5, 127};
+    @Interned Integer[] a2 = {5, -128};
+    @Interned Object[] a3 = new Object[] {5, 'a'};
+    @Interned Byte[] a4 = new Byte[] {1, 2};
+    // :: error: [assignment]
+    @Interned Integer[] a5 = new Integer[] {5, 1000};
+    // :: error: [assignment]
+    @Interned Integer[] a6 = new Integer[] {5, i};
+    // :: error: [assignment]
+    @Interned Integer[] a7 = new Integer[] {5, interned};
+  }
+
   void dataflow() {
     Integer cached = 5;
     @Interned Object o1 = cached;
