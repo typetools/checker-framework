@@ -2,6 +2,7 @@
 // the corresponding primitive.
 
 import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class BoxedBinaryOperands {
   int primitiveChar(char c) {
@@ -45,6 +46,25 @@ public class BoxedBinaryOperands {
   @SignedPositive int boxedCharLeftShift(Character c) {
     // :: error: [return]
     return c << 16;
+  }
+
+  // A type variable whose bound is a boxed primitive is unboxed like the boxed primitive.
+  <T extends Character> @SignedPositive int typeVarCharShift(T c) {
+    return c >> 2;
+  }
+
+  <T extends Character> @SignedPositive int typeVarCharLeftShift(T c) {
+    // :: error: [return]
+    return c << 16;
+  }
+
+  <T extends Character> int typeVarCharDivide(T c) {
+    return c / 2;
+  }
+
+  <T extends @Unsigned Integer> int typeVarUnsignedDivide(T x) {
+    // :: error: [operation.unsignedlhs]
+    return x / 2;
   }
 
   // An equality test of a boxed operand and a primitive operand unboxes the boxed operand.

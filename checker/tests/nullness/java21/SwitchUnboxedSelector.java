@@ -28,6 +28,18 @@ public class SwitchUnboxedSelector {
     };
   }
 
+  // A switch with a pattern label but no `case null` label unboxes its selector, which throws a
+  // NullPointerException if the selector is null.  So, the selector is non-null in every case and
+  // after the switch.
+  static String boxedPatternNoCaseNull(@Nullable Integer i) {
+    String s;
+    // :: error: [switching.nullable]
+    switch (i) {
+      case Integer j -> s = i.toString();
+    }
+    return s + i.toString();
+  }
+
   static <T extends @Nullable Integer> String typeVarCaseNull(T t) {
     return switch (t) {
       // :: error: [dereference.of.nullable]
