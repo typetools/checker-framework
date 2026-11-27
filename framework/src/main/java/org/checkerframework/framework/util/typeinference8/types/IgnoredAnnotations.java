@@ -939,7 +939,10 @@ final class IgnoredAnnotations {
     allCorrespondingPositionsMatch(
         atm1,
         atm2,
-        (position1, position2) -> {
+        (position1, wildcard1, position2, wildcard2) -> {
+          // Whether a position is ignored is decided by the position itself, which is a wildcard's
+          // bound if the other position corresponds to that bound.  But a copy from a wildcard's
+          // bound is made from the wildcard, so that the copy keeps the wildcard's direction.
           AnnotationMirrorSet hierarchies1 = ignoredHierarchies(ignored1, position1);
           AnnotationMirrorSet hierarchies2 = ignoredHierarchies(ignored2, position2);
           if (hierarchies1.isEmpty() && hierarchies2.isEmpty()) {
@@ -954,12 +957,12 @@ final class IgnoredAnnotations {
           if (!into1.isEmpty()) {
             copies
                 .computeIfAbsent(position1, k -> new ArrayList<>())
-                .add(Copy.from(position2, into1, snapshots));
+                .add(Copy.from(wildcard2 != null ? wildcard2 : position2, into1, snapshots));
           }
           if (!into2.isEmpty()) {
             copies
                 .computeIfAbsent(position2, k -> new ArrayList<>())
-                .add(Copy.from(position1, into2, snapshots));
+                .add(Copy.from(wildcard1 != null ? wildcard1 : position1, into2, snapshots));
           }
           return true;
         },
@@ -1127,7 +1130,50 @@ final class IgnoredAnnotations {
       AnnotatedTypeMirror atm2,
       BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
       Types types) {
+    return allCorrespondingPositionsMatch(
+        atm1,
+        atm2,
+        (position1, wildcard1, position2, wildcard2) -> test.test(position1, position2),
+        types);
+  }
+
+  /**
+   * Like {@link #allCorrespondingPositionsMatch(AnnotatedTypeMirror, AnnotatedTypeMirror,
+   * BiPredicate, Types)}, but {@code test} is also told, for each position that corresponds to the
+   * other only because it is the bound of a wildcard, which wildcard that is.
+   *
+   * @param atm1 a type
+   * @param atm2 a type
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @param types the type utilities
+   * @return true if {@code test} holds for each pair of corresponding positions
+   */
+  private static boolean allCorrespondingPositionsMatch(
+      AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, PositionTest test, Types types) {
     return allCorrespondingPositionsMatch(atm1, atm2, test, new IdentityHashMap<>(), types);
+  }
+
+  /** A test of a pair of corresponding positions; see {@link #allCorrespondingPositionsMatch}. */
+  @FunctionalInterface
+  private interface PositionTest {
+    /**
+     * Returns true if the test holds for {@code position1} and {@code position2}. It may
+     * side-effect them.
+     *
+     * @param position1 a position of the first type
+     * @param wildcard1 the wildcard whose bound (see {@link #boundOf}) {@code position1} is, if
+     *     {@code position1} corresponds to {@code position2} only because it is that bound; null
+     *     otherwise
+     * @param position2 the corresponding position of the second type
+     * @param wildcard2 the wildcard whose bound {@code position2} is, if {@code position2}
+     *     corresponds to {@code position1} only because it is that bound; null otherwise
+     * @return true if the test holds
+     */
+    boolean test(
+        AnnotatedTypeMirror position1,
+        @Nullable AnnotatedWildcardType wildcard1,
+        AnnotatedTypeMirror position2,
+        @Nullable AnnotatedWildcardType wildcard2);
   }
 
   /**
@@ -1147,7 +1193,7 @@ final class IgnoredAnnotations {
   private static boolean allCorrespondingPositionsMatch(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      PositionTest test,
       Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Types types) {
     // The type argument of a raw type can be a wildcard that is reachable from its own bound (see
@@ -1158,17 +1204,22 @@ final class IgnoredAnnotations {
         && !addPair(visitedWildcards, atm1, atm2)) {
       return true;
     }
+    AnnotatedWildcardType wildcard1 = null;
+    AnnotatedWildcardType wildcard2 = null;
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument corresponds to a wildcard's bound, not to the wildcard itself; see
-      // #boundOf.  The pair of the wildcard and the type argument is not tested: the test would see
-      // the wildcard's ignored hierarchies, not those of the bound that supplies its annotations.
-      if (atm1.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositionsMatch(boundOf(atm1), atm2, test, visitedWildcards, types);
-      } else if (atm2.getKind() == TypeKind.WILDCARD) {
-        return allCorrespondingPositionsMatch(atm1, boundOf(atm2), test, visitedWildcards, types);
+      // #boundOf.  The test is applied to the bound, so that it sees the ignored hierarchies of the
+      // bound that supplies the wildcard's annotations, but it is told the wildcard, so that it can
+      // tell an upper or lower bound from a requirement of equality.
+      if (atm1 instanceof AnnotatedWildcardType wt1) {
+        wildcard1 = wt1;
+        atm1 = boundOf(wt1);
+      } else if (atm2 instanceof AnnotatedWildcardType wt2) {
+        wildcard2 = wt2;
+        atm2 = boundOf(wt2);
       }
     }
-    if (!test.test(atm1, atm2)) {
+    if (!test.test(atm1, wildcard1, atm2, wildcard2)) {
       return false;
     }
     if (atm1.getKind() != atm2.getKind()) {
@@ -1247,7 +1298,7 @@ final class IgnoredAnnotations {
   private static boolean alignedTypeArgumentsMatch(
       AnnotatedDeclaredType dt1,
       AnnotatedDeclaredType dt2,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      PositionTest test,
       Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Types types) {
     TypeElement element1 = (TypeElement) dt1.getUnderlyingType().asElement();
@@ -1322,7 +1373,7 @@ final class IgnoredAnnotations {
       TypeMirror pattern,
       AnnotatedTypeMirror superPart,
       SubclassArguments sub,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      PositionTest test,
       Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Types types) {
     switch (pattern.getKind()) {
@@ -1454,7 +1505,7 @@ final class IgnoredAnnotations {
   private static boolean allCorrespondingPositionsMatchPairwise(
       List<? extends AnnotatedTypeMirror> types1,
       List<? extends AnnotatedTypeMirror> types2,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
+      PositionTest test,
       Map<AnnotatedTypeMirror, Set<AnnotatedTypeMirror>> visitedWildcards,
       Types types) {
     if (types1.size() != types2.size()) {
