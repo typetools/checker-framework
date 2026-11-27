@@ -946,7 +946,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     return new TreeInfo() {
       @Override
-      public boolean isNumericOrBoxed() {
+      public boolean isNumericAfterUnboxing() {
         return isNumeric;
       }
 
@@ -1119,14 +1119,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param node a node producing a value of numeric primitive type
    * @param destType the type to narrow the value to: a numeric primitive type, or a type that
    *     unboxing conversion converts to one (see {@link TypesUtils#boxedPrimitiveForUnboxing})
-   * @return a Node with the value narrowed and boxed to the destType, which might be the input node
+   * @return a Node with the value narrowed and boxed to the destType, which might be the input
+   *     node. If destType is a type variable or intersection type, such as {@code T extends Short},
+   *     the boxed value is cast to destType.
    */
   protected Node narrowAndBox(Node node, TypeMirror destType) {
-    if (TypesUtils.isUnboxable(destType, types)) {
-      return box(narrow(node, TypesUtils.unboxedTypeOrSelf(destType, types)));
-    } else {
+    if (!TypesUtils.isUnboxable(destType, types)) {
       return narrow(node, destType);
     }
+    Node boxed = box(narrow(node, TypesUtils.unboxedTypeOrSelf(destType, types)));
+    if (types.isSameType(boxed.getType(), destType)) {
+      return boxed;
+    }
+    // The boxed value has a boxed primitive type such as Short, which is not a subtype of destType.
+    TypeMirror castType = TypeAnnotationUtils.unannotatedType(destType);
+    TypeCastTree castTree = treeBuilder.buildTypeCast(castType, (ExpressionTree) boxed.getTree());
+    handleArtificialTree(castTree);
+    TypeCastNode castNode = new TypeCastNode(castTree, boxed, castType, types);
+    castNode.setInSource(false);
+    insertNodeAfter(castNode, boxed);
+    return castNode;
   }
 
   /**
@@ -1438,13 +1450,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return box(node);
     }
 
-    // If the operand is byte or Byte and the whole expression is
-    // short, then convert to short.
-    // A conditional expression whose type is a reference type, such as `b ? t : null` where `t` has
-    // type `T extends Integer`, needs no numeric conversion of its operands.
     boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
     TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
+    // A conditional expression whose type is a reference type, such as `b ? t : null` where `t` has
+    // type `T extends Integer`, needs no numeric conversion of its operands.
     if (TypesUtils.isNumericPrimitive(unboxedNodeType) && TypesUtils.isNumericPrimitive(destType)) {
+      // If the operand is byte or Byte and the whole expression is
+      // short, then convert to short.
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isNodeUnboxable) {
           node = unbox(node);
@@ -4228,8 +4240,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node left = scan(leftTree, p);
         Node right = scan(rightTree, p);
 
-        if (leftInfo.isNumericOrBoxed()
-            && rightInfo.isNumericOrBoxed()
+        if (leftInfo.isNumericAfterUnboxing()
+            && rightInfo.isNumericAfterUnboxing()
             && !(leftInfo.isUnboxable() && rightInfo.isUnboxable())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =

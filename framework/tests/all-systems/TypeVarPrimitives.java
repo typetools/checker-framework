@@ -79,6 +79,25 @@ public class TypeVarPrimitives {
     return x;
   }
 
+  <T extends Short> T preIncrement(T t) {
+    ++t;
+    return t;
+  }
+
+  <T extends Short> T postDecrement(T t) {
+    t--;
+    return t;
+  }
+
+  <T extends Integer> int postIncrementValue(T t) {
+    return t++;
+  }
+
+  <T extends Character & Comparable<Character>> T incrementIntersection(T t) {
+    t++;
+    return t;
+  }
+
   <T extends Integer> int shift(T t) {
     return t >> 1;
   }
