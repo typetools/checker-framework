@@ -65,6 +65,12 @@ public class BinaryOperandPromotion {
     boolean r = a != b;
   }
 
+  // Only == and != compare references; a relational comparison unboxes two boxed operands.
+  void boxedLessThan(Integer a, Integer b) {
+    // :: error: [promoted.left] :: error: [promoted.right]
+    boolean r = a < b;
+  }
+
   void numericEquality(Integer a, int b) {
     // :: error: [promoted.left]
     boolean r = a == b;
