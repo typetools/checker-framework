@@ -158,4 +158,24 @@ public class BinaryOperandPromotion {
     // :: error: [promoted.right]
     a >>= b;
   }
+
+  // A type variable with a boxed primitive bound is unboxed like that bound.
+  <T extends Character> void shiftTypeVariable(T a, int b) {
+    // :: error: [promoted.left]
+    int r = a >> b;
+  }
+
+  <T extends Integer> void addTypeVariable(T a, long b) {
+    // :: error: [promoted.left]
+    long r = a + b;
+  }
+
+  <T extends Integer> void typeVariableReferenceEquality(T a, Integer b) {
+    boolean r = a == b;
+  }
+
+  <T extends Boolean> void booleanTypeVariable(T a, boolean b) {
+    // :: error: [promoted.left]
+    boolean r = a & b;
+  }
 }

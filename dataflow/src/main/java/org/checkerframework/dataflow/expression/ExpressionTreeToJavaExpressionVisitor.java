@@ -961,13 +961,26 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
     } else if (SHIFT_OPERATORS.contains(operator)
-        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
-        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+        && TypesUtils.isIntegralPrimitive(leftUnboxedType)
+        && TypesUtils.isIntegralPrimitive(rightUnboxedType)) {
       // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
       // promotion, which converts a byte, short, or char to int.
       type =
           types.getPrimitiveType(
               TypeKindUtils.widenedNumericType(leftUnboxedType.getKind(), TypeKind.INT));
+    } else if ((operator == Tree.Kind.EQUAL_TO || operator == Tree.Kind.NOT_EQUAL_TO)
+        && !leftType.getKind().isPrimitive()
+        && !rightType.getKind().isPrimitive()) {
+      // Reference equality (JLS 15.21.3):  the operands are not unboxed, and their types must be
+      // compatible.  For example, `i == l` is illegal for `Integer i` and `Long l`.
+      if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
+        type = booleanTypeMirror;
+      } else {
+        throw new JavaExpressionParseExceptionUnchecked(
+            JavaExpressionParseException.construct(
+                exprTree.toString(),
+                String.format("inconsistent types %s %s for %s", leftType, rightType, exprTree)));
+      }
     } else if (TypesUtils.isNumericPrimitive(leftUnboxedType)
         && TypesUtils.isNumericPrimitive(rightUnboxedType)) {
       // Binary numeric promotion (JLS 5.6), after unboxing if necessary:  for example, the sum of
