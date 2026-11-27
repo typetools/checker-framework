@@ -303,8 +303,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * extra copy is one other than the first exceptional copy of a given finally block. See {@link
    * #handleFinally}.
    *
-   * <p>The test {@code checker/tests/nullness/FinallyCopyBudget.java} uses up this budget. If you
-   * increase it, check that the test still uses it up.
+   * <p>The tests {@code checker/tests/nullness/FinallyCopyBudget.java} and method {@code
+   * finallyCopyAfterBudgetIsUsedUp} in {@code dataflow/tests/cfgconstruction/Test.java} use up this
+   * budget. If you increase it, check that the tests still use it up.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
@@ -2900,8 +2901,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     edges whenever it throws an exception (see {@link
    *     MethodInvocationNode#getAnyExceptionTypes()})
    * @param p the value to pass to calls to {@code scan}
+   * @return the node for the {@code close} call
    */
-  private void addCloseCallForResource(
+  private MethodInvocationNode addCloseCallForResource(
       Tree resourceDeclarationTree, Set<TypeMirror> extraExceptionTypes, Void p) {
     // The receiver of close() is a use of the resource variable or field.
     Tree receiverTree;
@@ -2962,12 +2964,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // The current path leads to the try statement.  The path of the close() call leads to the
     // resource, which is a child of the try statement.
     TreePath resourcePath = new TreePath(getCurrentPath(), resourceDeclarationTree);
-    extendWithArtificialCall(
-        closeCall, receiverNode, NullReceiver.IMPOSSIBLE, extraExceptionTypes, resourcePath);
+    MethodInvocationNode closeNode =
+        extendWithArtificialCall(
+            closeCall, receiverNode, NullReceiver.IMPOSSIBLE, extraExceptionTypes, resourcePath);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
     }
+    return closeNode;
   }
 
   /** What happens when the receiver of a call that desugars a statement is null. */
@@ -3040,7 +3044,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the primary exception (JLS 14.20.3.1). So every exceptional successor of the {@code close} call
    * is a node that models the call to {@code addSuppressed}. That node may throw {@code
    * IllegalArgumentException}, which {@code addSuppressed} throws if {@code close} threw the
-   * primary exception itself; otherwise it reaches the rethrow of the primary exception.
+   * primary exception itself; otherwise it reaches the rethrow of the primary exception. The node
+   * throws {@code IllegalArgumentException} only if some type of the primary exception overlaps
+   * some type of the exceptions that {@code close} might throw (the types in its {@code throws}
+   * clause and the unchecked exception types); the extra types that label edges of the call do not
+   * count.
    *
    * <p>The types of the primary exception label exceptional edges of the call, which lead to the
    * rethrow, in addition to the types of the exceptions that {@code close} might throw. So an
@@ -3074,22 +3082,58 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             types,
             Collections.singletonList(
                 new TryCatchFrame.CatchLabel(throwableType, suppressedLabel))));
-    addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
+    MethodInvocationNode closeNode =
+        addCloseCallForResource(resourceDeclarationTree, primaryExceptionTypes, p);
     tryStack.popFrame();
     Label afterSuppressionLabel = new Label();
     extendWithExtendedNode(new UnconditionalJump(afterSuppressionLabel));
 
     // The catch block calls addSuppressed on the primary exception, which throws
-    // IllegalArgumentException if close threw the primary exception itself.
+    // IllegalArgumentException if close threw the primary exception itself.  That is possible
+    // only if the primary exception has a type that close might throw.
     addLabelForNextNode(suppressedLabel);
-    extendWithNodeWithException(
+    MarkerNode addSuppressedNode =
         new MarkerNode(
             resourceDeclarationTree,
             "addSuppressed for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
-            env.getTypeUtils()),
-        illegalArgumentExceptionType);
+            env.getTypeUtils());
+    if (mayThrowSameException(
+        primaryExceptionTypes, closeNode.getTarget().getMethod().getThrownTypes())) {
+      extendWithNodeWithException(addSuppressedNode, illegalArgumentExceptionType);
+    } else {
+      extendWithNode(addSuppressedNode);
+    }
 
     addLabelForNextNode(afterSuppressionLabel);
+  }
+
+  /**
+   * Returns true if a method whose {@code throws} clause is {@code thrownTypes} might throw an
+   * exception that has one of the given types. That is, returns true if one of the given types is a
+   * subtype or supertype of a type in {@code thrownTypes} or of an unchecked exception type.
+   *
+   * @param exceptionTypes the types of an exception
+   * @param thrownTypes the types in the {@code throws} clause of a method
+   * @return true if the method might throw an exception that has one of {@code exceptionTypes}
+   */
+  private boolean mayThrowSameException(
+      Set<TypeMirror> exceptionTypes, List<? extends TypeMirror> thrownTypes) {
+    List<TypeMirror> mayThrow =
+        new ArrayList<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+    mayThrow.addAll(thrownTypes);
+    mayThrow.addAll(uncheckedExceptionTypes);
+    for (TypeMirror exceptionType : exceptionTypes) {
+      TypeMirror exceptionErased = types.erasure(exceptionType);
+      for (TypeMirror thrownType : mayThrow) {
+        // Erasure replaces a type variable, such as one in a throws clause, by its upper bound.
+        TypeMirror thrownErased = types.erasure(thrownType);
+        if (types.isSubtype(exceptionErased, thrownErased)
+            || types.isSubtype(thrownErased, exceptionErased)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
