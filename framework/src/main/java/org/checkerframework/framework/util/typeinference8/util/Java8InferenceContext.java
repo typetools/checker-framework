@@ -324,12 +324,13 @@ public class Java8InferenceContext {
    *
    * @param type1 an annotated type
    * @param type2 an annotated type
-   * @param visitedWildcards the pairs of corresponding wildcards that have been visited, as a map
-   *     from a wildcard of {@code type1} to the wildcards of {@code type2} with which it has been
-   *     paired; types are compared by identity. The type argument of a raw type can be a wildcard
-   *     that is reachable from its own bound, so stopping at a visited pair ensures termination. A
-   *     pair, rather than only the wildcard of {@code type1}, is recorded because one wildcard can
-   *     correspond to several distinct wildcards of the other type, each of which must be compared.
+   * @param visitedWildcards the pairs of corresponding wildcards on the current recursion path, as
+   *     a map from a wildcard of {@code type1} to the wildcards of {@code type2} with which it is
+   *     paired on that path; types are compared by identity. The type argument of a raw type can be
+   *     a wildcard that is reachable from its own bound, so stopping at a pair that is already on
+   *     the path ensures termination. A pair, rather than only the wildcard of {@code type1}, is
+   *     recorded because one wildcard can correspond to several distinct wildcards of the other
+   *     type, each of which must be compared.
    * @return true if each pair of corresponding enclosing types are mutual subtypes
    */
   private boolean enclosingTypesAreMutualSubtypes(
@@ -370,17 +371,24 @@ public class Java8InferenceContext {
             visitedWildcards);
       }
       case WILDCARD -> {
-        if (!visitedWildcards
-            .computeIfAbsent(type1, k -> Collections.newSetFromMap(new IdentityHashMap<>()))
-            .add(type2)) {
+        Set<AnnotatedTypeMirror> pairedWildcards =
+            visitedWildcards.computeIfAbsent(
+                type1, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+        if (!pairedWildcards.add(type2)) {
           return true;
         }
-        AnnotatedWildcardType wt1 = (AnnotatedWildcardType) type1;
-        AnnotatedWildcardType wt2 = (AnnotatedWildcardType) type2;
-        return enclosingTypesAreMutualSubtypes(
-                wt1.getExtendsBound(), wt2.getExtendsBound(), visitedWildcards)
-            && enclosingTypesAreMutualSubtypes(
-                wt1.getSuperBound(), wt2.getSuperBound(), visitedWildcards);
+        try {
+          AnnotatedWildcardType wt1 = (AnnotatedWildcardType) type1;
+          AnnotatedWildcardType wt2 = (AnnotatedWildcardType) type2;
+          return enclosingTypesAreMutualSubtypes(
+                  wt1.getExtendsBound(), wt2.getExtendsBound(), visitedWildcards)
+              && enclosingTypesAreMutualSubtypes(
+                  wt1.getSuperBound(), wt2.getSuperBound(), visitedWildcards);
+        } finally {
+          // Only the pairs on the current recursion path are marked, so a pair that appears at
+          // several positions is compared at each of them.
+          pairedWildcards.remove(type2);
+        }
       }
       case INTERSECTION -> {
         List<AnnotatedTypeMirror> bounds1 = ((AnnotatedIntersectionType) type1).getBounds();
