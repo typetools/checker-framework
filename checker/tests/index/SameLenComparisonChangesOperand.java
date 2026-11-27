@@ -49,18 +49,18 @@ public class SameLenComparisonChangesOperand {
 
   static Holder current = new Holder();
 
-  static class Swapper {
-    @Override
-    public String toString() {
-      current = new Holder();
-      return "";
-    }
+  // Not side-effect-free.
+  static String swap() {
+    current = new Holder();
+    return "";
   }
 
-  // The `+=` evaluates `current` before it converts `sw` to a string, and that conversion
-  // reassigns `current`.  So the assignment stores into the `text` field of the old `current`.
-  void stringConversionInCompoundAssignmentReassignsReceiver(String peer, Swapper sw) {
-    if ((current.text += sw).length() == peer.length()) {
+  // The `+=` evaluates `current` before it evaluates `swap()`, which reassigns `current`.  So the
+  // assignment stores into the `text` field of the old `current`.  (A string conversion cannot
+  // reassign `current` this way:  the analysis assumes that every `toString()` method is
+  // side-effect-free, like `Object.toString()`.)
+  void compoundAssignmentReassignsReceiver(String peer) {
+    if ((current.text += swap()).length() == peer.length()) {
       for (int k = 0; k < peer.length(); k++) {
         // :: error: (argument)
         current.text.charAt(k);
