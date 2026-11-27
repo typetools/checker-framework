@@ -242,13 +242,17 @@ public abstract class JavaExpression {
 
   /**
    * Returns the given expression with every use of {@code super} replaced by {@code this}. The two
-   * denote the same object, and a {@link FieldAccess} or {@link MethodCall} stores the element it
-   * refers to, so the result denotes exactly what the argument does.
+   * denote the same object, and a {@link FieldAccess} stores the field it refers to, so a field
+   * access in the result denotes exactly what it does in the argument.
    *
-   * <p>This is useful for an expression that was viewpoint-adapted to a call site of the form
-   * {@code super.m()}, which yields a {@link SuperReference} even though the caller would write the
-   * same object as {@code this}. Rewriting makes such an expression comparable to expressions
-   * written in the caller, which never mention the callee's {@code super}.
+   * <p>A method call does not necessarily: {@code super.m()} invokes the superclass's {@code m}
+   * directly, whereas {@code this.m()} dispatches on the run-time class of the receiver. So this
+   * method is appropriate for a {@link SuperReference} that stands for the receiver object, such as
+   * one that results from viewpoint-adapting an expression to a call site of the form {@code
+   * super.m()}: there, the callee's {@code this} becomes {@code super}, but calls on it still
+   * dispatch virtually, and the caller would write the same object as {@code this}. Rewriting makes
+   * such an expression comparable to expressions written in the caller. This method is not
+   * appropriate for an expression in which {@code super.m()} was written literally.
    *
    * @param expr an expression
    * @return the expression, with every use of {@code super} replaced by {@code this}
@@ -260,6 +264,51 @@ public abstract class JavaExpression {
     }
     JavaExpressionConverter converter =
         new JavaExpressionConverter() {
+          @Override
+          protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+            return new ThisReference(superExpr.getType());
+          }
+        };
+    return converter.convert(expr);
+  }
+
+  /**
+   * Returns the given expression with every use of {@code super} replaced by {@code this}, except
+   * where {@code super} is the receiver of a method call.
+   *
+   * <p>{@code super.f} and {@code this.f} are the same location, so they must be compared alike. A
+   * {@link FieldAccess} stores the field that it refers to, so rewriting {@code super.f} as {@code
+   * this.f} does not change which field it denotes, even if a field of the current class hides
+   * {@code f}.
+   *
+   * <p>By contrast, {@code super.m()} invokes the superclass's {@code m} directly, whereas {@code
+   * this.m()} dispatches on the run-time class of the receiver, which might override {@code m}. The
+   * two can return different objects even when {@code m} resolves to the same method element, so
+   * {@code super} is retained as the receiver of a method call. ({@link
+   * SuperReference#containsAsReceiver} treats {@code super} as contained in {@code this}, so {@code
+   * this} still covers {@code super.m()}.)
+   *
+   * @param expr an expression
+   * @return the expression, with every use of {@code super} other than as the receiver of a method
+   *     call replaced by {@code this}
+   */
+  @SideEffectFree
+  public static JavaExpression superToThisExceptCallReceivers(JavaExpression expr) {
+    if (!expr.containsOfClass(SuperReference.class)) {
+      return expr;
+    }
+    JavaExpressionConverter converter =
+        new JavaExpressionConverter() {
+          @Override
+          protected JavaExpression visitMethodCall(MethodCall methodCall, Void unused) {
+            if (methodCall.getReceiver() instanceof SuperReference) {
+              List<JavaExpression> args = convert(methodCall.getArguments());
+              return new MethodCall(
+                  methodCall.getType(), methodCall.getElement(), methodCall.getReceiver(), args);
+            }
+            return super.visitMethodCall(methodCall, unused);
+          }
+
           @Override
           protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
             return new ThisReference(superExpr.getType());

@@ -36,6 +36,7 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
@@ -664,12 +665,14 @@ public class OverrideChecker {
    * counterpart there, because the array is created for the call.
    *
    * <p>For an unbound reference, {@code this} and {@code super} are the interface method's first
-   * parameter. For a constructor reference, the expression {@code this} is dropped, because the
-   * object under construction did not exist before the call. An expression that is reached through
-   * that object, such as {@code this.f}, may denote an object that existed before the call, but the
-   * interface method's annotation cannot name it; this method returns null in that case. For a
-   * bound or {@code super} reference, {@code this} is the bound receiver, which the interface
-   * method's annotation cannot name either; this method returns null in that case too.
+   * parameter, except that a method call {@code super.m()} has no counterpart: it invokes the
+   * superclass's {@code m} directly, whereas a call on the parameter dispatches virtually. For a
+   * constructor reference, the expression {@code this} is dropped, because the object under
+   * construction did not exist before the call. An expression that is reached through that object,
+   * such as {@code this.f}, may denote an object that existed before the call, but the interface
+   * method's annotation cannot name it; this method returns null in that case. For a bound or
+   * {@code super} reference, {@code this} is the bound receiver, which the interface method's
+   * annotation cannot name either; this method returns null in that case too.
    *
    * <p>This method requires that {@link #overriderTree} is a method reference.
    *
@@ -754,9 +757,22 @@ public class OverrideChecker {
           }
 
           @Override
+          protected JavaExpression visitMethodCall(MethodCall methodCall, Void unused) {
+            if (methodCall.getReceiver() instanceof SuperReference) {
+              // `super.m()` invokes the superclass's `m` directly, but a call on the interface
+              // method's parameter dispatches on the run-time class of the receiver, which might
+              // override `m`.  No expression at the interface method's declaration denotes the
+              // former.  `Unknown` is never covered.
+              return new Unknown(methodCall.getType());
+            }
+            return super.visitMethodCall(methodCall, unused);
+          }
+
+          @Override
           protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
             // `super.f` is field `f` of the receiver, as declared in the superclass.  The field
-            // access that contains this reference retains that field.
+            // access that contains this reference retains that field.  (`visitMethodCall` handles
+            // a `super` that is the receiver of a method call.)
             return receiverAtFunctionalInterfaceMethod(superExpr.getType());
           }
 

@@ -42,6 +42,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
@@ -69,8 +70,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   /**
    * List of expressions specified as annotation arguments in the {@link SideEffectsOnly} annotation
-   * of the method being checked, with every use of {@code super} replaced by {@code this}, as in
-   * {@link #expressionFromTree}.
+   * of the method being checked, with {@code super} replaced by {@code this} except where it is the
+   * receiver of a method call, as in {@link #expressionFromTree}.
    */
   protected final List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
@@ -107,7 +108,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
     this.sideEffectsOnlyExpressionsFromAnnotation =
-        CollectionsP.mapList(JavaExpression::superToThis, sideEffectsOnlyExpressions);
+        CollectionsP.mapList(
+            JavaExpression::superToThisExceptCallReceivers, sideEffectsOnlyExpressions);
     this.checker = checker;
     LocalAssignmentScanner localAssignments = new LocalAssignmentScanner();
     for (Tree tree : checkedCode) {
@@ -297,19 +299,43 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   }
 
   /**
-   * Returns the JavaExpression for the given tree, with every use of {@code super} replaced by
-   * {@code this}. {@code super.f} and {@code this.f} are the same location, so they must be
-   * compared alike against the {@link SideEffectsOnly} annotation, whose expressions are rewritten
-   * the same way. A {@link FieldAccess} stores the field that it refers to, so rewriting {@code
-   * super.f} as {@code this.f} does not change which field it denotes, even if a field of the
-   * current class hides {@code f}.
+   * Returns the JavaExpression for the given tree, rewritten by {@link
+   * JavaExpression#superToThisExceptCallReceivers}. The {@link SideEffectsOnly} annotation's
+   * expressions are rewritten the same way, so the two can be compared.
    *
    * @param tree an expression tree
    * @return the JavaExpression for the tree, written in terms of {@code this} rather than {@code
-   *     super}
+   *     super} except where {@code super} is the receiver of a method call
    */
   protected static JavaExpression expressionFromTree(ExpressionTree tree) {
-    return JavaExpression.superToThis(JavaExpression.fromTree(tree));
+    return JavaExpression.superToThisExceptCallReceivers(JavaExpression.fromTree(tree));
+  }
+
+  /**
+   * Prepares an expression from the {@link SideEffectsOnly} annotation of a callee for
+   * viewpoint-adaptation to a call site: rewrites it by {@link
+   * JavaExpression#superToThisExceptCallReceivers}, so that a field access through the callee's
+   * {@code super} is adapted along with the callee's {@code this}.
+   *
+   * <p>A method call whose receiver is the callee's {@code super}, such as {@code super.m()},
+   * dispatches directly to the callee's superclass. No expression at the call site denotes that, so
+   * this reports {@code purity.unknown.sideeffectsonly} and returns null in that case.
+   *
+   * @param atDeclaration an expression written in the {@link SideEffectsOnly} annotation of {@code
+   *     invokedElem}, or of a method that {@code invokedElem} inherits it from
+   * @param node the call site; used for diagnostics
+   * @param invokedElem the invoked method or constructor; used for diagnostics
+   * @return the rewritten expression, or null if it cannot be viewpoint-adapted
+   */
+  protected @Nullable JavaExpression calleeExpression(
+      JavaExpression atDeclaration, Tree node, ExecutableElement invokedElem) {
+    JavaExpression result = JavaExpression.superToThisExceptCallReceivers(atDeclaration);
+    if (result.containsOfClass(SuperReference.class)) {
+      checker.reportError(
+          node, "purity.unknown.sideeffectsonly", ElementUtils.getSimpleDescription(invokedElem));
+      return null;
+    }
+    return result;
   }
 
   // A `this(...)` or `super(...)` call is a MethodInvocationTree, so `visitMethodInvocation`
@@ -420,6 +446,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           // this call, because none can be determined.
           return Collections.emptyList();
         }
+        atDeclaration = calleeExpression(atDeclaration, node, invokedElem);
+        if (atDeclaration == null) {
+          // The error has been reported.
+          return Collections.emptyList();
+        }
         ExpressionTree denotedTree =
             callSiteTree(
                 atDeclaration, invokedElem, TreeUtils.getReceiverTree(node), node.getArguments());
@@ -429,8 +460,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           continue;
         }
         // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields `super`,
-        // which denotes the same object that the caller writes as `this`.  See
-        // `expressionFromTree`.
+        // which denotes the same object that the caller writes as `this`.  Every call on it
+        // dispatches virtually, just as a call on the callee's `this` does, so rewriting it as
+        // `this` is correct even for a method call.  (`calleeExpression` has already rejected any
+        // `super` that the callee's annotation itself contains.)
         result.add(JavaExpression.superToThis(atDeclaration.atMethodInvocation(node)));
       }
     }
@@ -625,6 +658,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
               ElementUtils.getSimpleDescription(invokedElem));
           return;
         }
+        atDeclaration = calleeExpression(atDeclaration, node, invokedElem);
+        if (atDeclaration == null) {
+          // The error has been reported.
+          return;
+        }
         JavaExpression atCallSite;
         if (receiver == null) {
           if (atDeclaration instanceof ThisReference) {
@@ -766,6 +804,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
             "purity.unparseable.sideeffectsonly",
             exprString,
             ElementUtils.getSimpleDescription(constructorElt));
+        return Collections.emptyList();
+      }
+      atDeclaration = calleeExpression(atDeclaration, node, constructorElt);
+      if (atDeclaration == null) {
+        // The error has been reported.
         return Collections.emptyList();
       }
       if (atDeclaration instanceof ThisReference) {
