@@ -45,6 +45,12 @@ public abstract class ImpureCallReleasesLock {
   abstract ReentrantLock getLock();
 
   @MayReleaseLocks
+  void postconditionSingleCallViaLocal() {
+    ReentrantLock l = getLock();
+    requiresArg(l);
+  }
+
+  @MayReleaseLocks
   void postconditionViaLocal() {
     getLock();
     ReentrantLock l = getLock();

@@ -157,18 +157,21 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
   public TransferResult<CFValue, LockStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, LockStore> in) {
     TransferResult<CFValue, LockStore> result = super.visitMethodInvocation(n, in);
-    // The value of the call might come from the store before the call.  A @LockHeld fact in it
-    // might be stale, because a call that is not side-effect-free might release the lock that it
-    // returns.  LockStore.updateForMethodCall removes such a fact from the store.  However, if a
-    // postcondition of the call (such as @EnsuresLockHeld) establishes that the call expression is
-    // held after the call, then the result is held.
     CFValue resultValue = result.getResultValue();
+    if (resultValue == null) {
+      return result;
+    }
     // Unlike getRegularStore(), getThenStore() and getElseStore() neither copy nor merge a store.
     LockStore thenStore = result.getThenStore();
-    if (resultValue != null
-        && !atypeFactory.isSideEffectFree(n.getTarget().getMethod())
-        && thenStore.hasLockHeld(resultValue)
-        && !isHeldAfterCall(n, thenStore, result.getElseStore())) {
+    if (isHeldAfterCall(n, thenStore, result.getElseStore())) {
+      // A postcondition of the call (such as @EnsuresLockHeld) establishes that the call
+      // expression is held after the call, so the result is held.
+      result.setResultValue(resultValue.mostSpecific(thenStore.getValue(n), resultValue));
+    } else if (!atypeFactory.isSideEffectFree(n.getTarget().getMethod())
+        && thenStore.hasLockHeld(resultValue)) {
+      // The value of the call might come from the store before the call.  A @LockHeld fact in it
+      // might be stale, because a call that is not side-effect-free might release the lock that
+      // it returns.  LockStore.updateForMethodCall removes such a fact from the store.
       result.setResultValue(thenStore.changeLockAnnoToTop(resultValue));
     }
     return result;
