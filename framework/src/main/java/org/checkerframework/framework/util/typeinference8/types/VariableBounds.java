@@ -212,10 +212,11 @@ public class VariableBounds {
     // replaced by an otherwise-equal one that does not.  ProperType#equals does not compare
     // enclosing types, so compare them separately; otherwise, a refreshed instantiation that
     // differs only in the annotations of an enclosing type would be discarded.
-    if (instantiation != null
-        && type.equals(instantiation)
+    ProperType current = instantiation;
+    if (current != null
+        && type.equals(current)
         && context.enclosingTypesAreMutualSubtypes(
-            type.getAnnotatedType(), instantiation.getAnnotatedType())) {
+            type.getAnnotatedType(), current.getAnnotatedType())) {
       // Leave instantiationChanges unchanged; see its Javadoc.
       return false;
     }

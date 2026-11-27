@@ -1262,10 +1262,12 @@ public class InferenceFactory {
 
     // The annotations of an ignored position put no constraint on the result, so they are replaced
     // by those at the corresponding position of the other type; see
-    // IgnoredAnnotations#replaceIgnoredForLubOrGlb.  Nothing is replaced if `a` and `b` are of
-    // different classes, such as `ArrayList<T>` and `List<T>`.  That is fine:
-    // AnnotatedTypes#annotatedGLB takes all but the primary annotations from just one of them, so
-    // the annotations of the other cannot conflict with an ignored position.
+    // IgnoredAnnotations#replaceIgnoredForLubOrGlb.  This matters even if `a` and `b` are of
+    // different classes, such as `ArrayList<T>` and `List<@NonNull String>`:
+    // AnnotatedTypes#annotatedGLB takes all but the primary annotations from just one of them (here
+    // `ArrayList<T>`), so an ignored position of that one would otherwise discard the corresponding
+    // annotations of the other, and the result would not be a subtype of the other.  Then, because
+    // that position is no longer ignored, #withOriginOf does not keep the origin of `a`.
     ReplacedTypes combined =
         IgnoredAnnotations.replaceIgnoredForLubOrGlb(
             a, b, glb, typeFactory.getQualifierHierarchy(), context.modelTypes);

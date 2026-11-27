@@ -263,10 +263,12 @@ final class IgnoredAnnotations {
    *   <li>If neither type has an origin (see {@link ProperType#getOrigin}), then neither has
    *       ignored positions, so return the types' own annotated types.
    *   <li>Find the supertype whose class is that of {@code resultType} (see {@link #asSuper}) of
-   *       each type, or of its upper bound if it is a type variable. If the two supertypes are of
-   *       different classes, then their positions do not correspond, so return the types' own
-   *       annotated types.
-   *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
+   *       each type, or of its upper bound if it is a type variable. The two supertypes can be of
+   *       different classes, as for a greatest lower bound of {@code ArrayList<T>} and {@code
+   *       List<@NonNull String>}; then positions correspond as described in {@link
+   *       #allCorrespondingPositionsMatch}, and no positions correspond if neither class is a
+   *       subclass of the other.
+   *   <li>Return copies of the two supertypes in which each ignored position of one gets
    *       the annotations of the corresponding position of the other, in each hierarchy in which
    *       the annotations of only one of the two positions are ignored (see {@link
    *       #replaceIgnoredWithCorresponding}), except that a type variable is returned itself, with
@@ -312,10 +314,12 @@ final class IgnoredAnnotations {
     AbstractType bound2 = upperBoundIfTypeVariable(upToDate2);
     AbstractType asSuper1 = asSuper(bound1, resultType, types);
     AbstractType asSuper2 = asSuper(bound2, resultType, types);
-    if (!types.isSameType(
-        types.erasure(asSuper1.getJavaType()), types.erasure(asSuper2.getJavaType()))) {
-      return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
-    }
+    // The two supertypes can be of different classes: for example, the greatest lower bound of
+    // `ArrayList<T>` and `List<@NonNull String>` is of class ArrayList, which is not a supertype of
+    // List.  Their positions still correspond if one class is a subclass of the other (see
+    // #allCorrespondingPositionsMatch).  The ignored positions must be replaced in that case too:
+    // AnnotatedTypes#annotatedGLB takes all but the primary annotations from the `ArrayList`
+    // argument, so an ignored position there would otherwise discard the annotations of `List`.
     AnnotatedTypeMirror atm1 = asSuper1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = asSuper2.getAnnotatedType().deepCopy();
     replaceIgnoredWithCorresponding(
@@ -372,10 +376,8 @@ final class IgnoredAnnotations {
     // bound, so compare the positions of that bound.
     AbstractType otherAsSuper =
         asSuper(upperBoundIfTypeVariable(upToDate(other)), resultType, types);
-    if (!types.isSameType(
-        types.erasure(typeAsSuper.getJavaType()), types.erasure(otherAsSuper.getJavaType()))) {
-      return true;
-    }
+    // As in #replaceIgnoredForLubOrGlb, the supertypes can be of different classes, and their
+    // positions still correspond if one class is a subclass of the other.
     AnnotatedTypeMirror atm = typeAsSuper.getAnnotatedType();
     AnnotatedTypeMirror otherATM = otherAsSuper.getAnnotatedType();
     Map<AnnotatedTypeMirror, AnnotationMirrorSet> ignored = ignoredPositions(typeAsSuper, atm, qh);
