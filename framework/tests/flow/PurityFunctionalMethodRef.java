@@ -357,6 +357,43 @@ public class PurityFunctionalMethodRef {
             PurityFunctionalMethodRef::applyStatic;
   }
 
+  static <F extends Applier & UnannotatedApplier> void takesApplierFirst(F f) {}
+
+  static <F extends UnannotatedApplier & Applier> void takesUnannotatedFirst(F f) {}
+
+  /** An inferred intersection target is checked like the corresponding intersection cast. */
+  void inferredIntersection() {
+    // :: error: [purity.methodref.functional.parameter]
+    takesApplierFirst(PurityFunctionalMethodRef::applyStatic);
+    // :: error: [purity.methodref.functional.parameter]
+    takesUnannotatedFirst(PurityFunctionalMethodRef::applyStatic);
+  }
+
+  static class SuperBase {
+    /** Does not use f, but an override of this method might. */
+    @SideEffectFree
+    int ignores(Function<String, Integer> f, String s) {
+      return 0;
+    }
+
+    @SideEffectFree
+    int uses(Function<String, Integer> f, String s) {
+      return f.apply(s);
+    }
+  }
+
+  static class SuperSub extends SuperBase {
+    void superReferences() {
+      // super::ignores runs SuperBase.ignores, not an override of it, and that body does not use f.
+      UnannotatedApplier a = super::ignores;
+      // :: error: [purity.methodref.functional.parameter]
+      UnannotatedApplier b = super::uses;
+      // this::ignores might run an override of ignores that uses f.
+      // :: error: [purity.methodref.functional.parameter]
+      UnannotatedApplier c = this::ignores;
+    }
+  }
+
   /**
    * Implements {@code Function.apply} with a side-effect-free default method, and declares an
    * unrelated functional method.

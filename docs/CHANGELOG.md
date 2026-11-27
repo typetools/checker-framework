@@ -42,10 +42,11 @@ inner class of a visitor can pass the visitor, as in
 
 Purity errors for a lambda body are now reported by the new method
 `BaseTypeVisitor.reportPurityErrors(PurityResult, EnumSet, Map)`, which the
-existing two-argument `reportPurityErrors` calls.  A visitor that overrides the
-two-argument method to customize purity errors should override the
-three-argument method instead, so that the customization also applies to
-lambdas.
+existing two-argument `reportPurityErrors` calls.  Lambda checking still calls
+the two-argument method, so an existing override of it continues to receive
+the purity errors for lambda bodies.  A visitor needs to override the
+three-argument method only if its customization uses the methods whose purity
+annotations impose the requirement.
 
 Deprecated methods:
 

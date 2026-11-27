@@ -366,11 +366,17 @@ public class OverrideChecker {
    *     by {@link BaseTypeVisitor#callableDeclarationsThatRun}
    */
   private void checkMethodReferenceFunctionalParameters(List<CallableDeclaration> declarations) {
+    // A method reference `super::m` or `T.super::m` runs the selected method's own body rather
+    // than dispatching virtually (JLS 15.13.3), so no override of it can run.
+    boolean virtual =
+        MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+            != MemberReferenceKind.SUPER;
     visitor.checkImplementationFunctionalParameters(
         overriderTree,
         overrider.getElement(),
         declarations,
         methodRefParameterOffset(),
+        virtual,
         "purity.methodref.functional.parameter");
   }
 

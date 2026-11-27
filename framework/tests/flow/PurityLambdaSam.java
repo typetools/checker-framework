@@ -239,6 +239,26 @@ public class PurityLambdaSam {
     takesSefObjectAndPlain(() -> sefNotDeterministic());
   }
 
+  interface Wide<T> {
+    @SideEffectFree
+    Object get(T t);
+  }
+
+  interface Narrow {
+    String get(String s);
+  }
+
+  /** Wide<T>.get(T) and Narrow.get(String) are override-equivalent only in Both<String>. */
+  interface Both<T> extends Wide<T>, Narrow {}
+
+  void groundBoundTarget() {
+    // The lambda implements Wide<String>.get as well as Narrow.get, so a call through the
+    // side-effect-free Wide.get can run it.
+    // :: error: [purity.call]
+    Object f1 = (Both<String> & java.io.Serializable) s -> impure();
+    Object f2 = (Both<String> & java.io.Serializable) s -> sefNotDeterministic();
+  }
+
   // Lambdas that are accepted.
 
   void accepted(String s) {

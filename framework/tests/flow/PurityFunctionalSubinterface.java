@@ -107,4 +107,34 @@ public class PurityFunctionalSubinterface {
     // :: error: [purity.functional.argument]
     t.take(() -> {});
   }
+
+  interface ObjectGet {
+    Object get();
+  }
+
+  interface StringGet {
+    String get();
+  }
+
+  @SideEffectFree
+  static Object takesObjectGet(ObjectGet g) {
+    return g.get();
+  }
+
+  /**
+   * The functional method of {@code StringGet & ObjectGet} is StringGet.get, which does not
+   * override ObjectGet.get, but the lambda implements both, so a call to ObjectGet.get runs the
+   * lambda and its body is checked.
+   */
+  void siblingFunctionalMethod() {
+    takesObjectGet((StringGet & ObjectGet) () -> "ok");
+    takesObjectGet(
+        // :: error: [purity.functional.argument]
+        (StringGet & ObjectGet)
+            () -> {
+              // :: error: [purity.assign.field]
+              count++;
+              return "ok";
+            });
+  }
 }

@@ -2011,13 +2011,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * annotations false. Calling {@code parameterFunction} on the parameter relies on the assumption,
    * as does passing the parameter to another method, which might call it.
    *
-   * <p>The result is false only if {@code method} cannot be overridden, its body is in source code,
-   * and no use of {@code parameter} in that body relies on the assumption: the body uses {@code
-   * parameter} only as an operand of a binary operator such as {@code ==}, as the destination or
-   * the value of an assignment, as the value of a variable initializer or of a return statement, or
-   * as the receiver of a call to a method other than {@code parameterFunction} and its overrides,
-   * such as {@code hashCode}. The result is true for a method that can be overridden, because the
-   * body of an override that the checker does not see might rely on the assumption.
+   * <p>The result is false only if the call runs {@code method}'s own body, that body is in source
+   * code, and no use of {@code parameter} in that body relies on the assumption: the body uses
+   * {@code parameter} only as an operand of a binary operator such as {@code ==}, as the
+   * destination or the value of an assignment, as the value of a variable initializer or of a
+   * return statement, or as the receiver of a call to a method other than {@code
+   * parameterFunction} and its overrides, such as {@code hashCode}. The call runs {@code method}'s own body if it is not dispatched
+   * virtually, as for a method reference {@code super::m}, or if {@code method} cannot be
+   * overridden. Otherwise the result is true, because the body of an override that the checker does
+   * not see might rely on the assumption.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
@@ -2026,13 +2028,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param method a method or constructor
    * @param parameter a functional-interface parameter of {@code method}
    * @param parameterFunction the functional method of {@code parameter}'s type
+   * @param virtual true if a call to {@code method} is dispatched virtually, so that it might run
+   *     an override of {@code method}; false if it always runs {@code method}'s own body, as for a
+   *     method reference {@code super::m}
    * @return true if the purity annotations of {@code method}, or of code that a call to {@code
    *     method} runs, might hold only if the argument to {@code parameter} has the computed purity
    */
   boolean mightRelyOnFunctionalParameter(
-      ExecutableElement method, VariableElement parameter, ExecutableElement parameterFunction) {
+      ExecutableElement method,
+      VariableElement parameter,
+      ExecutableElement parameterFunction,
+      boolean virtual) {
     boolean overridable =
-        method.getKind() == ElementKind.METHOD
+        virtual
+            && method.getKind() == ElementKind.METHOD
             && !ElementUtils.isStatic(method)
             && !method.getModifiers().contains(Modifier.PRIVATE)
             && !ElementUtils.isFinal(method)
@@ -2076,6 +2085,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param offset the index of the functional method's parameter that corresponds to {@code
    *     implementation}'s first parameter: 1 for an unbound method reference such as {@code C::m},
    *     whose functional method's first parameter is the receiver, and 0 otherwise
+   * @param virtual true if a call through {@code declarations} dispatches virtually on {@code
+   *     implementation}, so that it might run an override; false if it always runs {@code
+   *     implementation}'s own body, as for a method reference {@code super::m}
    * @param messageKey the key of the error message to report
    */
   void checkImplementationFunctionalParameters(
@@ -2083,6 +2095,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExecutableElement implementation,
       List<CallableDeclaration> declarations,
       int offset,
+      boolean virtual,
       @CompilerMessageKey String messageKey) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     if (PurityChecker.functionalParameterKinds(atypeFactory, implementation, env).isEmpty()) {
@@ -2125,7 +2138,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 env);
         if (!provided.containsAll(assumed)) {
           // The error message names the first declaration whose calls lack the guarantee.
-          if (mightRelyOnFunctionalParameter(implementation, params.get(i), parameterFunction)) {
+          if (mightRelyOnFunctionalParameter(
+              implementation, params.get(i), parameterFunction, virtual)) {
             reportErrorOnce(
                 reportTree,
                 messageKey,
@@ -2213,7 +2227,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               }
             }
             checkImplementationFunctionalParameters(
-                classTree, inherited, declarations, 0, "purity.inherited.functional.parameter");
+                classTree,
+                inherited,
+                declarations,
+                0,
+                true,
+                "purity.inherited.functional.parameter");
           }
         }
       }
@@ -2246,20 +2265,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if the functional method that {@code code} implements is {@code paramFunction} or
-   * overrides it.
+   * Returns true if a call to {@code paramFunction} on the object that {@code code} evaluates to
+   * runs {@code code}. That is so if {@code paramFunction} is, or is overridden by, one of the
+   * methods that {@link #methodsThatRun} returns for {@code code}: its functional method, or a
+   * method that is override-equivalent to it, such as {@code A.get} for {@code (B & A) () -> "ok"}.
+   * It is not so if {@code paramFunction} is implemented by a separate default method.
    *
    * @param code a lambda expression or method reference
    * @param paramFunction the functional method of a parameter's type
    * @param env the processing environment
    * @return true if {@code code} implements {@code paramFunction}
    */
-  private static boolean implementsFunction(
+  private boolean implementsFunction(
       ExpressionTree code, ExecutableElement paramFunction, ProcessingEnvironment env) {
     TypeMirror functionalType = PurityChecker.functionalInterfaceType(TreeUtils.typeOf(code), env);
-    return functionalType == null
-        || PurityChecker.isSameOrOverrides(
-            TypesUtils.findFunction(functionalType, env), paramFunction, env);
+    if (functionalType == null) {
+      return true;
+    }
+    for (ExecutableElement method :
+        methodsThatRun(code, TypesUtils.findFunction(functionalType, env))) {
+      if (PurityChecker.isSameOrOverrides(method, paramFunction, env)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -3743,16 +3772,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     DeclaredType interfaceType = (DeclaredType) functionalInterface.asType();
     ExecutableType functionalMethodType =
         (ExecutableType) types.asMemberOf(interfaceType, functionalMethod);
-    Set<TypeElement> visited = new HashSet<>();
+    // The methods already in `result`.  The bound pass below compares, as a member of a ground
+    // bound, each method that the generic comparison rejected:  a method such as `Wide.get(T)` in
+    // `interface Both<T> extends Wide<T>, Narrow` matches `Narrow.get(String)` only in
+    // `Both<String>`.
+    Set<ExecutableElement> collected = new HashSet<>();
+    collected.add(functionalMethod);
     for (TypeElement supertype : ElementUtils.getAllSupertypes(functionalInterface, env)) {
-      visited.add(supertype);
       if (TypesUtils.isObject(supertype.asType())) {
         continue;
       }
       for (ExecutableElement method : ElementFilter.methodsIn(supertype.getEnclosedElements())) {
-        if (!method.equals(functionalMethod)
+        if (!collected.contains(method)
             && isOverrideEquivalent(
                 method, interfaceType, functionalMethod, functionalMethodType)) {
+          collected.add(method);
           result.add(new CallableDeclaration(method, targetType));
         }
       }
@@ -3768,12 +3802,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (DeclaredType bound : targetBounds) {
         for (TypeElement supertype :
             ElementUtils.getAllSupertypes((TypeElement) bound.asElement(), env)) {
-          if (!visited.add(supertype) || TypesUtils.isObject(supertype.asType())) {
+          if (TypesUtils.isObject(supertype.asType())) {
             continue;
           }
           for (ExecutableElement method :
               ElementFilter.methodsIn(supertype.getEnclosedElements())) {
-            if (isOverrideEquivalent(method, bound, functionalMethod, targetMethodType)) {
+            if (!collected.contains(method)
+                && isOverrideEquivalent(method, bound, functionalMethod, targetMethodType)) {
+              collected.add(method);
               result.add(new CallableDeclaration(method, bound));
             }
           }
