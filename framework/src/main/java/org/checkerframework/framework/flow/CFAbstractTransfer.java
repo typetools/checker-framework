@@ -2087,13 +2087,7 @@ public abstract class CFAbstractTransfer<
           || analysis.atypeFactory.sideEffectsUnrefineAliases) {
         return false;
       }
-      for (FieldAccess field : fields) {
-        if (field.getField().equals(fa.getField())
-            && analysis.canAlias(field.getReceiver(), fa.getReceiver())) {
-          return false;
-        }
-      }
-      return !mayChange(fa.getReceiver(), false);
+      return !fieldsMayInclude(fa) && !mayChange(fa.getReceiver(), false);
     }
 
     /**
@@ -2124,9 +2118,17 @@ public abstract class CFAbstractTransfer<
      * @return true if these locations might include the field that {@code fa} denotes
      */
     private boolean mayWriteField(FieldAccess fa) {
-      if (anyHeapLocation && !fa.isFinal()) {
-        return true;
-      }
+      return (anyHeapLocation && !fa.isFinal()) || fieldsMayInclude(fa);
+    }
+
+    /**
+     * Returns true if the explicitly-written fields among these locations might include the field
+     * that {@code fa} denotes.
+     *
+     * @param fa a field access
+     * @return true if {@link #fields} might include the field that {@code fa} denotes
+     */
+    private boolean fieldsMayInclude(FieldAccess fa) {
       for (FieldAccess field : fields) {
         // A static field is the same location regardless of the receiver.  Do not check whether
         // the receivers can alias:  two subclasses that inherit the static field, such as `Left`

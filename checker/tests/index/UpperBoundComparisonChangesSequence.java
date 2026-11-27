@@ -1,4 +1,5 @@
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
+import org.checkerframework.checker.index.qual.NonNegative;
 
 // A bound in the type of an operand of a comparison refers to a sequence as it was when the operand
 // was evaluated.  If the other operand reassigns the sequence, the bound must not be used to refine
@@ -15,7 +16,7 @@ public class UpperBoundComparisonChangesSequence {
   }
 
   // Not side-effect-free.
-  @LTEqLengthOf("this.a") int shrink() {
+  @NonNegative @LTEqLengthOf("this.a") int shrink() {
     a = new int[1];
     return 1;
   }
@@ -46,7 +47,7 @@ public class UpperBoundComparisonChangesSequence {
     }
   }
 
-  void neqUnchanged(@LTEqLengthOf("this.a") int k) {
+  void neqUnchanged(@NonNegative @LTEqLengthOf("this.a") int k) {
     int i;
     if (this.a.length != (i = k)) {
       int x = this.a[i];
