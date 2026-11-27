@@ -888,7 +888,7 @@ public class ToIndexFileConverterTest {
     String jaif =
         convert(
             "package p;",
-            "import java.util.Map.Entry;",
+            "import java.security.KeyStore.Entry;",
             "class Outer {",
             "  static class Entry {}",
             "  abstract static class C implements java.util.Map<String, String> {",
@@ -1469,6 +1469,70 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "C", "m(Ljava/util/AbstractMap$SimpleEntry;)V");
     assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
     assertMethod(jaif, "C", "o(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A member type that a classpath type declares, and that the stub file's declaration of the type
+   * omits, hides the member types of the same name that the type inherits.
+   */
+  @Test
+  public void testClasspathMemberTypeOmittedByStubHidesInherited() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.util.TreeMap.*;",
+            "abstract class C {",
+            "  void m(Entry x) {}",
+            "}",
+            "package java.util;",
+            "public class TreeMap<K, V> implements Map<K, V> {}");
+    assertMethod(jaif, "C", "m(Ljava/util/TreeMap$Entry;)V");
+
+    jaif =
+        convert(
+            "package java.util;",
+            "public class TreeMap<K, V> implements Map<K, V> {",
+            "  void m(Entry x) {}",
+            "  void n(TreeMap.Entry x) {}",
+            "}");
+    assertMethod(jaif, "TreeMap", "m(Ljava/util/TreeMap$Entry;)V");
+    assertMethod(jaif, "TreeMap", "n(Ljava/util/TreeMap$Entry;)V");
+  }
+
+  /**
+   * A member type whose stub declaration omits its access modifier has the accessibility of its
+   * classpath declaration.
+   */
+  @Test
+  public void testStubMemberTypeOmittingAccessModifier() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "abstract class C extends java.util.AbstractMap {",
+            "  void m(SimpleEntry x) {}",
+            "}",
+            "package java.util;",
+            "public abstract class AbstractMap<K, V> implements Map<K, V> {",
+            "  static class SimpleEntry<K, V> {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * A type inherits the member types of a supertype that the stub file's declaration of the type
+   * omits.
+   */
+  @Test
+  public void testInheritedMemberTypeOfSupertypeOmittedByStub() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "abstract class C extends java.util.AbstractMap {",
+            "  void m(Entry x) {}",
+            "}",
+            "package java.util;",
+            "public abstract class AbstractMap<K, V> {}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
   }
 
   /**
