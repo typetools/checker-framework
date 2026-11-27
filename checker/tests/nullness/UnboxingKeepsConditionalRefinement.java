@@ -187,4 +187,31 @@ public class UnboxingKeepsConditionalRefinement {
       o.hashCode();
     }
   }
+
+  // The CFG does not unbox an operand whose type is a type variable bounded by Boolean.
+  @SuppressWarnings("unchecked")
+  <T extends Boolean> void typeVariableEqualToTrue(@Nullable Object o) {
+    if (((T) isNN(o)) == true) {
+      o.hashCode();
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  <T extends Boolean> void typeVariableNotEqualFalse(@Nullable Object o) {
+    if (((T) isNN(o)) != false) {
+      o.hashCode();
+    }
+  }
+
+  // Two references are compared by reference, so equality says nothing about isNN(o).
+  @SuppressWarnings("unchecked")
+  <T extends Boolean> void typeVariableEqualToReference(@Nullable Object o, T t) {
+    if (((T) isNN(o)) == t) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
 }
