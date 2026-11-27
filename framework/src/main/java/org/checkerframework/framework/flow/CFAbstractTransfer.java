@@ -255,9 +255,10 @@ public abstract class CFAbstractTransfer<
                     ? typeVar.getUpperBound()
                     : ((AnnotatedWildcardType) boxedElement).getExtendsBound();
           }
-          if (boxedElement instanceof AnnotatedDeclaredType declaredElement
-              && TypesUtils.isBoxedPrimitive(declaredElement.getUnderlyingType())) {
-            at = factory.getUnboxedType(declaredElement);
+          // `applyUnboxing` also handles an intersection bound, as in `T extends Integer &
+          // Comparable<Integer>`.
+          if (TypesUtils.isUnboxable(boxedElement.getUnderlyingType(), factory.types)) {
+            at = factory.applyUnboxing(boxedElement);
           }
         }
       } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {

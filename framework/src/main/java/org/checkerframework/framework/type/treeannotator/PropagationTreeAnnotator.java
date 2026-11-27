@@ -337,6 +337,20 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     }
 
     AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(tree.getExpression());
+    switch (tree.getKind()) {
+      case UNARY_PLUS, UNARY_MINUS, BITWISE_COMPLEMENT ->
+          // The operand undergoes unary numeric promotion, which might unbox it (JLS 15.15).
+          exp = atypeFactory.unaryNumericPromotion(exp);
+      case LOGICAL_COMPLEMENT -> {
+        // A `Boolean` operand is unboxed (JLS 15.15.6).
+        if (TypesUtils.isUnboxable(exp.getUnderlyingType(), atypeFactory.types)) {
+          exp = atypeFactory.applyUnboxing(exp);
+        }
+      }
+      default -> {
+        // An increment or decrement has the type of its variable operand, which might be boxed.
+      }
+    }
     type.addMissingAnnotations(exp.getPrimaryAnnotations());
     return null;
   }

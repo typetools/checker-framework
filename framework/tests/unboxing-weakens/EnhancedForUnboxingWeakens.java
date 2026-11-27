@@ -31,6 +31,14 @@ public class EnhancedForUnboxingWeakens {
     }
   }
 
+  <T extends @UWStrong Integer & Comparable<Integer>> void enhancedForUnboxingIntersection(
+      List<T> values) {
+    for (int x : values) {
+      // :: error: (assignment)
+      @UWStrong int y = x;
+    }
+  }
+
   void enhancedForNoUnboxing(List<@UWStrong Integer> values) {
     for (Integer x : values) {
       @UWStrong Integer y = x;
