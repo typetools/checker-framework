@@ -929,8 +929,12 @@ public abstract class CFAbstractTransfer<
       V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
-      // Only need to insert if the second value is actually different.
-      if (!firstValue.equals(secondValue)) {
+      // Only need to insert if the second value is actually different.  Do not insert a value that
+      // might name a variable that an operand reassigns:  the value might have been computed
+      // before the reassignment, so it would be stale.
+      if (!firstValue.equals(secondValue)
+          && !mightNameAssignedVariable(firstValue, firstNode)
+          && !mightNameAssignedVariable(firstValue, secondNode)) {
         List<Node> secondParts = splitAssignments(secondNode);
         for (Node secondPart : secondParts) {
           JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
@@ -953,6 +957,38 @@ public abstract class CFAbstractTransfer<
       }
     }
     return res;
+  }
+
+  /**
+   * Returns true if a dependent type annotation of {@code value} might name a local variable or
+   * field that {@code node} assigns. {@code node} assigns the target of each assignment that {@link
+   * #splitAssignments} would split: if {@code node} is {@code a = b = c}, then it assigns {@code a}
+   * and {@code b}.
+   *
+   * @param value an abstract value
+   * @param node a node, possibly an assignment node
+   * @return true if a dependent type annotation of {@code value} might name a variable that {@code
+   *     node} assigns
+   */
+  private boolean mightNameAssignedVariable(V value, Node node) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if (!dependentTypesHelper.hasDependentAnnotations()) {
+      return false;
+    }
+    Node current = node;
+    while (current instanceof AssignmentNode a) {
+      Node lhs = a.getTarget();
+      JavaExpression target = JavaExpression.fromNode(lhs);
+      if (target instanceof LocalVariable || target instanceof FieldAccess) {
+        Tree lhsTree = lhs.getTree();
+        TreePath path = lhsTree == null ? null : analysis.getTypeFactory().getPath(lhsTree);
+        if (dependentTypesHelper.mightName(value.getAnnotations(), target, path)) {
+          return true;
+        }
+      }
+      current = a.getExpression();
+    }
+    return false;
   }
 
   /**
@@ -1063,8 +1099,9 @@ public abstract class CFAbstractTransfer<
    * whose dependent type annotation might name the target (see {@link
    * CFAbstractStore#removeValuesThatMightName}). If {@code rhsValue} itself has such an annotation,
    * the target gets no value: the annotation names the target's value before the assignment, but
-   * after the assignment the same text would name the new value. A self-assignment, such as {@code
-   * a = a}, does not change the target's value, so it removes no values.
+   * after the assignment the same text would name the new value. A self-assignment to a
+   * deterministic target, such as {@code a = a}, does not change the target's value, so it removes
+   * no values.
    *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
@@ -1082,7 +1119,8 @@ public abstract class CFAbstractTransfer<
     DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
     if ((target instanceof LocalVariable || target instanceof FieldAccess)
         && dependentTypesHelper.hasDependentAnnotations()
-        && !JavaExpression.fromNode(rhs).syntacticEquals(target)) {
+        && (!JavaExpression.fromNode(rhs).syntacticEquals(target)
+            || !target.isDeterministic(analysis.getTypeFactory()))) {
       Tree lhsTree = lhs.getTree();
       TreePath path = lhsTree == null ? null : analysis.getTypeFactory().getPath(lhsTree);
       store.removeValuesThatMightName(target, path);

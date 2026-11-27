@@ -17,6 +17,16 @@ public class KeyForReassignedMap {
     }
   }
 
+  // The equality must not give `m` or `other` the refined type of `k`, which names the old `m`.
+  void equalityWithReassignment(Object k, Map<Object, Object> m, Map<Object, Object> other) {
+    if (m.containsKey(k)) {
+      if (k == (m = other)) {
+        // :: error: [dereference.of.nullable]
+        m.get(other).toString();
+      }
+    }
+  }
+
   //
   // Reassignments that must be accepted
   //
