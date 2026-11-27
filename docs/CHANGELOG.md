@@ -7,6 +7,10 @@
 
 ### User-visible changes
 
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
@@ -24,6 +28,13 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+Dataflow analysis gives the result of a boxing or unboxing conversion the
+qualifiers of the converted value, as adapted by the new methods
+`AnnotatedTypeFactory.getBoxedAnnotations()` and
+`AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
+qualifiers at boxing or unboxing should override those methods rather than
+`getBoxedType()` and `getUnboxedType()`.
+
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
 opposite order.  It returns true for any compile-time constant of type `byte`,
@@ -33,6 +44,31 @@ only for a literal.  New method
 constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
 assignment conversion does.  New method `TreeUtils.isCompileTimeConstant()`
 returns true if a tree is a constant expression.
+
+`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
+and else-store:  the result's then-store and else-store are both their least
+upper bound.  Use it when the input's then-store and else-store describe an
+earlier node, such as an operand.  New method
+`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
+then-store and else-store.  Use it when they describe the current node, as for
+a cast.  Also use it when the current node forwards an earlier node's stores,
+unchanged, to a later node that uses them.  For example, in `isNN(o) == true`,
+the literal `true` forwards the stores of `isNN(o)` to `==`; merging them at the
+literal would lose the fact that `o` is non-null when `isNN(o)` is true.
+
+These methods of `CFAbstractTransfer` no longer call `visitNode()`:
+`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
+`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
+`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call,
+when the input has a then-store and an else-store); for boolean operands,
+`visitBitwiseAnd()`, `visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`,
+and `visitNotEqual()`; and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+
+`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
+function of the lambda's result node; it uses the value that the result node
+already computed.
 
 `BaseTypeVisitor.OverrideChecker` is now a top-level class,
 `org.checkerframework.common.basetype.OverrideChecker`.  Its constructor takes a
