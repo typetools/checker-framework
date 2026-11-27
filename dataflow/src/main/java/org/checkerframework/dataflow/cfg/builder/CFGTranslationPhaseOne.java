@@ -933,7 +933,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * unboxing. The recorded type is the unboxed type if unboxing applies, or the original type
    * otherwise.
    *
-   * @param tree the tree whose type to inspect
+   * @param tree a tree whose type to inspect
    * @return information about the tree's type and its unboxing conversion
    */
   private TreeInfo getTreeInfo(Tree tree) {
@@ -2350,7 +2350,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+      Node selectorExprNode = scan(selectorExprTree, null);
+      if (hasOnlyConstantLabels()) {
+        // A switch with a `case null` label or a pattern label does not unbox its selector.
+        selectorExprNode = unbox(selectorExprNode);
+      }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
@@ -2358,6 +2362,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
       extendWithNode(selectorExprAssignment);
+    }
+
+    /**
+     * Returns true if every case label of {@link #switchTree} is a constant expression other than
+     * {@code null}, as in {@code case 1, 2 ->}; that is, no label is {@code null} or a pattern.
+     *
+     * @return true if every case label of {@link #switchTree} is a non-null constant expression
+     */
+    private boolean hasOnlyConstantLabels() {
+      for (CaseTree caseTree : caseTrees) {
+        for (Tree label : CaseUtils.getLabels(caseTree)) {
+          if (!(label instanceof ExpressionTree) || label.getKind() == Tree.Kind.NULL_LITERAL) {
+            return false;
+          }
+        }
+      }
+      return true;
     }
 
     /**
