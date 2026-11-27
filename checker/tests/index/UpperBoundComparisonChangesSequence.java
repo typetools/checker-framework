@@ -83,7 +83,7 @@ public class UpperBoundComparisonChangesSequence {
   void gtChanged(int[] a, int[] b) {
     int x;
     if (a.length > (x = (a = b).length)) {
-      // :: error: (array.access.unsafe.high)
+      // :: error: (array.access.unsafe.high.range)
       int y = a[x];
     }
   }

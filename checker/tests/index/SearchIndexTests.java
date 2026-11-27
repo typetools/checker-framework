@@ -64,6 +64,9 @@ public class SearchIndexTests {
     int copy;
     if ((copy = xyz) < zero(a = new int[0])) {
       @NegativeIndexFor("b") int w = copy;
+      // The declared type of `xyz` names `a`, which the right operand reassigns, so it is
+      // incomparable to `@NegativeIndexFor("b")`, and the refinement does not apply to `xyz`.
+      // :: error: [assignment]
       @NegativeIndexFor("b") int v = xyz;
       // :: error: [assignment]
       @NegativeIndexFor("a") int u = copy;
