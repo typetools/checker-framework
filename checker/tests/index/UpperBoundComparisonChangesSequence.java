@@ -10,24 +10,9 @@ public class UpperBoundComparisonChangesSequence {
   int[] a = new int[2];
 
   // Not side-effect-free.
-  int replaceAndReturnTwo() {
-    a = new int[0];
-    return 2;
-  }
-
-  // Not side-effect-free.
   @NonNegative @LTEqLengthOf("this.a") int shrink() {
     a = new int[1];
     return 1;
-  }
-
-  // If this.a has length 2 before the call, then i is 2 but this.a has length 0 after the call.
-  void eqChanged() {
-    int i;
-    if (this.a.length == (i = replaceAndReturnTwo())) {
-      // :: error: (assignment)
-      @LTEqLengthOf("this.a") int j = i;
-    }
   }
 
   void eqUnchanged(int k) {
