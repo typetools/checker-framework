@@ -414,6 +414,12 @@ and lower bounds on char, short, int, and long values so that it can more
 precisely determine whether the result of a given boxing conversion is
 interned.)
 
+By contrast, the Interning Checker treats the result of boxing a \<boolean>
+or \<byte> value as interned.  The JLS guarantees this only when the boxed
+value is a constant expression.  For other values, the checker relies on
+\<Boolean.valueOf(boolean)> and \<Byte.valueOf(byte)>, which are documented
+to return cached objects and which javac uses to box.
+
 
 \sectionAndLabel{Examples}{interning-example}
 

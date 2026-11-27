@@ -1198,8 +1198,9 @@ public abstract class CFAbstractTransfer<
       BinaryOperationNode operatorNode, TransferInput<V, S> in, BooleanOperator truthTable) {
     Node leftN = operatorNode.getLeftOperand();
     Node rightN = operatorNode.getRightOperand();
-    if (!TypesUtils.isBooleanType(leftN.getType())
-        || !TypesUtils.isBooleanType(rightN.getType())
+    // The upper bound handles a type variable bounded by Boolean, which the CFG does not unbox.
+    if (!TypesUtils.isBooleanType(TypesUtils.upperBound(leftN.getType()))
+        || !TypesUtils.isBooleanType(TypesUtils.upperBound(rightN.getType()))
         // The CFG does not unbox two boxed operands of == or !=, which Java compares by reference.
         // Their references can differ even when their values are equal.
         || ((operatorNode instanceof EqualToNode || operatorNode instanceof NotEqualNode)
