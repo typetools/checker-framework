@@ -5605,6 +5605,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       functionTypeReturnType = invocationReturnType;
     }
 
+    if (functionalInterface.getKind() == TypeKind.INTERSECTION) {
+      // The target is an inferred intersection type, as for an argument whose parameter type is
+      // `T` where `<T extends A & B>`.  As for an intersection cast, use the bound that declares or
+      // inherits the functional method.
+      TypeMirror erasedFnOwner =
+          types.erasure(functionType.getElement().getEnclosingElement().asType());
+      for (AnnotatedTypeMirror bound :
+          ((AnnotatedIntersectionType) functionalInterface).getBounds()) {
+        if (types.isSubtype(types.erasure(bound.getUnderlyingType()), erasedFnOwner)) {
+          functionalInterface = bound;
+          break;
+        }
+      }
+    }
+
     if (functionalInterface.getKind() == TypeKind.DECLARED) {
       // Check the member reference as if invocationType overrides functionType.
       OverrideChecker overrideChecker =
