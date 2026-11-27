@@ -1959,20 +1959,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that a type declaration of the stub file
-   * inherits from its supertypes.
-   *
-   * @param declaration a type declaration in the stub file
-   * @param identifier the simple name of a member type
-   * @return the inherited member type: a {@link TypeDeclaration} if the stub file declares it, a
-   *     {@link Class} if it is on the classpath, or null if there is none or it cannot be
-   *     determined
-   */
-  private @Nullable Object inheritedMemberType(TypeDeclaration<?> declaration, String identifier) {
-    return inheritedMemberType(declaration, identifier, false, null);
-  }
-
-  /**
-   * Returns the member type named {@code identifier} that a type declaration of the stub file
    * inherits from its supertypes, and that is inherited by the subtypes of {@code declaration}
    * along an inheritance path (as defined at {@link #classMemberType(Class, String, String,
    * String)}).
