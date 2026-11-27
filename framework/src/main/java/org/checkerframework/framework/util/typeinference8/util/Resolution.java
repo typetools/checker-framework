@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -228,10 +227,12 @@ public final class Resolution {
           continue;
         }
       }
-      // `addBound` can change the instantiation even if it returns false.
-      ProperType previousInstantiation = var.getInstantiation();
+      // `addBound` can change the instantiation even if it returns false.  Detect a change by the
+      // same criterion that the setter uses: ProperType#equals ignores the annotations of
+      // enclosing types, but the setter installs a type that differs only in them.
+      long previousChange = var.getBounds().getLastInstantiationChange();
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
-      added |= !Objects.equals(previousInstantiation, var.getInstantiation());
+      added |= previousChange != var.getBounds().getLastInstantiationChange();
     }
     if (added) {
       boundSet.reachFixedPoint();

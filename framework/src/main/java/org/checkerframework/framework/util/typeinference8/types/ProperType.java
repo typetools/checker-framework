@@ -375,12 +375,55 @@ public class ProperType extends AbstractType {
     if (originPart != null) {
       AbstractType result = originPart.applyInstantiations();
       if (result.isProper()) {
+        if (isUpToDate()) {
+          return withAnnotationsOf((ProperType) result, fromType.get(), primaryAnnotationsFromType);
+        }
         return primaryAnnotationsFromType
             ? withPrimaryAnnotationsOf((ProperType) result, fromType.get())
             : result;
       }
     }
     return fromType.get();
+  }
+
+  /**
+   * Returns true if no instantiation of a variable that {@link #originVariables} depend on has
+   * changed since this type was last found to be up to date; see {@link #upToDateVersion}.
+   *
+   * @return true if {@link #type} reflects the current instantiations
+   */
+  private boolean isUpToDate() {
+    return instantiationVersion(originVariables) == upToDateVersion;
+  }
+
+  /**
+   * Returns {@code fromOrigin} with all the annotations of {@code fromType}. It keeps the origin of
+   * {@code fromOrigin}, so its ignored positions can be found, and so that it is recomputed when an
+   * instantiation that its origin depends on changes.
+   *
+   * <p>This is used when this type is up to date. Then {@link #type} holds the right annotations,
+   * even at positions where applying instantiations to {@link #origin} would give different ones.
+   * For example, the least upper bound of two types that ignore the annotations at the same
+   * positions combines their annotations there, but it keeps the origin of only one of them (see
+   * {@code InferenceFactory#withOriginOfEither}).
+   *
+   * @param fromOrigin a part of this type computed from this type's {@link #origin}
+   * @param fromType the same part of this type computed from this type's {@link #type}, or null
+   * @param ignoreAnnotationsFromType if true, the result gets the {@link #ignoreAnnotations} of
+   *     {@code fromType}; otherwise, that of {@code fromOrigin}
+   * @return {@code fromOrigin} with the annotations of {@code fromType}, or {@code fromOrigin}
+   *     itself if {@code fromType} is null or has a different Java type
+   */
+  private ProperType withAnnotationsOf(
+      ProperType fromOrigin, @Nullable AbstractType fromType, boolean ignoreAnnotationsFromType) {
+    if (fromType == null
+        || !context.types.isSameType(
+            (Type) fromOrigin.getJavaType(), (Type) fromType.getJavaType())) {
+      return fromOrigin;
+    }
+    return fromOrigin.withAnnotatedType(
+        fromType.getAnnotatedType(),
+        ignoreAnnotationsFromType ? fromType.ignoreAnnotations : fromOrigin.ignoreAnnotations);
   }
 
   /**
@@ -515,6 +558,19 @@ public class ProperType extends AbstractType {
         return fromType.get();
       }
       result.add(r);
+    }
+    if (isUpToDate()) {
+      // See #withAnnotationsOf.
+      List<AbstractType> partFromType = fromType.get();
+      if (partFromType != null && partFromType.size() == result.size()) {
+        for (int i = 0; i < result.size(); i++) {
+          result.set(
+              i,
+              withAnnotationsOf(
+                  (ProperType) result.get(i), partFromType.get(i), primaryAnnotationsFromType));
+        }
+        return result;
+      }
     }
     if (primaryAnnotationsFromType) {
       List<AbstractType> partFromType = fromType.get();

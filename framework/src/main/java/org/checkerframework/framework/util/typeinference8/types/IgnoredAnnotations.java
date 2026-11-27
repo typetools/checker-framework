@@ -123,6 +123,16 @@ final class IgnoredAnnotations {
         && !mayHaveIgnoredPositions) {
       return new ReplacedTypes(upToDateSub.getAnnotatedType(), upToDateSup.getAnnotatedType());
     }
+    if (mayHaveIgnoredPositions
+        && upToDateSub.getTypeKind() == TypeKind.ARRAY
+        && upToDateSup.getTypeKind() == TypeKind.ARRAY
+        && !types.isSameType(
+            types.erasure(upToDateSub.getJavaType()), types.erasure(upToDateSup.getJavaType()))) {
+      ReplacedTypes result = replaceIgnoredForSubtypeArrays(upToDateSub, upToDateSup, qh, types);
+      if (result != null) {
+        return result;
+      }
+    }
     AbstractType subAsSuper = upToDateSub;
     if (mayHaveIgnoredPositions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
@@ -144,6 +154,48 @@ final class IgnoredAnnotations {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
     }
     if (upToDateSup.ignoreAnnotations) {
+      supATM.replaceAnnotations(qh.getTopAnnotations());
+    }
+    return new ReplacedTypes(subATM, supATM);
+  }
+
+  /**
+   * Returns the annotated types of the arrays {@code sub} and {@code sup} with their ignored
+   * annotations replaced, as {@link #replaceIgnoredForSubtype} does, or null if either component
+   * type is not available.
+   *
+   * <p>The component types of arrays of different classes, such as {@code ArrayList<A>[]} and
+   * {@code List<B>[]}, are of different classes too, so their positions do not line up. The type
+   * hierarchy compares the component types, and it views the component type of {@code sub} as a
+   * supertype of the class of that of {@code sup}. So this method replaces the ignored annotations
+   * of the component types, by calling {@link #replaceIgnoredForSubtype} on them; that call finds
+   * the supertype of the component type of {@code sub}.
+   *
+   * @param sub a potential subtype, which is an up-to-date array type (see {@link #upToDate})
+   * @param sup the potential supertype, which is an up-to-date array type
+   * @param qh the qualifier hierarchy
+   * @param types the type utilities
+   * @return a pair of annotated types: {@code sub} and {@code sup}, with ignored annotations
+   *     replaced; or null
+   */
+  private static @Nullable ReplacedTypes replaceIgnoredForSubtypeArrays(
+      AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
+    // ProperType#getComponentType computes the component type from the origin, if any, so its
+    // ignored positions can be found.
+    AbstractType subComponent = sub.getComponentType();
+    AbstractType supComponent = sup.getComponentType();
+    if (subComponent == null || supComponent == null) {
+      return null;
+    }
+    ReplacedTypes components = replaceIgnoredForSubtype(subComponent, supComponent, qh, types);
+    AnnotatedArrayType subATM = (AnnotatedArrayType) sub.getAnnotatedType().shallowCopy();
+    AnnotatedArrayType supATM = (AnnotatedArrayType) sup.getAnnotatedType().shallowCopy();
+    subATM.setComponentType(components.type1());
+    supATM.setComponentType(components.type2());
+    if (sub.ignoreAnnotations) {
+      subATM.replaceAnnotations(qh.getBottomAnnotations());
+    }
+    if (sup.ignoreAnnotations) {
       supATM.replaceAnnotations(qh.getTopAnnotations());
     }
     return new ReplacedTypes(subATM, supATM);
@@ -1068,9 +1120,9 @@ final class IgnoredAnnotations {
      * Returns true if the test holds for {@code position1} and {@code position2}.
      *
      * <p>Where one type has a wildcard and the other does not, the wildcard's bound, rather than
-     * the wildcard, corresponds to the other type. Then the wildcard is passed as well, because
-     * the bound constrains an annotation only in one direction: for example, the type argument
-     * {@code ? extends @NonNull String} is satisfied by anything below {@code @NonNull}.
+     * the wildcard, corresponds to the other type. Then the wildcard is passed as well, because the
+     * bound constrains an annotation only in one direction: for example, the type argument {@code ?
+     * extends @NonNull String} is satisfied by anything below {@code @NonNull}.
      *
      * @param position1 a position of the first type
      * @param position2 the corresponding position of the second type
@@ -1121,10 +1173,7 @@ final class IgnoredAnnotations {
    * @return true if {@code test} holds for each pair of corresponding positions
    */
   private static boolean allCorrespondingPositionsMatch(
-      AnnotatedTypeMirror atm1,
-      AnnotatedTypeMirror atm2,
-      PositionTest test,
-      Types types) {
+      AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, PositionTest test, Types types) {
     return allCorrespondingPositionsMatch(atm1, atm2, test, new IdentityHashMap<>(), types);
   }
 
