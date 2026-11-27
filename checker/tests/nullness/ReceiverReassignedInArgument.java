@@ -177,4 +177,37 @@ public class ReceiverReassignedInArgument {
     f.tick();
     f.tick();
   }
+
+  @SideEffectsOnly("this.count")
+  void tickAndThrow(java.io.IOException failure) throws java.io.IOException {
+    count++;
+    throw failure;
+  }
+
+  // The callee's exception shows that f is non-null, and the callee does not replace f.
+  void sideEffectsOnlyFieldInCatch(java.io.IOException failure) {
+    try {
+      // :: error: (dereference.of.nullable)
+      f.tickAndThrow(failure);
+    } catch (java.io.IOException e) {
+      f.toString();
+    }
+  }
+
+  void clearFAndThrow(java.io.IOException failure) throws java.io.IOException {
+    f = null;
+    throw failure;
+  }
+
+  // The callee has unrestricted side effects, so it might replace f before throwing.  (If f is an
+  // alias of this, the callee does replace f.)
+  void sideEffectFieldInCatch(java.io.IOException failure) {
+    try {
+      // :: error: (dereference.of.nullable)
+      f.clearFAndThrow(failure);
+    } catch (java.io.IOException e) {
+      // :: error: (dereference.of.nullable)
+      f.toString();
+    }
+  }
 }

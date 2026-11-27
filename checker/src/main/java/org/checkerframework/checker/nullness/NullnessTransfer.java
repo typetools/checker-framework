@@ -5,14 +5,18 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +117,18 @@ public class NullnessTransfer
   /** The method {@code Object.toString()}. */
   private final ExecutableElement objectToString;
 
+  /** The method {@code AutoCloseable.close()}. */
+  private final ExecutableElement autoCloseableClose;
+
+  /** The method {@code Iterable.iterator()}. */
+  private final ExecutableElement iterableIterator;
+
+  /** The method {@code Iterator.hasNext()}. */
+  private final ExecutableElement iteratorHasNext;
+
+  /** The method {@code Iterator.next()}. */
+  private final ExecutableElement iteratorNext;
+
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -152,6 +168,11 @@ public class NullnessTransfer
             && checker.getBooleanOption("invocationPreservesArgumentNullness", true);
 
     objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
+    autoCloseableClose =
+        TreeUtils.getMethod("java.lang.AutoCloseable", "close", 0, analysis.getEnv());
+    iterableIterator = TreeUtils.getMethod("java.lang.Iterable", "iterator", 0, analysis.getEnv());
+    iteratorHasNext = TreeUtils.getMethod("java.util.Iterator", "hasNext", 0, analysis.getEnv());
+    iteratorNext = TreeUtils.getMethod("java.util.Iterator", "next", 0, analysis.getEnv());
   }
 
   /**
@@ -473,7 +494,7 @@ public class NullnessTransfer
     // The exceptional successors of the invocation get the store before the invocation, which
     // super.visitMethodInvocation modifies in place.  So, copy it first.
     @Nullable NullnessStore storeBeforeInvocation =
-        refineReceiver && n.getBlock() instanceof ExceptionBlock
+        mayRefineReceiver && n.getBlock() instanceof ExceptionBlock
             ? in.getRegularStore().copy()
             : null;
 
@@ -486,6 +507,11 @@ public class NullnessTransfer
       if (storeBeforeInvocation != null) {
         result = refineReceiverOnExceptionalSuccessors(n, result, storeBeforeInvocation);
       }
+    } else if (storeBeforeInvocation != null
+        && receiverSurvivesCallEffects(n, receiverExpr, storeBeforeInvocation)) {
+      // An exception from the callee shows that the receiver was non-null, and the callee cannot
+      // replace the receiver expression (for example, because of @SideEffectsOnly).
+      result = refineReceiverOnExceptionalSuccessors(n, result, storeBeforeInvocation);
     }
 
     // The refinements below examine the invocation's tree.  As for the receiver, they are skipped
@@ -539,6 +565,28 @@ public class NullnessTransfer
   }
 
   /**
+   * Returns true if a non-null refinement of the receiver of {@code n} survives the call effects of
+   * {@code n}, that is, if the invoked method cannot replace the receiver expression. Does not
+   * apply the postconditions of the invoked method, which do not hold if it throws an exception.
+   *
+   * @param n a method invocation
+   * @param receiverExpr the receiver of {@code n}
+   * @param storeBefore the store before {@code n}; is not side-effected
+   * @return true if a non-null refinement of the receiver survives the call effects of {@code n}
+   */
+  private boolean receiverSurvivesCallEffects(
+      MethodInvocationNode n, JavaExpression receiverExpr, NullnessStore storeBefore) {
+    if (!CFAbstractStore.canInsertJavaExpression(receiverExpr)) {
+      return false;
+    }
+    NullnessStore store = storeBefore.copy();
+    store.insertValue(receiverExpr, NONNULL);
+    store.updateForMethodCall(n, null);
+    NullnessValue value = store.getValue(receiverExpr);
+    return value != null && AnnotationUtils.containsSameByName(value.getAnnotations(), NONNULL);
+  }
+
+  /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
    * on each exceptional successor of {@code n}. An exception that {@code n} throws comes from the
    * invoked method, which the invocation entered only because the receiver is non-null.
@@ -589,7 +637,10 @@ public class NullnessTransfer
    * side-effect-free.
    *
    * <p>Matching a record pattern, as in {@code o instanceof R(int i)}, implicitly invokes the
-   * record's component accessors. This method handles them as it handles explicit method
+   * record's component accessors. Likewise, string conversion implicitly invokes {@code
+   * toString()}, a try-with-resources statement implicitly invokes {@code close()}, and an enhanced
+   * {@code for} loop over an {@code Iterable} implicitly invokes {@code iterator()}, {@code
+   * hasNext()}, and {@code next()}. This method handles them as it handles explicit method
    * invocations.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
@@ -682,6 +733,47 @@ public class NullnessTransfer
             return super.scan(tree, p);
           }
 
+          // A try-with-resources statement, in a switch expression, implicitly invokes close() on
+          // each resource.
+          @Override
+          public Boolean visitTry(TryTree tree, Void p) {
+            for (Tree resource : tree.getResources()) {
+              TypeMirror resourceType =
+                  resource instanceof VariableTree variableTree
+                      ? TreeUtils.elementFromDeclaration(variableTree).asType()
+                      : TreeUtils.typeOf(resource);
+              if (noArgMethodMayHaveSideEffect(resourceType, "close", autoCloseableClose)) {
+                return true;
+              }
+            }
+            return super.visitTry(tree, p);
+          }
+
+          // An enhanced for loop over an Iterable, in a switch expression, implicitly invokes
+          // iterator(), hasNext(), and next().  A loop over an array invokes no methods.
+          @Override
+          public Boolean visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+            TypeMirror iterableType = TreeUtils.typeOf(tree.getExpression());
+            if (iterableType.getKind() != TypeKind.ARRAY) {
+              List<ExecutableElement> iteratorMethods = noArgMethods(iterableType, "iterator");
+              if (iteratorMethods.isEmpty()
+                  && (mayHaveSideEffect(iterableIterator)
+                      || mayHaveSideEffect(iteratorHasNext)
+                      || mayHaveSideEffect(iteratorNext))) {
+                return true;
+              }
+              for (ExecutableElement iteratorMethod : iteratorMethods) {
+                TypeMirror iteratorType = iteratorMethod.getReturnType();
+                if (mayHaveSideEffect(iteratorMethod)
+                    || noArgMethodMayHaveSideEffect(iteratorType, "hasNext", iteratorHasNext)
+                    || noArgMethodMayHaveSideEffect(iteratorType, "next", iteratorNext)) {
+                  return true;
+                }
+              }
+            }
+            return super.visitEnhancedForLoop(tree, p);
+          }
+
           // visitMethodInvocation and visitNewClass handle the invocations that execute the body
           // of a lambda expression or anonymous class.
 
@@ -756,25 +848,78 @@ public class NullnessTransfer
                 || TypesUtils.isString(type)) {
               return false;
             }
-            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
-            if (typeElement == null) {
-              // For example, an array type.
-              return mayHaveSideEffect(objectToString);
+            // An interface need not declare or inherit a toString() method, and an array type has
+            // no type element.
+            return noArgMethodMayHaveSideEffect(type, "toString", objectToString);
+          }
+
+          /*
+           * Returns true if implicitly invoking the no-argument method with the given name on a
+           * value of the given static type might reassign the receiver.  As for an explicit
+           * invocation, uses the methods of the static type.  If the type has no such method, uses
+           * {@code fallback} instead.
+           *
+           * @param type the static type of the receiver of the implicit invocation
+           * @param name the name of the invoked method
+           * @param fallback the method to use if {@code type} has no such method
+           * @return true if the implicit invocation might reassign the receiver
+           */
+          private boolean noArgMethodMayHaveSideEffect(
+              TypeMirror type, String name, ExecutableElement fallback) {
+            if (!receiverMayChangeByOtherCode || nonNullAssumptionAfterInvocation) {
+              // mayHaveSideEffect returns false for every method.
+              return false;
             }
-            // As for an explicit invocation, use the toString() methods of the static type.
-            // getAllMethodsIn also returns overridden methods, which is conservative.
-            boolean foundToString = false;
-            for (ExecutableElement m :
-                ElementUtils.getAllMethodsIn(typeElement, nullnessTypeFactory.getElementUtils())) {
-              if (m.getSimpleName().contentEquals("toString") && m.getParameters().isEmpty()) {
-                foundToString = true;
-                if (mayHaveSideEffect(m)) {
-                  return true;
-                }
+            List<ExecutableElement> methods = noArgMethods(type, name);
+            if (methods.isEmpty()) {
+              return mayHaveSideEffect(fallback);
+            }
+            for (ExecutableElement m : methods) {
+              if (mayHaveSideEffect(m)) {
+                return true;
               }
             }
-            // An interface need not declare or inherit a toString() method.
-            return !foundToString && mayHaveSideEffect(objectToString);
+            return false;
+          }
+
+          /*
+           * Returns the no-argument methods with the given name that are members of the erasure
+           * of the given type, omitting each method that another of them overrides.  (The
+           * checker requires an overriding method to be at least as pure as the method it
+           * overrides.)  Returns more than one method if the type inherits several of them, which
+           * is conservative.  Returns an empty list if the erasure has no type element, as for an
+           * array type.
+           *
+           * @param type a type
+           * @param name a method name
+           * @return the most specific no-argument methods named {@code name} in {@code type}
+           */
+          private List<ExecutableElement> noArgMethods(TypeMirror type, String name) {
+            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+            if (typeElement == null) {
+              return List.of();
+            }
+            Elements elements = nullnessTypeFactory.getElementUtils();
+            List<ExecutableElement> candidates = new ArrayList<>();
+            for (ExecutableElement m : ElementUtils.getAllMethodsIn(typeElement, elements)) {
+              if (m.getSimpleName().contentEquals(name) && m.getParameters().isEmpty()) {
+                candidates.add(m);
+              }
+            }
+            List<ExecutableElement> result = new ArrayList<>();
+            for (ExecutableElement m : candidates) {
+              boolean isOverridden = false;
+              for (ExecutableElement other : candidates) {
+                if (other != m && elements.overrides(other, m, typeElement)) {
+                  isOverridden = true;
+                  break;
+                }
+              }
+              if (!isOverridden) {
+                result.add(m);
+              }
+            }
+            return result;
           }
 
           /*
