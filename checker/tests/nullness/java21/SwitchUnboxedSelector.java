@@ -8,8 +8,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// A switch with a `case null` label or a pattern label does not unbox its selector, so a null
-// selector does not throw a NullPointerException before the cases are tested.
+// A switch with a `case null` label does not unbox its selector, so a null selector does not throw
+// a NullPointerException before the cases are tested.
 public class SwitchUnboxedSelector {
 
   static String boxedCaseNull(@Nullable Integer i) {

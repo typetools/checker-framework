@@ -2217,6 +2217,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private AssignmentNode selectorExprAssignment;
 
     /**
+     * True if the CFG for a guard has been built. Cases are tested in the order they are built, so
+     * this is true if a guard might execute between the evaluation of the selector expression and
+     * the test of the case currently being built. A guard might change the value of the selector
+     * expression.
+     */
+    private boolean guardBuilt = false;
+
+    /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
@@ -2339,6 +2347,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * the selector expression to the variable. This assignment node is stored in {@link
      * #selectorExprAssignment}. It can later be used to refine the selector expression in case
      * bodies.
+     *
+     * <p>A selector whose type is a primitive wrapper class such as {@code Integer}, or a type
+     * variable whose upper bound is a primitive wrapper class, is unboxed, unless the switch has a
+     * {@code case null} label. Such a switch does not throw {@code NullPointerException} if its
+     * selector is null.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2363,8 +2376,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(selectorVarUseNode);
 
       Node selectorExprNode = scan(selectorExprTree, null);
-      if (hasOnlyConstantLabels()) {
-        // A switch with a `case null` label or a pattern label does not unbox its selector.
+      if (!TreeUtils.hasNullCaseLabel(switchTree)) {
         selectorExprNode = unbox(selectorExprNode);
       }
 
@@ -2374,23 +2386,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
       extendWithNode(selectorExprAssignment);
-    }
-
-    /**
-     * Returns true if every case label of {@link #switchTree} is a constant expression other than
-     * {@code null}, as in {@code case 1, 2 ->}; that is, no label is {@code null} or a pattern.
-     *
-     * @return true if every case label of {@link #switchTree} is a non-null constant expression
-     */
-    private boolean hasOnlyConstantLabels() {
-      for (CaseTree caseTree : caseTrees) {
-        for (Tree label : CaseUtils.getLabels(caseTree)) {
-          if (!(label instanceof ExpressionTree) || label.getKind() == Tree.Kind.NULL_LITERAL) {
-            return false;
-          }
-        }
-      }
-      return true;
     }
 
     /**
@@ -2446,7 +2441,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+          extendWithNode(
+              new CaseNode(
+                  caseTree, selectorExprAssignment, exprs, guardBuilt, env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
@@ -2456,6 +2453,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          guardBuilt = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
