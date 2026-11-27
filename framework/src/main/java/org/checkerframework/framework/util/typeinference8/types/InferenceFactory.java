@@ -1064,14 +1064,34 @@ public class InferenceFactory {
       // annotations change.  A result that differs from the input elsewhere cannot get its origin,
       // because a type with an origin computes its parts from the origin.  Keeping the origin in
       // `lubSoFar` lets the next input's annotations replace those at its ignored positions, as in
-      // `glb`.
-      List<ProperType> inputs = Arrays.asList(lubSoFar, properType);
+      // `glb`.  The candidates are the inputs projected to the class of the result, so that, for
+      // example, the lub `Parent<String>` of `Left<String>` and `Right<String>` keeps the ignored
+      // positions that both inputs have in `Parent<String>`.
+      ProperType lubSoFarAsSuper = asSuperIfProper(lubSoFar, lubTM);
+      ProperType properTypeAsSuper = asSuperIfProper(properType, lubTM);
+      List<ProperType> inputs = Arrays.asList(lubSoFarAsSuper, properTypeAsSuper);
       ProperType withOrigin =
-          withOriginOfEither(lubSoFar, properType, inputs, lubTM, lubATM, ignoreAnnotations);
+          withOriginOfEither(
+              lubSoFarAsSuper, properTypeAsSuper, inputs, lubTM, lubATM, ignoreAnnotations);
       lubSoFar =
           withOrigin != null ? withOrigin : new ProperType(lubATM, context, ignoreAnnotations);
     }
     return lubSoFar;
+  }
+
+  /**
+   * Returns the supertype of {@code type} whose class is that of {@code superType} (see {@link
+   * IgnoredAnnotations#asSuper}), or {@code type} itself if there is none. If {@code type} has an
+   * origin (see {@link ProperType#getOrigin}), then the supertype is computed from it (see {@link
+   * ProperType#asSuper}), so it has the ignored positions of {@code type} that it contains.
+   *
+   * @param type a proper type
+   * @param superType a type; need not be a supertype of {@code type}
+   * @return the supertype of {@code type} whose class is that of {@code superType}, or {@code type}
+   */
+  private ProperType asSuperIfProper(ProperType type, TypeMirror superType) {
+    AbstractType asSuper = IgnoredAnnotations.asSuper(type, superType, context.modelTypes);
+    return asSuper instanceof ProperType properAsSuper ? properAsSuper : type;
   }
 
   /**

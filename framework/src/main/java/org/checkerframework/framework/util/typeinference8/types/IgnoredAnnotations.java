@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -89,8 +90,14 @@ final class IgnoredAnnotations {
    *       annotations.
    *   <li>If the primary annotations of {@code sup} are ignored, then they are replaced with top
    *       annotations.
+   *   <li>Exception: in a hierarchy in which both types have a class qualifier parameter, the type
+   *       hierarchy requires their primary annotations to be equivalent, so ignored primary
+   *       annotations are replaced by those of the other type, as in {@link
+   *       #replaceIgnoredForEquality}.
    *   <li>Ignored annotations elsewhere in either type are replaced with the annotations at the
-   *       corresponding position in the other type.
+   *       corresponding position in the other type. If {@code sub} is a type variable, then the
+   *       positions of {@code sup} correspond to those of the upper bound of {@code sub}, because
+   *       the type hierarchy compares {@code sub} with {@code sup} through that bound.
    * </ul>
    *
    * <p>If neither type has ignored annotations, the result holds the types' own annotated types;
@@ -98,13 +105,14 @@ final class IgnoredAnnotations {
    *
    * @param sub a potential subtype
    * @param sup the potential supertype
-   * @param qh the qualifier hierarchy
+   * @param atypeFactory the type factory
    * @param types the type utilities
    * @return a pair of annotated types: {@code sub} and {@code sup}, with ignored annotations
    *     replaced
    */
   static ReplacedTypes replaceIgnoredForSubtype(
-      AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
+      AbstractType sub, AbstractType sup, AnnotatedTypeFactory atypeFactory, Types types) {
+    QualifierHierarchy qh = atypeFactory.getQualifierHierarchy();
     AbstractType upToDateSub = upToDate(sub);
     AbstractType upToDateSup = upToDate(sup);
     boolean mayHaveIgnoredPositions =
@@ -122,18 +130,47 @@ final class IgnoredAnnotations {
     AnnotatedTypeMirror subATM = subAsSuper.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror supATM = upToDateSup.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredPositions) {
+      Map<AnnotatedTypeMirror, AnnotationMirrorSet> supIgnored =
+          ignoredPositions(upToDateSup, supATM, qh);
       replaceIgnoredWithCorresponding(
-          subATM,
-          supATM,
-          ignoredPositions(subAsSuper, subATM, qh),
-          ignoredPositions(upToDateSup, supATM, qh),
-          false);
+          subATM, supATM, ignoredPositions(subAsSuper, subATM, qh), supIgnored, false);
+      if (isTypeVariable(upToDateSub) && !supIgnored.isEmpty()) {
+        // The type hierarchy compares a type variable with `sup` through its upper bound, so the
+        // positions nested in `sup` correspond to those of that bound.  The bounds of a type
+        // variable are not positions in it, so only the ignored positions of `sup` are replaced.
+        // The pair of `subATM` and `supATM` themselves was handled above.
+        Map<AnnotatedTypeMirror, AnnotationMirrorSet> supNestedIgnored =
+            new IdentityHashMap<>(supIgnored);
+        supNestedIgnored.remove(supATM);
+        AbstractType subBoundAsSuper =
+            asSuper(upperBoundIfTypeVariable(upToDateSub), upToDateSup.getJavaType(), types);
+        replaceIgnoredWithCorresponding(
+            subBoundAsSuper.getAnnotatedType().deepCopy(),
+            supATM,
+            Collections.emptyMap(),
+            supNestedIgnored,
+            false);
+      }
     }
-    if (upToDateSub.ignoreAnnotations) {
-      subATM.replaceAnnotations(qh.getBottomAnnotations());
-    }
-    if (upToDateSup.ignoreAnnotations) {
-      supATM.replaceAnnotations(qh.getTopAnnotations());
+    if (upToDateSub.ignoreAnnotations || upToDateSup.ignoreAnnotations) {
+      for (AnnotationMirror top : qh.getTopAnnotations()) {
+        if (atypeFactory.hasQualifierParameterInHierarchy(subATM, top)
+            && atypeFactory.hasQualifierParameterInHierarchy(supATM, top)) {
+          // The type hierarchy requires the primary annotations to be equivalent.
+          if (upToDateSub.ignoreAnnotations) {
+            copyPrimaryAnnotationInHierarchy(supATM, subATM, top);
+          } else {
+            copyPrimaryAnnotationInHierarchy(subATM, supATM, top);
+          }
+        } else {
+          if (upToDateSub.ignoreAnnotations) {
+            subATM.replaceAnnotation(qh.getBottomAnnotation(top));
+          }
+          if (upToDateSup.ignoreAnnotations) {
+            supATM.replaceAnnotation(top);
+          }
+        }
+      }
     }
     return new ReplacedTypes(subATM, supATM);
   }
@@ -356,6 +393,28 @@ final class IgnoredAnnotations {
     copyPrimaryAnnotationsInHierarchies(source, target, qh.getTopAnnotations());
   }
 
+  /**
+   * Returns the supertype of {@code type} whose class is that of {@code superType} (see {@link
+   * AbstractType#asSuper}); for example, the supertype of {@code ArrayList<String>} whose class is
+   * {@code List} is {@code List<String>}. Returns {@code type} itself if either is not a declared
+   * type, if both are of the same class, or if {@code type} has no such supertype that is a proper
+   * type.
+   *
+   * @param type a type
+   * @param superType a type; need not be a supertype of {@code type}
+   * @param types the type utilities
+   * @return the supertype of {@code type} whose class is that of {@code superType}, or {@code type}
+   */
+  static AbstractType asSuper(AbstractType type, TypeMirror superType, Types types) {
+    if (type.getTypeKind() != TypeKind.DECLARED
+        || superType.getKind() != TypeKind.DECLARED
+        || types.isSameType(types.erasure(type.getJavaType()), types.erasure(superType))) {
+      return type;
+    }
+    AbstractType asSuper = type.asSuper(superType);
+    return asSuper != null && asSuper.isProper() ? asSuper : type;
+  }
+
   // //////////////////////////////////////////////////////////////////////////
   // Private methods appear below; package-protected methods appear above
   //
@@ -406,28 +465,6 @@ final class IgnoredAnnotations {
     // The ignored positions of a type are found from the current instantiations, so its annotated
     // type must be made from them too.
     return type.getOrigin() != null ? type.applyInstantiations() : type;
-  }
-
-  /**
-   * Returns the supertype of {@code type} whose class is that of {@code superType} (see {@link
-   * AbstractType#asSuper}); for example, the supertype of {@code ArrayList<String>} whose class is
-   * {@code List} is {@code List<String>}. Returns {@code type} itself if either is not a declared
-   * type, if both are of the same class, or if {@code type} has no such supertype that is a proper
-   * type.
-   *
-   * @param type a type
-   * @param superType a type; need not be a supertype of {@code type}
-   * @param types the type utilities
-   * @return the supertype of {@code type} whose class is that of {@code superType}, or {@code type}
-   */
-  private static AbstractType asSuper(AbstractType type, TypeMirror superType, Types types) {
-    if (type.getTypeKind() != TypeKind.DECLARED
-        || superType.getKind() != TypeKind.DECLARED
-        || types.isSameType(types.erasure(type.getJavaType()), types.erasure(superType))) {
-      return type;
-    }
-    AbstractType asSuper = type.asSuper(superType);
-    return asSuper != null && asSuper.isProper() ? asSuper : type;
   }
 
   /**

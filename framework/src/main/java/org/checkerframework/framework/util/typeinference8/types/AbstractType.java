@@ -751,7 +751,7 @@ public abstract class AbstractType {
     }
     ReplacedTypes compared =
         IgnoredAnnotations.replaceIgnoredForSubtype(
-            this, superType, typeFactory.getQualifierHierarchy(), context.modelTypes);
+            this, superType, typeFactory, context.modelTypes);
     AnnotatedTypeMirror subATM = compared.type1();
     AnnotatedTypeMirror superATM = compared.type2();
     if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
