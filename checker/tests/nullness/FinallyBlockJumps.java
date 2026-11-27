@@ -171,4 +171,54 @@ public class FinallyBlockJumps {
       }
     }
   }
+
+  // The labeled break statement runs the finally block of the enclosing try statement, which sets f
+  // to a non-null value.
+  @EnsuresNonNull("f")
+  @SuppressWarnings("finally") // a finally block that does not complete normally
+  void labeledBreakInNestedFinally(boolean b, int n) {
+    f = "init";
+    outer:
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        try {
+          try {
+            f = null;
+          } finally {
+            if (b) {
+              break outer;
+            }
+          }
+          f = "c";
+        } finally {
+          f = "d";
+        }
+      }
+    }
+  }
+
+  // The labeled continue statement runs the finally block of the enclosing try statement, which
+  // sets f to a non-null value.
+  @EnsuresNonNull("f")
+  @SuppressWarnings("finally") // a finally block that does not complete normally
+  void labeledContinueInNestedFinally(boolean b, int n) {
+    f = "init";
+    outer:
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        try {
+          try {
+            f = null;
+          } finally {
+            if (b) {
+              continue outer;
+            }
+          }
+          f = "c";
+        } finally {
+          f = "d";
+        }
+      }
+    }
+  }
 }
