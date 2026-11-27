@@ -949,16 +949,23 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given expression {@code e} refers to {@code this.field}, such as {@code
-   * "field"} or {@code "this.field"}, but not {@code "other.field"}.
+   * Returns true if the given expression {@code e}, written in an annotation on {@code method},
+   * refers to {@code this.field}, such as {@code "field"} or {@code "this.field"}, but not {@code
+   * "other.field"}.
+   *
+   * <p>The expression is resolved in the context of {@code method}'s declaring class, so an
+   * expression in an inherited method does not refer to a field that a subclass declares to hide a
+   * field of the same name.
    *
    * @param e the expression
+   * @param method the method whose annotation contains {@code e}
    * @param field the field
    * @return true if {@code e} refers to {@code this.field}
    */
-  public boolean expressionIsFieldAccess(String e, VariableElement field) {
+  public boolean expressionIsFieldAccess(
+      String e, ExecutableElement method, VariableElement field) {
     try {
-      JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
+      JavaExpression je = StringToJavaExpression.atMethodDecl(e, method, this.checker);
       return je instanceof FieldAccess fieldAccess
           && fieldAccess.getField().equals(field)
           && (fieldAccess.getReceiver() instanceof ThisReference || fieldAccess.isStatic());

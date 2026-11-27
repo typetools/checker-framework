@@ -448,7 +448,7 @@ public class CollectionOwnershipVisitor
    */
   private boolean destructsField(ExecutableElement method, VariableElement field) {
     for (String destructedFieldName : atypeFactory.getCollectionFieldDestructorAnnoFields(method)) {
-      if (atypeFactory.expressionIsFieldAccess(destructedFieldName, field)) {
+      if (atypeFactory.expressionIsFieldAccess(destructedFieldName, method, field)) {
         return true;
       }
     }
