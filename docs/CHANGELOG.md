@@ -40,6 +40,14 @@ new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
 inner class of a visitor can pass the visitor, as in
 `super(MyVisitor.this, overriderTree, ...)`.
 
+Purity errors for a lambda body are now reported by the new method
+`BaseTypeVisitor.reportPurityErrors(PurityResult, EnumSet, Map)`, which the
+existing two-argument `reportPurityErrors` calls.  Lambda checking still calls
+the two-argument method, so an existing override of it continues to receive
+the purity errors for lambda bodies.  A visitor needs to override the
+three-argument method only if its customization uses the methods whose purity
+annotations impose the requirement.
+
 Deprecated methods:
 
 * `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`

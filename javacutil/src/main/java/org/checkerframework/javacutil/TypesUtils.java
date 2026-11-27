@@ -720,6 +720,43 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the non-wildcard parameterization (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>) of
+   * {@code type}, or {@code type} itself if it has no wildcard type argument. javac uses this
+   * parameterization of each bound of an intersection type when it determines the function type of
+   * a lambda expression or a method reference whose target is that intersection type.
+   *
+   * <p>The enclosing type of a member class, such as {@code Outer<String>} in {@code
+   * Outer<String>.Inner<?>}, is preserved.
+   *
+   * @param type a class or interface type
+   * @param env the processing environment
+   * @return the non-wildcard parameterization of {@code type}
+   */
+  @SuppressWarnings({
+    "interning:not.interned", // removeWildcards returns its argument if it has no wildcard
+    "TypeEquals"
+  })
+  public static DeclaredType nonWildcardParameterization(
+      DeclaredType type, ProcessingEnvironment env) {
+    Context ctx = ((JavacProcessingEnvironment) env).getContext();
+    com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+    Type javacType = (Type) type;
+    Type result = javacTypes.removeWildcards(javacType);
+    Type outer = javacType.getEnclosingType();
+    if (result == javacType || !outer.hasTag(TypeTag.CLASS) || outer.allparams().isEmpty()) {
+      return (DeclaredType) result;
+    }
+    // `removeWildcards` substitutes into the declared type of `type`'s class, whose enclosing type
+    // is the generic declaration of the outer class.  Restore the actual enclosing type, and
+    // substitute its type arguments for the outer type variables that a type parameter's bound,
+    // and hence the new type arguments, can mention.
+    com.sun.tools.javac.util.List<Type> typeArgs =
+        javacTypes.subst(result.getTypeArguments(), outer.tsym.type.allparams(), outer.allparams());
+    return new ClassType(outer, typeArgs, result.tsym);
+  }
+
+  /**
    * Returns true if the given type is a compound type.
    *
    * @param type a type

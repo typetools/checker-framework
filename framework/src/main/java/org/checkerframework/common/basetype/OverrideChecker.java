@@ -3,17 +3,20 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -21,9 +24,11 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.basetype.BaseTypeVisitor.CallableDeclaration;
 import org.checkerframework.common.basetype.BaseTypeVisitor.FoundRequired;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.DiagMessage;
@@ -41,6 +46,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
@@ -228,6 +234,13 @@ public class OverrideChecker {
    */
   public boolean checkOverride() {
     if (visitor.checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+      // Skip the qualifier checks against the overridden method.  Still check a method
+      // reference's purity, which `-AskipUses` does not affect, as it does not affect a lambda's
+      // purity check.  The method reference might implement methods of other types as well, such
+      // as other bounds of an intersection type.
+      if (isMethodReference) {
+        checkMethodReferencePurity();
+      }
       return true;
     }
 
@@ -247,14 +260,26 @@ public class OverrideChecker {
   }
 
   /**
-   * Checks that the referenced method is at least as pure as the functional interface method that
-   * the method reference implements.
+   * Checks that the referenced method is at least as pure as each method through which a call can
+   * run it: the functional interface method that the method reference implements, and the other
+   * methods that {@link BaseTypeVisitor#methodsThatRun} returns. Also checks the purity that the
+   * referenced method assumes of its functional-interface arguments; see {@link
+   * #checkMethodReferenceFunctionalParameters}.
+   *
+   * <p>Reports an error for each of those methods that requires a purity kind that the referenced
+   * method lacks, except a method whose missing kinds are among those of another reported method.
+   * Thus, the errors together name every missing kind, and no error is redundant.
+   *
+   * <p>Like the purity check of a lambda body, this check is performed even if a method's declaring
+   * type is in {@code -AskipUses}. That option suppresses checks of uses of a type, but the purity
+   * of the code that implements a method is not a use of the type that declares the method.
    *
    * <p>Only a method reference needs this check. A method that overrides another one inherits its
    * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
    *
-   * <p>Under {@code -Ainfer}, reports no error. {@link BaseTypeVisitor#inferMethodReferencePurity}
-   * instead uses the method reference to infer the purity of the functional interface method.
+   * <p>Under {@code -Ainfer}, reports no error. Instead, {@link
+   * BaseTypeVisitor#inferMethodReferencePurity} uses the method reference to infer the purity of
+   * the same methods.
    */
   private void checkMethodReferencePurity() {
     // Do not report errors while inferring.  The purity annotations on the functional interface
@@ -263,23 +288,114 @@ public class OverrideChecker {
     if (!visitor.checkPurityAnnotations || visitor.infer) {
       return;
     }
-    EnumSet<PurityKind> superPurity =
-        PurityUtils.getPurityKinds(visitor.atypeFactory, overridden.getElement());
     // Apply the command-line assumptions to the referenced method, so that a method reference is
     // treated like a lambda whose body calls the referenced method.  Like such a call, a
     // side-effect-free referenced method that returns void is deterministic.
     EnumSet<PurityKind> subPurity = visitor.implementationPurityKinds(overrider.getElement());
-    if (!subPurity.containsAll(superPurity)) {
+    // `f::get`, where `f` is a functional-interface parameter of the enclosing method, denotes the
+    // code that the caller of that method was required to check, as in `checkFunctionalArgument`.
+    // The guarantee is empty for any other qualifier, such as a local variable or a reassigned
+    // parameter.
+    TreePath referencePath = visitor.atypeFactory.getPath(overriderTree);
+    if (referencePath != null) {
+      subPurity.addAll(
+          PurityChecker.functionalParameterCallPurity(
+              visitor.atypeFactory,
+              ((MemberReferenceTree) overriderTree).getQualifierExpression(),
+              overrider.getElement(),
+              TreePathUtil.enclosingMethod(referencePath),
+              visitor.atypeFactory.getProcessingEnv()));
+    }
+    // The methods to report, each paired with the purity kinds that it requires and the
+    // referenced method lacks.  No element's kinds are a subset of another element's kinds.
+    Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();
+    List<CallableDeclaration> declarations =
+        visitor.callableDeclarationsThatRun(overriderTree, overridden.getElement());
+    for (CallableDeclaration callable : declarations) {
+      ExecutableElement declaration = callable.declaration();
+      EnumSet<PurityKind> missing = PurityUtils.getPurityKinds(visitor.atypeFactory, declaration);
+      missing.removeAll(subPurity);
+      if (missing.isEmpty()
+          || toReport.values().stream().anyMatch(kinds -> kinds.containsAll(missing))) {
+        continue;
+      }
+      toReport.values().removeIf(missing::containsAll);
+      toReport.put(declaration, missing);
+    }
+
+    for (ExecutableElement declaration : toReport.keySet()) {
+      TypeElement declaringType = (TypeElement) declaration.getEnclosingElement();
+      // The type that the error message says declares `declaration`.
+      AnnotatedTypeMirror declarationOwnerType;
+      AnnotatedExecutableType declarationType;
+      if (types.isSubtype(
+          types.erasure(overriddenType.getUnderlyingType()),
+          types.erasure(declaringType.asType()))) {
+        declarationOwnerType = overriddenType;
+        declarationType =
+            declaration.equals(overridden.getElement())
+                ? overridden
+                : AnnotatedTypes.asMemberOf(
+                    types, visitor.atypeFactory, overriddenType, declaration);
+      } else {
+        // The declaration is in the hierarchy of another bound of an intersection target.
+        declarationOwnerType = visitor.atypeFactory.getAnnotatedType(declaringType);
+        declarationType = visitor.atypeFactory.getAnnotatedType(declaration);
+      }
       visitor.checker.reportError(
           overriderTree,
           "purity.methodref",
           overriderType,
           BaseTypeVisitor.purityKindsToString(subPurity),
           overrider,
-          overriddenType,
-          BaseTypeVisitor.purityKindsToString(superPurity),
-          overridden);
+          declarationOwnerType,
+          BaseTypeVisitor.purityKindsToString(
+              PurityUtils.getPurityKinds(visitor.atypeFactory, declaration)),
+          declarationType);
     }
+    checkMethodReferenceFunctionalParameters(declarations);
+  }
+
+  /**
+   * Checks that every call that can run the referenced method through the method reference
+   * guarantees, of the code that it passes to each functional-interface parameter of the referenced
+   * method, the purity that the referenced method's body assumes of it; see {@link
+   * BaseTypeVisitor#checkImplementationFunctionalParameters}.
+   *
+   * @param declarations the methods through which a call can run the referenced method, as computed
+   *     by {@link BaseTypeVisitor#callableDeclarationsThatRun}
+   */
+  private void checkMethodReferenceFunctionalParameters(List<CallableDeclaration> declarations) {
+    // A method reference `super::m` or `T.super::m` runs the selected method's own body rather
+    // than dispatching virtually (JLS 15.13.3), so no override of it can run.
+    boolean virtual =
+        MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+            != MemberReferenceKind.SUPER;
+    visitor.checkImplementationFunctionalParameters(
+        overriderTree,
+        overrider.getElement(),
+        declarations,
+        methodRefParameterOffset(),
+        virtual,
+        "purity.methodref.functional.parameter");
+  }
+
+  /**
+   * Returns the index of the functional interface method's parameter that corresponds to the
+   * referenced method's first parameter. It is 1 for an unbound method reference such as {@code
+   * Collection::clear}, whose functional interface method's first parameter is the referenced
+   * method's receiver; then the interface method's parameter {@code #(i+1)} is the referenced
+   * method's parameter {@code #i}. It is 0 for every other method reference.
+   *
+   * <p>This method requires that {@link #overriderTree} is a method reference.
+   *
+   * @return 1 if the method reference is unbound, and 0 otherwise
+   */
+  private int methodRefParameterOffset() {
+    return MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+            .isUnbound()
+        ? 1
+        : 0;
   }
 
   /**

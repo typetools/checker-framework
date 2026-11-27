@@ -195,6 +195,70 @@ public class PurityLambdaSam {
     }
   }
 
+  // A functional interface that inherits its functional method from several superinterfaces, and an
+  // intersection cast:  a call through any of the methods can run the lambda, so the body is
+  // checked against each method's annotations.
+
+  @FunctionalInterface
+  interface PlainFirstFunc extends PlainFunc, SefFunc {}
+
+  @FunctionalInterface
+  interface SefFirstFunc extends SefFunc, PlainFunc {}
+
+  void inheritedFunctionalMethods() {
+    // :: error: [purity.call]
+    PlainFirstFunc f1 = () -> impure();
+    // :: error: [purity.call]
+    SefFirstFunc f2 = () -> impure();
+    PlainFirstFunc f3 = () -> sefNotDeterministic();
+    // :: error: [purity.call]
+    Object f4 = (PlainFunc & SefFunc) () -> impure();
+    // :: error: [purity.call]
+    Object f5 = (SefFunc & PlainFunc) () -> impure();
+    Object f6 = (PlainFunc & java.io.Serializable) () -> impure();
+  }
+
+  /** Like {@link SefFunc}, but with a less specific return type. */
+  @FunctionalInterface
+  interface SefObjectFunc {
+    @SideEffectFree
+    Object get();
+  }
+
+  static <T extends SefObjectFunc & PlainFunc> void takesSefObjectAndPlain(T f) {}
+
+  void intersectionTargets() {
+    // The functional method is PlainFunc.get, whose return type is more specific than that of
+    // SefObjectFunc.get.  A call through SefObjectFunc.get can run the lambda.
+    // :: error: [purity.call]
+    Object f1 = (SefObjectFunc & PlainFunc) () -> impure();
+    Object f2 = (SefObjectFunc & PlainFunc) () -> sefNotDeterministic();
+    // The target is an intersection type that is inferred rather than written in a cast.
+    // :: error: [purity.call]
+    takesSefObjectAndPlain(() -> impure());
+    takesSefObjectAndPlain(() -> sefNotDeterministic());
+  }
+
+  interface Wide<T> {
+    @SideEffectFree
+    Object get(T t);
+  }
+
+  interface Narrow {
+    String get(String s);
+  }
+
+  /** Wide<T>.get(T) and Narrow.get(String) are override-equivalent only in Both<String>. */
+  interface Both<T> extends Wide<T>, Narrow {}
+
+  void groundBoundTarget() {
+    // The lambda implements Wide<String>.get as well as Narrow.get, so a call through the
+    // side-effect-free Wide.get can run it.
+    // :: error: [purity.call]
+    Object f1 = (Both<String> & java.io.Serializable) s -> impure();
+    Object f2 = (Both<String> & java.io.Serializable) s -> sefNotDeterministic();
+  }
+
   // Lambdas that are accepted.
 
   void accepted(String s) {
