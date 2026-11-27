@@ -63,8 +63,7 @@ public class JarEntryAnnotationFileResourceTest {
     File jar = writeJar(new File(tmp.getRoot(), "stubs.jar"), "a/A.astub", "B.astub", "C.txt");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(jar, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(2, resources.size());
     Assert.assertEquals(jar.getPath() + "!a/A.astub", resources.get(0).getDescription());
     Assert.assertEquals(jar.getPath() + "!B.astub", resources.get(1).getDescription());
@@ -80,8 +79,7 @@ public class JarEntryAnnotationFileResourceTest {
     File jar = writeJar(new File(tmp.getRoot(), "stubs.jar"), "A.astub");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(jar, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(1, resources.size());
     Files.delete(jar.toPath());
     Assert.assertEquals("A.astub", contents(resources.get(0)));
