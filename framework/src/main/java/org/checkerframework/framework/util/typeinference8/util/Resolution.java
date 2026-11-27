@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -185,8 +184,10 @@ public final class Resolution {
    * For each variable in {@code vars} whose instantiation's primary annotations are ignored (see
    * {@link AbstractType#ignoreAnnotations}), adds the bound {@code var = t}, where {@code t} is the
    * supertype, whose Java type is the instantiation's, of the {@link #lubOfLowerBounds} of the
-   * variable's proper lower bounds (see {@link #asSupertype}). If the variable has no proper lower
-   * bound, or there is no such supertype, then {@code t} is {@link #lubOfLowerBounds} of {@link
+   * variable's proper lower bounds (see {@link #asSupertype}), with the variable's qualifier lower
+   * bounds replacing the primary annotations of that lub if it ignores them. If the variable has no
+   * proper lower bound, or there is no such supertype, then {@code t} is {@link #lubOfLowerBounds}
+   * of {@link
    * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations},
    * and no bound is added if the Java type of {@code t} is not that of the instantiation. Then
    * incorporates the new bounds.
@@ -213,9 +214,13 @@ public final class Resolution {
       ProperType t = null;
       Set<ProperType> lowerBounds = var.getBounds().findProperLowerBounds();
       if (!lowerBounds.isEmpty()) {
+        // If every proper lower bound ignores annotations, then so does their lub, and its primary
+        // annotations say nothing about `var`'s; the qualifier lower bounds of `var` replace them.
+        // Otherwise, `asSupertype` could return a type that still ignores annotations even though
+        // `var` has real qualifier lower bounds.
         t =
             asSupertype(
-                lubOfLowerBounds(var, lowerBounds, false, context),
+                lubOfLowerBounds(var, lowerBounds, true, context),
                 instantiation.getJavaType(),
                 context);
       }
@@ -228,10 +233,11 @@ public final class Resolution {
           continue;
         }
       }
-      // `addBound` can change the instantiation even if it returns false.
-      ProperType previousInstantiation = var.getInstantiation();
+      // `addBound` can change the instantiation even if it returns false.  Use the change counter
+      // rather than ProperType#equals, which does not compare the annotations of enclosing types.
+      int previousChanges = var.getBounds().getInstantiationChanges();
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
-      added |= !Objects.equals(previousInstantiation, var.getInstantiation());
+      added |= previousChanges != var.getBounds().getInstantiationChanges();
     }
     if (added) {
       boundSet.reachFixedPoint();

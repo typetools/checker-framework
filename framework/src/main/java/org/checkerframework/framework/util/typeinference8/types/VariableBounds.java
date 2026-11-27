@@ -231,7 +231,7 @@ public class VariableBounds {
    *
    * @return a number that changes whenever the current instantiation of this variable changes
    */
-  int getInstantiationChanges() {
+  public int getInstantiationChanges() {
     return instantiationChanges;
   }
 
