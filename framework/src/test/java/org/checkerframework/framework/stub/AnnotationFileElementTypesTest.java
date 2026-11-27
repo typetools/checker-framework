@@ -339,7 +339,7 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void leadingWhitespaceOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    write(
+    AnnotationFileTestUtil.write(
         new File(classpathDir, "Padded.astub"),
         " ".repeat(150) + "package p; class NoSuchClass {}");
     assertHasDiagnostic(
@@ -350,7 +350,8 @@ public class AnnotationFileElementTypesTest {
   @Test
   public void unreadableFileOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    File stub = write(new File(classpathDir, "Unreadable.astub"), "package p;");
+    File stub =
+        AnnotationFileTestUtil.write(new File(classpathDir, "Unreadable.astub"), "package p;");
     Assume.assumeTrue(stub.setReadable(false));
     // Making a file unreadable has no effect for the root user.
     Assume.assumeFalse(Files.isReadable(stub.toPath()));
