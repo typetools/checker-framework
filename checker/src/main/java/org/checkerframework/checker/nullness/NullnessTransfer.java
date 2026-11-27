@@ -445,14 +445,30 @@ public class NullnessTransfer
     // that has no tree, whose arguments cannot be examined.
     // A method annotated @DoesNotUnrefineReceiver does not reassign its receiver expression.
     JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
-    boolean refineReceiver =
+    boolean mayRefineReceiver =
         !n.getTarget().isStatic()
+            && tree != null
+            && !argumentsMayReassign(tree.getArguments(), receiverExpr);
+    // True if the receiver is non-null after the invocation, regardless of the callee's effects.
+    boolean refineReceiver =
+        mayRefineReceiver
             && (nonNullAssumptionAfterInvocation
                 || isMethodSideEffectFree
                 || atypeFactory.hasDoesNotUnrefineReceiver(method)
-                || !receiverExpr.isAssignableByOtherCode())
-            && tree != null
-            && !argumentsMayReassign(tree.getArguments(), receiverExpr);
+                || !receiverExpr.isAssignableByOtherCode());
+
+    // Otherwise, the callee might replace the receiver expression.  Refine the receiver in the
+    // store that the invocation's call effects apply to, so that the store's call-effect rules
+    // (for example, for a method annotated @SideEffectsOnly) retain the refinement only if the
+    // callee cannot replace the receiver expression.  The arguments, which were evaluated earlier,
+    // do not see this refinement; neither do the exceptional successors, which get the store from
+    // before the invocation.
+    TransferInput<NullnessValue, NullnessStore> inputForCall = in;
+    if (mayRefineReceiver && !refineReceiver) {
+      NullnessStore refinedStore = in.getRegularStore().copy();
+      makeNonNull(refinedStore, receiver);
+      inputForCall = new TransferInput<>(n, analysis, refinedStore);
+    }
 
     // The exceptional successors of the invocation get the store before the invocation, which
     // super.visitMethodInvocation modifies in place.  So, copy it first.
@@ -461,7 +477,8 @@ public class NullnessTransfer
             ? in.getRegularStore().copy()
             : null;
 
-    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
+    TransferResult<NullnessValue, NullnessStore> result =
+        super.visitMethodInvocation(n, inputForCall);
 
     if (refineReceiver) {
       // Make receiver non-null.
@@ -469,6 +486,12 @@ public class NullnessTransfer
       if (storeBeforeInvocation != null) {
         result = refineReceiverOnExceptionalSuccessors(n, result, storeBeforeInvocation);
       }
+    }
+
+    // The refinements below examine the invocation's tree.  As for the receiver, they are skipped
+    // for a synthetic invocation that has no tree.
+    if (tree == null) {
+      return result;
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
@@ -723,6 +746,10 @@ public class NullnessTransfer
            * @return true if converting {@code operand} to a string might reassign the receiver
            */
           private boolean stringConversionMayHaveSideEffect(ExpressionTree operand) {
+            if (!receiverMayChangeByOtherCode || nonNullAssumptionAfterInvocation) {
+              // mayHaveSideEffect returns false for every method.
+              return false;
+            }
             TypeMirror type = TreeUtils.typeOf(operand);
             if (type.getKind().isPrimitive()
                 || type.getKind() == TypeKind.NULL

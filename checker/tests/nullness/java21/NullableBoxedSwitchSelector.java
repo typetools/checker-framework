@@ -32,7 +32,6 @@ public class NullableBoxedSwitchSelector {
 
   <T extends @Nullable Integer> void typeVarNullDefault(@Nullable T t) {
     switch (t) {
-      case 1 -> {}
       case null, default -> {}
     }
     // :: error: [dereference.of.nullable]
@@ -41,10 +40,28 @@ public class NullableBoxedSwitchSelector {
 
   <T extends @Nullable Integer> void typeVarNullCaseBody(@Nullable T t) {
     switch (t) {
-      case 1 -> t.toString();
       // :: error: [dereference.of.nullable]
       case null -> t.toString();
       default -> t.toString();
+    }
+  }
+
+  // A constant label requires a selector of type Integer, not a type variable.
+  void boxedNullDefault(@Nullable Integer i) {
+    switch (i) {
+      case 1 -> {}
+      case null, default -> {}
+    }
+    // :: error: [dereference.of.nullable]
+    i.toString();
+  }
+
+  void boxedNullCaseBody(@Nullable Integer i) {
+    switch (i) {
+      case 1 -> i.toString();
+      // :: error: [dereference.of.nullable]
+      case null -> i.toString();
+      default -> i.toString();
     }
   }
 }

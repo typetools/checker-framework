@@ -2,6 +2,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.DoesNotUnrefineReceiver;
 
 // A call's receiver is evaluated before its arguments.  If an argument reassigns the receiver
@@ -78,10 +79,13 @@ public class ReceiverReassignedInArgument {
     q.toString();
   }
 
-  // A toString() method that reassigns the field f.
+  // A toString() method that reassigns the field f.  Every toString() method inherits
+  // @SideEffectFree from Object.toString(), so the assignment violates its contract.  The Nullness
+  // Checker trusts the contract at uses of Mutator.toString().
   class Mutator {
     @Override
     public String toString() {
+      // :: error: (purity.assign.field)
       f = null;
       return "";
     }
@@ -95,19 +99,18 @@ public class ReceiverReassignedInArgument {
     }
   }
 
-  // String concatenation implicitly invokes Mutator.toString(), which reassigns f.
+  // String concatenation implicitly invokes Mutator.toString(), which is side-effect-free by
+  // contract.
   void stringConcatenationInArgument(Mutator m) {
     // :: error: (dereference.of.nullable)
     f.sefTake("" + m);
-    // :: error: (dereference.of.nullable)
     f.toString();
   }
 
-  // `s += m` implicitly invokes Mutator.toString(), which reassigns f.
+  // `s += m` implicitly invokes Mutator.toString(), which is side-effect-free by contract.
   void stringCompoundAssignmentInArgument(Mutator m, String s) {
     // :: error: (dereference.of.nullable)
     f.sefTake(s += m);
-    // :: error: (dereference.of.nullable)
     f.toString();
   }
 
@@ -158,5 +161,20 @@ public class ReceiverReassignedInArgument {
     f.doesNotUnrefineReceiver(f = null);
     // :: error: (dereference.of.nullable)
     f.toString();
+  }
+
+  int count;
+
+  @SideEffectsOnly("this.count")
+  void tick() {
+    count++;
+  }
+
+  // The callee does not replace the receiver expression, so normal completion shows that f is
+  // non-null.  (sideEffectField tests a callee that might replace it.)
+  void sideEffectsOnlyField() {
+    // :: error: (dereference.of.nullable)
+    f.tick();
+    f.tick();
   }
 }

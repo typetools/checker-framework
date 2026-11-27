@@ -406,9 +406,12 @@ the boxing is done by autoboxing or by a call to the \<valueOf> method of
 sometimes yields an interned value and sometimes a non-interned value,
 depending on the run-time value (\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html#jls-5.1.7}{JLS
 \S5.1.7}).  For example, the Interning Checker reports an error for
-\<@Interned Integer i = 5;>, even though every boxing of 5 yields the same
-object.  If you know that the value being boxed implies that the result is
-interned, then you will need to suppress an error.
+\<@Interned Integer i = 5;>, even though every boxing of the constant
+expression \<5> yields the same object.  (The JLS gives that guarantee only
+for boxing a constant expression; boxing a non-constant expression whose
+value is 5 is not guaranteed to yield that object.  For \<Integer.valueOf>,
+the guarantee comes from its specification instead.)  If you know that the
+value being boxed implies that the result is interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper
 and lower bounds on char, short, int, and long values so that it can more
 precisely determine whether the result of a given boxing conversion is
