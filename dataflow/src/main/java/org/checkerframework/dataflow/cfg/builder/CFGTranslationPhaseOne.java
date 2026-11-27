@@ -1119,26 +1119,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param node a node producing a value of numeric primitive type
    * @param destType the type to narrow the value to: a numeric primitive type, or a type that
    *     unboxing conversion converts to one (see {@link TypesUtils#boxedPrimitiveForUnboxing})
-   * @return a Node with the value narrowed and boxed to the destType, which might be the input
-   *     node. If destType is a type variable or intersection type, such as {@code T extends Short},
-   *     the boxed value is cast to destType.
+   * @return a Node with the value narrowed and boxed to the destType, which might be the input node
    */
   protected Node narrowAndBox(Node node, TypeMirror destType) {
-    if (!TypesUtils.isUnboxable(destType, types)) {
+    if (TypesUtils.isUnboxable(destType, types)) {
+      return box(narrow(node, TypesUtils.unboxedTypeOrSelf(destType, types)));
+    } else {
       return narrow(node, destType);
     }
-    Node boxed = box(narrow(node, TypesUtils.unboxedTypeOrSelf(destType, types)));
-    if (types.isSameType(boxed.getType(), destType)) {
-      return boxed;
-    }
-    // The boxed value has a boxed primitive type such as Short, which is not a subtype of destType.
-    TypeMirror castType = TypeAnnotationUtils.unannotatedType(destType);
-    TypeCastTree castTree = treeBuilder.buildTypeCast(castType, (ExpressionTree) boxed.getTree());
-    handleArtificialTree(castTree);
-    TypeCastNode castNode = new TypeCastNode(castTree, boxed, castType, types);
-    castNode.setInSource(false);
-    insertNodeAfter(castNode, boxed);
-    return castNode;
   }
 
   /**

@@ -79,6 +79,10 @@ public class TypeVarPrimitives {
     return x;
   }
 
+  @SuppressWarnings({
+    "lowerbound:unary.increment", // false positive: the boxed Short value is stored into T
+    "upperbound:unary.increment" // false positive: the boxed Short value is stored into T
+  })
   <T extends Short> T preIncrement(T t) {
     ++t;
     return t;
