@@ -1013,14 +1013,16 @@ public class ToIndexFileConverterTest {
    */
   @Test
   public void testPackagePrivateMemberTypeNotInheritedThroughOtherPackage() throws Exception {
-    // q.X is not on the classpath, so only the stub file declares it.
+    // q.X is not on the classpath, so only the stub file declares it.  C inherits N from I, but not
+    // the package-private PackagePrivateMiddle.N.
     String jaif =
         convert(
             "package org.checkerframework.framework.stub.hiding;",
-            "class C extends q.X {}",
+            "class C extends q.X implements I {}",
             "class Use { void m(C.N n) {} }",
             "package q;",
             "public class X extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle {}");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
     assertNoMethod(
         jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/PackagePrivateMiddle$N;)V");
   }
