@@ -1382,13 +1382,26 @@ public abstract class CFAbstractTransfer<
     }
     assert lubResult != null
         : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
-    if (!refineSelectorExpression && n.labelsMightHaveSideEffects()) {
-      // A record accessor that a record pattern of this case invokes might have changed the
-      // selector expression.  The CFG does not represent the accessor calls, so their effect on
-      // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
-      JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
-      lubResult.getThenStore().clearValue(selector);
-      lubResult.getElseStore().clearValue(selector);
+    if (!refineSelectorExpression) {
+      // Code with side effects ran since the switch evaluated the selector expression, so the
+      // store's value for (each part of) the selector expression might be stale.  Clear it in two
+      // situations.  (The stores of lubResult are fresh copies.)
+      //  * A record accessor that a record pattern of this case invokes might have changed the
+      //    selector expression.  The CFG does not represent the accessor calls, so their effect
+      //    on the selector expression is applied here.
+      //  * The store does not unrefine a method call whose receiver and arguments are
+      //    unmodifiable at a side effect, such as a guard, even though the method might read
+      //    mutable state that the side effect changed.
+      // If the selector expression is an assignment, such as `switch (selector = saved)`, each
+      // assignment target and the right-hand side are handled separately.
+      for (Node part : splitAssignments(n.getSwitchOperand().getExpression())) {
+        JavaExpression partExpr = JavaExpression.fromNode(part);
+        if (partExpr.containsOfClass(MethodCall.class)
+            || (n.labelsMightHaveSideEffects() && mightBeChangedByOtherCode(partExpr))) {
+          lubResult.getThenStore().clearValue(partExpr);
+          lubResult.getElseStore().clearValue(partExpr);
+        }
+      }
     }
     if (n.labelsUntested()) {
       // The CFG omits the test of this case's labels, so the facts that hold when one of this
@@ -1422,11 +1435,22 @@ public abstract class CFAbstractTransfer<
     if (selector.containsOfClass(MethodCall.class)) {
       return false;
     }
-    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  Neither a
-    // guard nor a record accessor can assign a local variable that is declared outside it.
+    return !mightBeChangedByOtherCode(selector);
+  }
+
+  /**
+   * Returns true if code with side effects, such as a guard or a record accessor, might change the
+   * abstract value of {@code expr}. This mirrors the unrefinement that {@link CFAbstractStore}
+   * performs at a side effect. Neither a guard nor a record accessor can assign a local variable
+   * that is declared outside it.
+   *
+   * @param expr an expression
+   * @return true if code with side effects might change the abstract value of {@code expr}
+   */
+  private boolean mightBeChangedByOtherCode(JavaExpression expr) {
     return analysis.atypeFactory.sideEffectsUnrefineAliases
-        ? !selector.isModifiableByOtherCode()
-        : !selector.isAssignableByOtherCode();
+        ? expr.isModifiableByOtherCode()
+        : expr.isAssignableByOtherCode();
   }
 
   // /**
