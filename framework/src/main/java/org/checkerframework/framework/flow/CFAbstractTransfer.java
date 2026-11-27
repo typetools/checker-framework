@@ -235,8 +235,9 @@ public abstract class CFAbstractTransfer<
     analysis.setCurrentTree(tree);
     AnnotatedTypeMirror at;
     try {
-      if (node instanceof MethodInvocationNode min && min.getIterableExpression() != null) {
-        ExpressionTree iter = min.getIterableExpression();
+      ExpressionTree iter =
+          node instanceof MethodInvocationNode min0 ? min0.getIterableExpression() : null;
+      if (iter != null && node instanceof MethodInvocationNode min) {
         at = factory.getIterableElementType(iter);
         if (min.isBoxing() && at instanceof AnnotatedPrimitiveType primitiveElement) {
           // `min` boxes the loop's primitive element, as in `for (Integer x : intArray)`.  Adapt
@@ -1724,7 +1725,7 @@ public abstract class CFAbstractTransfer<
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
     Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement);
     processPostconditionsAndConditionalPostconditions(
-        invocationNode, executableElement, invocationTree, store, null, postconditions);
+        invocationNode, executableElement, invocationTree, store, store, postconditions);
   }
 
   /**
