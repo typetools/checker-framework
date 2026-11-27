@@ -3894,6 +3894,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (!typeHierarchy.isSubtype(exprBound, castType)) {
           return false;
         }
+        if (exprBound.getKind() == TypeKind.DECLARED
+            && castType.getKind() == TypeKind.DECLARED
+            && !areTypeArgumentsContained(
+                AnnotatedTypes.castedAsSuper(
+                    atypeFactory, exprBound, (AnnotatedDeclaredType) castType),
+                (AnnotatedDeclaredType) castType,
+                true)) {
+          // TypeHierarchy#isSubtype does not compare the type arguments of enclosing types.
+          return false;
+        }
       } else if (TypesUtils.isErasedSubtype(castTM, exprBoundTM, types)) {
         // TypeHierarchy#isSubtype requires the Java type of its first argument to be a subtype of
         // the Java type of its second argument, so compare exprBound to the supertype of castType
@@ -3901,6 +3911,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror castTypeAsExprBound =
             AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprBound);
         if (!typeHierarchy.isSubtype(exprBound, castTypeAsExprBound)) {
+          return false;
+        }
+        // uncheckedTypeArgumentsContainAllPermittedTypes treats the type arguments of castType
+        // that castTypeAsExprBound determines as checked, so compare them invariantly.
+        if (exprBound.getKind() == TypeKind.DECLARED
+            && castTypeAsExprBound.getKind() == TypeKind.DECLARED
+            && !areTypeArgumentsContained(
+                (AnnotatedDeclaredType) exprBound,
+                (AnnotatedDeclaredType) castTypeAsExprBound,
+                false)) {
           return false;
         }
       } else if (!isSidecastSafeIncludingTypeArguments(castType, exprBound)) {
@@ -3985,13 +4005,93 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return false;
       }
       // Compare only the type arguments; the caller checks the primary qualifiers.
-      AnnotatedDeclaredType castSuperCopy = castSuper.shallowCopy();
-      castSuperCopy.replaceAnnotations(exprSuper.getPrimaryAnnotations());
-      if (!typeHierarchy.isSubtype(exprSuper, castSuperCopy)) {
+      // uncheckedTypeArgumentsContainAllPermittedTypes treats the type arguments of castType that
+      // castSuper determines as checked, so compare them invariantly:  a covariant type argument
+      // of castSuper does not make a type argument of castType covariant.
+      if (!areTypeArgumentsContained(exprSuper, castSuper, false)) {
         return false;
       }
     }
     return true;
+  }
+
+  /**
+   * Returns true if the type arguments of {@code exprSuper}, and of each of its enclosing types,
+   * are contained by the corresponding type arguments of {@code castSuper}. Primary qualifiers are
+   * not compared. Unlike {@link TypeHierarchy#isSubtype}, this method compares the type arguments
+   * of enclosing types, such as the type argument of {@code Outer<T>} in {@code Outer<T>.Inner}.
+   *
+   * <p>If {@code allowCovariance} is false, a type argument that is declared {@link
+   * org.checkerframework.framework.qual.Covariant} is compared as if it were invariant. For
+   * example, suppose that {@code A<T>} and {@code B<T>} both extend {@code @Covariant(0) View<T>}.
+   * {@code View<@NonNull String>} is a subtype of {@code View<@Nullable String>}, but a value of
+   * type {@code A<@NonNull String>} is not necessarily a {@code B<@Nullable String>}: if {@code B}
+   * has a method {@code set(T)}, then the cast would permit passing null to it.
+   *
+   * @param exprSuper the type of the casted expression, viewed as an instance of the class of
+   *     {@code castSuper}; its Java type is a subtype of that of {@code castSuper}
+   * @param castSuper a supertype of the type of the cast, or that type itself
+   * @param allowCovariance if true, compare covariant type arguments covariantly
+   * @return true if the type arguments of {@code exprSuper} and of its enclosing types are
+   *     contained by those of {@code castSuper}
+   */
+  private boolean areTypeArgumentsContained(
+      AnnotatedDeclaredType exprSuper, AnnotatedDeclaredType castSuper, boolean allowCovariance) {
+    for (AnnotatedDeclaredType exprLevel = exprSuper, castLevel = castSuper;
+        exprLevel != null && castLevel != null;
+        exprLevel = exprLevel.getEnclosingType(), castLevel = castLevel.getEnclosingType()) {
+      if (exprLevel != exprSuper
+          && !types.isSubtype(exprLevel.getUnderlyingType(), castLevel.getUnderlyingType())) {
+        // The Java type arguments of the enclosing types differ, so the annotated enclosing types
+        // cannot be compared by subtyping.  Conservatively treat them as not contained.
+        return false;
+      }
+      AnnotatedDeclaredType castLevelCopy = castLevel.shallowCopy();
+      castLevelCopy.replaceAnnotations(exprLevel.getPrimaryAnnotations());
+      if (!typeHierarchy.isSubtype(exprLevel, castLevelCopy)) {
+        return false;
+      }
+      if (allowCovariance || exprLevel.isUnderlyingTypeRaw() || castLevel.isUnderlyingTypeRaw()) {
+        continue;
+      }
+      List<AnnotatedTypeMirror> exprArgs = exprLevel.getTypeArguments();
+      List<AnnotatedTypeMirror> castArgs = castLevel.getTypeArguments();
+      if (exprArgs.size() != castArgs.size()) {
+        continue;
+      }
+      // TypeHierarchy#isSubtype compared the invariant type arguments invariantly.
+      for (int i : typeHierarchy.getCovariantArgIndexes(castLevel)) {
+        if (i < castArgs.size() && !isContainedInvariantly(exprArgs.get(i), castArgs.get(i))) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if {@code castArg} contains {@code exprArg}, treating the type argument as
+   * invariant. If {@code castArg} is a wildcard, {@code exprArg} must lie within its bounds.
+   * Otherwise, {@code exprArg} must be the same type as {@code castArg}.
+   *
+   * @param exprArg a type argument of the type of the casted expression
+   * @param castArg the corresponding type argument of the type of the cast
+   * @return true if {@code castArg} contains {@code exprArg}, treating the type argument as
+   *     invariant
+   */
+  private boolean isContainedInvariantly(AnnotatedTypeMirror exprArg, AnnotatedTypeMirror castArg) {
+    if (castArg.getKind() == TypeKind.WILDCARD) {
+      // If exprArg is a wildcard, these calls compare with its lower and upper bound respectively.
+      AnnotatedWildcardType wildcard = (AnnotatedWildcardType) castArg;
+      return typeHierarchy.isSubtype(wildcard.getSuperBound(), exprArg)
+          && typeHierarchy.isSubtype(exprArg, wildcard.getExtendsBound());
+    }
+    if (exprArg.getKind() == TypeKind.WILDCARD
+        || TypesUtils.isCapturedTypeVariable(exprArg.getUnderlyingType())) {
+      // exprArg stands for an unknown type, which might differ from castArg.
+      return false;
+    }
+    return typeHierarchy.isSubtype(exprArg, castArg) && typeHierarchy.isSubtype(castArg, exprArg);
   }
 
   /**
@@ -4000,15 +4100,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * {@code exprTM}, the result is that supertype; for example, for {@code List<E>} and {@code
    * Collection<String>}, it is {@code Collection<E>}. Otherwise, if the Java types are unrelated,
    * the result is each generic supertype G of {@code genericCastType} such that the erasure of
-   * {@code exprTM} is a subtype of the erasure of G; for example, for {@code B<T>} and {@code
-   * A<String>} that both extend {@code Iterable<T>}, it is {@code Iterable<T>}.
+   * {@code exprTM} is a subtype of the erasure of G and {@link
+   * #isSidecastSafeIncludingTypeArguments} compares the views of {@code exprTM} and {@code castTM}
+   * as instances of G; for example, for {@code B<T>} and {@code A<String>} that both extend {@code
+   * Iterable<T>}, it is {@code Iterable<T>}.
    *
    * @param genericCastType a generic class, with its type parameters as type arguments
+   * @param castTM the Java type of the cast, an instantiation of {@code genericCastType}
    * @param exprTM a Java type that is not raw
    * @return the supertypes of {@code genericCastType} whose type arguments {@code exprTM}
    *     determines
    */
-  private List<Type> determinedSupertypes(DeclaredType genericCastType, TypeMirror exprTM) {
+  private List<Type> determinedSupertypes(
+      DeclaredType genericCastType, TypeMirror castTM, TypeMirror exprTM) {
     Type asExprType =
         (Type)
             TypesUtils.asSuper(
@@ -4028,11 +4132,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       worklist.addAll(types.directSupertypes(supertype));
       if (!declaredSupertype.getTypeArguments().isEmpty()
           && TypesUtils.isErasedSubtype(exprTM, supertype, types)
-          && !isRawProjection(exprTM, supertype)) {
+          && isComparedSidecastProjection(exprTM, castTM, supertype)) {
         result.add((Type) supertype);
       }
     }
     return result;
+  }
+
+  /**
+   * Returns true if {@link #isSidecastSafeIncludingTypeArguments} compares the views of {@code
+   * exprTM} and {@code castTM} as instances of the class of {@code supertype}: that is, if the view
+   * of {@code exprTM} is not raw and is a Java subtype of the view of {@code castTM}. Otherwise,
+   * that method skips the comparison (or rejects the cast), so the view of {@code exprTM} does not
+   * determine the qualifiers of the type arguments of {@code castTM}.
+   *
+   * @param exprTM a Java type whose erasure is a subtype of the erasure of {@code supertype}
+   * @param castTM the Java type of the cast
+   * @param supertype a generic supertype of the class of {@code castTM}
+   * @return true if {@link #isSidecastSafeIncludingTypeArguments} compares the views of {@code
+   *     exprTM} and {@code castTM} as instances of the class of {@code supertype}
+   */
+  private boolean isComparedSidecastProjection(
+      TypeMirror exprTM, TypeMirror castTM, TypeMirror supertype) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    Type exprProjection = (Type) TypesUtils.asSuper(exprTM, supertype, env);
+    Type castProjection = (Type) TypesUtils.asSuper(castTM, supertype, env);
+    return exprProjection != null
+        && !exprProjection.isRaw()
+        && castProjection != null
+        && types.isSubtype(exprProjection, castProjection);
   }
 
   /**
@@ -4133,7 +4261,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *       S} determines the type argument. For example, if {@code A<T>} and {@code B<T>} both
    *       extend {@code Iterable<T>}, then in a cast from {@code A<String>} to {@code B<?>}, the
    *       type argument of {@code B} is checked. {@link #isSidecastSafeIncludingTypeArguments}
-   *       compares such type arguments.
+   *       compares such type arguments. G does not count if {@link
+   *       #isSidecastSafeIncludingTypeArguments} skips its comparison because the Java type of
+   *       {@code S} viewed as G is not a subtype of that of {@code castType} viewed as G, as in a
+   *       cast from {@code A<? extends CharSequence>} to {@code B<String>}.
    * </ul>
    *
    * <p>In the last two cases, the type parameter must appear in the supertype without an annotation
@@ -4177,7 +4308,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         exprTM.getKind() == TypeKind.INTERSECTION
             ? ((IntersectionType) exprTM).getBounds()
             : Collections.singletonList(exprTM);
-    TypeElement castElement = (TypeElement) castDeclaredType.getUnderlyingType().asElement();
+    DeclaredType castTM = castDeclaredType.getUnderlyingType();
+    TypeElement castElement = (TypeElement) castTM.asElement();
     // The generic class of castType, such as List<E>.
     DeclaredType genericCastType = (DeclaredType) castElement.asType();
     // The supertypes of genericCastType whose type arguments a non-raw bound of exprTM determines,
@@ -4187,17 +4319,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (((Type) exprBoundTM).isRaw()) {
         continue;
       }
-      if (TypesUtils.isErasedSubtype(exprBoundTM, castDeclaredType.getUnderlyingType(), types)) {
-        if (isRawProjection(exprBoundTM, castDeclaredType.getUnderlyingType())) {
+      if (TypesUtils.isErasedSubtype(exprBoundTM, castTM, types)) {
+        if (isRawProjection(exprBoundTM, castTM)) {
           // As for class Legacy extends ArrayList, the supertype of exprBoundTM whose class is
           // that of castType is raw, so it checks no type argument.
           continue;
         }
         // The supertype of exprBoundTM whose class is that of castType fixes every type argument,
-        // so every type argument is checked.
+        // so every type argument is checked.  isCastSafeIncludingElementTypes compared them,
+        // including those of enclosing types.
         return true;
       }
-      determinedSupertypes.addAll(determinedSupertypes(genericCastType, exprBoundTM));
+      determinedSupertypes.addAll(determinedSupertypes(genericCastType, castTM, exprBoundTM));
     }
     // The generic class of castType, with the declared bounds of its type parameters.
     AnnotatedDeclaredType annotatedGenericCastType = atypeFactory.getAnnotatedType(castElement);

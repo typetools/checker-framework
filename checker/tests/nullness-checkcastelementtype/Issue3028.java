@@ -8,6 +8,7 @@ import java.util.List;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.Covariant;
 
 public class Issue3028 {
   void cast(Object o) {
@@ -371,5 +372,68 @@ public class Issue3028 {
 
   void sidecastThroughPreservedQualifier(SharedNonNull s) {
     PreservesQualifier<@NonNull String> p = (PreservesQualifier<@NonNull String>) s;
+  }
+
+  @Covariant(0)
+  interface View<T> {}
+
+  interface ViewA<T> extends View<T> {}
+
+  interface ViewB<T> extends View<T> {
+    void set(T value);
+  }
+
+  void unsafeCovariantSidecast(ViewA<@NonNull String> a) {
+    // View is covariant, but ViewB is not:  the cast would permit passing null to set().
+    // :: warning: [cast.unsafe]
+    ViewB<@Nullable String> b = (ViewB<@Nullable String>) a;
+  }
+
+  void safeCovariantSidecast(ViewA<@NonNull String> a) {
+    ViewB<@NonNull String> b = (ViewB<@NonNull String>) a;
+  }
+
+  void unsafeCovariantDowncast(View<@NonNull String> v) {
+    // :: warning: [cast.unsafe]
+    ViewB<@Nullable String> b = (ViewB<@Nullable String>) v;
+  }
+
+  void safeCovariantDowncast(View<@NonNull String> v) {
+    ViewB<@NonNull String> b = (ViewB<@NonNull String>) v;
+  }
+
+  void covariantUpcast(ViewA<@NonNull String> a) {
+    View<@Nullable String> v = (View<@Nullable String>) a;
+  }
+
+  void unsafeEnclosingTypeArgument(Outer<@Nullable String>.Inner inner) {
+    // :: warning: [cast.unsafe]
+    Outer<@NonNull String>.Inner inner2 = (Outer<@NonNull String>.Inner) inner;
+  }
+
+  void safeEnclosingTypeArgument(Outer<@NonNull String>.Inner inner) {
+    Outer<@NonNull String>.Inner inner2 = (Outer<@NonNull String>.Inner) inner;
+  }
+
+  interface Marker<U> {}
+
+  interface MarkedB<T> extends Iterable<T>, Marker<String> {}
+
+  interface MarkerOnly extends Marker<String> {}
+
+  // javac treats a cast from an intersection whose first bound is generic as unchecked.
+  @SuppressWarnings("unchecked")
+  <X extends A<? extends @Nullable CharSequence> & MarkerOnly> void sidecastThroughSkippedSupertype(
+      X x) {
+    // The Iterable view of A is not compared, because its Java type differs from that of MarkedB,
+    // and Marker<String> does not determine the type argument of MarkedB.
+    // :: warning: [cast.unsafe]
+    MarkedB<@NonNull String> b = (MarkedB<@NonNull String>) x;
+  }
+
+  // javac treats a cast from an intersection whose first bound is generic as unchecked.
+  @SuppressWarnings("unchecked")
+  <X extends A<@NonNull String> & MarkerOnly> void sidecastThroughComparedSupertype(X x) {
+    MarkedB<@NonNull String> b = (MarkedB<@NonNull String>) x;
   }
 }
