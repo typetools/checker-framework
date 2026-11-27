@@ -467,6 +467,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
                 (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
                 fieldElement.asType(),
                 fieldElement);
+        @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
         CFAbstractValue<?> v = store.getFieldValue(fa);
         AnnotatedTypeMirror fieldDeclType = atypeFactory.getAnnotatedType(fieldElement);
         AnnotatedTypeMirror inferredType;
@@ -507,6 +508,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         continue;
       }
       LocalVariable param = new LocalVariable(paramElt);
+      @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
       CFAbstractValue<?> v = store.getValue(param);
       AnnotatedTypeMirror declType = atypeFactory.getAnnotatedType(paramElt);
       AnnotatedTypeMirror inferredType;
@@ -536,6 +538,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // Receiver parameter ("this"):
     if (!ElementUtils.isStatic(methodElt) // Static methods do not have a receiver.
         && isRelevant(enclosingClass.asType())) {
+      @SuppressWarnings("nullness:assignment") // capture conversion of a @Nullable type variable
       CFAbstractValue<?> v = store.getValue(thisReference);
       if (v != null) {
         // This parameter is in the store.
