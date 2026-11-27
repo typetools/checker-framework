@@ -64,6 +64,7 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -976,7 +977,14 @@ public abstract class CFAbstractTransfer<
       return false;
     }
     Node current = node;
-    while (current instanceof AssignmentNode a) {
+    while (true) {
+      // A cast does not change the value, but it can hide a nested assignment.
+      while (current instanceof TypeCastNode cast) {
+        current = cast.getOperand();
+      }
+      if (!(current instanceof AssignmentNode a)) {
+        break;
+      }
       Node lhs = a.getTarget();
       JavaExpression target = JavaExpression.fromNode(lhs);
       if (target instanceof LocalVariable || target instanceof FieldAccess) {

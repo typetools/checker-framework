@@ -27,6 +27,17 @@ public class KeyForReassignedMap {
     }
   }
 
+  // A cast must not hide the reassignment of `m`.
+  void equalityWithCastReassignment(
+      Object k, Object alias, Map<Object, Object> m, Map<Object, Object> other) {
+    if (m.containsKey(k)) {
+      if (k == (alias = (Object) (m = other))) {
+        // :: error: [dereference.of.nullable]
+        m.get(alias).toString();
+      }
+    }
+  }
+
   //
   // Reassignments that must be accepted
   //
