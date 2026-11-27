@@ -233,8 +233,9 @@ public final class Resolution {
           continue;
         }
       }
-      // `addBound` can change the instantiation even if it returns false.  Use the change counter
-      // rather than ProperType#equals, which does not compare the annotations of enclosing types.
+      // `addBound` can change the instantiation even if it returns false.  Detect a change by the
+      // same criterion that the setter uses: ProperType#equals ignores the annotations of
+      // enclosing types, but the setter installs a type that differs only in them.
       int previousChanges = var.getBounds().getInstantiationChanges();
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
       added |= previousChanges != var.getBounds().getInstantiationChanges();
