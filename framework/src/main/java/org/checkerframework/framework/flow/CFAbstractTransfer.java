@@ -1129,10 +1129,11 @@ public abstract class CFAbstractTransfer<
    *
    * @param node a node in an operand of a comparison, possibly an assignment
    * @return the nodes that have the value of {@code node} when the comparison completes
-   * @deprecated use {@link #nodesWithValueOf}
+   * @deprecated use {@link #nodesWithValueOf}. This method is final, because the framework does not
+   *     call it; override {@link #nodesWithValueOf} instead.
    */
   @Deprecated // 2026-11-13
-  protected List<Node> splitAssignments(Node node) {
+  protected final List<Node> splitAssignments(Node node) {
     return nodesWithValueOf(node);
   }
 
@@ -1360,12 +1361,19 @@ public abstract class CFAbstractTransfer<
    * expressions that an annotation of {@code node} contains, rather than {@code node} itself, use
    * {@link #containsExpressionChangedBeforeComparisonCompletes}.
    *
+   * <p>If {@code node} is an assignment, cast, or conversion, its value is the value of its operand
+   * (see {@link #valueSource}), so this method checks whether the operand might change after it is
+   * evaluated, including by the writes of the assignment. For example, returns false for {@code
+   * (limit = a.length)} in {@code (limit = a.length) > i}, but true if the right operand writes
+   * {@code a}.
+   *
    * @param node an operand of a comparison
    * @return true if the code that is evaluated after {@code node} and before the comparison
    *     completes might change the value of {@code node}
    */
   protected boolean mayBeChangedByLaterOperand(Node node) {
-    return locationsWrittenUntilComparison(node).mayChange(JavaExpression.fromNode(node), false);
+    Node source = valueSource(node);
+    return locationsWrittenUntilComparison(source).mayChange(JavaExpression.fromNode(source), false);
   }
 
   /**
