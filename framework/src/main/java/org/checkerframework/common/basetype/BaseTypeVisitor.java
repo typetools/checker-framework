@@ -43,6 +43,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -71,6 +72,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -126,6 +130,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -3662,7 +3667,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (!checker.getLintOption("cast:unsafe", true)) {
       return;
     }
-    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
+    AnnotatedTypeMirror castType =
+        checkCastElementType
+            ? getUncapturedCastType(typeCastTree)
+            : atypeFactory.getAnnotatedType(typeCastTree);
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
     boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
@@ -3685,10 +3693,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Returns the annotated type that {@code typeCastTree} casts to, without capture conversion.
+   *
+   * @param typeCastTree a typecast
+   * @return the annotated type that {@code typeCastTree} casts to, without capture conversion
+   */
+  private AnnotatedTypeMirror getUncapturedCastType(TypeCastTree typeCastTree) {
+    // The type of a cast expression is the capture of the cast type (JLS 15.16), so
+    // getAnnotatedType replaces each wildcard type argument by a captured type variable.
+    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
+    if (castType.getKind() != TypeKind.DECLARED) {
+      return castType;
+    }
+    // The type of the type tree has the type arguments as written.  Its primary annotations may
+    // differ, because tree annotators such as PropagationTreeAnnotator set the primary
+    // annotations of the cast expression.
+    AnnotatedTypeMirror uncapturedCastType =
+        atypeFactory.getAnnotatedTypeFromTypeTree(typeCastTree.getType());
+    uncapturedCastType.replaceAnnotations(castType.getPrimaryAnnotations());
+    return uncapturedCastType;
+  }
+
+  /**
    * Returns true if the cast is safe.
    *
    * <p>Only primary qualifiers are checked unless the command line option "checkCastElementType" is
-   * supplied.
+   * supplied. With that option, the qualifiers on type arguments and array components are also
+   * checked, and an unchecked cast (JLS 5.1.6.2) is never safe.
    *
    * @param castType annotated type of the cast
    * @param exprType annotated type of the expression being cast
@@ -3732,24 +3763,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       TypeMirror newExprTM = newExprType.getUnderlyingType();
 
-      if (!typeHierarchy.isSubtype(newExprType, newCastType)) {
+      if (!isCastSafeIncludingElementTypes(castType, exprType)) {
         return false;
       }
       if (newCastType.getKind() == TypeKind.ARRAY && newExprType.getKind() != TypeKind.ARRAY) {
         // Always warn if the cast contains an array, but the expression
         // doesn't, as in "(Object[]) o" where o is of type Object
         return false;
-      } else if (newCastType.getKind() == TypeKind.DECLARED
-          && newExprType.getKind() == TypeKind.DECLARED) {
-        int castSize = ((AnnotatedDeclaredType) newCastType).getTypeArguments().size();
-        int exprSize = ((AnnotatedDeclaredType) newExprType).getTypeArguments().size();
-
-        if (castSize != exprSize) {
-          // Always warn if the cast and expression contain a different number of type
-          // arguments, e.g. to catch a cast from "Object" to "List<@NonNull Object>".
-          // TODO: the same number of arguments actually doesn't guarantee anything.
-          return false;
-        }
       } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
         // If both the cast type and the casted expression are type variables, then check
         // the bounds.
@@ -3776,6 +3796,221 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         exprTypeWidened.getUnderlyingType(),
         castAnnos,
         newCastTM);
+  }
+
+  /**
+   * Returns true if the cast from {@code exprType} to {@code castType} is safe, taking into account
+   * the qualifiers on type arguments and array components. A type variable stands for its upper
+   * bound, and a primitive {@code exprType} cast to a reference type stands for its boxed type.
+   *
+   * <p>If {@code castType} is an intersection, this method returns whether the cast to every bound
+   * of {@code castType} is safe, because the value must have the type of every bound. Otherwise,
+   * the <em>expression bounds</em> are the bounds of {@code exprType} if it is an intersection, and
+   * {@code exprType} itself otherwise; the value has the type of every expression bound. This
+   * method returns true if all of the following hold:
+   *
+   * <ul>
+   *   <li>The Java cast from some expression bound is checked (JLS 5.1.6.2). The run-time check of
+   *       an unchecked cast does not verify its type arguments.
+   *   <li>Every expression bound whose Java type is a subtype of the Java type of {@code castType}
+   *       (an upcast) is a subtype of {@code castType}.
+   *   <li>Every expression bound whose erasure is a supertype of the erasure of {@code castType} (a
+   *       downcast) is a subtype of the supertype of {@code castType} that has the same erasure as
+   *       the expression bound. For example, a cast from {@code Collection<@Nullable String>} to
+   *       {@code List<@NonNull String>} is unsafe, because {@code Collection<@Nullable String>} is
+   *       not a subtype of {@code Collection<@NonNull String>}.
+   *   <li>{@link #uncheckedTypeArgumentsContainAllPermittedTypes} holds.
+   * </ul>
+   *
+   * <p>The primary qualifiers of an expression bound whose Java type is unrelated to that of {@code
+   * castType} (as in a cast between two unrelated interfaces) are not compared.
+   *
+   * @param castType annotated type of the cast, without capture conversion
+   * @param exprType annotated type of the casted expression
+   * @return true if the cast from {@code exprType} to {@code castType} is safe, taking into account
+   *     the qualifiers on type arguments and array components
+   */
+  private boolean isCastSafeIncludingElementTypes(
+      AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    while (castType.getKind() == TypeKind.TYPEVAR) {
+      castType = ((AnnotatedTypeVariable) castType).getUpperBound();
+    }
+    while (exprType.getKind() == TypeKind.TYPEVAR) {
+      exprType = ((AnnotatedTypeVariable) exprType).getUpperBound();
+    }
+    // Erasing an intersection keeps only its first bound, so the checks below would ignore the
+    // other bounds.  Examining one bound at a time also avoids javac reporting an unchecked cast
+    // whenever the first bound of an intersection expression type is generic, even for an upcast.
+    if (castType.getKind() == TypeKind.INTERSECTION) {
+      for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) castType).getBounds()) {
+        if (!isCastSafeIncludingElementTypes(bound, exprType)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (exprType.getKind().isPrimitive() && !castType.getKind().isPrimitive()) {
+      exprType = atypeFactory.getBoxedType((AnnotatedPrimitiveType) exprType);
+    }
+    List<? extends AnnotatedTypeMirror> exprBounds =
+        exprType.getKind() == TypeKind.INTERSECTION
+            ? ((AnnotatedIntersectionType) exprType).getBounds()
+            : Collections.singletonList(exprType);
+    TypeMirror castTM = castType.getUnderlyingType();
+    boolean isUncheckedFromEveryBound = true;
+    for (AnnotatedTypeMirror exprBound : exprBounds) {
+      if (!TypesUtils.isUncheckedCast(
+          exprBound.getUnderlyingType(), castTM, atypeFactory.getProcessingEnv())) {
+        isUncheckedFromEveryBound = false;
+        break;
+      }
+    }
+    if (isUncheckedFromEveryBound) {
+      return false;
+    }
+    for (AnnotatedTypeMirror exprBound : exprBounds) {
+      TypeMirror exprBoundTM = exprBound.getUnderlyingType();
+      if (types.isSubtype(exprBoundTM, castTM)) {
+        if (!typeHierarchy.isSubtype(exprBound, castType)) {
+          return false;
+        }
+      } else if (TypesUtils.isErasedSubtype(castTM, exprBoundTM, types)) {
+        // TypeHierarchy#isSubtype requires the Java type of its first argument to be a subtype of
+        // the Java type of its second argument, so compare exprBound to the supertype of castType
+        // that has the same erasure as exprBound.
+        AnnotatedTypeMirror castTypeAsExprBound =
+            AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprBound);
+        if (!typeHierarchy.isSubtype(exprBound, castTypeAsExprBound)) {
+          return false;
+        }
+      }
+    }
+    return uncheckedTypeArgumentsContainAllPermittedTypes(castType, exprType.getUnderlyingType());
+  }
+
+  /**
+   * Returns true if every unchecked type argument of {@code castType} contains every type that its
+   * type parameter permits.
+   *
+   * <p>The type arguments of {@code castType} include those of its enclosing types, such as the
+   * type argument of {@code Outer<?>} in {@code Outer<?>.Inner}.
+   *
+   * <p>A type argument of {@code castType} is <em>unchecked</em> if the run-time check of the cast,
+   * which verifies only the class of the value, does not verify it, even given that the value has
+   * Java type {@code exprTM}. A cast that is checked in the sense of JLS 5.1.6.2 can still have
+   * unchecked type arguments: in a cast from {@code Object} to {@code List<?>}, the type argument
+   * of {@code List} is unchecked.
+   *
+   * <p>If {@code exprTM} is an intersection, a type argument is checked if some bound of {@code
+   * exprTM} checks it; otherwise, it is checked if {@code exprTM} checks it. A raw type checks no
+   * type argument. A non-raw type {@code S} checks a type argument of {@code castType} if:
+   *
+   * <ul>
+   *   <li>the erasure of {@code S} is a subtype of the erasure of {@code castType}, or
+   *   <li>its type parameter appears in the supertype of the generic class of {@code castType} that
+   *       has the same erasure as {@code S}. For example, in a cast from {@code Collection<String>}
+   *       to {@code List<?>}, the type argument of {@code List} is checked, because the supertype
+   *       of {@code List<E>} that has the same erasure as {@code Collection<String>} is {@code
+   *       Collection<E>}. In a cast from {@code Object} or {@code Runnable} to {@code List<?>}, it
+   *       is unchecked.
+   * </ul>
+   *
+   * <p>For example, a cast from {@code Object} or from a raw {@code List} to {@code List<?
+   * extends @NonNull Object>} is unsafe.
+   *
+   * @param castType annotated type of the cast, without capture conversion
+   * @param exprTM the Java type of the casted expression, which may be an intersection
+   * @return true if every unchecked type argument of {@code castType} contains every type that its
+   *     type parameter permits
+   */
+  private boolean uncheckedTypeArgumentsContainAllPermittedTypes(
+      AnnotatedTypeMirror castType, TypeMirror exprTM) {
+    switch (castType.getKind()) {
+      case ARRAY -> {
+        if (exprTM.getKind() != TypeKind.ARRAY) {
+          // isTypeCastSafe rejects a cast from a non-array to an array.
+          return true;
+        }
+        return uncheckedTypeArgumentsContainAllPermittedTypes(
+            ((AnnotatedArrayType) castType).getComponentType(),
+            ((ArrayType) exprTM).getComponentType());
+      }
+      case DECLARED -> {
+        // handled below
+      }
+      default -> {
+        return true;
+      }
+    }
+
+    AnnotatedDeclaredType castDeclaredType = (AnnotatedDeclaredType) castType;
+    if (castDeclaredType.isUnderlyingTypeRaw()) {
+      return true;
+    }
+    List<? extends TypeMirror> exprBoundTMs =
+        exprTM.getKind() == TypeKind.INTERSECTION
+            ? ((IntersectionType) exprTM).getBounds()
+            : Collections.singletonList(exprTM);
+    TypeElement castElement = (TypeElement) castDeclaredType.getUnderlyingType().asElement();
+    // The generic class of castType, such as List<E>.
+    DeclaredType genericCastType = (DeclaredType) castElement.asType();
+    // The supertypes of genericCastType that have the same erasure as a non-raw bound of exprTM,
+    // such as Collection<E>.
+    List<Type> genericCastTypeAsExprBounds = new ArrayList<>(exprBoundTMs.size());
+    for (TypeMirror exprBoundTM : exprBoundTMs) {
+      if (((Type) exprBoundTM).isRaw()) {
+        continue;
+      }
+      if (TypesUtils.isErasedSubtype(exprBoundTM, castDeclaredType.getUnderlyingType(), types)) {
+        // The supertype of exprBoundTM whose class is that of castType fixes every type argument,
+        // so every type argument is checked.
+        return true;
+      }
+      Type genericCastTypeAsExprBound =
+          (Type)
+              TypesUtils.asSuper(
+                  genericCastType, types.erasure(exprBoundTM), atypeFactory.getProcessingEnv());
+      if (genericCastTypeAsExprBound != null) {
+        genericCastTypeAsExprBounds.add(genericCastTypeAsExprBound);
+      }
+    }
+    // Examine the type arguments of castType and of each of its enclosing types, such as the type
+    // argument of Outer<?> in Outer<?>.Inner.  genericLevel is the generic class of castLevel, with
+    // the declared bounds of its type parameters.
+    for (AnnotatedDeclaredType castLevel = castDeclaredType,
+            genericLevel = atypeFactory.getAnnotatedType(castElement);
+        castLevel != null && genericLevel != null;
+        castLevel = castLevel.getEnclosingType(), genericLevel = genericLevel.getEnclosingType()) {
+      List<AnnotatedTypeMirror> typeArgs = castLevel.getTypeArguments();
+      List<AnnotatedTypeMirror> typeParameters = genericLevel.getTypeArguments();
+      if (typeArgs.size() != typeParameters.size()) {
+        // castLevel is raw.
+        continue;
+      }
+      for (int i = 0; i < typeParameters.size(); i++) {
+        AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) typeParameters.get(i);
+        Type typeParameterTM = (Type) typeParameter.getUnderlyingType();
+        if (genericCastTypeAsExprBounds.stream().anyMatch(t -> t.contains(typeParameterTM))) {
+          // The type parameter appears in some element of genericCastTypeAsExprBounds, so this
+          // type argument is checked; isCastSafeIncludingElementTypes compared it with that bound.
+          continue;
+        }
+        // The run-time check of a cast verifies only the class of the value, so in place of an
+        // unchecked type argument, the value may have any type argument within the bounds of
+        // its type parameter.  The type argument of castType must contain all of them.
+        AnnotatedTypeMirror typeArg = typeArgs.get(i);
+        if (typeArg.getKind() != TypeKind.WILDCARD) {
+          // Only a wildcard can contain every type within the bounds of a type parameter.
+          return false;
+        }
+        AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typeArg;
+        if (!typeHierarchy.isSubtype(typeParameter.getUpperBound(), wildcard.getExtendsBound())
+            || !typeHierarchy.isSubtype(wildcard.getSuperBound(), typeParameter.getLowerBound())) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
