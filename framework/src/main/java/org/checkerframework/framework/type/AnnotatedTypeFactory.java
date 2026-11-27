@@ -3424,13 +3424,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeKind promotedKind =
         TypeKindUtils.widenedNumericType(numericTypeKind(left), numericTypeKind(right));
     if (!TypeKindUtils.isNumericPrimitive(promotedKind)) {
-      if (TypesUtils.isBooleanAfterUnboxing(left.getUnderlyingType(), types)
-          && TypesUtils.isBooleanAfterUnboxing(right.getUnderlyingType(), types)) {
+      if (TypesUtils.isBooleanType(left.getUnderlyingType())
+          && TypesUtils.isBooleanType(right.getUnderlyingType())) {
         // A boolean equality (JLS 15.21.2), logical (JLS 15.22.2), or conditional (JLS 15.23,
         // 15.24) operation unboxes each operand.  Reference equality of two boxed operands was
         // handled above.
-        return new BinaryArgTypes(
-            applyUnboxing(boxedPrimitiveBound(left)), applyUnboxing(boxedPrimitiveBound(right)));
+        return new BinaryArgTypes(applyUnboxing(left), applyUnboxing(right));
       }
       return new BinaryArgTypes(left, right);
     }
@@ -3439,58 +3438,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * If the given type is a type variable or intersection type to which unboxing conversion applies
-   * (see {@link TypesUtils#boxedPrimitiveForUnboxing}), returns its bound that is a boxed primitive
-   * type, such as {@code Integer} for {@code T extends Integer}. Otherwise, returns the given type.
-   * The bound of a type variable use carries the type variable's effective annotations.
+   * Returns the primitive kind of the given type if it is a numeric primitive or boxed primitive
+   * type, or {@code NONE} if {@code type} is not a numeric primitive or boxed primitive type
    *
-   * @param type a type
-   * @return the boxed primitive bound of {@code type}, or {@code type} itself
+   * @param type a type, such as {@code Integer} or {@code int}
+   * @return the numeric primitive kind of {@code type}, such as {@code INT},
    */
-  private AnnotatedTypeMirror boxedPrimitiveBound(AnnotatedTypeMirror type) {
-    if (!TypesUtils.isUnboxable(type.getUnderlyingType(), types)) {
-      return type;
-    }
-    while (true) {
-      switch (type.getKind()) {
-        case TYPEVAR -> type = ((AnnotatedTypeVariable) type).getUpperBound();
-        case INTERSECTION -> {
-          AnnotatedTypeMirror boxedBound = null;
-          for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
-            if (TypesUtils.isUnboxable(bound.getUnderlyingType(), types)) {
-              boxedBound = bound;
-              break;
-            }
-          }
-          if (boxedBound == null) {
-            throw new BugInCF("No unboxable bound in " + type);
-          }
-          type = boxedBound;
-        }
-        default -> {
-          return type;
-        }
-      }
-    }
-  }
-
-  /**
-   * Returns the primitive kind of the given type if it is a numeric primitive type or unboxing
-   * conversion converts it to one, or {@code NONE} otherwise.
-   *
-   * @param type a type, such as {@code Integer}, {@code int}, or {@code T extends Integer}
-   * @return the numeric primitive kind of {@code type}, such as {@code INT}, or {@code NONE}
-   */
-  private TypeKind numericTypeKind(AnnotatedTypeMirror type) {
-    TypeKind kind = TypesUtils.unboxedTypeOrSelf(type.getUnderlyingType(), types).getKind();
-    return TypeKindUtils.isNumericPrimitive(kind) ? kind : TypeKind.NONE;
+  private static TypeKind numericTypeKind(AnnotatedTypeMirror type) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type.getUnderlyingType());
+    return (kind != null && TypeKindUtils.isNumericPrimitive(kind)) ? kind : TypeKind.NONE;
   }
 
   /**
    * Returns the type of the given operand after unary numeric promotion (JLS 5.6), or the operand's
    * type unchanged if unary numeric promotion does not apply to it. For example, unary numeric
-   * promotion unboxes a {@code Character} or {@code T extends Character} operand and widens it to
-   * {@code int}.
+   * promotion unboxes a {@code Character} operand and widens it to {@code int}.
    *
    * @param type the type of an operand, such as the left operand of a shift
    * @return the type of the operand after unary numeric promotion
@@ -3504,16 +3466,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the type of the given operand after unboxing it, if unboxing conversion applies to it,
-   * and widening it to the given primitive kind, if it is narrower.
+   * Returns the type of the given operand after unboxing it, if it is boxed, and widening it to the
+   * given primitive kind, if it is narrower.
    *
-   * @param type the type of an operand; a numeric primitive type or a type that unboxing conversion
-   *     converts to one
+   * @param type the type of an operand; a numeric primitive or boxed primitive type
    * @param promotedKind a numeric primitive kind that is at least as wide as {@code type}
    * @return the type of the operand after unboxing and widening
    */
   private AnnotatedPrimitiveType promoteNumeric(AnnotatedTypeMirror type, TypeKind promotedKind) {
-    AnnotatedPrimitiveType unboxed = applyUnboxing(boxedPrimitiveBound(type));
+    AnnotatedPrimitiveType unboxed = applyUnboxing(type);
     return unboxed.getKind() == promotedKind
         ? unboxed
         : getWidenedPrimitive(unboxed, types.getPrimitiveType(promotedKind));
