@@ -1192,6 +1192,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     removeConflicting(receiver);
     if (val != null) {
       localVariableValues.put(receiver, val);
+    } else {
+      localVariableValues.remove(receiver);
     }
   }
 
