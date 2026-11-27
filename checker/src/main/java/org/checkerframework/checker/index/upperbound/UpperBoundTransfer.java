@@ -552,8 +552,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Returns the qualifier for the given annotation of an operand of a comparison, without the bounds
-   * that might not hold when the comparison completes (see {@link #removeBoundsChangedAfter}).
+   * Returns the qualifier for the given annotation of an operand of a comparison, without the
+   * bounds that might not hold when the comparison completes (see {@link
+   * #removeBoundsChangedAfter}).
    *
    * @param anno the upper bound annotation of {@code operand}
    * @param operand an operand of a comparison
