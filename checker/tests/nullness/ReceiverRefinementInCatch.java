@@ -39,6 +39,20 @@ public class ReceiverRefinementInCatch {
     }
   }
 
+  void run() {}
+
+  // A null receiver causes a NullPointerException at the method lookup, which a handler for
+  // IllegalArgumentException does not catch.  An IllegalArgumentException comes from the invoked
+  // method, so the receiver is non-null in that handler.
+  void uncheckedExceptionHandler(@Nullable ReceiverRefinementInCatch r) {
+    try {
+      // :: error: (dereference.of.nullable)
+      r.run();
+    } catch (IllegalArgumentException e) {
+      r.toString();
+    }
+  }
+
   // An Error handler cannot catch the NullPointerException either.
   void errorHandler(@Nullable Object o) {
     try {

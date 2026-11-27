@@ -34,10 +34,11 @@ public class ReceiverDependsOnStaticField {
 
   // The invoked method is not side-effect-free and might write the static field, so normal
   // completion of the call does not show that the receiver is non-null afterward.
+  // These tests do not first test `current()` against null:  the store retains a refinement of a
+  // static call with no modifiable argument, such as `current()`, across a call that is not
+  // side-effect-free (see sideeffectsonly/StaticPureCallRefinement.java).
   void sideEffectingCallNoArguments() {
-    if (current() == null) {
-      return;
-    }
+    // :: error: (dereference.of.nullable)
     current().clearSlot();
     // :: error: (dereference.of.nullable)
     current().toString();
@@ -45,9 +46,7 @@ public class ReceiverDependsOnStaticField {
 
   // Likewise for an argument passed to a non-null parameter.
   void sideEffectingCallNonNullArgument() {
-    if (current() == null) {
-      return;
-    }
+    // :: error: (argument)
     acceptNonNull(current());
     // :: error: (dereference.of.nullable)
     current().toString();

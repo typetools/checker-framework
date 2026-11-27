@@ -78,10 +78,13 @@ public class ReceiverReassignedInArgument {
     q.toString();
   }
 
-  // A toString() method that reassigns the field f.
+  // A toString() method that reassigns the field f.  It overrides Object.toString(), which is
+  // annotated @SideEffectFree, and purity annotations are inherited.  So the Checker Framework
+  // reports the field assignment and treats Mutator.toString() as side-effect-free elsewhere.
   class Mutator {
     @Override
     public String toString() {
+      // :: error: (purity.assign.field)
       f = null;
       return "";
     }
@@ -95,19 +98,18 @@ public class ReceiverReassignedInArgument {
     }
   }
 
-  // String concatenation implicitly invokes Mutator.toString(), which reassigns f.
+  // String concatenation implicitly invokes Mutator.toString().  The checker trusts its inherited
+  // @SideEffectFree annotation (and reports the violation at its declaration), so f is refined.
   void stringConcatenationInArgument(Mutator m) {
     // :: error: (dereference.of.nullable)
     f.sefTake("" + m);
-    // :: error: (dereference.of.nullable)
     f.toString();
   }
 
-  // `s += m` implicitly invokes Mutator.toString(), which reassigns f.
+  // `s += m` implicitly invokes Mutator.toString(), which the checker treats as side-effect-free.
   void stringCompoundAssignmentInArgument(Mutator m, String s) {
     // :: error: (dereference.of.nullable)
     f.sefTake(s += m);
-    // :: error: (dereference.of.nullable)
     f.toString();
   }
 
