@@ -80,8 +80,8 @@ public class TypeVarPrimitives {
   }
 
   @SuppressWarnings({
-    "lowerbound:unary.increment", // false positive: the boxed Short value is stored into T
-    "upperbound:unary.increment" // false positive: the boxed Short value is stored into T
+    "lowerbound:unary.increment", // https://github.com/typetools/checker-framework/issues/8375
+    "upperbound:unary.increment" // https://github.com/typetools/checker-framework/issues/8375
   })
   <T extends Short> T preIncrement(T t) {
     ++t;
