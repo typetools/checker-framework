@@ -40,6 +40,10 @@ new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
 inner class of a visitor can pass the visitor, as in
 `super(MyVisitor.this, overriderTree, ...)`.
 
+Removed the methods `SystemUtil.isWhitespaceOnly()` and
+`AnnotationFileUtil.allAnnotationFiles()`; use
+`AnnotationFileUtil.forEachAnnotationFile()`.
+
 Deprecated methods:
 
 * `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`

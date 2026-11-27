@@ -65,41 +65,6 @@ public final class SystemUtil {
     }
   }
 
-  /**
-   * Returns true if the first {@code readLimit} bytes of the input stream consist only of
-   * whitespace.
-   *
-   * @param is an input stream
-   * @param readLimit how many bytes to look ahead in the input stream
-   * @return null if {@code !is.markSupported()}; otherwise, true if the first {@code readLimit}
-   *     characters of the input stream consist only of whitespace
-   */
-  public static @Nullable Boolean isWhitespaceOnly(InputStream is, int readLimit) {
-    if (!is.markSupported()) {
-      return null;
-    }
-    try {
-      is.mark(readLimit * 4); // each character is at most 4 bytes, usually much less
-      for (int bytesRead = 0; bytesRead < readLimit; bytesRead++) {
-        int nextCodePoint = readCodePoint(is);
-        if (nextCodePoint == -1) {
-          return true;
-        } else if (Character.isWhitespace(nextCodePoint)) {
-          // do nothing, continue loop
-        } else {
-          return false;
-        }
-      }
-      return true;
-    } finally {
-      try {
-        is.reset();
-      } catch (IOException e) {
-        // Do nothing.
-      }
-    }
-  }
-
   // From https://stackoverflow.com/a/54513347 .
   /**
    * Reads a Unicode code point from an input stream.
