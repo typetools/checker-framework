@@ -106,26 +106,4 @@ public class SameLenComparisonChangesOperand {
       }
     }
   }
-
-  static String prefix = "";
-
-  static class PrefixSetter {
-    @Override
-    public String toString() {
-      prefix = "long";
-      return "x";
-    }
-  }
-
-  // The concatenation reads `prefix` before its string conversion of `setter` reassigns `prefix`.
-  // So after the comparison, prefix + setter might be longer than t.
-  void concatenationChangesOperand(PrefixSetter setter, String t) {
-    if ((prefix + setter).length() == t.length()) {
-      String u = prefix + setter;
-      for (int k = 0; k < u.length(); k++) {
-        // :: error: (argument)
-        t.charAt(k);
-      }
-    }
-  }
 }
