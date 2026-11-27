@@ -18,6 +18,18 @@ public class DelegateArgumentsTest<K, V> extends IdentityHashMap<K, V> {
   public V remove(Object key) {
     return map.remove("some other key");
   }
+
+  @Override
+  // :: warning: [invalid.delegate]
+  public boolean containsKey(Object key) {
+    // The argument is an assignment to the formal parameter, not the caller's argument.
+    return map.containsKey(key = "some other key");
+  }
+
+  @Override
+  public boolean containsValue(Object value) {
+    return map.containsValue((value)); // OK
+  }
 }
 
 class ArgumentOrder {

@@ -269,31 +269,43 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     if (!(methodSelectTree instanceof MemberSelectTree fieldAccessTree)) {
       return false;
     }
-    VariableElement receiverField = TreeUtils.asFieldAccess(fieldAccessTree.getExpression());
+    ExpressionTree receiver = TreeUtils.withoutParens(fieldAccessTree.getExpression());
+    VariableElement receiverField = TreeUtils.asFieldAccess(receiver);
     if (!Objects.equals(receiverField, TreeUtils.elementFromDeclaration(delegate))) {
+      return false;
+    }
+    // The delegate field must be that of the current instance:  `list` or `this.list`, but not
+    // `other.list`.
+    if (receiver instanceof MemberSelectTree receiverSelect
+        && !TreeUtils.isExplicitThisDereference(
+            TreeUtils.withoutParens(receiverSelect.getExpression()))) {
       return false;
     }
     ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
     ExecutableElement delegatedMethodElt = TreeUtils.elementFromUse(delegatedMethodCall);
     return enclosingMethodElt != null
-        && isSameMethod(enclosingMethodElt, delegatedMethodElt)
+        && isSameMethod(enclosingMethodElt, delegatedMethodElt, TreeUtils.typeOf(receiver))
         && argumentsAreFormalParameters(enclosingMethod, delegatedMethodCall);
   }
 
   /**
    * Returns true if the two methods are the same method: that is, they are the same element, one
-   * overrides the other, or both override some common method.
+   * overrides the other, or both override some common method. Overriding of a method of {@code
+   * method1} is also determined in the context of the delegate's type, so that {@code method2} may
+   * be an implementation that the delegate's class inherits.
    *
    * <p>This is more permissive than {@link ElementUtils#isMethod}, which requires the first
    * method's declaring class to be a subtype of the second method's declaring class. That
    * requirement does not hold for a delegator that implements an interface but whose delegate field
    * is declared using a concrete implementation type.
    *
-   * @param method1 a method
-   * @param method2 a method
+   * @param method1 a method of the delegator
+   * @param method2 a method that is invoked on the delegate
+   * @param delegateType the type of the delegate
    * @return true if the two methods are the same method
    */
-  private boolean isSameMethod(ExecutableElement method1, ExecutableElement method2) {
+  private boolean isSameMethod(
+      ExecutableElement method1, ExecutableElement method2, TypeMirror delegateType) {
     if (method1.equals(method2)) {
       return true;
     }
@@ -305,6 +317,20 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     for (ExecutableElement method2Super : ElementUtils.getOverriddenMethods(method2, types)) {
       if (method2Super.equals(method1) || method1Supers.contains(method2Super)) {
         return true;
+      }
+    }
+    // The delegate's class might inherit an implementation of a method of method1, from a class
+    // that is not a subtype of the method's declaring type.  For example, `Impl extends Base
+    // implements I`, and `Base.m()` implements `I.m()` in `Impl`.
+    if (delegateType instanceof DeclaredType declaredDelegateType) {
+      TypeElement delegateClass = (TypeElement) declaredDelegateType.asElement();
+      method1Supers.add(method1);
+      for (ExecutableElement method1Super : method1Supers) {
+        TypeMirror superOwner = method1Super.getEnclosingElement().asType();
+        if (TypesUtils.isErasedSubtype(delegateClass.asType(), superOwner, types)
+            && elements.overrides(method2, method1Super, delegateClass)) {
+          return true;
+        }
       }
     }
     return false;
@@ -327,7 +353,12 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     }
     for (int i = 0; i < parameters.size(); i++) {
       VariableElement parameterElt = TreeUtils.elementFromDeclaration(parameters.get(i));
-      Element argumentElt = TreeUtils.elementFromTree(TreeUtils.withoutParens(arguments.get(i)));
+      // Require a reference to the parameter, not an expression such as an assignment `key = x`
+      // whose element is the parameter.
+      if (!(TreeUtils.withoutParens(arguments.get(i)) instanceof IdentifierTree argument)) {
+        return false;
+      }
+      Element argumentElt = TreeUtils.elementFromUse(argument);
       if (parameterElt == null || !Objects.equals(parameterElt, argumentElt)) {
         return false;
       }
@@ -399,9 +430,9 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     if (!(soleStmt instanceof ThrowTree throwStmt)) {
       return false;
     }
-    Class<?> exceptionClass =
-        TypesUtils.getClassFromType(TreeUtils.typeOf(throwStmt.getExpression()));
-    return exceptionClass == clazz;
+    // Compare by name, to avoid loading (and initializing) the thrown class.
+    return TypesUtils.isDeclaredOfName(
+        TreeUtils.typeOf(throwStmt.getExpression()), clazz.getCanonicalName());
   }
 
   /**

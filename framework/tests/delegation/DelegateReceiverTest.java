@@ -34,6 +34,22 @@ public class DelegateReceiverTest<E> extends ArrayList<E> {
     // The receiver is a static field that happens to have the same name.
     return StaticHolder.list.size();
   }
+
+  @Override
+  public boolean add(E e) {
+    return this.list.add(e); // OK
+  }
+
+  @Override
+  // :: warning: [invalid.delegate]
+  public E get(int index) {
+    // The receiver is the delegate field of another delegator.
+    return other().list.get(index);
+  }
+
+  private DelegateReceiverTest<E> other() {
+    return this;
+  }
 }
 
 class Holder<E> {
