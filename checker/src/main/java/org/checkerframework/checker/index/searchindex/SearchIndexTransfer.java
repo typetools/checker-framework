@@ -10,9 +10,11 @@ import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -89,9 +91,84 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
           return;
         }
         AnnotationMirror nif = atypeFactory.createNegativeIndexFor(unchangedArrays);
-        insertValueForComparedNode(store, right, nif);
+        if (unchangedArrays.size() == arrays.size()) {
+          insertValueForComparedNode(store, right, nif);
+        } else {
+          replaceValueForComparedNode(store, right, nif, unchangedArrays);
+        }
       }
     }
+  }
+
+  /**
+   * Refines the value in the store of each expression that has the value of the given node when the
+   * comparison that contains the node completes, given that it is {@code nif}. The store's current
+   * value for such an expression might name an array that changed before the comparison completed.
+   * That value is incomparable to {@code nif}, so {@link CFStore#insertValue} would keep neither.
+   * Instead, this method drops the changed arrays from the current value, and replaces the value by
+   * the greatest lower bound of the result and {@code nif}.
+   *
+   * <p>For example, in {@code (copy = index) < zero(a = new int[0])}, the value of {@code copy} is
+   * {@code @SearchIndexFor({"a", "b"})}, and {@code nif} is {@code @NegativeIndexFor("b")}. This
+   * method replaces the value of {@code copy} by {@code @NegativeIndexFor("b")}.
+   *
+   * @param store the store to modify
+   * @param node a node in an operand of a comparison
+   * @param nif a {@link NegativeIndexFor} annotation that holds for {@code node} when the
+   *     comparison completes
+   * @param unchangedArrays the arrays that do not change before the comparison completes; {@code
+   *     nif} names only these
+   */
+  private void replaceValueForComparedNode(
+      CFStore store, Node node, AnnotationMirror nif, List<String> unchangedArrays) {
+    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    for (Node internal : nodesWithValueOf(node)) {
+      JavaExpression expr = JavaExpression.fromNode(internal);
+      CFValue oldValue = store.getValue(expr);
+      AnnotationMirror oldAnno =
+          oldValue == null
+              ? null
+              : hierarchy.findAnnotationInHierarchy(
+                  oldValue.getAnnotations(), atypeFactory.UNKNOWN);
+      AnnotationMirror newAnno = nif;
+      if (oldAnno != null) {
+        AnnotationMirror unchangedOldAnno = withOnlyArrays(oldAnno, unchangedArrays);
+        newAnno =
+            hierarchy.greatestLowerBoundShallow(
+                unchangedOldAnno, internal.getType(), nif, internal.getType());
+      }
+      store.replaceValue(expr, newAnno);
+    }
+  }
+
+  /**
+   * Returns the given annotation, without the arrays that are not in the given list.
+   *
+   * @param anno a SearchIndex Checker qualifier
+   * @param arrays the arrays to keep
+   * @return {@code anno} without the arrays that are not in {@code arrays}, or the top qualifier if
+   *     that leaves no arrays in a {@link SearchIndexFor} or {@link NegativeIndexFor}
+   */
+  private AnnotationMirror withOnlyArrays(AnnotationMirror anno, List<String> arrays) {
+    boolean isNegativeIndexFor = atypeFactory.areSameByClass(anno, NegativeIndexFor.class);
+    if (!isNegativeIndexFor && !atypeFactory.areSameByClass(anno, SearchIndexFor.class)) {
+      return anno;
+    }
+    List<String> kept =
+        new ArrayList<>(
+            AnnotationUtils.getElementValueArray(
+                anno,
+                isNegativeIndexFor
+                    ? atypeFactory.negativeIndexForValueElement
+                    : atypeFactory.searchIndexForValueElement,
+                String.class));
+    kept.retainAll(arrays);
+    if (kept.isEmpty()) {
+      return atypeFactory.UNKNOWN;
+    }
+    return isNegativeIndexFor
+        ? atypeFactory.createNegativeIndexFor(kept)
+        : atypeFactory.createSearchIndexFor(kept);
   }
 
   @Override
