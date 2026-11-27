@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -228,10 +227,12 @@ public final class Resolution {
           continue;
         }
       }
-      // `addBound` can change the instantiation even if it returns false.
-      ProperType previousInstantiation = var.getInstantiation();
+      // `addBound` can change the instantiation even if it returns false.  Detect a change by the
+      // same criterion that the setter uses: ProperType#equals ignores the annotations of
+      // enclosing types, but the setter installs a type that differs only in them.
+      long previousChange = var.getBounds().getLastInstantiationChange();
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
-      added |= !Objects.equals(previousInstantiation, var.getInstantiation());
+      added |= previousChange != var.getBounds().getLastInstantiationChange();
     }
     if (added) {
       boundSet.reachFixedPoint();
@@ -618,6 +619,17 @@ public final class Resolution {
         // ignored: if they cover every hierarchy, then the result does not ignore annotations, and
         // its annotations are checked against `variable`'s other bounds.  In hierarchies that they
         // do not cover, the ignored annotations remain.
+        //
+        // TODO: A type that ignores annotations may still have an explicit primary annotation in
+        // some hierarchy: UseOfVariable#applyInstantiations copies a use's explicit annotation in
+        // one hierarchy into an instantiation that ignores annotations, and the result ignores
+        // annotations in every hierarchy.  If such a type is an EQUAL bound of `variable` (see
+        // VariableBounds#findLowerBoundsForAnnotations), then a qualifier lower bound in the
+        // hierarchy of that explicit annotation replaces it here rather than being lubbed with it.
+        // Fixing this requires AbstractType#ignoreAnnotations to record the hierarchies in which
+        // primary annotations are ignored (see the TODO in
+        // ProperType#withPrimaryAnnotationsReplaced), so that annotations are replaced only in
+        // those hierarchies and lubbed in the others.
         return lubProperType.withPrimaryAnnotationsReplaced(lubAnnos, false);
       }
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,

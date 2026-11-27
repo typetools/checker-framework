@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -124,6 +123,16 @@ final class IgnoredAnnotations {
         && !mayHaveIgnoredPositions) {
       return new ReplacedTypes(upToDateSub.getAnnotatedType(), upToDateSup.getAnnotatedType());
     }
+    if (mayHaveIgnoredPositions
+        && upToDateSub.getTypeKind() == TypeKind.ARRAY
+        && upToDateSup.getTypeKind() == TypeKind.ARRAY
+        && !types.isSameType(
+            types.erasure(upToDateSub.getJavaType()), types.erasure(upToDateSup.getJavaType()))) {
+      ReplacedTypes result = replaceIgnoredForSubtypeArrays(upToDateSub, upToDateSup, qh, types);
+      if (result != null) {
+        return result;
+      }
+    }
     AbstractType subAsSuper = upToDateSub;
     if (mayHaveIgnoredPositions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
@@ -145,6 +154,64 @@ final class IgnoredAnnotations {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
     }
     if (upToDateSup.ignoreAnnotations) {
+      supATM.replaceAnnotations(qh.getTopAnnotations());
+    }
+    return new ReplacedTypes(subATM, supATM);
+  }
+
+  /**
+   * Returns the annotated types of the arrays {@code sub} and {@code sup} with their ignored
+   * annotations replaced, as {@link #replaceIgnoredForSubtype} does, or null if either component
+   * type is not available.
+   *
+   * <p>The component types of arrays of different classes, such as {@code ArrayList<A>[]} and
+   * {@code List<B>[]}, are of different classes too, so their positions do not line up. The type
+   * hierarchy compares the component types, and it views the component type of {@code sub} as a
+   * supertype of the class of that of {@code sup}. So this method replaces the ignored annotations
+   * of the component types, by calling {@link #replaceIgnoredForSubtype} on them; that call finds
+   * the supertype of the component type of {@code sub}.
+   *
+   * <p>If array components are invariant (the {@code -AinvariantArrays} command-line option), then
+   * the type hierarchy compares the component types for equality rather than for subtyping. Then
+   * this method replaces their ignored annotations as {@link #replaceIgnoredForEquality} does,
+   * after finding the supertype of the component type of {@code sub}, so that an ignored annotation
+   * is replaced by the corresponding annotation of the other component type rather than by bottom
+   * or top.
+   *
+   * @param sub a potential subtype, which is an up-to-date array type (see {@link #upToDate})
+   * @param sup the potential supertype, which is an up-to-date array type
+   * @param qh the qualifier hierarchy
+   * @param types the type utilities
+   * @return a pair of annotated types: {@code sub} and {@code sup}, with ignored annotations
+   *     replaced; or null
+   */
+  private static @Nullable ReplacedTypes replaceIgnoredForSubtypeArrays(
+      AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
+    // ProperType#getComponentType computes the component type from the origin, if any, so its
+    // ignored positions can be found.
+    AbstractType subComponent = sub.getComponentType();
+    AbstractType supComponent = sup.getComponentType();
+    if (subComponent == null || supComponent == null) {
+      return null;
+    }
+    ReplacedTypes components;
+    if (sub.typeFactory.getChecker().hasOption("invariantArrays")) {
+      // DefaultTypeHierarchy compares invariant components for equality.  Bottom or top would
+      // not equal the other component's annotation, so copy that annotation instead.
+      AbstractType subComponentAsSuper =
+          asSuper(upToDate(subComponent), upToDate(supComponent).getJavaType(), types);
+      components = replaceIgnoredForEquality(subComponentAsSuper, supComponent, qh, types);
+    } else {
+      components = replaceIgnoredForSubtype(subComponent, supComponent, qh, types);
+    }
+    AnnotatedArrayType subATM = (AnnotatedArrayType) sub.getAnnotatedType().shallowCopy();
+    AnnotatedArrayType supATM = (AnnotatedArrayType) sup.getAnnotatedType().shallowCopy();
+    subATM.setComponentType(components.type1());
+    supATM.setComponentType(components.type2());
+    if (sub.ignoreAnnotations) {
+      subATM.replaceAnnotations(qh.getBottomAnnotations());
+    }
+    if (sup.ignoreAnnotations) {
       supATM.replaceAnnotations(qh.getTopAnnotations());
     }
     return new ReplacedTypes(subATM, supATM);
@@ -214,9 +281,9 @@ final class IgnoredAnnotations {
    *       each type, or of its upper bound if it is a type variable. If the positions of the two
    *       supertypes cannot correspond (see {@link #positionsCanCorrespond}), as for unrelated
    *       classes, then return the types' own annotated types. Supertypes of different classes, one
-   *       a subclass of the other, can correspond: for example, the greatest lower bound of {@code
-   *       ArrayList<String>} and {@code List<String>} is {@code ArrayList<String>}, and the type
-   *       arguments correspond.
+   *       a subclass of the other, can correspond, as for a greatest lower bound of {@code
+   *       ArrayList<T>} and {@code List<@NonNull String>}; then positions correspond as described
+   *       in {@link #allCorrespondingPositionsMatch}.
    *   <li>Otherwise, return copies of the two supertypes in which each ignored position of one gets
    *       the annotations of the corresponding position of the other, in each hierarchy in which
    *       the annotations of only one of the two positions are ignored (see {@link
@@ -263,6 +330,12 @@ final class IgnoredAnnotations {
     AbstractType bound2 = upperBoundIfTypeVariable(upToDate2);
     AbstractType asSuper1 = asSuper(bound1, resultType, types);
     AbstractType asSuper2 = asSuper(bound2, resultType, types);
+    // The two supertypes can be of different classes: for example, the greatest lower bound of
+    // `ArrayList<T>` and `List<@NonNull String>` is of class ArrayList, which is not a supertype of
+    // List.  Their positions still correspond if one class is a subclass of the other (see
+    // #allCorrespondingPositionsMatch).  The ignored positions must be replaced in that case too:
+    // AnnotatedTypes#annotatedGLB takes all but the primary annotations from the `ArrayList`
+    // argument, so an ignored position there would otherwise discard the annotations of `List`.
     if (!positionsCanCorrespond(asSuper1.getJavaType(), asSuper2.getJavaType(), types)) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
@@ -322,6 +395,8 @@ final class IgnoredAnnotations {
     // bound, so compare the positions of that bound.
     AbstractType otherAsSuper =
         asSuper(upperBoundIfTypeVariable(upToDate(other)), resultType, types);
+    // As in #replaceIgnoredForLubOrGlb, the supertypes can be of different classes, and their
+    // positions still correspond if one class is a subclass of the other.
     if (!positionsCanCorrespond(typeAsSuper.getJavaType(), otherAsSuper.getJavaType(), types)) {
       return true;
     }
@@ -333,7 +408,7 @@ final class IgnoredAnnotations {
     return allCorrespondingPositionsMatch(
         atm,
         otherATM,
-        (position, otherPosition) ->
+        (position, otherPosition, unwrapped, otherUnwrapped) ->
             ignoredHierarchies(otherIgnored, otherPosition)
                 .containsAll(ignoredHierarchies(ignored, position)),
         types);
@@ -402,7 +477,7 @@ final class IgnoredAnnotations {
     return allCorrespondingPositionsMatch(
         atm1,
         atm2,
-        (a1, a2) -> {
+        (a1, a2, unwrapped1, unwrapped2) -> {
           AnnotationMirrorSet annos1 = a1.getPrimaryAnnotations();
           AnnotationMirrorSet annos2 = a2.getPrimaryAnnotations();
           // Compare one hierarchy at a time: the two positions can have primary annotations in
@@ -939,10 +1014,10 @@ final class IgnoredAnnotations {
     allCorrespondingPositionsMatch(
         atm1,
         atm2,
-        (position1, wildcard1, position2, wildcard2) -> {
+        (position1, position2, unwrapped1, unwrapped2) -> {
           // Whether a position is ignored is decided by the position itself, which is a wildcard's
           // bound if the other position corresponds to that bound.  But a copy from a wildcard's
-          // bound is made from the wildcard, so that the copy keeps the wildcard's direction.
+          // bound is told the wildcard, so that the copy keeps the wildcard's direction.
           AnnotationMirrorSet hierarchies1 = ignoredHierarchies(ignored1, position1);
           AnnotationMirrorSet hierarchies2 = ignoredHierarchies(ignored2, position2);
           if (hierarchies1.isEmpty() && hierarchies2.isEmpty()) {
@@ -957,12 +1032,12 @@ final class IgnoredAnnotations {
           if (!into1.isEmpty()) {
             copies
                 .computeIfAbsent(position1, k -> new ArrayList<>())
-                .add(Copy.from(wildcard2 != null ? wildcard2 : position2, into1, snapshots));
+                .add(Copy.from(position2, unwrapped2, into1, snapshots));
           }
           if (!into2.isEmpty()) {
             copies
                 .computeIfAbsent(position2, k -> new ArrayList<>())
-                .add(Copy.from(wildcard1 != null ? wildcard1 : position1, into2, snapshots));
+                .add(Copy.from(position1, unwrapped1, into2, snapshots));
           }
           return true;
         },
@@ -1002,6 +1077,9 @@ final class IgnoredAnnotations {
      *
      * @param from the position whose annotations are copied; if it is a wildcard, the annotations
      *     of its bound are copied (see {@link #boundOf})
+     * @param unwrapped the wildcard whose bound {@code from} is, if {@code from} corresponds to the
+     *     target only because that wildcard was replaced by its bound (see {@link
+     *     PositionTest#test}); otherwise null. If non-null, the copy has that wildcard's direction.
      * @param hierarchies the top annotations of the hierarchies in which to copy annotations
      * @param snapshots a map from each position that is copied from to its snapshot, which is
      *     shared by all copies from that position; side-effected by this method
@@ -1009,10 +1087,12 @@ final class IgnoredAnnotations {
      */
     static Copy from(
         AnnotatedTypeMirror from,
+        @Nullable AnnotatedWildcardType unwrapped,
         AnnotationMirrorSet hierarchies,
         Map<AnnotatedTypeMirror, AnnotatedTypeMirror> snapshots) {
       Direction direction;
-      if (from instanceof AnnotatedWildcardType wildcard) {
+      AnnotatedTypeMirror directionSource = unwrapped != null ? unwrapped : from;
+      if (directionSource instanceof AnnotatedWildcardType wildcard) {
         direction =
             wildcard.getSuperBound().getKind() != TypeKind.NULL ? Direction.ABOVE : Direction.BELOW;
       } else {
@@ -1096,6 +1176,35 @@ final class IgnoredAnnotations {
     }
   }
 
+  /** A test of a pair of corresponding positions; see {@link #allCorrespondingPositionsMatch}. */
+  @FunctionalInterface
+  private interface PositionTest {
+    /**
+     * Returns true if the test holds for {@code position1} and {@code position2}. It may
+     * side-effect them.
+     *
+     * <p>Where one type has a wildcard and the other does not, the wildcard's bound, rather than
+     * the wildcard, corresponds to the other type. Then the wildcard is passed as well, because the
+     * bound constrains an annotation only in one direction: for example, the type argument {@code ?
+     * extends @NonNull String} is satisfied by anything below {@code @NonNull}.
+     *
+     * @param position1 a position of the first type
+     * @param position2 the corresponding position of the second type
+     * @param unwrapped1 the wildcard whose bound is {@code position1}, if {@code position1}
+     *     corresponds to {@code position2} only because that wildcard was replaced by its bound;
+     *     otherwise null
+     * @param unwrapped2 the wildcard whose bound is {@code position2}, if {@code position2}
+     *     corresponds to {@code position1} only because that wildcard was replaced by its bound;
+     *     otherwise null
+     * @return true if the test holds for {@code position1} and {@code position2}
+     */
+    boolean test(
+        AnnotatedTypeMirror position1,
+        AnnotatedTypeMirror position2,
+        @Nullable AnnotatedWildcardType unwrapped1,
+        @Nullable AnnotatedWildcardType unwrapped2);
+  }
+
   /**
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}, starting with {@code atm1} and {@code atm2} themselves. A position is tested
@@ -1109,6 +1218,8 @@ final class IgnoredAnnotations {
    *       in {@code List<? extends Box<@A String>>} and {@code List<Box<@B String>>}, {@code Box<@A
    *       String>} corresponds to {@code Box<@B String>}, and {@code @A String} corresponds to
    *       {@code @B String}; the wildcard {@code ? extends Box<@A String>} corresponds to nothing.
+   *       When the test is applied to the bound, it is also given the wildcard (see {@link
+   *       PositionTest#test}).
    *   <li>Where the two types are declared types of different classes, one a subclass of the other,
    *       a type argument of the subclass corresponds to each position of the superclass's type
    *       arguments at which the subclass's declaration of its supertype uses that type parameter
@@ -1126,60 +1237,14 @@ final class IgnoredAnnotations {
    * @return true if {@code test} holds for each pair of corresponding positions
    */
   private static boolean allCorrespondingPositionsMatch(
-      AnnotatedTypeMirror atm1,
-      AnnotatedTypeMirror atm2,
-      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test,
-      Types types) {
-    return allCorrespondingPositionsMatch(
-        atm1,
-        atm2,
-        (position1, wildcard1, position2, wildcard2) -> test.test(position1, position2),
-        types);
-  }
-
-  /**
-   * Like {@link #allCorrespondingPositionsMatch(AnnotatedTypeMirror, AnnotatedTypeMirror,
-   * BiPredicate, Types)}, but {@code test} is also told, for each position that corresponds to the
-   * other only because it is the bound of a wildcard, which wildcard that is.
-   *
-   * @param atm1 a type
-   * @param atm2 a type
-   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
-   * @param types the type utilities
-   * @return true if {@code test} holds for each pair of corresponding positions
-   */
-  private static boolean allCorrespondingPositionsMatch(
       AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2, PositionTest test, Types types) {
     return allCorrespondingPositionsMatch(atm1, atm2, test, new IdentityHashMap<>(), types);
-  }
-
-  /** A test of a pair of corresponding positions; see {@link #allCorrespondingPositionsMatch}. */
-  @FunctionalInterface
-  private interface PositionTest {
-    /**
-     * Returns true if the test holds for {@code position1} and {@code position2}. It may
-     * side-effect them.
-     *
-     * @param position1 a position of the first type
-     * @param wildcard1 the wildcard whose bound (see {@link #boundOf}) {@code position1} is, if
-     *     {@code position1} corresponds to {@code position2} only because it is that bound; null
-     *     otherwise
-     * @param position2 the corresponding position of the second type
-     * @param wildcard2 the wildcard whose bound {@code position2} is, if {@code position2}
-     *     corresponds to {@code position1} only because it is that bound; null otherwise
-     * @return true if the test holds
-     */
-    boolean test(
-        AnnotatedTypeMirror position1,
-        @Nullable AnnotatedWildcardType wildcard1,
-        AnnotatedTypeMirror position2,
-        @Nullable AnnotatedWildcardType wildcard2);
   }
 
   /**
    * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
    * {@code atm2}; see {@link #allCorrespondingPositionsMatch(AnnotatedTypeMirror,
-   * AnnotatedTypeMirror, BiPredicate, Types)}. A pair of positions at least one of which is a
+   * AnnotatedTypeMirror, PositionTest, Types)}. A pair of positions at least one of which is a
    * wildcard is visited at most once.
    *
    * @param atm1 a type
@@ -1204,22 +1269,23 @@ final class IgnoredAnnotations {
         && !addPair(visitedWildcards, atm1, atm2)) {
       return true;
     }
-    AnnotatedWildcardType wildcard1 = null;
-    AnnotatedWildcardType wildcard2 = null;
+    AnnotatedWildcardType unwrapped1 = null;
+    AnnotatedWildcardType unwrapped2 = null;
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument corresponds to a wildcard's bound, not to the wildcard itself; see
-      // #boundOf.  The test is applied to the bound, so that it sees the ignored hierarchies of the
-      // bound that supplies the wildcard's annotations, but it is told the wildcard, so that it can
-      // tell an upper or lower bound from a requirement of equality.
-      if (atm1 instanceof AnnotatedWildcardType wt1) {
-        wildcard1 = wt1;
-        atm1 = boundOf(wt1);
-      } else if (atm2 instanceof AnnotatedWildcardType wt2) {
-        wildcard2 = wt2;
-        atm2 = boundOf(wt2);
+      // #boundOf.  The pair of the wildcard and the type argument is not tested: the test would see
+      // the wildcard's ignored hierarchies, not those of the bound that supplies its annotations.
+      // The test is told about the wildcard, though, because the bound constrains the annotation
+      // only in the wildcard's direction.
+      if (atm1 instanceof AnnotatedWildcardType wildcard) {
+        unwrapped1 = wildcard;
+        atm1 = boundOf(wildcard);
+      } else if (atm2 instanceof AnnotatedWildcardType wildcard) {
+        unwrapped2 = wildcard;
+        atm2 = boundOf(wildcard);
       }
     }
-    if (!test.test(atm1, wildcard1, atm2, wildcard2)) {
+    if (!test.test(atm1, atm2, unwrapped1, unwrapped2)) {
       return false;
     }
     if (atm1.getKind() != atm2.getKind()) {

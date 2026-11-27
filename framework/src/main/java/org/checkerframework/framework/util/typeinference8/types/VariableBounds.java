@@ -241,7 +241,7 @@ public class VariableBounds {
    * @return a stamp that records when the current instantiation of this variable last changed, or 0
    *     if it has never changed
    */
-  long getLastInstantiationChange() {
+  public long getLastInstantiationChange() {
     return lastInstantiationChange;
   }
 
