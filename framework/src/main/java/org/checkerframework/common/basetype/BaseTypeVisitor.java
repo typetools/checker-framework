@@ -1712,9 +1712,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * makes, because {@link #checkLambdaPurity} and {@link
    * OverrideChecker#checkMethodReferencePurity} check that.
    *
-   * <p>Only a parameter whose declared type is a functional interface is checked. No implementation
-   * of {@code callee} can assume anything about an argument to any other parameter, such as one
-   * whose type is a type variable or a varargs array; see {@link
+   * <p>Only a parameter whose declared type is a functional interface, or a type variable whose
+   * upper bound is one, is checked. No implementation of {@code callee} can assume anything about
+   * an argument to any other parameter, such as one whose type is a type variable with no
+   * functional-interface upper bound or a varargs array; see {@link
    * PurityChecker#functionalParameterPurity}.
    *
    * @param callee the invoked method or constructor
@@ -5623,6 +5624,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // If the functional interface return type is void, the overriding return type doesn't
       // matter.
       functionTypeReturnType = invocationReturnType;
+    }
+
+    if (functionalInterface.getKind() == TypeKind.INTERSECTION) {
+      // The target is an inferred intersection type, as for an argument whose parameter type is
+      // `T` where `<T extends A & B>`.  As for an intersection cast, use the bound that declares or
+      // inherits the functional method.
+      TypeMirror erasedFnOwner =
+          types.erasure(functionType.getElement().getEnclosingElement().asType());
+      for (AnnotatedTypeMirror bound :
+          ((AnnotatedIntersectionType) functionalInterface).getBounds()) {
+        if (types.isSubtype(types.erasure(bound.getUnderlyingType()), erasedFnOwner)) {
+          functionalInterface = bound;
+          break;
+        }
+      }
     }
 
     if (functionalInterface.getKind() == TypeKind.DECLARED) {
