@@ -11,6 +11,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
@@ -288,7 +289,7 @@ public class InvocationTypeInference {
     recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
-        context.needUncheckedConversion,
+        new LinkedHashSet<>(context.needUncheckedConversion),
         b4.annoInferenceFailed,
         b4.errorMsg);
   }
@@ -367,7 +368,10 @@ public class InvocationTypeInference {
     b3.recordUncheckedConversionFor(invocation);
 
     return new InferenceResult(
-        thetaPrime, context.needUncheckedConversion, b3.annoInferenceFailed, b3.errorMsg);
+        thetaPrime,
+        new LinkedHashSet<>(context.needUncheckedConversion),
+        b3.annoInferenceFailed,
+        b3.errorMsg);
   }
 
   /**

@@ -17,6 +17,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.MapsP;
 
 /** The result of type argument inference. */
 public class InferenceResult {
@@ -96,6 +97,48 @@ public class InferenceResult {
     this.annoInferenceFailed = annoInferenceFailed;
     this.errorMsg = errorMsg;
     this.inferenceCrashed = inferenceCrashed;
+  }
+
+  /**
+   * Creates a copy of the given inference result that holds only the information about the given
+   * expression. The copy does not share any mutable state with {@code other}: its maps are new, and
+   * its type arguments are deep copies.
+   *
+   * @param other an inference result
+   * @param expressionTree the expression whose information to copy
+   */
+  private InferenceResult(InferenceResult other, ExpressionTree expressionTree) {
+    this.results = new HashMap<>(4);
+    Map<TypeVariable, AnnotatedTypeMirror> otherTypeArgs = other.results.get(expressionTree);
+    if (otherTypeArgs != null) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs =
+          new HashMap<>(MapsP.mapCapacity(otherTypeArgs.size()));
+      otherTypeArgs.forEach((typeVar, typeArg) -> typeArgs.put(typeVar, typeArg.deepCopy()));
+      this.results.put(expressionTree, typeArgs);
+    }
+    this.needUncheckedConversion =
+        other.needsUncheckedConversion(expressionTree)
+            ? Collections.singleton(expressionTree)
+            : Collections.emptySet();
+    this.annoInferenceFailed = other.annoInferenceFailed;
+    this.errorMsg = other.errorMsg;
+    this.inferenceCrashed = other.inferenceCrashed;
+  }
+
+  /**
+   * Returns a copy of this inference result that holds only the information about {@code
+   * expressionTree}: for {@code expressionTree}, the copy's {@link #getTypeArgumentsForExpression}
+   * returns deep copies of the type arguments that this returns, and the copy's {@link
+   * #needsUncheckedConversion} returns what this returns. The copy does not share any mutable state
+   * with this.
+   *
+   * @param expressionTree a method invocation, class instance creation, or method reference in this
+   *     inference problem
+   * @return a copy of this inference result that holds only the information about {@code
+   *     expressionTree}
+   */
+  /* package-private */ InferenceResult copyForExpression(ExpressionTree expressionTree) {
+    return new InferenceResult(this, expressionTree);
   }
 
   /**
