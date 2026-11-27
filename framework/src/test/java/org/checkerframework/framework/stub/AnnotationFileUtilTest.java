@@ -22,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for {@link AnnotationFileUtil#allAnnotationFiles}. */
+/** Tests for {@link AnnotationFileUtil#forEachAnnotationFile}. */
 public class AnnotationFileUtilTest {
 
   /** A temporary directory, deleted after each test. */
@@ -33,12 +33,12 @@ public class AnnotationFileUtilTest {
    *
    * @param location a file, directory, or archive
    * @param fileType the file type to collect
-   * @return the descriptions of the files that {@link AnnotationFileUtil#allAnnotationFiles} found
+   * @return the descriptions of the files that {@link AnnotationFileUtil#forEachAnnotationFile}
+   *     found
    */
   private static List<String> descriptions(File location, AnnotationFileType fileType) {
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(location.getPath(), fileType);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(location, fileType);
     List<String> result = new ArrayList<>(resources.size());
     for (AnnotationFileResource resource : resources) {
       result.add(resource.getDescription());
@@ -93,8 +93,7 @@ public class AnnotationFileUtilTest {
     File zip = writeZip(new File(tmp.getRoot(), "stubs.zip"), "java/lang/String.astub");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(zip.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(zip, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(1, resources.size());
     try (InputStream in = resources.get(0).getInputStream()) {
       Assert.assertEquals(
@@ -111,8 +110,7 @@ public class AnnotationFileUtilTest {
     File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(jar, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(1, resources.size());
     Assert.assertEquals(jar.getPath(), resources.get(0).getDescription());
     Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());
@@ -404,9 +402,8 @@ public class AnnotationFileUtilTest {
   @Test
   public void nonexistentLocation() {
     Assert.assertNull(
-        AnnotationFileUtil.allAnnotationFiles(
-            new File(tmp.getRoot(), "does-not-exist.astub").getPath(),
-            AnnotationFileType.COMMAND_LINE_STUB));
+        AnnotationFileUtil.findFileSystemLocation(
+            new File(tmp.getRoot(), "does-not-exist.astub").getPath()));
   }
 
   /**
@@ -422,9 +419,7 @@ public class AnnotationFileUtilTest {
     try {
       Assume.assumeTrue(dir.listFiles() == null);
       List<AnnotationFileResource> resources =
-          AnnotationFileUtil.allAnnotationFiles(
-              dir.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-      Assert.assertNotNull(resources);
+          AnnotationFileTestUtil.annotationFiles(dir, AnnotationFileType.COMMAND_LINE_STUB);
       Assert.assertEquals(1, resources.size());
       Assert.assertEquals(dir.getPath(), resources.get(0).getDescription());
       Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());

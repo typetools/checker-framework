@@ -360,16 +360,36 @@ public class AnnotationFileElementTypesTest {
             "-Astubs=" + jar.getPath()));
   }
 
+  /** The contents of an annotation file that starts with more than 100 whitespace characters. */
+  private static final String PADDED_STUB = " ".repeat(150) + "package p; class NoSuchClass {}";
+
   /**
-   * Tests that a classpath annotation file that starts with much whitespace is parsed, not skipped
-   * as if it were empty.
+   * Tests that an annotation file in the file system that starts with much whitespace is parsed,
+   * not skipped as if it were empty.
    */
+  @Test
+  public void leadingWhitespaceInFile() throws IOException {
+    File stub = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Padded.astub"), PADDED_STUB);
+    assertHasDiagnostic("WARNING: " + stub.getAbsolutePath() + ":", diagnostics(stub.getPath()));
+  }
+
+  /**
+   * Tests that an annotation file in a jar archive that starts with much whitespace is parsed, not
+   * skipped as if it were empty.
+   */
+  @Test
+  public void leadingWhitespaceInArchive() throws IOException {
+    File jar =
+        AnnotationFileTestUtil.writeJar(
+            new File(tmp.getRoot(), "stubs.jar"), "Padded.astub", PADDED_STUB);
+    assertHasDiagnostic("WARNING: " + jar.getPath() + "!Padded.astub:", diagnostics(jar.getPath()));
+  }
+
+  /** Tests that a classpath annotation file that starts with much whitespace is parsed. */
   @Test
   public void leadingWhitespaceOnClasspath() throws IOException {
     File classpathDir = tmp.newFolder();
-    AnnotationFileTestUtil.write(
-        new File(classpathDir, "Padded.astub"),
-        " ".repeat(150) + "package p; class NoSuchClass {}");
+    AnnotationFileTestUtil.write(new File(classpathDir, "Padded.astub"), PADDED_STUB);
     assertHasDiagnostic(
         "WARNING: /Padded.astub:", diagnostics("checker.jar/Padded.astub", classpathDir));
   }
