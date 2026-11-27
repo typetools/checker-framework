@@ -625,6 +625,17 @@ public final class Resolution {
         // ignored: if they cover every hierarchy, then the result does not ignore annotations, and
         // its annotations are checked against `variable`'s other bounds.  In hierarchies that they
         // do not cover, the ignored annotations remain.
+        //
+        // TODO: A type that ignores annotations may still have an explicit primary annotation in
+        // some hierarchy: UseOfVariable#applyInstantiations copies a use's explicit annotation in
+        // one hierarchy into an instantiation that ignores annotations, and the result ignores
+        // annotations in every hierarchy.  If such a type is an EQUAL bound of `variable` (see
+        // VariableBounds#findLowerBoundsForAnnotations), then a qualifier lower bound in the
+        // hierarchy of that explicit annotation replaces it here rather than being lubbed with it.
+        // Fixing this requires AbstractType#ignoreAnnotations to record the hierarchies in which
+        // primary annotations are ignored (see the TODO in
+        // ProperType#withPrimaryAnnotationsReplaced), so that annotations are replaced only in
+        // those hierarchies and lubbed in the others.
         return lubProperType.withPrimaryAnnotationsReplaced(lubAnnos, false);
       }
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
