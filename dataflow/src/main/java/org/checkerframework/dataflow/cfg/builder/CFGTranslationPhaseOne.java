@@ -933,7 +933,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * unboxing. The recorded type is the unboxed type if unboxing applies, or the original type
    * otherwise.
    *
-   * @param tree the tree whose type to inspect
+   * @param tree a tree whose type to inspect
    * @return information about the tree's type and its unboxing conversion
    */
   private TreeInfo getTreeInfo(Tree tree) {
@@ -946,7 +946,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     return new TreeInfo() {
       @Override
-      public boolean isNumericOrBoxed() {
+      public boolean isNumericAfterUnboxing() {
         return isNumeric;
       }
 
@@ -1438,13 +1438,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return box(node);
     }
 
-    // If the operand is byte or Byte and the whole expression is
-    // short, then convert to short.
-    // A conditional expression whose type is a reference type, such as `b ? t : null` where `t` has
-    // type `T extends Integer`, needs no numeric conversion of its operands.
     boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
     TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
+    // A conditional expression whose type is a reference type, such as `b ? t : null` where `t` has
+    // type `T extends Integer`, needs no numeric conversion of its operands.
     if (TypesUtils.isNumericPrimitive(unboxedNodeType) && TypesUtils.isNumericPrimitive(destType)) {
+      // If the operand is byte or Byte and the whole expression is
+      // short, then convert to short.
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isNodeUnboxable) {
           node = unbox(node);
@@ -2205,6 +2205,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private AssignmentNode selectorExprAssignment;
 
     /**
+     * True if the CFG for a guard has been built. Cases are tested in the order they are built, so
+     * this is true if a guard might execute between the evaluation of the selector expression and
+     * the test of the case currently being built. A guard might change the value of the selector
+     * expression.
+     */
+    private boolean guardBuilt = false;
+
+    /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
@@ -2327,6 +2335,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * the selector expression to the variable. This assignment node is stored in {@link
      * #selectorExprAssignment}. It can later be used to refine the selector expression in case
      * bodies.
+     *
+     * <p>A selector whose type is a primitive wrapper class such as {@code Integer}, or a type
+     * variable whose upper bound is a primitive wrapper class, is unboxed, unless the switch has a
+     * {@code case null} label. Such a switch does not throw {@code NullPointerException} if its
+     * selector is null.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2350,7 +2363,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+      Node selectorExprNode = scan(selectorExprTree, null);
+      if (!TreeUtils.hasNullCaseLabel(switchTree)) {
+        selectorExprNode = unbox(selectorExprNode);
+      }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
@@ -2413,7 +2429,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+          extendWithNode(
+              new CaseNode(
+                  caseTree, selectorExprAssignment, exprs, guardBuilt, env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
@@ -2423,6 +2441,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          guardBuilt = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
@@ -4207,8 +4226,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node left = scan(leftTree, p);
         Node right = scan(rightTree, p);
 
-        if (leftInfo.isNumericOrBoxed()
-            && rightInfo.isNumericOrBoxed()
+        if (leftInfo.isNumericAfterUnboxing()
+            && rightInfo.isNumericAfterUnboxing()
             && !(leftInfo.isUnboxable() && rightInfo.isUnboxable())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =
