@@ -1426,9 +1426,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns a copy of {@code store} that accounts for the effect of the record accessors that the
-   * record patterns of {@code n} invoke, which might not be side-effect-free. The CFG does not
-   * represent the accessor calls.
+   * Returns a copy of {@code store} that accounts for the effect of the record accessors that a
+   * case's record patterns invoke, which might not be side-effect-free. The CFG does not represent
+   * the accessor calls.
    *
    * @param store a store before the accessor calls; not modified
    * @return a copy of {@code store}, with facts that the accessor calls might invalidate removed
