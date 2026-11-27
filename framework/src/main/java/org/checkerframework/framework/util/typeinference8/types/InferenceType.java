@@ -194,6 +194,15 @@ public final class InferenceType extends AbstractType {
     return abstractTypes;
   }
 
+  /**
+   * Returns the mapping from type variables to the inference variables of this type.
+   *
+   * @return the mapping from type variables to the inference variables of this type
+   */
+  Theta getMap() {
+    return map;
+  }
+
   @Override
   public AbstractType create(AnnotatedTypeMirror type, boolean ignoreAnnotations) {
     return create(type, map, qualifierVars, context, ignoreAnnotations);
@@ -265,18 +274,54 @@ public final class InferenceType extends AbstractType {
     return variables;
   }
 
+  /**
+   * Returns true if any of {@code instantiations} ignores annotations (see {@link
+   * AbstractType#ignoreAnnotations}) or has an origin (see {@link ProperType#getOrigin}).
+   *
+   * @param instantiations instantiations of variables that this type contains
+   * @return true if any of {@code instantiations} ignores annotations or has an origin
+   */
+  private static boolean appliesIgnoredAnnotations(List<ProperType> instantiations) {
+    for (ProperType instantiation : instantiations) {
+      if (instantiation.ignoreAnnotations || instantiation.getOrigin() != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>If this type contains an instantiated variable whose instantiation ignores annotations or
+   * has an origin, then the result is either a proper type whose origin is this type (see {@link
+   * ProperType#getOrigin}) or, if applying instantiations would not give a proper type, this type
+   * itself.
+   */
   @Override
   public AbstractType applyInstantiations() {
     List<TypeVariable> typeVariables = new ArrayList<>();
     List<TypeMirror> arguments = new ArrayList<>();
-    List<Variable> instantiations = new ArrayList<>();
+    List<Variable> instantiated = new ArrayList<>();
+    // The up-to-date instantiations of `instantiated`; a parallel list.
+    List<ProperType> instantiations = new ArrayList<>();
 
-    for (Variable alpha : map.values()) {
-      ProperType instantiation = alpha.getInstantiation();
-      if (instantiation != null) {
+    // Only the variables that this type contains affect the result, so only their instantiations
+    // are refreshed: refreshing an instantiation can apply instantiations to its origin, which can
+    // refresh further instantiations.  The function type is derived from this type, so it contains
+    // no other variables.
+    for (Variable alpha : getInferenceVariables()) {
+      ProperType storedInstantiation = alpha.getInstantiation();
+      if (storedInstantiation != null) {
+        // The stored instantiation may be out of date, if its origin depends on an instantiation
+        // that has changed since it was made; see ProperType#applyInstantiations.  Otherwise, a
+        // type made from this one could record that it is up to date even though it holds the
+        // stale annotations.
+        ProperType instantiation = storedInstantiation.applyInstantiations();
         typeVariables.add(alpha.getJavaType());
         arguments.add(instantiation.getJavaType());
-        instantiations.add(alpha);
+        instantiated.add(alpha);
+        instantiations.add(instantiation);
       }
     }
     if (typeVariables.isEmpty()) {
@@ -288,19 +333,27 @@ public final class InferenceType extends AbstractType {
 
     Map<TypeVariable, AnnotatedTypeMirror> mapping = new LinkedHashMap<>();
 
-    for (Variable alpha : instantiations) {
-      ProperType alphaInstantiation = alpha.getInstantiation();
-      assert alphaInstantiation != null
-          : "@AssumeAssertion(nullness): `instantiations` contains only instantiated variables";
-      AnnotatedTypeMirror instantiation = alphaInstantiation.getAnnotatedType();
+    for (int i = 0; i < instantiated.size(); i++) {
+      AnnotatedTypeMirror instantiation = instantiations.get(i).getAnnotatedType();
       context.typeFactory.initializeAtm(instantiation);
-      mapping.put(alpha.getJavaType(), instantiation);
+      mapping.put(instantiated.get(i).getJavaType(), instantiation);
     }
 
     AnnotatedTypeMirror newATM = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    if (appliesIgnoredAnnotations(instantiations)) {
+      if (!newAbstractType.isProper()) {
+        // Only a proper type records an origin, so applying instantiations now would lose the
+        // record of the ignored positions.  Leave the instantiations unapplied until the result is
+        // proper.
+        return this;
+      }
+      // Record which positions are ignored; see ProperType#origin.
+      newAbstractType =
+          new ProperType(newATM, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations, this);
+    }
 
     // Also apply instantiations to function type.
     AnnotatedExecutableType unsubedFunctionType = getFunctionType();
