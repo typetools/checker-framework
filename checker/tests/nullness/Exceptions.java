@@ -64,4 +64,49 @@ public class Exceptions {
     } catch (IllegalStateException e) {
     }
   }
+
+  // The NullPointerException from `throw null` reaches the matching catch clause.  If it did not,
+  // the catch clause would be unreachable and its body would not be checked.
+  void throwNullReachesMatchingCatch() {
+    @Nullable Object o = "";
+    try {
+      o = null;
+      // :: error: [throwing.nullable]
+      throw null;
+    } catch (NullPointerException e) {
+      // :: error: [dereference.of.nullable]
+      o.toString();
+    }
+  }
+
+  // Likewise, through a finally block.
+  void throwNullInTryFinallyReachesMatchingCatch() {
+    @Nullable Object o = "";
+    try {
+      try {
+        // :: error: [throwing.nullable]
+        throw null;
+      } finally {
+        o = null;
+      }
+    } catch (NullPointerException e) {
+      // :: error: [dereference.of.nullable]
+      o.toString();
+    }
+  }
+
+  // In contrast, a local that remains non-null is non-null in the catch clause.
+  void throwNullInTryFinallyReachesMatchingCatchNonNull() {
+    @Nullable Object o = "";
+    try {
+      try {
+        // :: error: [throwing.nullable]
+        throw null;
+      } finally {
+        o = "";
+      }
+    } catch (NullPointerException e) {
+      o.toString();
+    }
+  }
 }

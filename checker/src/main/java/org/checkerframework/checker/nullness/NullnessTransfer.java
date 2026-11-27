@@ -645,11 +645,15 @@ public class NullnessTransfer
 
           @Override
           public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            // `s += o`, for a String variable s, implicitly invokes o.toString().
+            // `s += o` is string concatenation if either operand is a String.  It implicitly
+            // invokes toString() on an operand that is not a String:  on o for a String variable
+            // s, and on the old value of s for an Object variable s and a String o.
             return assignsReceiver(tree.getVariable())
                 || (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
-                    && TypesUtils.isString(TreeUtils.typeOf(tree.getVariable()))
-                    && stringConversionMayHaveSideEffect(tree.getExpression()))
+                    && (TypesUtils.isString(TreeUtils.typeOf(tree.getVariable()))
+                        || TypesUtils.isString(TreeUtils.typeOf(tree.getExpression())))
+                    && (stringConversionMayHaveSideEffect(tree.getVariable())
+                        || stringConversionMayHaveSideEffect(tree.getExpression())))
                 || super.visitCompoundAssignment(tree, p);
           }
 
