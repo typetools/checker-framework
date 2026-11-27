@@ -1,3 +1,5 @@
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 // An operand of a length comparison must not be related to the other operand if the comparison
 // changes the operand's value after evaluating it.  For example, if i is 12, then after the
 // comparison in changedLater, s is "ab3" but "x" + i is "x3".
@@ -72,6 +74,7 @@ public class SameLenComparisonChangesOperand {
     String text = "";
 
     @Override
+    @SideEffectFree
     public String toString() {
       return text;
     }
@@ -100,6 +103,28 @@ public class SameLenComparisonChangesOperand {
       String u = "p" + box;
       for (int k = 0; k < u.length(); k++) {
         s.charAt(k);
+      }
+    }
+  }
+
+  static String prefix = "";
+
+  static class PrefixSetter {
+    @Override
+    public String toString() {
+      prefix = "long";
+      return "x";
+    }
+  }
+
+  // The concatenation reads `prefix` before its string conversion of `setter` reassigns `prefix`.
+  // So after the comparison, prefix + setter might be longer than t.
+  void concatenationChangesOperand(PrefixSetter setter, String t) {
+    if ((prefix + setter).length() == t.length()) {
+      String u = prefix + setter;
+      for (int k = 0; k < u.length(); k++) {
+        // :: error: (argument)
+        t.charAt(k);
       }
     }
   }

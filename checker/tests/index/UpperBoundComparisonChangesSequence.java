@@ -52,4 +52,38 @@ public class UpperBoundComparisonChangesSequence {
       int x = this.a[i];
     }
   }
+
+  // If a has length 10 and b has length 1, then the comparison is 10 > 1, but x is 1 and a has
+  // length 1 after the comparison.
+  void gtChanged(int[] a, int[] b) {
+    int x;
+    if (a.length > (x = (a = b).length)) {
+      // :: error: (array.access.unsafe.high)
+      int y = a[x];
+    }
+  }
+
+  void gtUnchanged(int[] a, int[] b) {
+    int x;
+    if (a.length > (x = b.length)) {
+      int y = a[x];
+    }
+  }
+
+  // If a has length 10 and b has length 1, then the comparison is 10 >= 1, but x is 1 and a has
+  // length 1 after the comparison.
+  void gteChanged(int[] a, int[] b) {
+    int x;
+    if (a.length >= (x = (a = b).length + 1)) {
+      // :: error: (assignment)
+      @LTEqLengthOf("a") int y = x;
+    }
+  }
+
+  void gteUnchanged(int[] a, int[] b) {
+    int x;
+    if (a.length >= (x = b.length + 1)) {
+      @LTEqLengthOf("a") int y = x;
+    }
+  }
 }
