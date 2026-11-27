@@ -398,9 +398,9 @@ public final class PurityChecker {
    * receiver type supplies. Every argument has that type, so its implementation of {@code
    * parameterFunction} has the purity that the type's implementation promises. A call checks its
    * arguments against {@code declaration}'s purity annotation only if the declared type of the
-   * parameter is a functional interface (or a type variable whose upper bound is one), however.
-   * The call checks the argument's implementation of that type's functional method, which is also
-   * its implementation of {@code parameterFunction} if every object of type {@code parameterType}
+   * parameter is a functional interface (or a type variable whose upper bound is one), however. The
+   * call checks the argument's implementation of that type's functional method, which is also its
+   * implementation of {@code parameterFunction} if every object of type {@code parameterType}
    * implements the two methods with the same method (see {@link #isSameImplementation}), even if
    * not every object of the declared type does.
    *
@@ -644,10 +644,10 @@ public final class PurityChecker {
    * objects have type {@code type} is a subtype of that declaration, and sees the two methods as a
    * substitution instance of how the declaration sees them. If {@code type} is an intersection
    * type, it suffices that one bound's declaration has both methods as override-equivalent members.
-   * Otherwise, the methods come from different bounds, and a class that implements every bound
-   * need not be a subtype of any one declaration; then the two methods must also have the same
-   * erased parameter types, because no class can declare two methods with the same name and
-   * erasure (JLS 8.4.8.3).
+   * Otherwise, the methods come from different bounds, and a class that implements every bound need
+   * not be a subtype of any one declaration; then the two methods must also have the same erased
+   * parameter types, because no class can declare two methods with the same name and erasure (JLS
+   * 8.4.8.3).
    *
    * @param function a method of {@code type}, such as its functional method
    * @param other another method
