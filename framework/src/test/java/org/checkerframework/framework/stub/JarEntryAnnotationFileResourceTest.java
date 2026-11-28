@@ -3,12 +3,11 @@ package org.checkerframework.framework.stub;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
+import java.util.Map;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -30,15 +29,11 @@ public class JarEntryAnnotationFileResourceTest {
    * @throws IOException if the archive cannot be written
    */
   private static File writeJar(File jar, String... entryNames) throws IOException {
-    try (OutputStream os = Files.newOutputStream(jar.toPath());
-        JarOutputStream jos = new JarOutputStream(os)) {
-      for (String entryName : entryNames) {
-        jos.putNextEntry(new JarEntry(entryName));
-        jos.write(entryName.getBytes(StandardCharsets.UTF_8));
-        jos.closeEntry();
-      }
+    Map<String, String> entries = new LinkedHashMap<>();
+    for (String entryName : entryNames) {
+      entries.put(entryName, entryName);
     }
-    return jar;
+    return AnnotationFileTestUtil.writeJar(jar, entries);
   }
 
   /**
