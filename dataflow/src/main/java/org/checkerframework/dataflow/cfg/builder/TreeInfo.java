@@ -19,7 +19,7 @@ import javax.lang.model.type.TypeMirror;
    * @return true if this is a primitive numeric type, or a type that unboxing conversion converts
    *     to one
    */
-  boolean isNumericOrBoxed();
+  boolean isNumericAfterUnboxing();
 
   /**
    * Returns true if this is boolean.

@@ -34,8 +34,7 @@ public class ReceiverReassignedByImplicitCall {
     f.take(
         switch (tag) {
           default -> {
-            try (resource) {
-            }
+            try (resource) {}
             yield 0;
           }
         });
@@ -48,8 +47,7 @@ public class ReceiverReassignedByImplicitCall {
     f.take(
         switch (tag) {
           default -> {
-            try (ClearingResource resource = new ClearingResource()) {
-            }
+            try (ClearingResource resource = new ClearingResource()) {}
             yield 0;
           }
         });
@@ -63,8 +61,7 @@ public class ReceiverReassignedByImplicitCall {
     f.take(
         switch (tag) {
           default -> {
-            try (resource) {
-            }
+            try (resource) {}
             yield 0;
           }
         });

@@ -54,6 +54,12 @@ qualifiers of the converted value, as adapted by the new methods
 qualifiers at boxing or unboxing should override those methods rather than
 `getBoxedType()` and `getUnboxedType()`.
 
+New method `CaseNode.selectorExprMayHaveChanged()` returns true if a guard of an
+earlier case might have changed the value of the switch selector expression.
+If so, `CFAbstractTransfer.visitCase()` does not refine a selector expression
+that other code can assign, such as a non-final field.  New method
+`CFAbstractTransfer.canRefineSelectorExpression()` implements this test.
+
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
 opposite order.  It returns true for any compile-time constant of type `byte`,
