@@ -9,8 +9,21 @@
 
 ### Changes for type system implementers
 
-`CaseNode` has three new boolean fields, `labelsUntested`,
-`sideEffectSinceSelector`, and `labelsMightHaveSideEffects`.
+The `CaseNode` constructor takes four new boolean arguments, after the list of
+case expressions and before the `Types` argument:
+
+* `labelsUntested`: the CFG omits the test of the case's labels, as for the
+  last case of an exhaustive switch or a case whose label matches every value.
+* `sideEffectSinceSelector`: code that might have side effects, such as an
+  earlier case's guard or a record accessor that a record pattern invokes,
+  can run between the evaluation of the selector expression and the case.
+* `labelsMightHaveSideEffects`: testing the case's labels might have a side
+  effect, because a record pattern invokes a record accessor that is not
+  side-effect-free.
+* `guardMightHaveSideEffects`: the case's guard might have a side effect.
+
+Each has a getter method of the same name.  The former four-argument
+constructor has been removed.
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
