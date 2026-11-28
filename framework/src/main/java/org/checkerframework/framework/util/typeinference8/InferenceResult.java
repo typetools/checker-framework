@@ -13,10 +13,12 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.MapsP;
 
 /** The result of type argument inference. */
 public class InferenceResult {
@@ -37,7 +39,9 @@ public class InferenceResult {
 
   /**
    * A mapping from a tree that needs type argument inference to a map from type parameter to its
-   * inferred annotated type argument. If inference failed, this map will be empty.
+   * inferred annotated type argument. If inference crashed, this map is empty. If inference failed
+   * because of qualifiers, this map contains the type arguments that inference instantiated, whose
+   * qualifiers do not satisfy every constraint.
    */
   private final Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results;
 
@@ -45,6 +49,23 @@ public class InferenceResult {
    * If true, then type argument inference failed because an annotated type could not be inferred.
    */
   private final boolean annoInferenceFailed;
+
+  /**
+   * True if type argument inference failed because of annotations, inference created constraints
+   * against a target type that comes from the context of the invocation rather than from {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo}, and inference had
+   * not already failed before it created those constraints.
+   */
+  private final boolean failedAfterTargetTypeConstraints;
+
+  /**
+   * True if type argument inference ignored the target type of the invocation, succeeded, and
+   * inferred a type for the invocation that is assignable to a target type that comes from the
+   * context of the invocation according to its Java type but not according to its qualifiers. A
+   * primitive target type is boxed before the comparison, and the inferred type is erased if the
+   * invocation needs unchecked conversion.
+   */
+  private final boolean qualifiersIncompatibleWithTarget;
 
   /**
    * The method invocations, class instance creations, and method references that need unchecked
@@ -73,7 +94,7 @@ public class InferenceResult {
       Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
-    this(variables, needUncheckedConversion, annoInferenceFailed, false, errorMsg);
+    this(variables, needUncheckedConversion, annoInferenceFailed, false, false, false, errorMsg);
   }
 
   /**
@@ -91,16 +112,98 @@ public class InferenceResult {
       boolean annoInferenceFailed,
       boolean inferenceCrashed,
       String errorMsg) {
+    this(
+        variables,
+        needUncheckedConversion,
+        annoInferenceFailed,
+        false,
+        false,
+        inferenceCrashed,
+        errorMsg);
+  }
+
+  /**
+   * Creates an inference result.
+   *
+   * @param variables instantiated variables
+   * @param needUncheckedConversion the expressions that need unchecked conversion
+   * @param annoInferenceFailed true if inference failed because of annotations
+   * @param failedAfterTargetTypeConstraints true if inference created constraints against a target
+   *     type that comes from the context of the invocation, and inference had not already failed
+   *     before it created those constraints
+   * @param qualifiersIncompatibleWithTarget true if inference ignored the target type of the
+   *     invocation and inferred a type for the invocation whose Java type is assignable to a target
+   *     type from the context of the invocation but whose qualifiers are not
+   * @param inferenceCrashed the type argument inference code crashed
+   * @param errorMsg message to report to users if inference failed
+   */
+  public InferenceResult(
+      Collection<Variable> variables,
+      Set<? extends ExpressionTree> needUncheckedConversion,
+      boolean annoInferenceFailed,
+      boolean failedAfterTargetTypeConstraints,
+      boolean qualifiersIncompatibleWithTarget,
+      boolean inferenceCrashed,
+      String errorMsg) {
     this.results = convert(variables);
     this.needUncheckedConversion = needUncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
+    this.failedAfterTargetTypeConstraints = annoInferenceFailed && failedAfterTargetTypeConstraints;
+    this.qualifiersIncompatibleWithTarget =
+        !annoInferenceFailed && qualifiersIncompatibleWithTarget;
     this.errorMsg = errorMsg;
     this.inferenceCrashed = inferenceCrashed;
   }
 
   /**
+   * Creates a copy of the given inference result that holds only the information about the given
+   * expression. The copy does not share any mutable state with {@code other}: its maps are new, and
+   * its type arguments are deep copies.
+   *
+   * @param other an inference result
+   * @param expressionTree the expression whose information to copy
+   */
+  private InferenceResult(InferenceResult other, ExpressionTree expressionTree) {
+    this.results = new HashMap<>(4);
+    Map<TypeVariable, AnnotatedTypeMirror> otherTypeArgs = other.results.get(expressionTree);
+    if (otherTypeArgs != null) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs =
+          new HashMap<>(MapsP.mapCapacity(otherTypeArgs.size()));
+      otherTypeArgs.forEach((typeVar, typeArg) -> typeArgs.put(typeVar, typeArg.deepCopy()));
+      this.results.put(expressionTree, typeArgs);
+    }
+    this.needUncheckedConversion =
+        other.needsUncheckedConversion(expressionTree)
+            ? Collections.singleton(expressionTree)
+            : Collections.emptySet();
+    this.annoInferenceFailed = other.annoInferenceFailed;
+    this.failedAfterTargetTypeConstraints = other.failedAfterTargetTypeConstraints;
+    this.qualifiersIncompatibleWithTarget = other.qualifiersIncompatibleWithTarget;
+    this.errorMsg = other.errorMsg;
+    this.inferenceCrashed = other.inferenceCrashed;
+  }
+
+  /**
+   * Returns a copy of this inference result that holds only the information about {@code
+   * expressionTree}: for {@code expressionTree}, the copy's {@link #getTypeArgumentsForExpression}
+   * returns deep copies of the type arguments that this returns, and the copy's {@link
+   * #needsUncheckedConversion} returns what this returns. The copy does not share any mutable state
+   * with this.
+   *
+   * @param expressionTree a method invocation, class instance creation, or method reference in this
+   *     inference problem
+   * @return a copy of this inference result that holds only the information about {@code
+   *     expressionTree}
+   */
+  /* package-private */ InferenceResult copyForExpression(ExpressionTree expressionTree) {
+    return new InferenceResult(this, expressionTree);
+  }
+
+  /**
    * Returns a mapping from a tree that needs type argument inference to a map from type parameter
-   * to its inferred annotated type argument. If inference failed, this map will be empty.
+   * to its inferred annotated type argument. If inference crashed, this map is empty. If inference
+   * failed because of qualifiers, this map contains the type arguments that inference instantiated,
+   * whose qualifiers do not satisfy every constraint.
    *
    * @return mapping from a tree that needs type argument inference to a map from type parameter to
    *     its inferred annotated type argument
@@ -131,6 +234,32 @@ public class InferenceResult {
   }
 
   /**
+   * True if type argument inference failed because of annotations, inference created constraints
+   * against a target type that comes from the context of the invocation rather than from {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo}, and inference had
+   * not already failed before it created those constraints. If inference failed but this returns
+   * false, then inference without the target type fails too.
+   *
+   * @return true if inference failed, and the failure might be caused by a target type from the
+   *     context of the invocation
+   */
+  public boolean failedAfterTargetTypeConstraints() {
+    return failedAfterTargetTypeConstraints;
+  }
+
+  /**
+   * True if type argument inference ignored the target type of the invocation, succeeded, and
+   * inferred a type for the invocation that is assignable to a target type that comes from the
+   * context of the invocation according to its Java type but not according to its qualifiers.
+   *
+   * @return true if inference without the target type succeeded and inferred a type whose
+   *     qualifiers are incompatible with the target type
+   */
+  public boolean qualifiersIncompatibleWithTarget() {
+    return qualifiersIncompatibleWithTarget;
+  }
+
+  /**
    * Returns true if inference crashed.
    *
    * @return true if inference crashed
@@ -143,6 +272,9 @@ public class InferenceResult {
    * Converts the instantiated variables to a map from expression tree to a map from type variable
    * to its type argument.
    *
+   * <p>A {@link CaptureVariable} is not a type argument of its invocation, so it does not appear in
+   * the inner maps. But its invocation is a key of the result, even if it has no other variables.
+   *
    * @param variables instantiated variables
    * @return a map from expression tree to a map from type variable to its type argument
    */
@@ -152,6 +284,9 @@ public class InferenceResult {
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =
           map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
+      if (variable instanceof CaptureVariable) {
+        continue;
+      }
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null : "@AssumeAssertion(nullness): variables are instantiated";
       typeMap.put(variable.getJavaType(), instantiation.getAnnotatedType());
