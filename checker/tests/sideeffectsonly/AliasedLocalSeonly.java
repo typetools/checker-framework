@@ -1,0 +1,215 @@
+// A local variable that is assigned only expressions that the `@SideEffectsOnly` annotation covers
+// is an alias of them, so modifying the variable's value is covered too.
+
+import java.util.ArrayList;
+import java.util.List;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+
+public class AliasedLocalSeonly {
+
+  List<Integer> covered = new ArrayList<>();
+
+  static List<Integer> uncovered = new ArrayList<>();
+
+  @SideEffectsOnly("this")
+  void aliasOfField() {
+    List<Integer> alias = this.covered;
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("#1")
+  void aliasOfParameter(List<Integer> lst) {
+    List<Integer> alias;
+    alias = lst;
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfAlias() {
+    List<Integer> alias1 = covered;
+    List<Integer> alias2 = alias1;
+    alias2.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfParenthesized() {
+    List<Integer> alias = (this.covered);
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfCast() {
+    Object obj = covered;
+    @SuppressWarnings("unchecked")
+    List<Integer> alias = ((List<Integer>) (obj));
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfCastUncovered() {
+    @SuppressWarnings("unchecked")
+    List<Integer> alias = (List<Integer>) (Object) uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfUncovered() {
+    List<Integer> alias = uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasReassigned(boolean b) {
+    List<Integer> alias = covered;
+    if (b) {
+      alias = uncovered;
+    }
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasInLoop() {
+    // An enhanced `for` loop's variable is not an alias of any expression.
+    for (List<Integer> alias : List.of(covered)) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      alias.add(1);
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void loopVariableReassigned(List<List<Integer>> lists) {
+    // Each iteration assigns the loop variable, so assigning a covered expression to it in the
+    // body does not make it an alias.
+    for (List<Integer> alias : lists) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      alias.add(1);
+      alias = covered;
+    }
+  }
+
+  static class Node {
+    int val;
+    Node next;
+    static Node global = new Node();
+  }
+
+  @SideEffectsOnly("this")
+  void staticFieldThroughAlias() {
+    // A static field is not reached through the expression that qualifies it.
+    Node alias = this.head;
+    alias.val = 0;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.global.val = 0;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    this.head.global.val = 0;
+  }
+
+  Node head = new Node();
+
+  static Node uncoveredHead = new Node();
+
+  @SideEffectsOnly("this")
+  void traversal() {
+    // `cur` is assigned a value that mentions `cur` itself.
+    Node cur = this.head;
+    while (cur != null) {
+      cur.val = 0;
+      cur = cur.next;
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void traversalUncovered() {
+    Node cur = uncoveredHead;
+    while (cur != null) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      cur.val = 0;
+      cur = cur.next;
+    }
+  }
+
+  @SideEffectsOnly("this")
+  void mutuallyDependentAliases(boolean b) {
+    List<Integer> a = this.covered;
+    List<Integer> c = a;
+    if (b) {
+      a = c;
+    }
+    a.add(1);
+    c.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void mutuallyDependentAliasesUncovered(boolean b) {
+    List<Integer> a = uncovered;
+    List<Integer> c = a;
+    if (b) {
+      a = c;
+    }
+    // :: error: (purity.incorrect.sideeffectsonly)
+    a.add(1);
+    // :: error: (purity.incorrect.sideeffectsonly)
+    c.add(1);
+  }
+
+  List<Integer> covered2 = new ArrayList<>();
+
+  @SideEffectsOnly("this")
+  void aliasOfConditional(boolean b) {
+    List<Integer> alias = b ? this.covered : (this.covered2);
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfConditionalUncovered(boolean b) {
+    List<Integer> alias = b ? this.covered : uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void fieldReassignedAfterAliasing() {
+    // The alias holds the list that `this.covered` referred to on entry to the method.  That list
+    // was reachable from `this`, so modifying it is covered even after the field is reassigned.
+    List<Integer> alias = this.covered;
+    this.covered = new ArrayList<>();
+    alias.add(1);
+  }
+
+  Object[] coveredArray = new Object[1];
+
+  static Object uncoveredObject = new Object();
+
+  @SideEffectsOnly("#1")
+  static void modifyArray(Object[] a) {
+    a[0] = null;
+  }
+
+  @SideEffectsOnly("this")
+  void arrayElementWriteKeepsAlias() {
+    // Assigning to an element of `alias` does not assign to `alias` itself, so `alias` remains an
+    // alias of `this.coveredArray`.
+    Object[] alias = this.coveredArray;
+    alias[0] = uncoveredObject;
+    modifyArray(alias);
+  }
+
+  void arrayElementWriteIsNotAliasing() {
+    Object[] captured = new Object[1];
+    class Local {
+      Object field = new Object();
+
+      @SideEffectsOnly("this")
+      void m() {
+        // Assigning to an element of `captured` does not make `captured` an alias of `this.field`.
+        // :: error: (purity.incorrect.sideeffectsonly)
+        captured[0] = this.field;
+        // :: error: (purity.incorrect.sideeffectsonly)
+        modifyArray(captured);
+      }
+    }
+  }
+}

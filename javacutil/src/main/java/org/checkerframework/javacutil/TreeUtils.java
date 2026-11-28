@@ -307,6 +307,27 @@ public final class TreeUtils {
     return t;
   }
 
+  /**
+   * Returns the given tree, with any enclosing parentheses and reference casts removed. A cast
+   * between reference types does not change the identity of its operand's value, so the result
+   * evaluates to the same object as the argument does. A cast that involves a primitive type, such
+   * as a boxing or unboxing conversion, is not removed.
+   *
+   * @param tree an expression tree
+   * @return the tree, without enclosing parentheses and reference casts
+   */
+  @SuppressWarnings("interning:return") // polymorphism implementation
+  public static @PolyInterned ExpressionTree withoutParensOrReferenceCasts(
+      @PolyInterned ExpressionTree tree) {
+    ExpressionTree result = withoutParens(tree);
+    while (result instanceof TypeCastTree typeCast
+        && !typeOf(typeCast).getKind().isPrimitive()
+        && !typeOf(typeCast.getExpression()).getKind().isPrimitive()) {
+      result = withoutParens(typeCast.getExpression());
+    }
+    return result;
+  }
+
   // Obtaining Elements from Trees.
   // There are three sets of methods:
   //  * use elementFromDeclaration whenever the tree is a declaration

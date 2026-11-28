@@ -4,8 +4,10 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +83,14 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    */
   protected final Set<VariableElement> freshLocals;
 
+  /**
+   * The local variables that always hold the value of an expression that the {@link
+   * SideEffectsOnly} annotation permits to be side-effected, such as {@code List<T> list =
+   * this.list;} when the annotation lists {@code this}. Assignments are the only aliasing that
+   * checking of {@code @SideEffectsOnly} considers.
+   */
+  protected final List<LocalVariable> sideEffectsOnlyLocals;
+
   /** The checker to use. */
   protected final BaseTypeChecker checker;
 
@@ -114,6 +125,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       localAssignments.scan(tree, null);
     }
     this.freshLocals = freshLocals(localAssignments);
+    this.sideEffectsOnlyLocals =
+        sideEffectsOnlyLocals(
+            localAssignments, sideEffectsOnlyExpressions, checker.getTypeFactory());
     this.assumeSideEffectFree = assumeSideEffectFree;
     this.assumePureGetters = assumePureGetters;
   }
@@ -806,8 +820,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *   <li>The expression's value is modifiable by other code.
    *   <li>The expression is not an object that the method being checked created, in the sense of
    *       {@link #isFreshlyAllocated}.
-   *   <li>The expression is not covered by the {@link SideEffectsOnly} annotation, in the sense of
-   *       {@link #isCoveredByAnnotation}.
+   *   <li>Modification to the expression is not permitted by the {@link SideEffectsOnly}
+   *       annotation.
    * </ul>
    *
    * <p>Use this for an expression whose <em>value</em> is mutated, such as an expression that a
@@ -821,7 +835,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   protected boolean isDisallowedSideEffectedExpression(JavaExpression expr) {
     return expr.isModifiableByOtherCode()
         && !isFreshlyAllocated(expr)
-        && !isCoveredByAnnotation(expr);
+        && !sideEffectsOnlyPermitsModification(expr);
   }
 
   /**
@@ -833,8 +847,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *       outside the method being checked. (Assigning to a local variable is not.)
    *   <li>The expression is not part of an object that the method being checked created, in the
    *       sense of {@link #isPartOfFreshlyAllocated}.
-   *   <li>The expression is not covered by the {@link SideEffectsOnly} annotation, in the sense of
-   *       {@link #isCoveredByAnnotation}.
+   *   <li>Modification to the expression is not permitted by the {@link SideEffectsOnly}
+   *       annotation.
    * </ul>
    *
    * @param expr the expression that is assigned to
@@ -844,7 +858,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   protected boolean isDisallowedAssignmentTarget(JavaExpression expr) {
     return expr.isAssignableByOtherCode()
         && !isPartOfFreshlyAllocated(expr)
-        && !isCoveredByAnnotation(expr);
+        && !sideEffectsOnlyPermitsModification(expr);
   }
 
   /**
@@ -853,10 +867,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * object. The object did not exist before the call, so modifying it is not a side effect that is
    * visible to the caller.
    *
-   * <p>If the object escapes -- if the method stores it into pre-existing state -- then that store
-   * is itself a side effect, which is reported unless the annotation covers it. If it is covered,
-   * then so is every modification of the object, because the object is then reached through a
-   * listed expression.
+   * <p>If the object escapes -- that is, if the method stores it into pre-existing state -- then
+   * that store is itself a side effect, which is reported unless the {@link SideEffectsOnly}
+   * annotation permits it. If it is permitted, then so is every modification of the object, because
+   * the object is then reached through a listed expression.
    *
    * <p>A {@code new} expression for an object, rather than for an array, has no {@link
    * JavaExpression} representation; see {@link #isNewObjectTree}.
@@ -899,18 +913,125 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   /**
    * Returns true if the given expression is listed in the {@link SideEffectsOnly} annotation or is
-   * reached through one of the listed expressions.
+   * reached through one of the listed expressions or through a local variable in {@link
+   * #sideEffectsOnlyLocals}.
    *
    * @param expr the expression to look for
-   * @return true if the given expression is covered by the {@link SideEffectsOnly} annotation
+   * @return true if modifications to the given expression are permitted by the {@link
+   *     SideEffectsOnly} annotation
    */
-  protected boolean isCoveredByAnnotation(JavaExpression expr) {
-    for (JavaExpression seOnlyExpression : sideEffectsOnlyExpressionsFromAnnotation) {
-      if (expr.containsAsReceiver(checker.getTypeFactory(), seOnlyExpression)) {
+  protected boolean sideEffectsOnlyPermitsModification(JavaExpression expr) {
+    return permitsModification(
+        expr,
+        sideEffectsOnlyExpressionsFromAnnotation,
+        sideEffectsOnlyLocals,
+        checker.getTypeFactory());
+  }
+
+  /**
+   * Returns true if the given expression is one of the given expressions or local variables, or is
+   * reached through one of them.
+   *
+   * @param expr the expression to look for
+   * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
+   * @param sideEffectsOnlyLocals local variables that always hold the value of an expression that
+   *     {@code seOnlyExpressions} permits to be side-effected
+   * @param atypeFactory the type factory, for determining which methods are side-effect-free
+   * @return true if the given expressions or local variables permit modification of the given
+   *     expression
+   */
+  private static boolean permitsModification(
+      JavaExpression expr,
+      List<JavaExpression> seOnlyExpressions,
+      List<LocalVariable> sideEffectsOnlyLocals,
+      AnnotatedTypeFactory atypeFactory) {
+    for (JavaExpression seOnlyExpression : seOnlyExpressions) {
+      if (expr.containsAsReceiver(atypeFactory, seOnlyExpression)) {
+        return true;
+      }
+    }
+    for (LocalVariable sideEffectsOnlyLocal : sideEffectsOnlyLocals) {
+      if (expr.containsAsReceiver(atypeFactory, sideEffectsOnlyLocal)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Returns the local variables upon which {@link SideEffectsOnly} permits side-effecting
+   * operations.
+   *
+   * <p>For example, given {@code @SideEffectsOnly("this")}, then {@code cur} is in the result for
+   * {@code Node cur = this.head; ... cur = cur.next;}: {@code this.head} is reached through {@code
+   * this}, and {@code cur.next} is reached through {@code cur}.
+   *
+   * @param localAssignments the assignments to local variables in the code being checked
+   * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
+   * @param atypeFactory the type factory, for determining which methods are side-effect-free
+   * @return the local variables that always hold the value of an expression that {@code
+   *     seOnlyExpressions} permits to be side-effected
+   */
+  private static List<LocalVariable> sideEffectsOnlyLocals(
+      LocalAssignmentScanner localAssignments,
+      List<JavaExpression> seOnlyExpressions,
+      AnnotatedTypeFactory atypeFactory) {
+    // A candidate is a local variable whose every assignment is a simple assignment or
+    // initializer, as opposed to a compound assignment such as `x += 1` or the variable of an
+    // enhanced `for` loop.
+    // Maps each candidate local variable to the values that are assigned to it.
+    Map<LocalVariable, List<JavaExpression>> candidates = new HashMap<>(2);
+    for (Map.Entry<VariableElement, List<ExpressionTree>> entry :
+        localAssignments.assignedValues.entrySet()) {
+      VariableElement local = entry.getKey();
+      if (localAssignments.otherwiseAssigned.contains(local)) {
+        continue;
+      }
+      List<JavaExpression> values = new ArrayList<>(entry.getValue().size());
+      for (ExpressionTree value : entry.getValue()) {
+        addPossibleValues(value, values);
+      }
+      candidates.put(new LocalVariable(local), values);
+    }
+
+    // Start with every candidate, and repeatedly remove any local variable that is assigned a
+    // value that the current set does not permit.  The result is sound because Java's definite
+    // assignment rules ensure that every local variable that a value mentions has already been
+    // assigned, so by induction over the execution it holds a permitted value.
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      List<LocalVariable> candidateLocals = new ArrayList<>(candidates.keySet());
+      Iterator<List<JavaExpression>> itor = candidates.values().iterator();
+      while (itor.hasNext()) {
+        for (JavaExpression value : itor.next()) {
+          if (!permitsModification(value, seOnlyExpressions, candidateLocals, atypeFactory)) {
+            itor.remove();
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+    return new ArrayList<>(candidates.keySet());
+  }
+
+  /**
+   * Adds to {@code values} the expressions that the given tree might evaluate to: for a conditional
+   * expression, those of both branches, and otherwise the tree itself, without enclosing
+   * parentheses and reference casts.
+   *
+   * @param tree an expression tree
+   * @param values the list to which to add the expressions
+   */
+  private static void addPossibleValues(ExpressionTree tree, List<JavaExpression> values) {
+    ExpressionTree stripped = TreeUtils.withoutParensOrReferenceCasts(tree);
+    if (stripped instanceof ConditionalExpressionTree conditional) {
+      addPossibleValues(conditional.getTrueExpression(), values);
+      addPossibleValues(conditional.getFalseExpression(), values);
+    } else {
+      values.add(expressionFromTree(stripped));
+    }
   }
 
   @Override
@@ -1058,9 +1179,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // be an object that existed before the method was called.  That assignment does not appear
       // in the source code, so neither `visitVariable` nor `visitAssignment` adds it to
       // `assignedValues`.  Adding the variable to `otherwiseAssigned` prevents the variable from
-      // being treated as fresh.  For example, in `for (Object o : list) { o = new Object(); ... }`,
-      // `o` is not fresh, even though the only assignment in the source code assigns a `new`
-      // expression.
+      // being treated as fresh or as in `sideEffectsOnlyLocals`.  For example, in
+      // `for (Object o : list) { o = new Object(); ... }`, `o` is not fresh, even though the only
+      // assignment in the source code assigns a `new` expression.
       VariableElement local = localVariable(TreeUtils.elementFromDeclaration(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
@@ -1070,7 +1191,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitAssignment(AssignmentTree node, Void aVoid) {
-      record(TreeUtils.elementFromTree(node.getVariable()), node.getExpression());
+      record(assignedVariable(node.getVariable()), node.getExpression());
       return super.visitAssignment(node, aVoid);
     }
 
@@ -1078,12 +1199,29 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void aVoid) {
       // The only compound assignment that applies to a reference type is `+=` on a String.  Its
       // result is a fresh String, but a String cannot be modified, so nothing is gained by
-      // treating the variable as fresh.
-      VariableElement local = localVariable(TreeUtils.elementFromTree(node.getVariable()));
+      // treating the variable as fresh or as in `sideEffectsOnlyLocals`.
+      VariableElement local = localVariable(assignedVariable(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
       }
       return super.visitCompoundAssignment(node, aVoid);
+    }
+
+    /**
+     * Returns the variable that an assignment to the given target changes, if the target is a
+     * variable itself, and null otherwise. For example, this returns null for an array access
+     * such as {@code a[0]}: assigning to it changes an element of the array, not the variable
+     * {@code a}. ({@link TreeUtils#elementFromTree} would return the element for {@code a}.)
+     *
+     * @param target the left-hand side of an assignment
+     * @return the variable that the assignment changes, or null if it changes no variable
+     */
+    private static @Nullable Element assignedVariable(ExpressionTree target) {
+      ExpressionTree stripped = TreeUtils.withoutParens(target);
+      if (stripped instanceof IdentifierTree) {
+        return TreeUtils.elementFromTree(stripped);
+      }
+      return null;
     }
 
     /**
