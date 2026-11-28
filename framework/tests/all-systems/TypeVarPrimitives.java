@@ -28,14 +28,13 @@ public class TypeVarPrimitives {
     return t == 1;
   }
 
-  // A reference comparison: neither operand is unboxed.  The Interning Checker correctly reports
-  // these comparisons.
-  @SuppressWarnings("interning")
+  // A reference comparison: neither operand is unboxed.
+  @SuppressWarnings("interning") // correct warning: a reference comparison of boxed values
   <T extends Integer> boolean referenceEquality(T t1, T t2) {
     return t1 == t2;
   }
 
-  @SuppressWarnings("interning")
+  @SuppressWarnings("interning") // correct warning: a reference comparison of boxed values
   <T extends Boolean> boolean referenceEqualityBoolean(T t1, T t2) {
     return t1 != t2;
   }

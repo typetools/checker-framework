@@ -2205,12 +2205,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private AssignmentNode selectorExprAssignment;
 
     /**
-     * True if the CFG for a guard has been built. Cases are tested in the order they are built, so
-     * this is true if a guard might execute between the evaluation of the selector expression and
-     * the test of the case currently being built. A guard might change the value of the selector
-     * expression.
+     * True if the CFG for a guard or a record pattern has been built. Cases are tested in the order
+     * they are built, so this is true if a guard or a record pattern might execute between the
+     * evaluation of the selector expression and the test of the case currently being built. A guard
+     * might change the value of the selector expression, and so might a record accessor method that
+     * a record pattern calls.
      */
-    private boolean guardBuilt = false;
+    private boolean selectorExprMayHaveChanged = false;
 
     /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
@@ -2364,6 +2365,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(selectorVarUseNode);
 
       Node selectorExprNode = scan(selectorExprTree, null);
+      // If the switch has a `case null` label, a null selector does not throw a
+      // NullPointerException, so do not unbox the selector.  Unboxing would insert a synthetic
+      // method invocation on the selector, which would make dataflow treat the selector as non-null
+      // and would make case refinement apply to the invocation rather than to the selector.
       if (!TreeUtils.hasNullCaseLabel(switchTree)) {
         selectorExprNode = unbox(selectorExprNode);
       }
@@ -2424,24 +2429,38 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Handle the case labels and the guard.
       if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
+        boolean hasRecordPattern = false;
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
+          if (exprTree.getKind().name().equals("DECONSTRUCTION_PATTERN")) {
+            hasRecordPattern = true;
+          }
         }
 
         if (!isLastCaseOfExhaustive) {
           extendWithNode(
               new CaseNode(
-                  caseTree, selectorExprAssignment, exprs, guardBuilt, env.getTypeUtils()));
+                  caseTree,
+                  selectorExprAssignment,
+                  exprs,
+                  selectorExprMayHaveChanged,
+                  env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);
+        }
+        // Matching a record pattern calls the record's accessor methods, which might have side
+        // effects.  The CFG does not represent those calls, so later cases cannot rely on the store
+        // to reflect their effects.
+        if (hasRecordPattern) {
+          selectorExprMayHaveChanged = true;
         }
 
         // The guard is evaluated only if the labels match.
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          guardBuilt = true;
+          selectorExprMayHaveChanged = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
