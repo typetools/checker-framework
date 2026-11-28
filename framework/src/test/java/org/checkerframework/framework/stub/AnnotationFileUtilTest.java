@@ -10,7 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for {@link AnnotationFileUtil#allAnnotationFiles}. */
+/** Tests for {@link AnnotationFileUtil#forEachAnnotationFile}. */
 public class AnnotationFileUtilTest {
 
   /** A temporary directory, deleted after each test. */
@@ -25,8 +25,7 @@ public class AnnotationFileUtilTest {
     File jar = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "stubs.jar"), "not a jar file");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(jar, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(1, resources.size());
     Assert.assertEquals(jar.getPath(), resources.get(0).getDescription());
     Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());
@@ -45,9 +44,7 @@ public class AnnotationFileUtilTest {
     try {
       Assume.assumeTrue(dir.listFiles() == null);
       List<AnnotationFileResource> resources =
-          AnnotationFileUtil.allAnnotationFiles(
-              dir.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-      Assert.assertNotNull(resources);
+          AnnotationFileTestUtil.annotationFiles(dir, AnnotationFileType.COMMAND_LINE_STUB);
       Assert.assertEquals(1, resources.size());
       Assert.assertEquals(dir.getPath(), resources.get(0).getDescription());
       Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());
