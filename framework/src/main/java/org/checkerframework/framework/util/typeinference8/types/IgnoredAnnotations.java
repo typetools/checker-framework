@@ -152,9 +152,13 @@ final class IgnoredAnnotations {
         // positions nested in `sup` correspond to those of that bound.  The bounds of a type
         // variable are not positions in it, so only the ignored positions of `sup` are replaced.
         // The pair of `subATM` and `supATM` themselves was handled above.
-        Map<AnnotatedTypeMirror, AnnotationMirrorSet> supNestedIgnored =
-            new IdentityHashMap<>(supIgnored);
-        supNestedIgnored.remove(supATM);
+        IdentityHashMap<AnnotatedTypeMirror, AnnotationMirrorSet> supNestedIgnored =
+            new IdentityHashMap<>();
+        for (Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> entry : supIgnored.entrySet()) {
+          if (entry.getKey() != supATM) {
+            supNestedIgnored.put(entry.getKey(), entry.getValue());
+          }
+        }
         AbstractType subBoundAsSuper =
             asSuper(upperBoundIfTypeVariable(upToDateSub), upToDateSup.getJavaType(), types);
         replaceIgnoredWithCorresponding(
