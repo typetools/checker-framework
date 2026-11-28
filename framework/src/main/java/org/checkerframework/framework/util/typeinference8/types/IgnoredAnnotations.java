@@ -876,7 +876,7 @@ final class IgnoredAnnotations {
    * @param target the type whose primary annotations to replace; side-effected by this method
    * @param hierarchies the top annotations of the hierarchies in which to copy annotations
    */
-  private static void copyPrimaryAnnotationsInHierarchies(
+  static void copyPrimaryAnnotationsInHierarchies(
       AnnotatedTypeMirror source,
       AnnotatedTypeMirror target,
       Set<? extends AnnotationMirror> hierarchies) {

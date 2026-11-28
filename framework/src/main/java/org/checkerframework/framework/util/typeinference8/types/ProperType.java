@@ -22,11 +22,13 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** A type that does not contain any inference variables. */
@@ -321,8 +323,9 @@ public class ProperType extends AbstractType {
    * has no origin, or the part of the origin is not a proper type once instantiations are applied,
    * then the part is computed from field {@link #type} instead.
    *
-   * <p>If {@code primaryAnnotationsFromType} is true, then a part computed from the origin gets the
-   * primary annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see
+   * <p>In each hierarchy of {@code primaryAnnotationHierarchies}, a part computed from the origin
+   * gets the primary annotation of the part computed from {@link #type}; if that set is nonempty,
+   * the part also gets the {@link #ignoreAnnotations} of the part computed from {@link #type}. See
    * {@link #withPrimaryAnnotationsOf}.
    *
    * <p>If this type has an origin, a non-null part is cached in {@link PartCache#parts} until the
@@ -332,15 +335,15 @@ public class ProperType extends AbstractType {
    * @param key the kind of part
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param primaryAnnotationsFromType true if the part's primary annotations are taken from the
-   *     part computed from {@link #type}
+   * @param primaryAnnotationHierarchies the top annotations of the hierarchies in which the part's
+   *     primary annotations are taken from the part computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
       PartKind key,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> fromType,
-      boolean primaryAnnotationsFromType) {
+      Set<? extends AnnotationMirror> primaryAnnotationHierarchies) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return fromType.get();
@@ -348,7 +351,7 @@ public class ProperType extends AbstractType {
     return getOrCompute(
         partCache().parts(),
         key,
-        () -> computePartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
+        () -> computePartFromOrigin(origin, part, fromType, primaryAnnotationHierarchies));
   }
 
   /**
@@ -359,15 +362,15 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param primaryAnnotationsFromType true if the part's primary annotations are taken from the
-   *     part computed from {@link #type}
+   * @param primaryAnnotationHierarchies the top annotations of the hierarchies in which the part's
+   *     primary annotations are taken from the part computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable AbstractType computePartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> fromType,
-      boolean primaryAnnotationsFromType) {
+      Set<? extends AnnotationMirror> primaryAnnotationHierarchies) {
     // Compute the part from `origin` rather than from `type`: if the result has ignored positions,
     // its origin is `originPart`, so those positions can be found.  A part computed from `type`
     // has no origin (see #create), so its ignored positions would be compared as real annotations.
@@ -376,11 +379,13 @@ public class ProperType extends AbstractType {
       AbstractType result = originPart.applyInstantiations();
       if (result.isProper()) {
         if (isUpToDate()) {
-          return withAnnotationsOf((ProperType) result, fromType.get(), primaryAnnotationsFromType);
+          return withAnnotationsOf(
+              (ProperType) result, fromType.get(), !primaryAnnotationHierarchies.isEmpty());
         }
-        return primaryAnnotationsFromType
-            ? withPrimaryAnnotationsOf((ProperType) result, fromType.get())
-            : result;
+        return primaryAnnotationHierarchies.isEmpty()
+            ? result
+            : withPrimaryAnnotationsOf(
+                (ProperType) result, fromType.get(), primaryAnnotationHierarchies);
       }
     }
     return fromType.get();
@@ -470,16 +475,22 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns {@code fromOrigin} with the primary annotations and {@link #ignoreAnnotations} of
-   * {@code fromType}.
+   * Returns {@code fromOrigin} with the primary annotations of {@code fromType} in the hierarchies
+   * of {@code hierarchies}, and with the {@link #ignoreAnnotations} of {@code fromType}. In other
+   * hierarchies, the primary annotations of {@code fromOrigin} are unchanged.
    *
    * @param fromOrigin a part of this type computed from this type's {@link #origin}
    * @param fromType the same part of this type computed from this type's {@link #type}, or null
-   * @return {@code fromOrigin} with the primary annotations and {@link #ignoreAnnotations} of
-   *     {@code fromType}, or {@code fromOrigin} itself if {@code fromType} is null
+   * @param hierarchies the top annotations of the hierarchies in which to copy the primary
+   *     annotations of {@code fromType}
+   * @return {@code fromOrigin} with the primary annotations of {@code fromType} in {@code
+   *     hierarchies} and the {@link #ignoreAnnotations} of {@code fromType}, or {@code fromOrigin}
+   *     itself if {@code fromType} is null
    */
   private ProperType withPrimaryAnnotationsOf(
-      ProperType fromOrigin, @Nullable AbstractType fromType) {
+      ProperType fromOrigin,
+      @Nullable AbstractType fromType,
+      Set<? extends AnnotationMirror> hierarchies) {
     if (fromType == null) {
       return fromOrigin;
     }
@@ -487,8 +498,8 @@ public class ProperType extends AbstractType {
     // type was made, for example by UseOfVariable#applyInstantiations or #withAnnotatedType.
     // `fromOrigin` may be an instantiation that is stored as a bound, so copy before mutating.
     AnnotatedTypeMirror atm = fromOrigin.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyPrimaryAnnotations(
-        fromType.getAnnotatedType(), atm, typeFactory.getQualifierHierarchy());
+    IgnoredAnnotations.copyPrimaryAnnotationsInHierarchies(
+        fromType.getAnnotatedType(), atm, hierarchies);
     return fromOrigin.withAnnotatedType(atm, fromType.ignoreAnnotations);
   }
 
@@ -498,9 +509,9 @@ public class ProperType extends AbstractType {
    * origin is not a proper type once instantiations are applied, then the whole part is computed
    * from {@link #type} instead.
    *
-   * <p>If {@code primaryAnnotationsFromType} is true, then each type in the part gets the primary
-   * annotations of the corresponding type in the part computed from {@link #type}, as in {@link
-   * #partFromOrigin}.
+   * <p>In each hierarchy of {@code primaryAnnotationHierarchies}, each type in the part gets the
+   * primary annotation of the corresponding type in the part computed from {@link #type}, as in
+   * {@link #partFromOrigin}.
    *
    * <p>If this type has an origin, a non-null part is cached in {@link PartCache#listParts}, as in
    * {@link #partFromOrigin}. The result is a new list, which the caller may mutate.
@@ -508,15 +519,16 @@ public class ProperType extends AbstractType {
    * @param key the kind of part
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param primaryAnnotationsFromType true if the primary annotations of each type in the part are
-   *     taken from the corresponding type in the part computed from {@link #type}
+   * @param primaryAnnotationHierarchies the top annotations of the hierarchies in which the primary
+   *     annotations of each type in the part are taken from the corresponding type in the part
+   *     computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable List<AbstractType> listPartFromOrigin(
       PartKind key,
       Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> fromType,
-      boolean primaryAnnotationsFromType) {
+      Set<? extends AnnotationMirror> primaryAnnotationHierarchies) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return fromType.get();
@@ -525,7 +537,7 @@ public class ProperType extends AbstractType {
         getOrCompute(
             partCache().listParts(),
             key,
-            () -> computeListPartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
+            () -> computeListPartFromOrigin(origin, part, fromType, primaryAnnotationHierarchies));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
@@ -538,15 +550,16 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param primaryAnnotationsFromType true if the primary annotations of each type in the part are
-   *     taken from the corresponding type in the part computed from {@link #type}
+   * @param primaryAnnotationHierarchies the top annotations of the hierarchies in which the primary
+   *     annotations of each type in the part are taken from the corresponding type in the part
+   *     computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable List<AbstractType> computeListPartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> fromType,
-      boolean primaryAnnotationsFromType) {
+      Set<? extends AnnotationMirror> primaryAnnotationHierarchies) {
     List<AbstractType> originPart = part.apply(origin);
     if (originPart == null) {
       return fromType.get();
@@ -567,16 +580,21 @@ public class ProperType extends AbstractType {
           result.set(
               i,
               withAnnotationsOf(
-                  (ProperType) result.get(i), partFromType.get(i), primaryAnnotationsFromType));
+                  (ProperType) result.get(i),
+                  partFromType.get(i),
+                  !primaryAnnotationHierarchies.isEmpty()));
         }
         return result;
       }
     }
-    if (primaryAnnotationsFromType) {
+    if (!primaryAnnotationHierarchies.isEmpty()) {
       List<AbstractType> partFromType = fromType.get();
       if (partFromType != null && partFromType.size() == result.size()) {
         for (int i = 0; i < result.size(); i++) {
-          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), partFromType.get(i)));
+          result.set(
+              i,
+              withPrimaryAnnotationsOf(
+                  (ProperType) result.get(i), partFromType.get(i), primaryAnnotationHierarchies));
         }
       }
     }
@@ -584,33 +602,52 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns true if the bounds of this type, which is a wildcard or an intersection type, have the
-   * primary annotations of this type.
+   * Returns the top annotations of the hierarchies in which the bounds of this type, which is a
+   * wildcard or an intersection type, have the primary annotation of this type. In other
+   * hierarchies, a bound may have its own primary annotation.
    *
-   * @return true if the bounds of this type have the primary annotations of this type
+   * @return the top annotations of the hierarchies in which the bounds of this type have the
+   *     primary annotation of this type
    */
-  private boolean boundsSharePrimaryAnnotations() {
-    // If a wildcard or an intersection type has a primary annotation, then its bounds have it too,
-    // as AnnotatedWildcardType and AnnotatedIntersectionType ensure.
-    return !type.getPrimaryAnnotations().isEmpty();
+  private AnnotationMirrorSet hierarchiesWhereBoundsSharePrimaryAnnotation() {
+    // If a wildcard or an intersection type has a primary annotation in a hierarchy, then its
+    // bounds have it too, as AnnotatedWildcardType and AnnotatedIntersectionType ensure.
+    QualifierHierarchy qh = typeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet primaryAnnotations = type.getPrimaryAnnotations();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror top : qh.getTopAnnotations()) {
+      if (qh.findAnnotationInHierarchy(primaryAnnotations, top) != null) {
+        result.add(top);
+      }
+    }
+    return result;
   }
 
   @Override
   public @Nullable List<AbstractType> getTypeArguments() {
     return listPartFromOrigin(
-        PartKind.TYPE_ARGUMENTS, AbstractType::getTypeArguments, super::getTypeArguments, false);
+        PartKind.TYPE_ARGUMENTS,
+        AbstractType::getTypeArguments,
+        super::getTypeArguments,
+        AnnotationMirrorSet.emptySet());
   }
 
   @Override
   public @Nullable AbstractType getEnclosingType() {
     return partFromOrigin(
-        PartKind.ENCLOSING_TYPE, AbstractType::getEnclosingType, super::getEnclosingType, false);
+        PartKind.ENCLOSING_TYPE,
+        AbstractType::getEnclosingType,
+        super::getEnclosingType,
+        AnnotationMirrorSet.emptySet());
   }
 
   @Override
   public @Nullable AbstractType getComponentType() {
     return partFromOrigin(
-        PartKind.COMPONENT_TYPE, AbstractType::getComponentType, super::getComponentType, false);
+        PartKind.COMPONENT_TYPE,
+        AbstractType::getComponentType,
+        super::getComponentType,
+        AnnotationMirrorSet.emptySet());
   }
 
   @Override
@@ -629,7 +666,10 @@ public class ProperType extends AbstractType {
         superType,
         () ->
             computePartFromOrigin(
-                origin, t -> t.asSuper(superType), () -> super.asSuper(superType), true));
+                origin,
+                t -> t.asSuper(superType),
+                () -> super.asSuper(superType),
+                typeFactory.getQualifierHierarchy().getTopAnnotations()));
   }
 
   @Override
@@ -638,7 +678,7 @@ public class ProperType extends AbstractType {
         PartKind.FUNCTION_TYPE_PARAMETER_TYPES,
         AbstractType::getFunctionTypeParameterTypes,
         super::getFunctionTypeParameterTypes,
-        false);
+        AnnotationMirrorSet.emptySet());
   }
 
   @Override
@@ -647,7 +687,7 @@ public class ProperType extends AbstractType {
         PartKind.FUNCTION_TYPE_RETURN_TYPE,
         AbstractType::getFunctionTypeReturnType,
         super::getFunctionTypeReturnType,
-        false);
+        AnnotationMirrorSet.emptySet());
   }
 
   @Override
@@ -657,7 +697,7 @@ public class ProperType extends AbstractType {
             PartKind.WILDCARD_LOWER_BOUND,
             AbstractType::getWildcardLowerBound,
             super::getWildcardLowerBound,
-            boundsSharePrimaryAnnotations());
+            hierarchiesWhereBoundsSharePrimaryAnnotation());
     assert result != null : "@AssumeAssertion(nullness): getWildcardLowerBound is non-null";
     return result;
   }
@@ -669,7 +709,7 @@ public class ProperType extends AbstractType {
             PartKind.WILDCARD_UPPER_BOUND,
             AbstractType::getWildcardUpperBound,
             super::getWildcardUpperBound,
-            boundsSharePrimaryAnnotations());
+            hierarchiesWhereBoundsSharePrimaryAnnotation());
     assert result != null : "@AssumeAssertion(nullness): getWildcardUpperBound is non-null";
     return result;
   }
@@ -681,7 +721,7 @@ public class ProperType extends AbstractType {
             PartKind.INTERSECTION_BOUNDS,
             AbstractType::getIntersectionBounds,
             super::getIntersectionBounds,
-            boundsSharePrimaryAnnotations());
+            hierarchiesWhereBoundsSharePrimaryAnnotation());
     assert result != null : "@AssumeAssertion(nullness): getIntersectionBounds is non-null";
     return result;
   }
