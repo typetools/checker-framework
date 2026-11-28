@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -246,9 +247,10 @@ public class MustCallConsistencyAnalyzer {
     public final ImmutableSet<MethodExitKind> whenToEnforce;
 
     /**
-     * The keys under which -AcountMustCall counted this Obligation as found. Empty if the
-     * Obligation is not counted. See {@link ResourceLeakChecker#countFoundObligation}. Derived
-     * Obligations retain these keys.
+     * The keys under which -AcountMustCall counted this Obligation as found, on the paths that
+     * reach this analysis state. Contains {@link CountMarker#UNCOUNTED} if the Obligation is not
+     * counted on some such path. See {@link ResourceLeakChecker#countFoundObligation}. Derived
+     * Obligations retain these keys, and equivalent analysis states combine their keys.
      *
      * <p>The keys are used only for statistics and are not part of {@link #equals} or {@link
      * #hashCode}.
@@ -262,7 +264,7 @@ public class MustCallConsistencyAnalyzer {
      * @param whenToEnforce when this Obligation should be enforced
      */
     public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
-      this(resourceAliases, whenToEnforce, ImmutableSet.of());
+      this(resourceAliases, whenToEnforce, NOT_COUNTED);
     }
 
     /**
@@ -279,6 +281,22 @@ public class MustCallConsistencyAnalyzer {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
       this.whenToEnforce = ImmutableSet.copyOf(whenToEnforce);
       this.countKeys = countKeys;
+    }
+
+    /**
+     * Return the Obligation that combines this Obligation's count keys with the count keys of the
+     * given Obligation.
+     *
+     * @param other an Obligation with the same resource aliases and enforcement exit kinds
+     * @return an Obligation with the combined count keys
+     */
+    public Obligation combineCountKeys(Obligation other) {
+      if (this.countKeys.containsAll(other.countKeys)) {
+        return this;
+      }
+      ImmutableSet<Object> keys =
+          ImmutableSet.<Object>builder().addAll(this.countKeys).addAll(other.countKeys).build();
+      return new Obligation(this.resourceAliases, this.whenToEnforce, keys);
     }
 
     /**
@@ -675,19 +693,25 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
-    // The `visited` set contains everything that has been added to the worklist, even if it has
-    // not yet been removed and analyzed.
-    Set<BlockWithObligations> visited = new HashSet<>();
+    // The `visited` map maps every analysis state that has been added to the worklist, including
+    // states that have not yet been analyzed, to its version with the latest count keys.
+    Map<BlockWithObligations, BlockWithObligations> visited = new HashMap<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
     // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
         new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
     worklist.add(entry);
-    visited.add(entry);
+    visited.put(entry, entry);
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
+      @SuppressWarnings(
+          "interning:not.interned") // a newer object for the same state has more count keys
+      boolean superseded = visited.get(current) != current;
+      if (superseded) {
+        continue;
+      }
       propagateObligationsToSuccessorBlocks(
           cfg, current.obligations, current.block, visited, worklist);
     }
@@ -715,7 +739,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
 
-    updateObligationsWithInvocationResult(obligations, node);
+    updateObligationsWithInvocationResult(obligations, node, true);
   }
 
   /**
@@ -920,9 +944,10 @@ public class MustCallConsistencyAnalyzer {
    *     Obligation with a single-element resource alias set is created and added.
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
+   * @param count true if -AcountMustCall should count the result as a found obligation
    */
   /*package-private*/ void updateObligationsWithInvocationResult(
-      Set<Obligation> obligations, Node node) {
+      Set<Obligation> obligations, Node node, boolean count) {
     @SuppressWarnings("nullness:assignment") // an invocation node has a tree
     @NonNull Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
@@ -949,9 +974,9 @@ public class MustCallConsistencyAnalyzer {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
       ImmutableSet<Object> countKeys =
-          cmAtf.declaredTypeHasMustCall(tree)
+          count && cmAtf.declaredTypeHasMustCall(tree)
               ? countFoundObligation(tmpVar.getElement(), node.getType())
-              : ImmutableSet.of();
+              : NOT_COUNTED;
       obligations.add(
           new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL, countKeys));
     } else {
@@ -977,11 +1002,25 @@ public class MustCallConsistencyAnalyzer {
                     .append(tmpVarAsResourceAlias)
                     .toSet();
             // A wrapper, such as a JDK stream that wraps a stream of a user-defined class, is
-            // counted if the Obligation of the object that it wraps is not counted.  A method
-            // that returns its receiver creates no object, so it is never counted.
+            // counted if the Obligation of the object that it wraps is not counted on some path.
+            // A method that returns its receiver creates no object, so it is never counted.
             ImmutableSet<Object> countKeys = obligationContainingMustCallAlias.countKeys;
-            if (countKeys.isEmpty() && !returnsThis && cmAtf.declaredTypeHasMustCall(tree)) {
-              countKeys = countFoundObligation(tmpVar.getElement(), node.getType());
+            if (count
+                && countKeys.contains(CountMarker.UNCOUNTED)
+                && !returnsThis
+                && cmAtf.declaredTypeHasMustCall(tree)) {
+              ImmutableSet<Object> wrapperKeys =
+                  countFoundObligation(tmpVar.getElement(), node.getType());
+              if (!wrapperKeys.contains(CountMarker.UNCOUNTED)) {
+                // On the paths where the wrapped Obligation is not counted, the wrapper is.
+                ImmutableSet.Builder<Object> newKeys = ImmutableSet.builder();
+                for (Object key : countKeys) {
+                  if (!key.equals(CountMarker.UNCOUNTED)) {
+                    newKeys.add(key);
+                  }
+                }
+                countKeys = newKeys.addAll(wrapperKeys).build();
+              }
             }
             obligations.remove(obligationContainingMustCallAlias);
             obligations.add(
@@ -2071,14 +2110,15 @@ public class MustCallConsistencyAnalyzer {
    * @param cfg the control flow graph
    * @param incomingObligations the Obligations for the current block
    * @param currentBlock the current block
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlocks(
       ControlFlowGraph cfg,
       Set<Obligation> incomingObligations,
       Block currentBlock,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     // For each successor block that isn't caused by an ignored exception type, this loop
     // computes the set of Obligations that should be propagated to it and then adds it to the
@@ -2120,7 +2160,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
+   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Map,
    * Deque)} that propagates obligations along a single edge.
    *
    * @param obligations the Obligations for the current block
@@ -2128,7 +2168,8 @@ public class MustCallConsistencyAnalyzer {
    * @param successor a successor of the current block
    * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
    *     null} for normal control flow, or a throwable type for exceptional control flow
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
@@ -2136,7 +2177,7 @@ public class MustCallConsistencyAnalyzer {
       Block currentBlock,
       Block successor,
       @Nullable TypeMirror exceptionType,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     List<Node> currentBlockNodes = currentBlock.getNodes();
     // successorObligations eventually contains the Obligations to propagate to successor.
@@ -2392,7 +2433,7 @@ public class MustCallConsistencyAnalyzer {
           ImmutableSet<Object> countKeys =
               declaredTypeHasMustCall
                   ? countFoundObligation(paramElement, paramElement.asType())
-                  : ImmutableSet.of();
+                  : NOT_COUNTED;
           result.add(
               new Obligation(
                   ImmutableSet.of(
@@ -2546,6 +2587,20 @@ public class MustCallConsistencyAnalyzer {
     }
   }
 
+  /** A marker that can appear in {@link Obligation#countKeys}. */
+  private enum CountMarker {
+    /**
+     * Indicates that -AcountMustCall does not count the Obligation on some path. Unlike an empty
+     * set of keys, this marker survives when analysis states combine their count keys, so the
+     * result does not depend on the order in which the analysis processes states. It is never
+     * recorded as a found obligation, so recording it as a failure has no effect.
+     */
+    UNCOUNTED
+  }
+
+  /** The count keys of an Obligation that -AcountMustCall does not count. */
+  private static final ImmutableSet<Object> NOT_COUNTED = ImmutableSet.of(CountMarker.UNCOUNTED);
+
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
    * the methods in {@code mustCallValues}?
@@ -2565,7 +2620,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Return a set containing the given key if -AcountMustCall recorded it, or an empty set
+   * Return a set containing the given key if -AcountMustCall recorded it, or {@link #NOT_COUNTED}
    * otherwise. See {@link ResourceLeakChecker#countFoundObligation}.
    *
    * @param key an object that identifies a must-call obligation
@@ -2574,25 +2629,63 @@ public class MustCallConsistencyAnalyzer {
    */
   private ImmutableSet<Object> countFoundObligation(Object key, TypeMirror type) {
     Object countKey = checker.countFoundObligation(key, type);
-    return countKey == null ? ImmutableSet.of() : ImmutableSet.of(countKey);
+    return countKey == null ? NOT_COUNTED : ImmutableSet.of(countKey);
   }
 
   /**
-   * If the input {@code state} has not been visited yet, add it to {@code visited} and {@code
-   * worklist}.
+   * Return the Obligation in the given set equal to {@code target}.
    *
-   * @param state the current state
-   * @param visited the states that have been analyzed or are already on the worklist
+   * @param obligations a set of Obligations
+   * @param target the Obligation to look for
+   * @return the Obligation in {@code obligations} equal to {@code target}
+   * @throws BugInCF if {@code obligations} contains no Obligation equal to {@code target}
+   */
+  private static Obligation getMatchingObligation(Set<Obligation> obligations, Obligation target) {
+    for (Obligation obligation : obligations) {
+      if (obligation.equals(target)) {
+        return obligation;
+      }
+    }
+    throw new BugInCF("No Obligation equal to %s in %s", target, obligations);
+  }
+
+  /**
+   * Add the given state to the worklist if the state is new or has additional count keys.
+   *
+   * @param state a state reaching the successor block
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist the states that will be analyzed
    */
-  private static void propagate(
+  private void propagate(
       BlockWithObligations state,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
-
-    if (visited.add(state)) {
-      worklist.add(state);
+    BlockWithObligations previous = visited.get(state);
+    if (previous != null) {
+      if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+        return;
+      }
+      boolean hasNewKeys = false;
+      for (Obligation obligation : state.obligations) {
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
+        if (!old.countKeys.containsAll(obligation.countKeys)) {
+          hasNewKeys = true;
+          break;
+        }
+      }
+      if (!hasNewKeys) {
+        return;
+      }
+      Set<Obligation> combined = new LinkedHashSet<>(state.obligations.size());
+      for (Obligation obligation : state.obligations) {
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
+        combined.add(old.combineCountKeys(obligation));
+      }
+      state = new BlockWithObligations(state.block, combined);
     }
+    visited.put(state, state);
+    worklist.add(state);
   }
 
   /**

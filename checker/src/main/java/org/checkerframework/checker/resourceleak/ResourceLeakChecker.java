@@ -69,10 +69,10 @@ public class ResourceLeakChecker extends AggregateChecker {
    *
    * <p>A wrapper, such as {@code new BufferedInputStream(in)}, shares the obligation of the object
    * that it wraps. The wrapper is counted only if the obligation of the wrapped object is not
-   * counted. An invocation of a {@code CreatesMustCallFor} method creates no counted obligation;
-   * the obligation of its target retains the target's count. An obligation that the checker fails
-   * to verify is not counted as verified, even if the checker does not report the failure (for
-   * example, because a warning is suppressed).
+   * counted on some path to the wrapper. An invocation of a {@code CreatesMustCallFor} method
+   * creates no counted obligation; the obligation of its target retains the target's count. An
+   * obligation that the checker fails to verify is not counted as verified, even if the checker
+   * does not report the failure (for example, because a warning is suppressed).
    *
    * <p>An owning field is not counted. Storing a resource in an owning field verifies the
    * obligation of the resource.
