@@ -397,7 +397,8 @@ public class AnnotationFileElementTypes {
   /**
    * Returns an annotation file resource whose contents are read from the given URL.
    *
-   * @param description a description of the resource, such as the path that was used to find it
+   * @param description a description of the resource, such as the path that was used to find it;
+   *     used for diagnostics
    * @param url a URL, such as the one that {@link Class#getResource} returns
    * @return an annotation file resource whose contents are read from {@code url}
    */

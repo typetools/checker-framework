@@ -191,8 +191,8 @@ public class AnnotationFileElementTypesTest {
   /**
    * Asserts that one of the given diagnostics starts with the given text.
    *
-   * @param prefix the expected start of a diagnostic, such as "WARNING: Ignoring"
-   * @param diagnostics the diagnostics that the compiler issued
+   * @param prefix the expected start of one of {@code diagnostics}, such as "WARNING: Ignoring"
+   * @param diagnostics a list of diagnostics that the compiler issued
    */
   private static void assertHasDiagnostic(String prefix, List<String> diagnostics) {
     for (String diagnostic : diagnostics) {
@@ -279,6 +279,32 @@ public class AnnotationFileElementTypesTest {
     AnnotationFileTestUtil.write(new File(classpathDir, "Padded.astub"), PADDED_STUB);
     assertHasDiagnostic(
         "WARNING: /Padded.astub:", diagnostics("checker.jar/Padded.astub", classpathDir));
+  }
+
+  /**
+   * Tests that an annotation file that consists only of whitespace, some of it non-ASCII, is not
+   * parsed.
+   */
+  @Test
+  public void blankFile() throws IOException {
+    File stub =
+        AnnotationFileTestUtil.write(
+            new File(tmp.getRoot(), "Blank.astub"), " \n\t\u2003\u3000 \n");
+    String parsingNote = "started parsing annotation file " + stub.getAbsolutePath();
+    for (String diagnostic :
+        diagnostics(CHECKER, null, "-Astubs=" + stub.getPath(), "-AstubDebug")) {
+      Assert.assertFalse(diagnostic, diagnostic.contains(parsingNote));
+    }
+  }
+
+  /** Tests that an annotation file that starts with non-ASCII whitespace is parsed. */
+  @Test
+  public void leadingNonAsciiWhitespace() throws IOException {
+    File stub =
+        AnnotationFileTestUtil.write(
+            new File(tmp.getRoot(), "NonAscii.astub"),
+            " \u2003\u3000package p; class NoSuchClass {}");
+    assertHasDiagnostic("WARNING: " + stub.getAbsolutePath() + ":", diagnostics(stub.getPath()));
   }
 
   /** Tests that a classpath annotation file that cannot be read yields a warning. */
