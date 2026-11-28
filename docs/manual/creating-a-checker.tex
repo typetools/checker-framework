@@ -890,21 +890,10 @@ will not type-check unless \<null> has the bottom type:
 
 Some type systems have a special bottom type that is used \emph{only} for
 the \code{null} value, and for dead code and other erroneous situations.
-In this case, users should only write the bottom qualifier on explicit
-bounds.  Also, the definition of the bottom qualifier should be
-meta-annotated with:
-
-% import java.lang.annotation.ElementType;
-% import java.lang.annotation.Target;
-% import org.checkerframework.framework.qual.TargetLocations;
-% import org.checkerframework.framework.qual.TypeUseLocation;
-%
-\begin{Verbatim}
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
-\end{Verbatim}
-
-Furthermore, by convention the name of such a qualifier ends with ``\<Bottom>''.
+Users rarely write such a bottom qualifier, but do not restrict where it
+may be written (via \refqualclass{framework/qual}{TargetLocations}):  test
+code and whole-program inference may write it at any location.
+By convention the name of such a qualifier ends with ``\<Bottom>''.
 
 It might seem that the hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
 a bottom qualifier.  The actual implementation does contain a bottom

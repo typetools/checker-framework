@@ -499,8 +499,10 @@ public class TestTreeKinds {
     @GuardedBy("lock") int a = 0;
     // :: error: [immutable.type.guardedby]
     @GuardedBy int b = 0;
+    // :: error: [type.annotations.on.location]
     // :: error: [immutable.type.guardedby] :: error: [guardsatisfied.location.disallowed]
     @GuardSatisfied int c = 0;
+    // :: error: [type.annotations.on.location]
     // :: error: [immutable.type.guardedby] :: error: [guardsatisfied.location.disallowed]
     @GuardSatisfied(1) int d = 0;
     int e = 0;
