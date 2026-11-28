@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -228,6 +230,13 @@ public class OverrideChecker {
    */
   public boolean checkOverride() {
     if (visitor.checker.shouldSkipUses(overriddenType.getUnderlyingType().asElement())) {
+      // Skip the qualifier checks against the overridden method.  Still check a method
+      // reference's purity, which `-AskipUses` does not affect, as it does not affect a lambda's
+      // purity check.  The method reference might implement methods of other types as well, such
+      // as other bounds of an intersection type.
+      if (isMethodReference) {
+        checkMethodReferencePurity();
+      }
       return true;
     }
 
@@ -247,14 +256,24 @@ public class OverrideChecker {
   }
 
   /**
-   * Checks that the referenced method is at least as pure as the functional interface method that
-   * the method reference implements.
+   * Checks that the referenced method is at least as pure as each method through which a call can
+   * run it: the functional interface method that the method reference implements, and the other
+   * methods that {@link BaseTypeVisitor#methodsThatRun} returns.
+   *
+   * <p>Reports an error for each of those methods that requires a purity kind that the referenced
+   * method lacks, except a method whose missing kinds are among those of another reported method.
+   * Thus, the errors together name every missing kind, and no error is redundant.
+   *
+   * <p>Like the purity check of a lambda body, this check is performed even if a method's declaring
+   * type is in {@code -AskipUses}. That option suppresses checks of uses of a type, but the purity
+   * of the code that implements a method is not a use of the type that declares the method.
    *
    * <p>Only a method reference needs this check. A method that overrides another one inherits its
    * purity annotations, and is checked by {@link BaseTypeVisitor#checkPurityAnnotations}.
    *
-   * <p>Under {@code -Ainfer}, reports no error. {@link BaseTypeVisitor#inferMethodReferencePurity}
-   * instead uses the method reference to infer the purity of the functional interface method.
+   * <p>Under {@code -Ainfer}, reports no error. Instead, {@link
+   * BaseTypeVisitor#inferMethodReferencePurity} uses the method reference to infer the purity of
+   * the same methods.
    */
   private void checkMethodReferencePurity() {
     // Do not report errors while inferring.  The purity annotations on the functional interface
@@ -263,22 +282,54 @@ public class OverrideChecker {
     if (!visitor.checkPurityAnnotations || visitor.infer) {
       return;
     }
-    EnumSet<PurityKind> superPurity =
-        PurityUtils.getPurityKinds(visitor.atypeFactory, overridden.getElement());
     // Apply the command-line assumptions to the referenced method, so that a method reference is
     // treated like a lambda whose body calls the referenced method.  Like such a call, a
     // side-effect-free referenced method that returns void is deterministic.
     EnumSet<PurityKind> subPurity = visitor.implementationPurityKinds(overrider.getElement());
-    if (!subPurity.containsAll(superPurity)) {
+    // The methods to report, each paired with the purity kinds that it requires and the
+    // referenced method lacks.  No element's kinds are a subset of another element's kinds.
+    Map<ExecutableElement, EnumSet<PurityKind>> toReport = new LinkedHashMap<>();
+    for (ExecutableElement declaration :
+        visitor.methodsThatRun(overriderTree, overridden.getElement())) {
+      EnumSet<PurityKind> missing = PurityUtils.getPurityKinds(visitor.atypeFactory, declaration);
+      missing.removeAll(subPurity);
+      if (missing.isEmpty()
+          || toReport.values().stream().anyMatch(kinds -> kinds.containsAll(missing))) {
+        continue;
+      }
+      toReport.values().removeIf(missing::containsAll);
+      toReport.put(declaration, missing);
+    }
+
+    for (ExecutableElement declaration : toReport.keySet()) {
+      TypeElement declaringType = (TypeElement) declaration.getEnclosingElement();
+      // The type that the error message says declares `declaration`.
+      AnnotatedTypeMirror declarationOwnerType;
+      AnnotatedExecutableType declarationType;
+      if (types.isSubtype(
+          types.erasure(overriddenType.getUnderlyingType()),
+          types.erasure(declaringType.asType()))) {
+        declarationOwnerType = overriddenType;
+        declarationType =
+            declaration.equals(overridden.getElement())
+                ? overridden
+                : AnnotatedTypes.asMemberOf(
+                    types, visitor.atypeFactory, overriddenType, declaration);
+      } else {
+        // The declaration is in the hierarchy of another bound of an intersection target.
+        declarationOwnerType = visitor.atypeFactory.getAnnotatedType(declaringType);
+        declarationType = visitor.atypeFactory.getAnnotatedType(declaration);
+      }
       visitor.checker.reportError(
           overriderTree,
           "purity.methodref",
           overriderType,
           BaseTypeVisitor.purityKindsToString(subPurity),
           overrider,
-          overriddenType,
-          BaseTypeVisitor.purityKindsToString(superPurity),
-          overridden);
+          declarationOwnerType,
+          BaseTypeVisitor.purityKindsToString(
+              PurityUtils.getPurityKinds(visitor.atypeFactory, declaration)),
+          declarationType);
     }
   }
 
@@ -463,26 +514,34 @@ public class OverrideChecker {
       // static.
       return;
     }
+    // The overrider is not a method reference, so it is a method declaration.
+    MethodTree overriderMethodTree = (MethodTree) overriderTree;
 
     ContractsFromMethod contractsUtils = visitor.atypeFactory.getContractsFromMethod();
 
     // Check preconditions
     Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
     Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
-    Set<LocalizedContract> superPre2 = parseAndLocalizeContracts(superPre, overridden);
-    Set<LocalizedContract> subPre2 = parseAndLocalizeContracts(subPre, overrider);
+    Set<LocalizedContract> superPre2 =
+        parseAndLocalizeContracts(superPre, overridden, overriderMethodTree);
+    Set<LocalizedContract> subPre2 =
+        parseAndLocalizeContracts(subPre, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String premsg = "contracts.precondition." + msgKey;
-    checkContractsSubset(overriderType, overriddenType, subPre2, superPre2, premsg);
+    checkContractsSubset(
+        overriderMethodTree, overriderType, overriddenType, subPre2, superPre2, premsg);
 
     // Check postconditions
     Set<Postcondition> superPost = contractsUtils.getPostconditions(overridden.getElement());
     Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement());
-    Set<LocalizedContract> superPost2 = parseAndLocalizeContracts(superPost, overridden);
-    Set<LocalizedContract> subPost2 = parseAndLocalizeContracts(subPost, overrider);
+    Set<LocalizedContract> superPost2 =
+        parseAndLocalizeContracts(superPost, overridden, overriderMethodTree);
+    Set<LocalizedContract> subPost2 =
+        parseAndLocalizeContracts(subPost, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String postmsg = "contracts.postcondition." + msgKey;
-    checkContractsSubset(overriderType, overriddenType, superPost2, subPost2, postmsg);
+    checkContractsSubset(
+        overriderMethodTree, overriderType, overriddenType, superPost2, subPost2, postmsg);
 
     // Check conditional postconditions
     Set<ConditionalPostcondition> superCPost =
@@ -492,23 +551,36 @@ public class OverrideChecker {
     // consider only 'true' postconditions
     Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
     Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
-    Set<LocalizedContract> superCPostTrue2 = parseAndLocalizeContracts(superCPostTrue, overridden);
-    Set<LocalizedContract> subCPostTrue2 = parseAndLocalizeContracts(subCPostTrue, overrider);
+    Set<LocalizedContract> superCPostTrue2 =
+        parseAndLocalizeContracts(superCPostTrue, overridden, overriderMethodTree);
+    Set<LocalizedContract> subCPostTrue2 =
+        parseAndLocalizeContracts(subCPostTrue, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String posttruemsg = "contracts.conditional.postcondition.true." + msgKey;
     checkContractsSubset(
-        overriderType, overriddenType, superCPostTrue2, subCPostTrue2, posttruemsg);
+        overriderMethodTree,
+        overriderType,
+        overriddenType,
+        superCPostTrue2,
+        subCPostTrue2,
+        posttruemsg);
 
     // consider only 'false' postconditions
     Set<Postcondition> superCPostFalse = filterConditionalPostconditions(superCPost, false);
     Set<Postcondition> subCPostFalse = filterConditionalPostconditions(subCPost, false);
     Set<LocalizedContract> superCPostFalse2 =
-        parseAndLocalizeContracts(superCPostFalse, overridden);
-    Set<LocalizedContract> subCPostFalse2 = parseAndLocalizeContracts(subCPostFalse, overrider);
+        parseAndLocalizeContracts(superCPostFalse, overridden, overriderMethodTree);
+    Set<LocalizedContract> subCPostFalse2 =
+        parseAndLocalizeContracts(subCPostFalse, overrider, overriderMethodTree);
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String postfalsemsg = "contracts.conditional.postcondition.false." + msgKey;
     checkContractsSubset(
-        overriderType, overriddenType, superCPostFalse2, subCPostFalse2, postfalsemsg);
+        overriderMethodTree,
+        overriderType,
+        overriddenType,
+        superCPostFalse2,
+        subCPostFalse2,
+        postfalsemsg);
   }
 
   /**
@@ -530,9 +602,7 @@ public class OverrideChecker {
         MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree);
     // These act like a traditional override
     if (methodRefKind == MemberReferenceKind.UNBOUND) {
-      AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
-      assert overriderReceiver != null
-          : "@AssumeAssertion(nullness): an unbound method reference refers to an instance method";
+      AnnotatedTypeMirror overriderReceiver = receiverType(overrider);
       AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
       boolean success = visitor.typeHierarchy.isSubtype(overriddenReceiver, overriderReceiver);
       if (!success) {
@@ -556,16 +626,13 @@ public class OverrideChecker {
       case UNBOUND:
         throw new BugInCF("Case UNBOUND should already be handled.");
       case SUPER:
-        receiverDecl = overrider.getReceiverType();
+        receiverDecl = receiverType(overrider);
         receiverArg = visitor.atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
 
-        AnnotatedTypeMirror selfType = visitor.atypeFactory.getSelfType(memberTree);
-        assert selfType != null
-            : "@AssumeAssertion(nullness): a method reference that uses super is within a class";
-        receiverArg.replaceAnnotations(selfType.getPrimaryAnnotations());
+        receiverArg.replaceAnnotations(selfType(memberTree).getPrimaryAnnotations());
         break;
       case BOUND:
-        receiverDecl = overrider.getReceiverType();
+        receiverDecl = receiverType(overrider);
         receiverArg = overriderType;
         break;
       case IMPLICIT_INNER:
@@ -578,18 +645,20 @@ public class OverrideChecker {
         // So a member reference can only refer to an inner class constructor if a type
         // that encloses the inner class can be found. So either "this" is that
         // enclosing type or "this" has an enclosing type that is that type.
-        receiverDecl = overrider.getReceiverType();
-        receiverArg = visitor.atypeFactory.getSelfType(memberTree);
-        assert receiverDecl != null && receiverArg != null
-            : "@AssumeAssertion(nullness): an inner class constructor has a receiver, and its"
-                + " method reference is within a class";
+        receiverDecl = receiverType(overrider);
+        AnnotatedDeclaredType enclosingInstance = selfType(memberTree);
         while (!TypesUtils.isErasedSubtype(
-            receiverArg.getUnderlyingType(), receiverDecl.getUnderlyingType(), types)) {
-          receiverArg = ((AnnotatedDeclaredType) receiverArg).getEnclosingType();
-          assert receiverArg != null
-              : "@AssumeAssertion(nullness): JLS 15.13.1 requires an enclosing type to exist";
+            enclosingInstance.getUnderlyingType(), receiverDecl.getUnderlyingType(), types)) {
+          AnnotatedDeclaredType enclosingType = enclosingInstance.getEnclosingType();
+          if (enclosingType == null) {
+            // javac rejects the method reference if no enclosing instance can be found.
+            throw new BugInCF(
+                "No type that encloses %s is a subtype of %s, for %s",
+                selfType(memberTree), receiverDecl, memberTree);
+          }
+          enclosingInstance = enclosingType;
         }
-
+        receiverArg = enclosingInstance;
         break;
       case TOPLEVEL:
       case STATIC:
@@ -618,15 +687,43 @@ public class OverrideChecker {
   }
 
   /**
+   * Returns the receiver type of the given method, which must have one.
+   *
+   * @param method the type of an instance method or of an inner class constructor
+   * @return the receiver type of {@code method}
+   */
+  private static AnnotatedDeclaredType receiverType(AnnotatedExecutableType method) {
+    AnnotatedDeclaredType result = method.getReceiverType();
+    if (result == null) {
+      throw new BugInCF("%s has no receiver type", method);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the type of {@code this} at the given method reference, which must be in a context that
+   * has a {@code this}.
+   *
+   * @param memberTree a method reference whose kind is {@code SUPER} or {@code IMPLICIT_INNER}
+   * @return the type of {@code this} at {@code memberTree}
+   */
+  private AnnotatedDeclaredType selfType(MemberReferenceTree memberTree) {
+    AnnotatedDeclaredType result = visitor.atypeFactory.getSelfType(memberTree);
+    if (result == null) {
+      throw new BugInCF("No type for this at %s", memberTree);
+    }
+    return result;
+  }
+
+  /**
    * Issues an "override.receiver" error if the receiver override is not valid.
    *
    * @return true if the override is legal
    */
   protected boolean checkReceiverOverride() {
-    AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-    AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
-    assert overriderReceiver != null && overriddenReceiver != null
-        : "@AssumeAssertion(nullness): only an instance method overrides another method";
+    // An overriding method and the method that it overrides are instance methods.
+    AnnotatedDeclaredType overriderReceiver = receiverType(overrider);
+    AnnotatedDeclaredType overriddenReceiver = receiverType(overridden);
     // Check the receiver type.
     // Just check primary annotations rather than using `isSubtype()`.  `isSubtype()` requires its
     // arguments to be actual subtypes with respect to the JLS, but an overrider receiver is not a
@@ -818,13 +915,18 @@ public class OverrideChecker {
   }
 
   /**
-   * Issues an error about the parameter at {@code index} if it is not valid. If {@code
-   * -Ashowchecks} is passed, also prints a message about the check.
+   * Issues an error message or log message about checking an overriding parameter type: an error if
+   * the check failed, and a log message if {@code -Ashowchecks} was passed.
    *
-   * @param success true if the parameter at {@code index} is valid
+   * @param success true if the overridden method's parameter type at {@code index} is a subtype of
+   *     the overriding method's parameter type at {@code index}
    * @param index the index of the parameter that was checked
-   * @param overriderParams the parameter types of the overriding method
-   * @param overriddenParams the parameter types of the overridden method
+   * @param overriderParams the parameter types of the overriding method; for a method reference
+   *     whose referenced method has varargs, they are expanded to correspond to {@code
+   *     overriddenParams}
+   * @param overriddenParams the parameter types of the overridden method; for an unbound method
+   *     reference, they omit the first parameter, which corresponds to the receiver of the
+   *     referenced method
    */
   private void checkParametersMsg(
       boolean success,
@@ -969,9 +1071,7 @@ public class OverrideChecker {
    * expression in {@code mustSubset} there must be the same expression in {@code set}, with the
    * same (or a stronger) annotation.
    *
-   * <p>This uses field {@link BaseTypeVisitor#methodTree} to determine where to issue an error
-   * message.
-   *
+   * @param overriderMethodTree the declaration of the overriding method, where an error is issued
    * @param overriderType the subtype
    * @param overriddenType the supertype
    * @param mustSubset annotations that should be weaker
@@ -979,6 +1079,7 @@ public class OverrideChecker {
    * @param messageKey message key for error messages
    */
   private void checkContractsSubset(
+      MethodTree overriderMethodTree,
       AnnotatedTypeMirror overriderType,
       AnnotatedDeclaredType overriddenType,
       Set<LocalizedContract> mustSubset,
@@ -1031,14 +1132,11 @@ public class OverrideChecker {
           overriderAnno = strongRelevantAnnos;
         }
 
-        MethodTree methodTree = visitor.methodTree;
-        assert methodTree != null
-            : "@AssumeAssertion(nullness): contracts are checked only for a method declaration";
         visitor.checker.reportError(
-            methodTree,
+            overriderMethodTree,
             messageKey,
             jexpr,
-            methodTree.getName(),
+            overriderMethodTree.getName(),
             overriddenTypeString,
             overriddenAnno,
             overriderTypeString,
@@ -1048,8 +1146,7 @@ public class OverrideChecker {
   }
 
   /**
-   * Localizes some contracts -- that is, viewpoint-adapts them to some method body, according to
-   * the value of {@link BaseTypeVisitor#methodTree}.
+   * Localizes some contracts -- that is, viewpoint-adapts them to the given method body.
    *
    * <p>The input is a set of {@link Contract}s, each of which contains an expression string and an
    * annotation. In a {@link Contract}, Java expressions are exactly as written in source code, not
@@ -1057,25 +1154,23 @@ public class OverrideChecker {
    *
    * <p>The output is a set of {@link LocalizedContract}s, each of which pairs a {@link
    * JavaExpression} (parsed expression string) with a standardized annotation (with respect to the
-   * path of {@link BaseTypeVisitor#methodTree}). This method discards any contract whose expression
-   * cannot be parsed into a JavaExpression.
+   * path of {@code methodTree}). This method discards any contract whose expression cannot be
+   * parsed into a JavaExpression.
    *
    * @param contractSet a set of contracts
    * @param methodType the type of the method that the contracts are for
+   * @param methodTree the method declaration where the contracts are used, which might or might not
+   *     be where they are defined. For example, {@code methodTree} might be an overriding
+   *     declaration, and the contracts might be those of the method that it overrides.
    * @return localized contracts
    */
   private Set<LocalizedContract> parseAndLocalizeContracts(
-      Set<? extends Contract> contractSet, AnnotatedExecutableType methodType) {
+      Set<? extends Contract> contractSet,
+      AnnotatedExecutableType methodType,
+      MethodTree methodTree) {
     if (contractSet.isEmpty()) {
       return Collections.emptySet();
     }
-
-    // This is the path to a place where the contract is being used, which might or might not be
-    // where the contract was defined.  For example, methodTree might be an overriding
-    // definition, and the contract might be for a superclass.
-    MethodTree methodTree = visitor.methodTree;
-    assert methodTree != null
-        : "@AssumeAssertion(nullness): contracts are checked only for a method declaration";
 
     StringToJavaExpression stringToJavaExpr =
         expression -> {
