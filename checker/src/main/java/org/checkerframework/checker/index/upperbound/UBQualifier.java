@@ -493,7 +493,7 @@ public abstract class UBQualifier {
      * A triple that is the return type of {@link #mapToSequencesAndOffsets}.
      *
      * @param sequences list of sequences
-     * @param offsets list of offsets
+     * @param offsets list of offsets, or the empty list if every offset is 0
      * @param annoClass the class of the annotation to be built
      */
     private record SequencesOffsetsAndClass(
@@ -515,12 +515,14 @@ public abstract class UBQualifier {
       List<String> offsets = new ArrayList<>();
       boolean isLTEq = true;
       boolean isLTOM = true;
+      boolean isLT = true;
       for (String sequence : sortedSequences) {
         // The offsets for this sequence.
         List<String> thisOffsets = new ArrayList<>();
         for (OffsetEquation eq : map.get(sequence)) {
           isLTEq = isLTEq && eq.equals(OffsetEquation.NEG_1);
           isLTOM = isLTOM && eq.equals(OffsetEquation.ONE);
+          isLT = isLT && eq.equals(OffsetEquation.ZERO);
           thisOffsets.add(eq.toString());
         }
         Collections.sort(thisOffsets);
@@ -538,6 +540,14 @@ public abstract class UBQualifier {
         annoClass = LTOMLengthOf.class;
       } else {
         annoClass = LTLengthOf.class;
+        if (isLT) {
+          // Omit the offsets, which are all the default, 0.  Then this method returns the same
+          // representation as a programmer writes, such as `@LTLengthOf("a")`.  Two annotations
+          // that represent one qualifier differently are not the same according to
+          // AnnotationUtils.areSame, so they would make dataflow analysis of a loop iterate more
+          // and widen the loop's types sooner.
+          offsets.clear();
+        }
       }
       return new SequencesOffsetsAndClass(sequences, offsets, annoClass);
     }
