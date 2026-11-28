@@ -459,10 +459,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * offset), then refine the other node's type to less than the sequence length (minus the offset).
    * This is case 12.
    *
-   * <p>Does nothing if the sequence might change after its length is read and before the
-   * comparison completes (including by the subtracted offset), because then the comparison does
-   * not relate the other node to the length of the sequence that the new type refers to. Omits the bounds of the other node's type
-   * that might not hold when the comparison completes (see {@link #removeBoundsChangedAfter}).
+   * <p>Does nothing if the sequence might change after its length is read and before the comparison
+   * completes (including by the subtracted offset), because then the comparison does not relate the
+   * other node to the length of the sequence that the new type refers to. Omits the bounds of the
+   * other node's type that might not hold when the comparison completes (see {@link
+   * #removeBoundsChangedAfter}).
    *
    * @param lengthAccess an operand of a comparison
    * @param otherNode the other operand of the comparison
