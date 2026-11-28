@@ -924,8 +924,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1351,16 +1351,19 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    AssignmentNode assign = n.getSwitchOperand();
+    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
               finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (refineSelectorExpression) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1377,7 +1380,77 @@ public abstract class CFAbstractTransfer<
                 null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
       }
     }
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (!refineSelectorExpression) {
+      // Code with side effects ran since the switch evaluated the selector expression, so the
+      // store's value for (each part of) the selector expression might be stale.  Clear it in two
+      // situations.  (The stores of lubResult are fresh copies.)
+      //  * A record accessor that a record pattern of this case invokes might have changed the
+      //    selector expression.  The CFG does not represent the accessor calls, so their effect
+      //    on the selector expression is applied here.
+      //  * The store does not unrefine a method call whose receiver and arguments are
+      //    unmodifiable at a side effect, such as a guard, even though the method might read
+      //    mutable state that the side effect changed.
+      // If the selector expression is an assignment, such as `switch (selector = saved)`, each
+      // assignment target and the right-hand side are handled separately.
+      for (Node part : splitAssignments(n.getSwitchOperand().getExpression())) {
+        JavaExpression partExpr = JavaExpression.fromNode(part);
+        if (partExpr.containsOfClass(MethodCall.class)
+            || (n.labelsMightHaveSideEffects() && mightBeChangedByOtherCode(partExpr))) {
+          lubResult.getThenStore().clearValue(partExpr);
+          lubResult.getElseStore().clearValue(partExpr);
+        }
+      }
+    }
+    if (n.labelsUntested()) {
+      // The CFG omits the test of this case's labels, so the facts that hold when one of this
+      // case's labels matches hold after this node.
+      return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
+    }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the switch selector expression (the right-hand side of {@code
+   * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
+   *
+   * <p>The selector expression might not denote the tested value if code with side effects, such as
+   * the guard of an earlier case or a record accessor that a record pattern invokes, ran after the
+   * switch evaluated the selector expression (see {@link CaseNode#sideEffectSinceSelector()}). That
+   * code cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign a
+   * field, change the result of a method call, or mutate the object that the selector expression
+   * evaluates to.
+   *
+   * @param n a case node
+   * @return true if the switch selector expression still denotes the value that the switch tests
+   */
+  protected boolean selectorExpressionDenotesSwitchValue(CaseNode n) {
+    if (!n.sideEffectSinceSelector()) {
+      return true;
+    }
+    JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    // A method call is excluded even if its receiver and arguments are unassignable, because the
+    // method might read mutable state (such as a static field) that the intervening code changed.
+    if (selector.containsOfClass(MethodCall.class)) {
+      return false;
+    }
+    return !mightBeChangedByOtherCode(selector);
+  }
+
+  /**
+   * Returns true if code with side effects, such as a guard or a record accessor, might change the
+   * abstract value of {@code expr}. This mirrors the unrefinement that {@link CFAbstractStore}
+   * performs at a side effect. Neither a guard nor a record accessor can assign a local variable
+   * that is declared outside it.
+   *
+   * @param expr an expression
+   * @return true if code with side effects might change the abstract value of {@code expr}
+   */
+  private boolean mightBeChangedByOtherCode(JavaExpression expr) {
+    return analysis.atypeFactory.sideEffectsUnrefineAliases
+        ? expr.isModifiableByOtherCode()
+        : expr.isAssignableByOtherCode();
   }
 
   // /**
@@ -1423,7 +1496,9 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
-    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    // The binding variable is declared before the CaseNode, and visitCase refines the selector by
+    // the binding variable, not the binding variable by the selector.  Refine it here, so that the
+    // guard and the body see the refinement.
     ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
     if (selector != null) {
       refineCaseLabelBindingVariable(store, n.getTree(), selector);

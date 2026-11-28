@@ -226,8 +226,8 @@ public class NullnessTransfer
       TransferResult<NullnessValue, NullnessStore> res,
       Node firstNode,
       Node secondNode,
-      NullnessValue firstValue,
-      NullnessValue secondValue,
+      @Nullable NullnessValue firstValue,
+      @Nullable NullnessValue secondValue,
       boolean notEqualTo) {
     res =
         super.strengthenAnnotationOfEqualTo(
