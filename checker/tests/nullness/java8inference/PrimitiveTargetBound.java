@@ -24,27 +24,27 @@ public class PrimitiveTargetBound {
   // variable alone, so it is @Nullable and unboxing it is unsafe.
 
   void intTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     int x = getInteger();
   }
 
   void longTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     long x = getInteger();
   }
 
   void doubleTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     double x = getInteger();
   }
 
   void booleanTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     boolean x = getBoolean();
   }
 
   void charTarget() {
-    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
+    // :: error: [unboxing.of.nullable]
     char x = getCharacter();
   }
 

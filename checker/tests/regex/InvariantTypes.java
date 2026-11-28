@@ -22,7 +22,7 @@ public class InvariantTypes {
   List<String> ls = Arrays.asList("alice", "bob", "carol");
   List<@Regex String> lrs = Arrays.asList("alice", "bob", "carol");
   List<String> lnrs = Arrays.asList("(alice", "bob", "carol");
-  // :: error: [type.arguments.not.inferred]
+  // :: error: [assignment]
   List<@Regex String> lrserr = Arrays.asList("(alice", "bob", "carol");
 
   void unqm(String[] sa) {}
@@ -78,7 +78,7 @@ public class InvariantTypes {
     lunqm(Arrays.asList("alice", "bob", "carol"));
     lrem(Arrays.asList("alice", "bob", "carol"));
     lunqm(Arrays.asList("(alice", "bob", "carol"));
-    // :: error: [type.arguments.not.inferred]
+    // :: error: [argument]
     lrem(Arrays.asList("(alice", "bob", "carol"));
   }
 
@@ -92,7 +92,7 @@ public class InvariantTypes {
     new ReTests(Arrays.asList("alice", "bob", "carol"), 0);
     new ReTests(Arrays.asList("alice", "bob", "carol"));
     new ReTests(Arrays.asList("(alice", "bob", "carol"), 0);
-    // :: error: [type.arguments.not.inferred]
+    // :: error: [argument]
     new ReTests(Arrays.asList("(alice", "bob", "carol"));
   }
 

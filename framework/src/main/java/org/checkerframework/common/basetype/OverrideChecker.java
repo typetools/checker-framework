@@ -3,9 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -196,29 +194,13 @@ public class OverrideChecker {
    * @return {@code type}, expressed in terms of the overridden method's type variables
    */
   protected AnnotatedTypeMirror adaptToOverridden(AnnotatedTypeMirror type) {
-    if (typeVarMapping == null || !containsAnyTypeVariable(type, typeVarMapping.keySet())) {
+    // containsAnyTypeVariable is cheaper than substitution, which copies the type even when it
+    // substitutes nothing.
+    if (typeVarMapping == null
+        || !BaseTypeVisitor.containsAnyTypeVariable(type, typeVarMapping.keySet())) {
       return type;
     }
     return visitor.atypeFactory.getTypeVarSubstitutor().substitute(typeVarMapping, type);
-  }
-
-  /**
-   * Returns true if the given type contains a use of any of the given type variables. This is
-   * cheaper than substitution, which copies the type even when it substitutes nothing.
-   *
-   * @param type a type
-   * @param typeVars type variables
-   * @return true if {@code type} contains a use of any of {@code typeVars}
-   */
-  private boolean containsAnyTypeVariable(
-      AnnotatedTypeMirror type, Collection<? extends TypeVariable> typeVars) {
-    Type underlying = (Type) type.getUnderlyingType();
-    for (TypeVariable typeVar : typeVars) {
-      if (underlying.contains((Type) typeVar)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

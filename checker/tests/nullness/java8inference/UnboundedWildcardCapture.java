@@ -14,7 +14,9 @@ public class UnboundedWildcardCapture {
   }
 
   void use() {
-    // :: error: [type.arguments.not.inferred] :: error: [assignment]
+    // Inference fails only because of the target type, so the failure is reported by the check of
+    // the assignment.
+    // :: error: [assignment]
     Pair<? extends @NonNull Object, String> p = make("x");
   }
 
