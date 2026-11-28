@@ -1,7 +1,10 @@
 // Test case for issue #775
 // https://github.com/typetools/checker-framework/issues/775
 
-@SuppressWarnings("ainfertest") // only check WPI for crashes
+@SuppressWarnings({
+  "ainfertest", // only check WPI for crashes
+  "confidential" // true positive: thrown exception might be @UnknownConfidential
+})
 public class UnionCrash {
   void foo(MyInterface<Throwable> param) throws Throwable {
     try {

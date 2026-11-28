@@ -1,0 +1,18 @@
+package org.apache.commons.logging;
+
+import org.checkerframework.checker.confidential.qual.UnknownConfidential;
+
+public interface Log {
+
+    void debug(Object var1, @UnknownConfidential Throwable var2);
+
+    void error(Object var1, @UnknownConfidential Throwable var2);
+
+    void fatal(Object var1, @UnknownConfidential Throwable var2);
+
+    void info(Object var1, @UnknownConfidential Throwable var2);
+
+    void trace(Object var1, @UnknownConfidential Throwable var2);
+
+    void warn(Object var1, @UnknownConfidential Throwable var2);
+}
