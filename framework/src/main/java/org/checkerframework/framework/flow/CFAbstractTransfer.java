@@ -14,6 +14,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -1743,12 +1744,13 @@ public abstract class CFAbstractTransfer<
    * field, or an array element, such as {@code x}, {@code o.f}, or {@code a[i]}. {@link #add} adds
    * a write to a given location, and {@link #scan} adds the writes that evaluating a tree might
    * perform: its assignments, compound assignments, increments, decrements, method calls, object
-   * creations, string conversions, record patterns, and enhanced {@code for} loops over an {@code
-   * Iterable}. A method call, object creation, string conversion (which calls {@code toString()}),
-   * record pattern (which calls record component accessors), or enhanced {@code for} loop over an
-   * {@code Iterable} (which calls {@code iterator()}) might write every non-final field and every
-   * array element, unless the method or constructor is side-effect-free; {@link #anyHeapLocation}
-   * records that.
+   * creations, string conversions, record patterns, enhanced {@code for} loops over an {@code
+   * Iterable}, and try-with-resources statements. A method call, object creation, string
+   * conversion (which calls {@code toString()}), record pattern (which calls record component
+   * accessors), enhanced {@code for} loop over an {@code Iterable} (which calls {@code
+   * iterator()}), or try-with-resources statement (which calls {@code close()}) might write every
+   * non-final field and every array element, unless the method or constructor is
+   * side-effect-free; {@link #anyHeapLocation} records that.
    *
    * <p>{@link #scan} does not descend into lambda bodies or class bodies, because they do not
    * execute when the tree is evaluated. The writes of such a body to fields and array elements are
@@ -1838,8 +1840,9 @@ public abstract class CFAbstractTransfer<
     /**
      * Adds the writes that the given tree performs itself, after its subtrees are evaluated: the
      * write of an assignment, compound assignment, increment, or decrement, and the writes of a
-     * method call, object creation, string conversion, record pattern, or enhanced {@code for} loop
-     * over an {@code Iterable}. Does not add the writes of the subtrees.
+     * method call, object creation, string conversion, record pattern, enhanced {@code for} loop
+     * over an {@code Iterable}, or try-with-resources statement. Does not add the writes of the
+     * subtrees.
      *
      * @param tree a tree
      */
@@ -1872,6 +1875,10 @@ public abstract class CFAbstractTransfer<
           && TreeUtils.typeOf(enhancedForLoopTree.getExpression()).getKind() != TypeKind.ARRAY) {
         // A loop over an `Iterable` calls `iterator()`, `hasNext()`, and `next()`, whose
         // implementations are not known statically.  A loop over an array calls no method.
+        anyHeapLocation = true;
+      } else if (tree instanceof TryTree tryTree && !tryTree.getResources().isEmpty()) {
+        // A try-with-resources statement implicitly calls `close()` on each resource, whose
+        // implementation is not known statically.
         anyHeapLocation = true;
       }
     }

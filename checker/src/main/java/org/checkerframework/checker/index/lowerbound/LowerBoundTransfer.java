@@ -16,6 +16,7 @@ import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -210,13 +211,42 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     }
     long intLiteral = integerLiteral.longValue();
 
+    // For a floating-point value, x != 0 does not imply x >= 1 (e.g., x = 0.5), and x != -1 does not
+    // imply x >= 0 (e.g., x = -0.5).
     if (intLiteral == 0) {
       if (atypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-        insertValueForComparedNode(store, otherNode, POS);
+        insertValueForComparedNode(store, otherNode, POS, null);
       }
     } else if (intLiteral == -1) {
       if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-        insertValueForComparedNode(store, otherNode, NN);
+        insertValueForComparedNode(store, otherNode, NN, null);
+      }
+    }
+  }
+
+  /**
+   * Inserts an annotation into the store for each expression that has the value of the given node
+   * (see {@link #nodesWithValueOf}). The annotation depends on whether the expression has an
+   * integral or a floating-point type. This method decides by the type of each expression, rather
+   * than of {@code node}: if {@code node} widens an {@code int} to a {@code double}, the {@code int}
+   * expression is integral.
+   *
+   * @param store the store to modify
+   * @param node a node in an operand of a comparison
+   * @param integralAnno the annotation to insert for an expression with an integral type
+   * @param floatingPointAnno the annotation to insert for an expression with a floating-point type,
+   *     or null to insert nothing for such an expression
+   */
+  private void insertValueForComparedNode(
+      CFStore store,
+      Node node,
+      AnnotationMirror integralAnno,
+      @Nullable AnnotationMirror floatingPointAnno) {
+    for (Node internal : nodesWithValueOf(node)) {
+      AnnotationMirror anno =
+          TypesUtils.isFloatingPoint(internal.getType()) ? floatingPointAnno : integralAnno;
+      if (anno != null) {
+        store.insertValue(JavaExpression.fromNode(internal), anno);
       }
     }
   }
@@ -272,7 +302,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
         .isLessThanOrEqual(leftTree, otherJe.toString())) {
-      insertValueForComparedNode(store, otherNode, POS);
+      // For floating-point values, 0 <= a < b does not imply b >= 1 (e.g., b = 0.5).
+      insertValueForComparedNode(store, otherNode, POS, null);
     }
   }
 
@@ -298,19 +329,15 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
-    AnnotationMirror newLBType;
+    // For a floating-point value, x > -1 does not imply x >= 0 (e.g., x = -0.5), and x > 0 does
+    // not imply x >= 1 (e.g., x = 0.5).
     if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
-      // For a floating-point value, x > -1 does not imply x >= 0 (e.g., x = -0.5).
-      if (TypesUtils.isFloatingPoint(left.getType())) {
-        return;
-      }
-      newLBType = NN;
-    } else if (AnnotationUtils.areSame(rightAnno, NN) || AnnotationUtils.areSame(rightAnno, POS)) {
-      newLBType = POS;
-    } else {
-      return;
+      insertValueForComparedNode(store, left, NN, null);
+    } else if (AnnotationUtils.areSame(rightAnno, NN)) {
+      insertValueForComparedNode(store, left, POS, NN);
+    } else if (AnnotationUtils.areSame(rightAnno, POS)) {
+      insertValueForComparedNode(store, left, POS, POS);
     }
-    insertValueForComparedNode(store, left, newLBType);
   }
 
   /**

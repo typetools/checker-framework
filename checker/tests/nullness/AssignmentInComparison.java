@@ -649,6 +649,36 @@ public class AssignmentInComparison {
     d.current.text.length();
   }
 
+  static void tryWithResourcesCloseRelocatesTarget(
+      Document d, AutoCloseable resource, String value, int key) {
+    d.current.text =
+        switch (key) {
+          default -> {
+            try (resource) {
+            } catch (Exception e) {
+            }
+            yield value;
+          }
+        };
+    // The try statement calls `resource.close()`, which might reassign `d.current`.
+    // :: error: [dereference.of.nullable]
+    d.current.text.length();
+  }
+
+  static void tryWithoutResourcesPreservesTarget(Document d, String value, int key) {
+    d.current.text =
+        switch (key) {
+          default -> {
+            try {
+            } finally {
+            }
+            yield value;
+          }
+        };
+    // A try statement without resources calls no method.
+    d.current.text.length();
+  }
+
   static void plusAssignCallRelocatesTarget(Document d) {
     d.current.text += reassignCurrent(d);
     // :: error: [dereference.of.nullable]
