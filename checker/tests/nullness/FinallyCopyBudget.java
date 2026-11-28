@@ -7,8 +7,10 @@
 // finallyCopyAfterBudgetIsUsedUp in dataflow/tests/cfgconstruction/Test.java checks that the
 // exceptional copy is shared.
 //
-// The nested finally blocks at the beginning of the method use up the budget.  If the budget is
-// increased, deepen their nesting so that they still use it up.
+// The nested finally blocks at the beginning of afterBudgetIsUsedUp() use up the budget.  If they
+// do not, the last finally block gets a separate copy for IOException, and the expected error in
+// its catch block for IOException does not occur, so the test fails.  In that case, deepen their
+// nesting so that they use up the budget.
 
 import java.io.IOException;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -74,23 +76,56 @@ abstract class FinallyCopyBudget {
     } catch (IOException e) {
     }
 
-    // This finally block has one exceptional copy, which rethrows all three exceptions.  The
-    // finally block and the catch blocks contain no method calls, so mightThrow() is the only
-    // source of the exceptions that the catch blocks catch.
+    // This finally block has one exceptional copy, which rethrows all three exceptions.  An
+    // IOException comes only from mightThrow(), when o is non-null.  A RuntimeException or an Error
+    // also comes from log(), when o is null.  The copy merges the stores of all those paths, so o
+    // might be null in each catch block, even the one for IOException.  The finally block and the
+    // catch blocks contain no method calls, so mightThrow() and log() are the only sources of the
+    // exceptions that the catch blocks catch.
     @Nullable Object o = "";
     boolean finished = false;
     try {
       try {
         try {
           try {
-            o = null;
             mightThrow();
+            o = null;
+            log();
             o = "";
           } finally {
             finished = true;
           }
         } catch (IOException e) {
           // :: error: (assignment)
+          @NonNull Object fromIOException = o;
+        }
+      } catch (RuntimeException e) {
+        // :: error: (assignment)
+        @NonNull Object fromRuntimeException = o;
+      }
+    } catch (Error e) {
+      // :: error: (assignment)
+      @NonNull Object fromError = o;
+    }
+  }
+
+  void beforeBudgetIsUsedUp() {
+    // The same code as at the end of afterBudgetIsUsedUp(), but no earlier finally block uses up
+    // the budget.  So IOException has its own copy of the finally block, in which o is non-null.
+    @Nullable Object o = "";
+    boolean finished = false;
+    try {
+      try {
+        try {
+          try {
+            mightThrow();
+            o = null;
+            log();
+            o = "";
+          } finally {
+            finished = true;
+          }
+        } catch (IOException e) {
           @NonNull Object fromIOException = o;
         }
       } catch (RuntimeException e) {

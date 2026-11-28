@@ -15,11 +15,7 @@ The CFG now preserves the types of the exceptions that propagate out of a
 `finally` block, so the Resource Leak Checker reports leaks on exceptional
 paths that it formerly missed.  It still ignores the exception types that
 `-AresourceLeakIgnoredExceptions` specifies, which by default include exactly
-`RuntimeException` and exactly `Error`.  It also
-reports a false positive for a `finally` block that closes a resource only if
-a boolean variable records that the `try` block did not complete, as in
-`finally { if (!success) { c.close(); } }`, because it does not track the
-value of the boolean variable.
+`RuntimeException` and exactly `Error`.
 
 ### Changes for type system implementers
 
