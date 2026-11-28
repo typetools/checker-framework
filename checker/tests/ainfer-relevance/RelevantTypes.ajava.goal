@@ -15,7 +15,7 @@ public class RelevantTypes {
 
     static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence charSequenceField;
 
-    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantTypes.class.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantTypes.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
     @org.checkerframework.dataflow.qual.Impure
     static void assignFields() {
         intField = getSibling1Int();
