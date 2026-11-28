@@ -61,6 +61,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -137,6 +139,7 @@ import org.checkerframework.dataflow.cfg.node.LongLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode.BoxingConversion;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
@@ -486,6 +489,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
         LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
         if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+          TypeMirror returnType = getReturnType(lambdaTree);
+          if (returnType.getKind() != TypeKind.VOID) {
+            finalNode = assignConvert(finalNode, returnType);
+          }
           Node resultNode =
               new LambdaResultExpressionNode((ExpressionTree) lambdaTree.getBody(), finalNode);
           extendWithNode(resultNode);
@@ -881,7 +888,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(valueOfCall);
       Node boxed =
           new MethodInvocationNode(
-              valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
+              valueOfCall,
+              valueOfAccess,
+              Collections.singletonList(node),
+              getCurrentPath(),
+              BoxingConversion.BOXING);
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
@@ -914,7 +925,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(primValueCall);
       Node unboxed =
           new MethodInvocationNode(
-              primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
+              primValueCall,
+              primValueAccess,
+              Collections.emptyList(),
+              getCurrentPath(),
+              BoxingConversion.UNBOXING);
       unboxed.setInSource(false);
 
       // Add Throwable to account for unchecked exceptions
@@ -2510,7 +2525,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = scan(resultExpression, null);
+      // Convert the result to the type of the switch expression, as by boxing `1` in
+      // `Object o = switch (x) { default -> 1; };`.
+      Node resultExprNode =
+          assignConvert(scan(resultExpression, null), switchExprVarUseNode.getType());
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
       handleArtificialTree(assign);
@@ -3257,7 +3275,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // TODO: also have a return-node if nothing is returned
     ReturnNode result = null;
     if (ret != null) {
-      Node node = scan(ret, p);
+      Tree methodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+      if (methodOrLambda == null) {
+        throw new BugInCF("return statement outside a method or lambda: %s", tree);
+      }
+      Node node = assignConvert(scan(ret, p), getReturnType(methodOrLambda));
       result = new ReturnNode(tree, node, env.getTypeUtils());
       returnNodes.add(result);
       extendWithNode(result);
@@ -3266,6 +3288,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     extendWithExtendedNode(new UnconditionalJump(this.returnTargetLC.accessLabel()));
 
     return result;
+  }
+
+  /**
+   * Returns the return type of the given method or lambda expression. For a lambda expression, the
+   * return type is that of the function type of the lambda's target type; for example, it is {@code
+   * Byte} for {@code () -> 1} in {@code Supplier<Byte> s = () -> 1;}.
+   *
+   * @param methodOrLambda a method declaration or a lambda expression
+   * @return the return type of the method or lambda expression
+   */
+  private TypeMirror getReturnType(Tree methodOrLambda) {
+    if (methodOrLambda instanceof MethodTree methodTree) {
+      return TreeUtils.elementFromDeclaration(methodTree).getReturnType();
+    }
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(((JavacProcessingEnvironment) env).getContext());
+    return ((JCLambda) methodOrLambda).getDescriptorType(javacTypes).getReturnType();
   }
 
   @Override
@@ -3467,10 +3506,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // TODO: lock the receiver for synchronized methods
 
-    MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
+    // An explicit call such as `b.booleanValue()` is equivalent to unboxing `b`.
+    BoxingConversion boxingConversion =
+        isUnboxingMethod(method) ? BoxingConversion.UNBOXING : BoxingConversion.NONE;
+    MethodInvocationNode node =
+        new MethodInvocationNode(tree, target, arguments, getCurrentPath(), boxingConversion);
 
     extendWithMethodInvocationNode(node);
     return node;
+  }
+
+  /**
+   * Returns true if the given method is the method that unboxes a value of its boxed primitive
+   * type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()}, but not {@code
+   * Integer.longValue()}.
+   *
+   * @param method a method
+   * @return true if the method unboxes a value of the class that declares it
+   */
+  private boolean isUnboxingMethod(ExecutableElement method) {
+    if (ElementUtils.isStatic(method) || !method.getParameters().isEmpty()) {
+      return false;
+    }
+    TypeMirror declaringType = ElementUtils.enclosingTypeElement(method).asType();
+    return TypesUtils.isBoxedPrimitive(declaringType)
+        && method.getSimpleName().contentEquals(types.unboxedType(declaringType) + "Value");
   }
 
   /**
@@ -3995,10 +4055,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           boolean isPostfix =
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.POSTFIX_DECREMENT;
 
-          result = null; // for definite assignment; it is assigned in isPostfix and in !isPostfix
+          // For a postfix operator, the temporary variable that holds the old value.
+          VariableTree tempVarDecl = null;
           if (isPostfix) {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
-            VariableTree tempVarDecl =
+            tempVarDecl =
                 treeBuilder.buildVariableDecl(
                     exprType,
                     uniqueName("tempPostfix"),
@@ -4018,18 +4079,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             AssignmentNode tempAssignNode = new AssignmentNode(tree, tempVarNode, expr);
             tempAssignNode.setInSource(false);
             extendWithNode(tempAssignNode);
-
-            Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
-            handleArtificialTree(resultExpr);
-            result = new LocalVariableNode(resultExpr);
-            result.setInSource(false);
-            extendWithNode(result);
           }
           AssignmentNode unaryAssign =
               createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
-          if (!isPostfix) {
-            result = unaryAssign;
+          if (tempVarDecl == null) {
+            return unaryAssign;
           }
+          // The result of a postfix operator is the old value.  Its use follows the increment or
+          // decrement, so that any conversion of the result, such as boxing for a `return`
+          // statement, occurs after the variable is updated (JLS 15.14.2, 15.14.3).
+          Tree resultExpr = treeBuilder.buildVariableUse(tempVarDecl);
+          handleArtificialTree(resultExpr);
+          result = new LocalVariableNode(resultExpr);
+          result.setInSource(false);
+          extendWithNode(result);
           return result;
         }
 
