@@ -2461,7 +2461,11 @@ public final class TreeUtils {
   /**
    * Returns true if the {@code variableTree} is declared using the {@code var} Java keyword.
    *
-   * @param variableTree a variable declaration, including a binding variable
+   * <p>{@code variableTree} must have been attributed. Before javac 27, this method may return
+   * false for a binding variable declared using {@code var}, such as {@code x} in {@code case
+   * Box(var x)}, if the binding variable has not been attributed.
+   *
+   * @param variableTree an attributed variable declaration, including a binding variable
    * @return true if the variableTree is declared using the {@code var} Java keyword
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
