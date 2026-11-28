@@ -941,11 +941,11 @@ public class ToIndexFileConverterTest {
             "package p;",
             "public class Outer {",
             "  private static class String {}",
-            "  static class Integer {}",
+            "  protected static class Integer {}",
             "  public static class Pub {}",
             "}");
     assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
-    // A package-private member type is not accessible in another package.
+    // A protected member type is not accessible to an import in another package.
     assertMethod(jaif, "C", "n(Ljava/lang/Integer;)V");
     assertMethod(jaif, "C", "o(Lp/Outer$Pub;)V");
 
@@ -967,24 +967,53 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * An import on demand of a package does not make available a package-private top-level type of
-   * another package, so the top-level type does not shadow a type in {@code java.lang}.
+   * An import on demand of a package does not make available a top-level type of another package
+   * that is package-private on the classpath, even if the stub file omits its access modifier, so
+   * the top-level type does not shadow a type that a later import on demand makes available.
    */
   @Test
   public void testOnDemandImportOfInaccessibleTopLevelType() throws Exception {
     String jaif =
         convert(
             "package q;",
-            "import p.*;",
+            "import java.util.*;",
+            "import r.*;",
             "class C {",
-            "  void m(String s) {}",
-            "  void n(Pub x) {}",
+            "  void m(RegularEnumSet.Extra x) {}",
+            "}",
+            "package java.util;",
+            "class RegularEnumSet {",
+            "  public static class Extra {}",
+            "}",
+            "package r;",
+            "public class RegularEnumSet {",
+            "  public static class Extra {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lr/RegularEnumSet$Extra;)V");
+  }
+
+  /**
+   * A stub file can omit the access modifier of a type. An import on demand in another package
+   * makes available such a type that is not on the classpath.
+   */
+  @Test
+  public void testOnDemandImportOfStubTypeWithoutAccessModifier() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.*;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(Foo f) {}",
+            "  void n(Inner i) {}",
             "}",
             "package p;",
-            "class String {}",
-            "public class Pub {}");
-    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
-    assertMethod(jaif, "C", "n(Lp/Pub;)V");
+            "class Foo {}",
+            "class Outer {",
+            "  static class Inner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Foo;)V");
+    assertMethod(jaif, "C", "n(Lp/Outer$Inner;)V");
   }
 
   /**
