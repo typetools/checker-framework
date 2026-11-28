@@ -82,8 +82,10 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Maps each type element of a scene that represents the type of a declaration to the type that
    * the declaration's type has when no annotation is written on it, or to null if that type is not
-   * known. A type element that is not a key, such as one for a pre- or postcondition, has no such
-   * type.
+   * known. This map stores no defaulted type for a type element that is not a key, such as one for
+   * a pre- or postcondition, or one for an array component type. The defaulted type of an array
+   * component type is the component type of the array's defaulted type (see {@link
+   * #updateTypeElementFromATM}).
    *
    * <p>Like {@link AnnotationsInContexts}, this map compares type elements by identity.
    */
@@ -843,19 +845,19 @@ public class WholeProgramInferenceScenesStorage
    *
    * @param typeToUpdate a type element of a scene, which this method updates
    * @param am the annotation to add to {@code typeToUpdate}
-   * @param isEffectiveAnnotation true if {@code am} is already a primary annotation of the type in
-   *     the source code, in which case writing it into the source code would be redundant
+   * @param isPrimaryAnnotationInSource true if {@code am} is already a primary annotation of the
+   *     type in the source code, in which case writing it into the source code would be redundant
    * @param defaulted the type that the location of {@code typeToUpdate} has when no annotation is
    *     written there, or null if that type is not known
    */
   private void addAnnotationsToATypeElement(
       ATypeElement typeToUpdate,
       AnnotationMirror am,
-      boolean isEffectiveAnnotation,
+      boolean isPrimaryAnnotationInSource,
       @Nullable AnnotatedTypeMirror defaulted) {
     Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
     typeToUpdate.tlAnnotationsHere.add(anno);
-    if ((isEffectiveAnnotation || shouldIgnore(am, defaulted))
+    if ((isPrimaryAnnotationInSource || shouldIgnore(am, defaulted))
         && !neverIgnore.contains(typeToUpdate)) {
       Set<String> annosIgnored =
           annosToIgnore.computeIfAbsent(typeToUpdate, k -> new HashSet<>(MapsP.mapCapacity(1)));
