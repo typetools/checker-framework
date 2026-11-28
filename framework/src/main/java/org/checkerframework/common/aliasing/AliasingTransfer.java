@@ -86,7 +86,11 @@ public class AliasingTransfer extends CFTransfer {
    */
   @Override
   protected @Nullable CFValue processCommonAssignment(
-      TransferInput<CFValue, CFStore> in, Node lhs, Node rhs, CFStore store, CFValue rhsValue) {
+      TransferInput<CFValue, CFStore> in,
+      Node lhs,
+      Node rhs,
+      CFStore store,
+      @Nullable CFValue rhsValue) {
     if (isFreshUnique(rhs)) {
       return super.processCommonAssignment(in, lhs, rhs, store, rhsValue);
     }

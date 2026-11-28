@@ -1106,21 +1106,21 @@ public abstract class CFAbstractTransfer<
    * <p>If the target is a local variable or a field, this also removes from the store each value
    * whose dependent type annotation might name the target (see {@link
    * CFAbstractStore#removeValuesThatMightName}). If {@code rhsValue} itself has such an annotation,
-   * the target gets no value: the annotation names the target's value before the assignment, but
-   * after the assignment the same text would name the new value. A self-assignment to a
-   * deterministic target, such as {@code a = a}, does not change the target's value, so it removes
-   * no values.
+   * the target gets the value that {@link #valueNotNaming} returns: the annotation names the
+   * target's value before the assignment, but after the assignment the same text would name the new
+   * value. A self-assignment to a deterministic target, such as {@code a = a}, does not change the
+   * target's value, so it removes no values.
    *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
    * @param store the regular input store (from {@code in})
-   * @param rhsValue the value of the right-hand side of the assignment
+   * @param rhsValue the value of the right-hand side of the assignment, or null if it has none
    * @return the value that the store now holds for the target, or null if it holds none; this is
    *     also the value of the assignment expression
    */
   protected @Nullable V processCommonAssignment(
-      TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
+      TransferInput<V, S> in, Node lhs, Node rhs, S store, @Nullable V rhsValue) {
 
     @Nullable V targetValue = rhsValue;
     JavaExpression target = JavaExpression.fromNode(lhs);
@@ -1134,13 +1134,31 @@ public abstract class CFAbstractTransfer<
       store.removeValuesThatMightName(target, path);
       if (targetValue != null
           && dependentTypesHelper.mightName(targetValue.getAnnotations(), target, path)) {
-        targetValue = null;
+        targetValue = valueNotNaming(targetValue, target, path);
       }
     }
 
     // update information in the store
     store.updateForAssignment(lhs, targetValue);
     return targetValue;
+  }
+
+  /**
+   * Returns a value that is a supertype of {@code value} and that has no dependent type annotation
+   * that might name {@code variable} (see {@link DependentTypesHelper#mightName}), or null if this
+   * transfer function cannot compute one. For example, a type system whose annotation is a
+   * conjunction of facts, such as {@code @LessThan({"a", "b"})}, can drop each fact that names
+   * {@code variable}. This implementation returns null.
+   *
+   * @param value an abstract value that has a dependent type annotation that might name {@code
+   *     variable}
+   * @param variable a local variable or a field access that is assigned
+   * @param path the location of the assignment, at which to parse the expressions in the
+   *     annotations, or null if it is not known
+   * @return a supertype of {@code value} that does not name {@code variable}, or null
+   */
+  protected @Nullable V valueNotNaming(V value, JavaExpression variable, @Nullable TreePath path) {
+    return null;
   }
 
   @Override
