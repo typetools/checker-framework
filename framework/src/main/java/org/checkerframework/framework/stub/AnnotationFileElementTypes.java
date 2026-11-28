@@ -421,8 +421,9 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parses the given annotation file as a stub file. Issues a warning if it cannot be read. Does
-   * nothing if the file consists only of whitespace.
+   * Parses the given annotation file as a stub file and adds its annotations to {@link
+   * #annotationFileAnnos}. Issues a warning if the file cannot be read. Does nothing if the file
+   * consists only of whitespace, as {@link #isStubWhitespace} defines it.
    *
    * @param resource an annotation file
    * @param parseType the file type to parse {@code resource} as; a stub file type
@@ -456,7 +457,8 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Returns true if the given UTF-8 text consists only of whitespace.
+   * Returns true if the given UTF-8 text consists only of whitespace, as {@link #isStubWhitespace}
+   * defines it.
    *
    * @param contents UTF-8 text
    * @return true if {@code contents} consists only of whitespace
@@ -466,13 +468,31 @@ public class AnnotationFileElementTypes {
       byte b = contents[i];
       if (b < 0) {
         // A non-ASCII character, which might be whitespace. Decode only the rest of the text.
-        return new String(contents, i, contents.length - i, StandardCharsets.UTF_8).isBlank();
+        return new String(contents, i, contents.length - i, StandardCharsets.UTF_8)
+            .codePoints()
+            .allMatch(AnnotationFileElementTypes::isStubWhitespace);
       }
-      if (!Character.isWhitespace(b)) {
+      if (!isStubWhitespace(b)) {
         return false;
       }
     }
     return true;
+  }
+
+  /**
+   * Returns true if the stub file parser treats the given character as whitespace. Those characters
+   * are the ASCII characters that are whitespace in Java (space, tab, form feed, and the line
+   * terminators CR and LF) and the non-ASCII characters that {@link Character#isWhitespace}
+   * accepts, such as U+2003 (em space).
+   *
+   * @param c a Unicode code point
+   * @return true if the stub file parser treats {@code c} as whitespace
+   */
+  private static boolean isStubWhitespace(int c) {
+    if (c > 0x7F) {
+      return Character.isWhitespace(c);
+    }
+    return c == ' ' || c == '\t' || c == '\f' || c == '\r' || c == '\n';
   }
 
   /**

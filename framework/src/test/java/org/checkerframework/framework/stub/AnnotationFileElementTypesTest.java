@@ -247,7 +247,7 @@ public class AnnotationFileElementTypesTest {
             "-Astubs=" + jar.getPath()));
   }
 
-  /** The contents of an annotation file that starts with more than 100 whitespace characters. */
+  /** The contents of an annotation file that starts with much whitespace. */
   private static final String PADDED_STUB = " ".repeat(150) + "package p; class NoSuchClass {}";
 
   /**
@@ -304,6 +304,28 @@ public class AnnotationFileElementTypesTest {
         AnnotationFileTestUtil.write(
             new File(tmp.getRoot(), "NonAscii.astub"),
             " \u2003\u3000package p; class NoSuchClass {}");
+    assertHasDiagnostic("WARNING: " + stub.getAbsolutePath() + ":", diagnostics(stub.getPath()));
+  }
+
+  /**
+   * Tests that an annotation file that consists of whitespace and a control character that is not
+   * whitespace in Java is parsed, and so yields a warning.
+   */
+  @Test
+  public void controlCharacterFile() throws IOException {
+    File stub = AnnotationFileTestUtil.write(new File(tmp.getRoot(), "Control.astub"), " \u000B\n");
+    assertHasDiagnostic("WARNING: " + stub.getAbsolutePath() + ":", diagnostics(stub.getPath()));
+  }
+
+  /**
+   * Tests that an annotation file that consists of non-ASCII whitespace and a control character
+   * that is not whitespace in Java is parsed, and so yields a warning.
+   */
+  @Test
+  public void controlCharacterAfterNonAsciiWhitespace() throws IOException {
+    File stub =
+        AnnotationFileTestUtil.write(
+            new File(tmp.getRoot(), "NonAsciiControl.astub"), " \u2003\u001F\n");
     assertHasDiagnostic("WARNING: " + stub.getAbsolutePath() + ":", diagnostics(stub.getPath()));
   }
 
