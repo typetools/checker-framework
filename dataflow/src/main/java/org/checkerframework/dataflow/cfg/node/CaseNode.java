@@ -36,9 +36,10 @@ public class CaseNode extends Node {
   protected final List<Node> caseExprs;
 
   /**
-   * True if code that might have side effects, such as the guard of an earlier case, might execute
-   * between the evaluation of the switch selector expression and this case. If true, the current
-   * value of the selector expression might differ from the value that this case tests.
+   * True if code that might have side effects, such as the guard or the record pattern of an
+   * earlier case, might execute between the evaluation of the switch selector expression and this
+   * case. If true, the current value of the selector expression might differ from the value that
+   * this case tests.
    */
   protected final boolean selectorExprMayHaveChanged;
 
@@ -65,8 +66,8 @@ public class CaseNode extends Node {
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param selectorExprMayHaveChanged true if code that might have side effects, such as the guard
-   *     of an earlier case, might execute between the evaluation of the switch selector expression
-   *     and this case
+   *     or the record pattern of an earlier case, might execute between the evaluation of the
+   *     switch selector expression and this case
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -93,11 +94,12 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Returns true if code that might have side effects, such as the guard of an earlier case, might
-   * execute between the evaluation of the switch selector expression and this case. If so, the
-   * current value of the selector expression might differ from the value that this case tests,
-   * which is the value of the synthetic variable that is the target of {@link #getSwitchOperand()}.
-   * For example, a guard might set a field that is the selector expression to null.
+   * Returns true if code that might have side effects, such as the guard or the record pattern of
+   * an earlier case, might execute between the evaluation of the switch selector expression and
+   * this case. If so, the current value of the selector expression might differ from the value that
+   * this case tests, which is the value of the synthetic variable that is the target of {@link
+   * #getSwitchOperand()}. For example, a guard, or a record accessor method that a record pattern
+   * calls, might set a field that is the selector expression to null.
    *
    * @return true if the selector expression might have changed since it was evaluated
    */
@@ -136,12 +138,13 @@ public class CaseNode extends Node {
       return false;
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
-        && getCaseOperands().equals(other.getCaseOperands());
+        && getCaseOperands().equals(other.getCaseOperands())
+        && selectorExprMayHaveChanged == other.selectorExprMayHaveChanged;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands());
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), selectorExprMayHaveChanged);
   }
 
   @Override
