@@ -3,12 +3,11 @@ package org.checkerframework.framework.stub;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
+import java.util.Map;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -30,15 +29,11 @@ public class JarEntryAnnotationFileResourceTest {
    * @throws IOException if the archive cannot be written
    */
   private static File writeJar(File jar, String... entryNames) throws IOException {
-    try (OutputStream os = Files.newOutputStream(jar.toPath());
-        JarOutputStream jos = new JarOutputStream(os)) {
-      for (String entryName : entryNames) {
-        jos.putNextEntry(new JarEntry(entryName));
-        jos.write(entryName.getBytes(StandardCharsets.UTF_8));
-        jos.closeEntry();
-      }
+    Map<String, String> entries = new LinkedHashMap<>();
+    for (String entryName : entryNames) {
+      entries.put(entryName, entryName);
     }
-    return jar;
+    return AnnotationFileTestUtil.writeJar(jar, entries);
   }
 
   /**
@@ -63,8 +58,7 @@ public class JarEntryAnnotationFileResourceTest {
     File jar = writeJar(new File(tmp.getRoot(), "stubs.jar"), "a/A.astub", "B.astub", "C.txt");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(jar, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(2, resources.size());
     Assert.assertEquals(jar.getPath() + "!a/A.astub", resources.get(0).getDescription());
     Assert.assertEquals(jar.getPath() + "!B.astub", resources.get(1).getDescription());
@@ -80,8 +74,7 @@ public class JarEntryAnnotationFileResourceTest {
     File jar = writeJar(new File(tmp.getRoot(), "stubs.jar"), "A.astub");
 
     List<AnnotationFileResource> resources =
-        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
-    Assert.assertNotNull(resources);
+        AnnotationFileTestUtil.annotationFiles(jar, AnnotationFileType.COMMAND_LINE_STUB);
     Assert.assertEquals(1, resources.size());
     Files.delete(jar.toPath());
     Assert.assertEquals("A.astub", contents(resources.get(0)));
