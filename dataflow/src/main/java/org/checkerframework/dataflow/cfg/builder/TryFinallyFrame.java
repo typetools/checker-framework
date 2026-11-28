@@ -84,7 +84,7 @@ import org.plumelib.util.ArrayMap;
   }
 
   /**
-   * Returns a map from label for each type of exception that reaches this frame to its label.
+   * Returns a map from each type of exception that reaches this frame to its label.
    *
    * @return a map from each type of exception that reaches this frame to its label
    */
