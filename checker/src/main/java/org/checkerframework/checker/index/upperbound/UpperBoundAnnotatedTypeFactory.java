@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexChecker;
@@ -83,6 +84,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -622,9 +624,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *
      * <p>A decrement cannot make a value violate a bound such as {@code @LTLengthOf}, so in general
      * the result has the operand's type. However, {@code @UpperBoundLiteral} denotes an exact
-     * value, which a decrement changes. A literal operand type yields the decremented literal. A
-     * polymorphic qualifier or a type variable whose bounds include an exact literal might be
-     * instantiated as a literal, so in those cases the result is {@code @UpperBoundUnknown}.
+     * value, which a decrement changes. A literal operand type yields the decremented literal,
+     * after the narrowing that the decrement performs on a {@code byte}, {@code short}, or {@code
+     * char}. A polymorphic qualifier, or a type variable that might be instantiated with a literal,
+     * yields {@code @UpperBoundUnknown}; then the assignment check rejects the decrement.
      *
      * @param operandType the type of the operand, {@code x}
      * @param typeDst the type of the prefix decrement expression; it is side-effected
@@ -634,7 +637,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (operandType instanceof AnnotatedTypeVariable operandTypeVar) {
         AnnotationMirror upper = operandTypeVar.getUpperBound().getAnnotationInHierarchy(UNKNOWN);
         AnnotationMirror lower = operandTypeVar.getLowerBound().getAnnotationInHierarchy(UNKNOWN);
-        if (isLiteralOrPoly(upper) || isLiteralOrPoly(lower)) {
+        if (isLiteralOrPoly(upper) || isLiteralOrPoly(lower) || someLiteralIsSubtype(upper)) {
           typeDst.replaceAnnotation(UNKNOWN);
         } else {
           atypeFactory.replaceAnnotations(operandType, typeDst);
@@ -652,14 +655,48 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         typeDst.replaceAnnotation(UNKNOWN);
       } else if (qual.isLiteral()) {
         int value = ((UpperBoundLiteralQualifier) qual).getValue();
-        if (value == Integer.MIN_VALUE) {
-          // The decrement overflows.
-          typeDst.replaceAnnotation(UNKNOWN);
-        } else {
-          typeDst.replaceAnnotation(createLiteral(value - 1));
+        TypeKind operandKind =
+            TypesUtils.unboxedTypeOrSelf(operandType.getUnderlyingType(), types).getKind();
+        // The result of the decrement is narrowed to the type of the operand.
+        switch (operandKind) {
+          case BYTE -> typeDst.replaceAnnotation(createLiteral((byte) (value - 1)));
+          case SHORT -> typeDst.replaceAnnotation(createLiteral((short) (value - 1)));
+          case CHAR -> typeDst.replaceAnnotation(createLiteral((char) (value - 1)));
+          default -> {
+            if (value == Integer.MIN_VALUE) {
+              // The decrement overflows an int, or yields a long that is not an int.
+              typeDst.replaceAnnotation(UNKNOWN);
+            } else {
+              typeDst.replaceAnnotation(createLiteral(value - 1));
+            }
+          }
         }
       } else {
         typeDst.replaceAnnotation(anno);
+      }
+    }
+
+    /**
+     * Returns true if some {@code @UpperBoundLiteral} qualifier is a subtype of the given
+     * annotation, which is the upper bound of a type variable. If so, the type variable might be
+     * instantiated with a literal.
+     *
+     * @param upper an annotation in the upper-bound hierarchy, or null
+     * @return true if some {@code @UpperBoundLiteral} qualifier is a subtype of {@code upper}, or
+     *     if {@code upper} is null
+     */
+    private boolean someLiteralIsSubtype(@Nullable AnnotationMirror upper) {
+      if (upper == null) {
+        return true;
+      }
+      UBQualifier qual = UBQualifier.createUBQualifier(upper, (IndexChecker) checker);
+      if (qual.isUnknown() || qual.isLiteral()) {
+        return true;
+      } else if (qual.isLessThanLengthQualifier()) {
+        return ((LessThanLengthOf) qual).someLiteralIsSubtype();
+      } else {
+        // Bottom or polymorphic.
+        return false;
       }
     }
 

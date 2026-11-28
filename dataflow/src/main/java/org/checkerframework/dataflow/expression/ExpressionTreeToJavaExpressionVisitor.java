@@ -933,10 +933,10 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
     } else if (SHIFT_OPERATORS.contains(operator)
-        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
-        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+        && TypesUtils.isIntegralPrimitive(leftUnboxedType)
+        && TypesUtils.isIntegralPrimitive(rightUnboxedType)) {
       // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
-      // promotion, which converts a byte, short, or char to int.
+      // promotion, which converts a byte, short, or char to int.  Each operand may be a char.
       type =
           types.getPrimitiveType(
               TypeKindUtils.widenedNumericType(leftUnboxedType.getKind(), TypeKind.INT));

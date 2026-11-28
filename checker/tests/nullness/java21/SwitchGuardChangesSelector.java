@@ -58,4 +58,31 @@ public class SwitchGuardChangesSelector {
       default -> local.toString();
     }
   }
+
+  // A guard cannot assign a local variable, so a case label refines a local assignment target.
+  void assignmentSelectorLocalTarget() {
+    @Nullable String saved;
+    switch (saved = stringField) {
+      case String s when clear() -> {}
+      case null -> {}
+      default -> {
+        saved.toString();
+        // :: error: [dereference.of.nullable]
+        stringField.toString();
+      }
+    }
+  }
+
+  // A guard can assign a field, so a case label does not refine a field assignment target.
+  void assignmentSelectorFieldTarget(@Nullable String local) {
+    switch (stringField = local) {
+      case String s when clear() -> {}
+      case null -> {}
+      default -> {
+        local.toString();
+        // :: error: [dereference.of.nullable]
+        stringField.toString();
+      }
+    }
+  }
 }

@@ -6,6 +6,7 @@
 
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.LowerBoundUnknown;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 
@@ -73,5 +74,18 @@ public class TypeVarIncrement {
 
   <T extends @NonNegative Integer> @NonNegative int postfixIncrementNonNegative(T t) {
     return t++;
+  }
+
+  // A decrement cannot violate the lower bound of a @LowerBoundUnknown type variable.  But a caller
+  // may instantiate T with an @UpperBoundLiteral type, whose exact value a decrement changes.
+  <T extends Integer> void decrementLowerBoundUnknown(@LowerBoundUnknown T t) {
+    // :: error: [unary.decrement]
+    --t;
+  }
+
+  <T extends @LTLengthOf("#2") Integer> void decrementLTLengthOfLowerBoundUnknown(
+      @LowerBoundUnknown T t, int[] a) {
+    // :: error: [unary.decrement]
+    --t;
   }
 }
