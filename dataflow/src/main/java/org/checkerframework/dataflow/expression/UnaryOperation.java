@@ -26,7 +26,7 @@ public class UnaryOperation extends JavaExpression {
    * @param operand the operand
    */
   public UnaryOperation(TypeMirror type, Tree.Kind operationKind, JavaExpression operand) {
-    super(operand.type);
+    super(type);
     this.operationKind = operationKind;
     this.operand = operand;
   }
