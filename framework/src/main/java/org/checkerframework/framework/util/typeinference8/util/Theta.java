@@ -101,6 +101,17 @@ public class Theta {
   }
 
   /**
+   * Adds each mapping of {@code other} to this, as if by {@link #put}, in the order in which they
+   * were added to {@code other}.
+   *
+   * @param other a mapping from type variables to inference variables
+   */
+  public void putAll(Theta other) {
+    typeVariables = null;
+    map.putAll(other.map);
+  }
+
+  /**
    * Returns the inference variable for {@code type}, or null if there is none. {@code type} need
    * not be the same object as the type variable that was passed to {@link #put}; it is enough that
    * the two are {@link TypesUtils#areSame(TypeVariable, TypeVariable)}.

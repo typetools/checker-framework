@@ -1134,9 +1134,20 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitDeconstructorPattern(
       DeconstructorPatternNode n, TransferInput<V, S> in) {
-    // TODO: Implement getting the type of a DeconstructorPatternTree.
-    V value = null;
-    return createTransferResult(value, in);
+    Tree recordPattern = n.getTree();
+    assert recordPattern != null : "@AssumeAssertion(nullness): a pattern node has a tree";
+    List<AnnotatedTypeMirror> componentTypes =
+        analysis.atypeFactory.getRecordPatternComponentTypes(recordPattern);
+    // If `in` has a then-store and an else-store, each call to `in.getRegularStore()` returns a
+    // new store, so call it just once and return a result that contains that store.
+    S store = in.getRegularStore();
+    List<Node> nestedPatterns = n.getNestedPatterns();
+    for (int i = 0; i < nestedPatterns.size(); i++) {
+      if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar) {
+        refineBindingVariable(store, JavaExpression.fromNode(bindingVar), componentTypes.get(i));
+      }
+    }
+    return new RegularTransferResult<>(finishValue(null, store), store);
   }
 
   @Override
@@ -1154,11 +1165,10 @@ public abstract class CFAbstractTransfer<
     S store = in.getRegularStore();
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
-      JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      for (AnnotationMirror anno : expType.getAnnotations()) {
-        store.insertOrRefine(expr, anno);
-      }
+    // A binding variable nested in a record pattern holds a record component, not the value that
+    // `node` tests, so `visitDeconstructorPattern` refines it instead.
+    if (node.getPatternNode() instanceof LocalVariableNode bindingVar) {
+      refineBindingVariable(store, JavaExpression.fromNode(bindingVar), expType);
     }
 
     // The "reference type" is the type after "instanceof".
@@ -1432,8 +1442,9 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Refines, in {@code store}, the binding variable {@code varTree} of a type pattern that is a
-   * case label by the qualifiers of {@code selector}, the selector expression of the switch.
+   * Refines, in {@code store}, the binding variable {@code varTree} of a type pattern in a case
+   * label as {@link #refineBindingVariable} does, using the type of {@code selector}, the selector
+   * expression of the switch.
    *
    * @param store the store to refine; side-effected by this method
    * @param varTree the binding variable of a type pattern that is a case label
@@ -1443,7 +1454,37 @@ public abstract class CFAbstractTransfer<
       S store, VariableTree varTree, ExpressionTree selector) {
     JavaExpression bindingExpr = JavaExpression.fromVariableTree(varTree);
     AnnotatedTypeMirror selectorType = analysis.atypeFactory.getAnnotatedType(selector);
-    for (AnnotationMirror anno : selectorType.getAnnotations()) {
+    refineBindingVariable(store, bindingExpr, selectorType);
+  }
+
+  /**
+   * Refines the binding variable {@code bindingExpr} of a type pattern by the qualifiers of {@code
+   * matchedType}, the type of the value that the pattern is matched against. For example, in
+   *
+   * <pre>{@code
+   * if (o instanceof String s) ...
+   * switch (o) { case String s -> ... }
+   * }</pre>
+   *
+   * {@code bindingExpr} is {@code s} and {@code matchedType} is the type of {@code o}. This method
+   * refines {@code s} as if it were assigned a cast of {@code o}, as in {@code String s = (String)
+   * o;}: {@code s} gets each qualifier of the type of {@code o}, except that a qualifier that is
+   * not a subtype of the qualifier upper bound of {@code String} is replaced by that bound. For
+   * example, in the Interning Checker every {@code Class} is {@code @Interned}, so in {@code o
+   * instanceof Class<?> c}, {@code c} is {@code @Interned} even if {@code o} is not.
+   *
+   * @param store the store to refine; side-effected by this method
+   * @param bindingExpr the binding variable of a type pattern
+   * @param matchedType the type of the value that the type pattern is matched against
+   */
+  protected void refineBindingVariable(
+      S store, JavaExpression bindingExpr, AnnotatedTypeMirror matchedType) {
+    AnnotationMirrorSet limitedAnnos =
+        analysis
+            .atypeFactory
+            .getQualifierUpperBounds()
+            .limitToBound(bindingExpr.getType(), matchedType.getAnnotations());
+    for (AnnotationMirror anno : limitedAnnos) {
       store.insertOrRefine(bindingExpr, anno);
     }
   }
@@ -1469,9 +1510,7 @@ public abstract class CFAbstractTransfer<
     if (!PatternCaseLabelUtils.isPatternCaseLabelTree(labelPath.getLeaf())) {
       return null;
     }
-    // The parent of the case label is a case, whose parent is a switch.
-    Tree switchTree = labelPath.getParentPath().getParentPath().getLeaf();
-    return TreeUtils.switchSelector(switchTree);
+    return TreePathUtil.switchSelectorOfCaseLabel(labelPath);
   }
 
   @Override
