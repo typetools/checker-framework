@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.StringsP;
 
 /**
@@ -90,6 +91,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
     return options;
   }
 
+  @SideEffectFree
   @Override
   public List<String> getFlatOptions() {
     return TestUtilities.optionMapToList(options);

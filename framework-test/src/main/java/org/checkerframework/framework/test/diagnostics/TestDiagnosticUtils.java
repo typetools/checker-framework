@@ -12,6 +12,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsP;
 
@@ -97,6 +98,7 @@ public final class TestDiagnosticUtils {
    * @param stringFromDiagnosticFile a single diagnostic string to parse
    * @return a new TestDiagnostic
    */
+  @SideEffectFree
   public static TestDiagnostic fromDiagnosticFileString(String stringFromDiagnosticFile) {
     return fromPatternMatching(
         DIAGNOSTIC_FILE_PATTERN,
@@ -116,6 +118,7 @@ public final class TestDiagnosticUtils {
    * @param stringFromJavaFile the string containing the diagnostic
    * @return a new TestDiagnostic
    */
+  @SideEffectFree
   public static TestDiagnostic fromJavaFileComment(
       String filename, long lineNumber, String stringFromJavaFile) {
     return fromPatternMatching(
@@ -155,6 +158,7 @@ public final class TestDiagnosticUtils {
    * @param stringFromJavaFile the string containing the diagnostic
    * @return a new TestDiagnostic
    */
+  @SideEffectFree
   public static TestDiagnostic fromJSpecifyFileComment(
       String filename, long lineNumber, String stringFromJavaFile) {
     return new TestDiagnostic(
@@ -177,6 +181,7 @@ public final class TestDiagnosticUtils {
    * @param diagnosticString the string to parse
    * @return a diagnostic parsed from the given string
    */
+  @SideEffectFree
   @SuppressWarnings({
     "nullness", // TODO: regular expression group access
     "regex:group.count" // group count varies by pattern; callers ensure correct group counts
@@ -350,6 +355,7 @@ public final class TestDiagnosticUtils {
    * @param category a category string that might be prepended with "fixable-"
    * @return the category and whether it was prepended with "fixable-"
    */
+  @SideEffectFree
   private static CategoryAndFixable categoryAndFixable(String category) {
     String fixable = "fixable-";
     boolean isFixable = category.startsWith(fixable);
@@ -370,12 +376,17 @@ public final class TestDiagnosticUtils {
    * @param kind the diagnostic category
    * @param isFixable true if the category string was prepended with "fixable-"
    */
-  private record CategoryAndFixable(DiagnosticKind kind, boolean isFixable) {}
+  private record CategoryAndFixable(DiagnosticKind kind, boolean isFixable) {
+    /** Creates a CategoryAndFixable. */
+    @SideEffectFree
+    CategoryAndFixable {}
+  }
 
   /**
    * Returns true if this line in a Java file indicates an expected diagnostic that might be
    * continued on the next line.
    */
+  @SideEffectFree
   public static boolean isJavaDiagnosticLineStart(String originalLine) {
     String trimmedLine = originalLine.trim();
     return trimmedLine.startsWith("// ::") || trimmedLine.startsWith("// warning:");
@@ -395,6 +406,7 @@ public final class TestDiagnosticUtils {
    * (to avoid false positive matches, such as when "// ::" is commented out in source code). It
    * could be extended in the future if such an extension is necessary.
    */
+  @SideEffectFree
   public static String handleEndOfLineJavaDiagnostic(String originalLine) {
     int curlyIndex = originalLine.indexOf("{ // ::");
     if (curlyIndex == -1) {
@@ -411,6 +423,7 @@ public final class TestDiagnosticUtils {
    * @return true if {@code originalLine} continues an expected diagnostic
    */
   @EnsuresNonNullIf(result = true, expression = "#1")
+  @SideEffectFree
   public static boolean isJavaDiagnosticLineContinuation(@Nullable String originalLine) {
     if (originalLine == null) {
       return false;
@@ -426,6 +439,7 @@ public final class TestDiagnosticUtils {
    * Returns the continuation part. The argument is such that {@link
    * #isJavaDiagnosticLineContinuation} returns true.
    */
+  @SideEffectFree
   public static String continuationPart(String originalLine) {
     return originalLine.trim().substring(2).trim();
   }
@@ -436,6 +450,8 @@ public final class TestDiagnosticUtils {
    * <p>The input {@code line} is possibly the concatenation of multiple source lines, if the
    * diagnostic was split across lines in the source code.
    */
+  @SideEffectFree
+  @SuppressWarnings("purity") // CollectionsP.mapList is side-effect-free but unannotated
   public static TestDiagnosticLine fromJavaSourceLine(
       String filename, String line, long lineNumber) {
     String trimmedLine = line.trim();
@@ -485,6 +501,7 @@ public final class TestDiagnosticUtils {
    * @param diagnosticLine a line in a DiagnosticFile
    * @return the corresponding TestDiagnosticLine
    */
+  @SideEffectFree
   public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
     String trimmedLine = diagnosticLine.trim();
     if (trimmedLine.startsWith("#") || trimmedLine.isEmpty()) {

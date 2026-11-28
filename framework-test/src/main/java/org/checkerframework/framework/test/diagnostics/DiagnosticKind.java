@@ -3,6 +3,7 @@ package org.checkerframework.framework.test.diagnostics;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /** The kinds of errors that can be encountered during typechecking. */
 public enum DiagnosticKind {
@@ -36,6 +37,7 @@ public enum DiagnosticKind {
    * @param parseStr a string as it would appear in error messages or source code
    * @return the corresponding DiagnosticKind, or null if there is none
    */
+  @Pure
   public static @Nullable DiagnosticKind fromParseString(String parseStr) {
     return stringToCategory.get(parseStr);
   }

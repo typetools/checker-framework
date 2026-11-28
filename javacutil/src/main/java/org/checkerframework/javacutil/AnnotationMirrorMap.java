@@ -27,6 +27,12 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
  * <p>AnnotationMirror is an interface and not all implementing classes provide a correct equals
  * method; therefore, existing implementations of Map cannot be used.
  */
+// Every @Pure method inherited from Map (containsKey, get, equals, hashCode) iterates a
+// collection, which the Purity Checker cannot verify: Collection.iterator() and
+// Map.keySet()/entrySet() are @SideEffectFree but not @Deterministic, because each call
+// allocates a fresh iterator or view, and Iterator.next() mutates it.  The catch block in
+// equals() is likewise forbidden in a @Deterministic method.
+@SuppressWarnings("purity")
 public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMirror, V> {
 
   /** The actual map to which all work is delegated. */

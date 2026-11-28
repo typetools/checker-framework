@@ -18,7 +18,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 11.
  */
-@SuppressWarnings("PMD.MissingStaticMethodInNonInstantiatableClass")
+@SuppressWarnings({"PMD.MissingStaticMethodInNonInstantiatableClass", "purity"})
 @Deprecated(forRemoval = true, since = "4.0.0")
 public final class TreeUtilsAfterJava11 {
 

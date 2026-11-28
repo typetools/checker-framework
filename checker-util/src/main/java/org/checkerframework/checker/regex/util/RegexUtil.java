@@ -163,7 +163,10 @@ public final class RegexUtil {
    * @param groups number of groups expected
    * @return true iff s is a regular expression with {@code groups} groups
    */
-  @SuppressWarnings("regex") // RegexUtil
+  @SuppressWarnings({
+    "regex", // RegexUtil
+    "purity" // catch block is a guard; the result depends only on the arguments
+  })
   @Pure
   // @EnsuresQualifierIf annotation is extraneous because this method is special-cased
   // in RegexTransfer.
@@ -185,8 +188,10 @@ public final class RegexUtil {
    * @return true iff c is a regular expression
    */
   @SuppressWarnings({
-    "regex", "lock"
-  }) // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
+    "regex", // RegexUtil
+    "lock", // temp value used in pure method is equal up to equals but not up to ==
+    "purity" // Character.toString() returns a fresh but always-equal String
+  })
   @Pure
   @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
   public static boolean isRegex(char c) {
@@ -333,7 +338,10 @@ public final class RegexUtil {
    * @param p pattern whose groups to count
    * @return the count of groups in the argument
    */
-  @SuppressWarnings("lock") // does not depend on object identity
+  @SuppressWarnings({
+    "lock", // does not depend on object identity
+    "purity" // Pattern.matcher() allocates; the count depends only on the argument
+  })
   @Pure
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();
