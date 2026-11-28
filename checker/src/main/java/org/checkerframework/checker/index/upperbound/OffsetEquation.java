@@ -378,8 +378,9 @@ public class OffsetEquation {
   /**
    * Creates an offset equation from the expressionEquation. The expressionEquation can be several
    * Java expressions added or subtracted from each other. The expressionEquation can also start
-   * with + or -. If the expressionEquation is the empty string, then the offset equation returned
-   * is zero.
+   * with + or -. A + or - within parentheses or brackets, as in {@code offsets[i - 1]}, does not
+   * separate terms. If the expressionEquation is the empty string, then the offset equation
+   * returned is zero.
    *
    * @param expressionEquation a Java expression made up of sums and differences
    * @return an offset equation created from expressionEquation
@@ -440,24 +441,30 @@ public class OffsetEquation {
 
   /**
    * Returns the first index of a or b in string, at or after index, or -1 if neither char occurs in
-   * string at or after index.
+   * string at or after index. Ignores occurrences within parentheses or brackets that start at or
+   * after index, so that an expression such as {@code offsets[i - 1]} or {@code f(x + 1)} is not
+   * split.
    *
    * @param string the string to search in
    * @param a a character to search for
    * @param b another character to search for
    * @param index the index at which to start the search
-   * @return the first index of a or b in string at or after index, or -1 if neither char occurs
+   * @return the first index of a or b in string at or after index and outside parentheses and
+   *     brackets, or -1 if neither char occurs there
    */
   private static int indexOfEither(String string, char a, char b, int index) {
-    int aIndex = string.indexOf(a, index);
-    int bIndex = string.indexOf(b, index);
-    if (aIndex == -1) {
-      return bIndex;
-    } else if (bIndex == -1) {
-      return aIndex;
-    } else {
-      return Math.min(aIndex, bIndex);
+    int depth = 0;
+    for (int i = index; i < string.length(); i++) {
+      char c = string.charAt(i);
+      if (c == '(' || c == '[') {
+        depth++;
+      } else if ((c == ')' || c == ']') && depth > 0) {
+        depth--;
+      } else if (depth == 0 && (c == a || c == b)) {
+        return i;
+      }
     }
+    return -1;
   }
 
   /**
