@@ -157,7 +157,7 @@ public class OffsetEquation {
    * @param p a predicate on Java expression strings
    * @return true if {@code p} is true for any term of this
    */
-  public boolean anyTermMatches(Predicate<? super String> p) {
+  public boolean anyTermMatches(Predicate<String> p) {
     for (String term : addedTerms) {
       if (p.test(term)) {
         return true;

@@ -1424,9 +1424,11 @@ public class ValueTransfer extends CFTransfer {
           qualHierarchy.greatestLowerBoundShallow(anno, je.getType(), currentAnno, je.getType());
       store.insertValue(je, newAnno);
 
-      if (node instanceof FieldAccessNode) {
-        refineArrayAtLengthAccess((FieldAccessNode) internal, store);
-      } else if (node instanceof MethodInvocationNode miNode) {
+      // Dispatch on `internal`, not `node`:  if `node` is an assignment such as `n = a.length`,
+      // then `internal` might be its right-hand side.
+      if (internal instanceof FieldAccessNode faNode) {
+        refineArrayAtLengthAccess(faNode, store);
+      } else if (internal instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
       }
     }

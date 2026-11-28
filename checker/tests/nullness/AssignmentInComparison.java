@@ -463,6 +463,13 @@ public class AssignmentInComparison {
     }
   }
 
+  void distinctConstantIndexAssignmentInRightOperand(@Nullable Object[] a, Object value) {
+    // The right operand assigns `a[1]`, which is a different element than `a[0]`.
+    if (a[0] == (a[1] = value)) {
+      a[0].toString();
+    }
+  }
+
   // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
   void assignmentInLeftOperand(@Nullable Object x) {
     if (nonNull(x = null) == x) {
@@ -582,6 +589,33 @@ public class AssignmentInComparison {
   static String reassignCurrent(Document d) {
     d.current = new Document(d);
     return "";
+  }
+
+  static void enhancedForCallRelocatesTarget(
+      Document d, Iterable<Object> items, String value, int key) {
+    d.current.text =
+        switch (key) {
+          default -> {
+            for (Object unused : items) {}
+            yield value;
+          }
+        };
+    // The loop calls `items.iterator()`, which might reassign `d.current`.
+    // :: error: [dereference.of.nullable]
+    d.current.text.length();
+  }
+
+  static void enhancedForOverArrayPreservesTarget(
+      Document d, Object[] items, String value, int key) {
+    d.current.text =
+        switch (key) {
+          default -> {
+            for (Object unused : items) {}
+            yield value;
+          }
+        };
+    // A loop over an array calls no method.
+    d.current.text.length();
   }
 
   static void plusAssignCallRelocatesTarget(Document d) {
