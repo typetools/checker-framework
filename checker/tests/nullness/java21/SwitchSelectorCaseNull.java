@@ -103,6 +103,14 @@ public class SwitchSelectorCaseNull {
     return t;
   }
 
+  <T extends @Nullable Integer> void typeVarNullDefaultAfter(T t) {
+    switch (t) {
+      case null, default -> {}
+    }
+    // :: error: [dereference.of.nullable]
+    t.toString();
+  }
+
   // Without a `case null` label, the switch throws NullPointerException if its selector is null, so
   // the selector is non-null after the switch.
 
