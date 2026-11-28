@@ -37,9 +37,9 @@ public class CaseNode extends Node {
 
   /**
    * True if code that might have side effects, such as the guard of an earlier case or a record
-   * component accessor that matching a record pattern invokes, might execute between the
-   * evaluation of the switch selector expression and this case. If true, the current value of the
-   * selector expression might differ from the value that this case tests.
+   * component accessor that matching a record pattern invokes, might execute between the evaluation
+   * of the switch selector expression and this case. If true, the current value of the selector
+   * expression might differ from the value that this case tests.
    */
   protected final boolean selectorExprMayHaveChanged;
 

@@ -1379,7 +1379,8 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      if (refineSelectorExpr) {
+      // A null value means that nothing is known, so there is nothing to refine with.
+      if (refineSelectorExpr && caseValue != null && switchValue != null) {
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);

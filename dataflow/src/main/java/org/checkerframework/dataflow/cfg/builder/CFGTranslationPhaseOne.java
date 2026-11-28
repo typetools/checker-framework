@@ -2506,9 +2506,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * <p>A {@link NullChkNode} of the selector expression refines the selector expression to
      * non-null. If matching a record pattern of some case might change the value of the selector
-     * expression (see {@link #recordPatternMayChangeSelector}), then that refinement could be
-     * stale in a case body. In that case, the null check is instead of the synthetic variable,
-     * after the assignment to it. It still throws NullPointerException if the selector is null.
+     * expression (see {@link #recordPatternMayChangeSelector}), then that refinement could be stale
+     * in a case body. In that case, the null check is instead of the synthetic variable, after the
+     * assignment to it. It still throws NullPointerException if the selector is null.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2537,6 +2537,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // null-checking the selector expression.
       boolean nullCheckSelectorVar = false;
       // A switch without a null label throws NullPointerException when its selector is null.
+      // If the switch has a `case null` label, a null selector does not throw a
+      // NullPointerException, so do not unbox the selector.  Unboxing would insert a synthetic
+      // method invocation on the selector, which would make dataflow treat the selector as non-null
+      // and would make case refinement apply to the invocation rather than to the selector.
       if (!selectorExprType.getKind().isPrimitive() && !TreeUtils.hasNullCaseLabel(switchTree)) {
         if (TypesUtils.isBoxedPrimitive(TypesUtils.upperBound(selectorExprType))) {
           // Unboxing throws the NullPointerException.  (A record pattern cannot match a boxed
