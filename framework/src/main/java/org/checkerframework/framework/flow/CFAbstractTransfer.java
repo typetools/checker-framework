@@ -1458,8 +1458,7 @@ public abstract class CFAbstractTransfer<
    * <ul>
    *   <li>A record accessor that a record pattern of {@code n} invokes might change the selector
    *       expression. The CFG does not represent the accessor calls, so their effect on the
-   *       selector expression is applied here. The caller passes true for {@code
-   *       clearModifiable}.
+   *       selector expression is applied here. The caller passes true for {@code clearModifiable}.
    *   <li>The store does not unrefine a method call whose receiver and arguments are unmodifiable
    *       at a side effect, such as one in a guard, even though the method might read mutable state
    *       that the side effect changes.
