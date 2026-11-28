@@ -952,8 +952,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     JavaExpression rightJe = exprTree.getRightOperand().accept(this, null);
     TypeMirror leftType = leftJe.getType();
     TypeMirror rightType = rightJe.getType();
-    TypeMirror leftUnboxedType = unboxedTypeOrSelf(leftType);
-    TypeMirror rightUnboxedType = unboxedTypeOrSelf(rightType);
+    TypeMirror leftUnboxedType = TypesUtils.unboxedTypeOrSelf(leftType, types);
+    TypeMirror rightUnboxedType = TypesUtils.unboxedTypeOrSelf(rightType, types);
     TypeMirror type;
     // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
     if (operator == Tree.Kind.PLUS
@@ -1003,17 +1003,6 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
               String.format("inconsistent types %s %s for %s", leftType, rightType, exprTree)));
     }
     return new BinaryOperation(type, operator, leftJe, rightJe);
-  }
-
-  /**
-   * Returns the primitive type that unboxing conversion converts the given type to, or the given
-   * type itself if it is not a boxed primitive type.
-   *
-   * @param type a type, such as {@code Integer} or {@code int}
-   * @return the unboxed type, such as {@code int} for {@code Integer}, or {@code type} itself
-   */
-  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
-    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
   }
 
   /**
