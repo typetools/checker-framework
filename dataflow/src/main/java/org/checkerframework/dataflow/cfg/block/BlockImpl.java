@@ -12,7 +12,7 @@ public abstract class BlockImpl implements Block {
   protected final BlockType type;
 
   /** The set of predecessors. */
-  protected final Set<BlockImpl> predecessors;
+  protected final ArraySet<Block> predecessors;
 
   /** The unique ID for the next-created object. */
   private static final AtomicLong nextUid = new AtomicLong(0);
@@ -43,9 +43,10 @@ public abstract class BlockImpl implements Block {
 
   @Override
   public Set<Block> getPredecessors() {
-    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration
-    // order.
-    return new ArraySet<>(predecessors);
+    // Return a copy, because some clients remove predecessors while iterating over the result.
+    // Use clone(), which takes linear time; the ArraySet copy constructor takes quadratic time,
+    // and a block such as the exceptional exit can have thousands of predecessors.
+    return predecessors.clone();
   }
 
   public void addPredecessor(BlockImpl pred) {
