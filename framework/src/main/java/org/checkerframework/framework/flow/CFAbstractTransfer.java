@@ -915,8 +915,8 @@ public abstract class CFAbstractTransfer<
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
-   * @param firstValue the abstract value that might be more precise
-   * @param secondValue the abstract value that might be less precise
+   * @param firstValue the abstract value that might be more precise, or null if nothing is known
+   * @param secondValue the abstract value that might be less precise, or null if nothing is known
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
@@ -926,8 +926,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1371,7 +1371,7 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
-    boolean refineSelectorExpr = canRefineSelectorExpression(n);
+    boolean canRefineSelectorExpression = canRefineSelectorExpression(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -1379,8 +1379,7 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      // A null value means that nothing is known, so there is nothing to refine with.
-      if (refineSelectorExpr && caseValue != null && switchValue != null) {
+      if (canRefineSelectorExpression) {
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);

@@ -2356,20 +2356,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private boolean someResultMayBeNull = false;
 
     /**
-     * True if the CFG for a guard has been built. Cases are tested in the order they are built, so
-     * this is true if a guard might execute between the evaluation of the selector expression and
-     * the test of the case currently being built. A guard might change the value of the selector
-     * expression.
+     * True if the CFG for a guard, or for a case label that is a record pattern whose matching
+     * might have side effects, has been built. Cases are tested in the order they are built, so
+     * this is true if a guard or a record pattern might execute between the evaluation of the
+     * selector expression and the test of the case currently being built. A guard might change the
+     * value of the selector expression, and so might a record component accessor that matching a
+     * record pattern invokes. The CFG does not represent these invocations, so dataflow analysis
+     * does not account for their side effects.
      */
-    private boolean guardBuilt = false;
-
-    /**
-     * True if the CFG for a case label that is a record pattern whose matching might have side
-     * effects has been built. Matching a record pattern invokes the record's component accessors,
-     * which might change the value of the selector expression. The CFG does not represent these
-     * invocations, so dataflow analysis does not account for their side effects.
-     */
-    private boolean sideEffectingPatternBuilt = false;
+    private boolean selectorExprMayHaveChanged = false;
 
     /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
@@ -2707,7 +2702,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         // Matching the labels, which precedes the CaseNode, might invoke record accessors.
         if (labelsMayHaveSideEffect(caseTree)) {
-          sideEffectingPatternBuilt = true;
+          selectorExprMayHaveChanged = true;
         }
 
         if (!isLastCaseOfExhaustive) {
@@ -2716,7 +2711,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                   caseTree,
                   selectorExprAssignment,
                   exprs,
-                  guardBuilt || sideEffectingPatternBuilt,
+                  selectorExprMayHaveChanged,
                   env.getTypeUtils()));
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
@@ -2727,7 +2722,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          guardBuilt = true;
+          selectorExprMayHaveChanged = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
