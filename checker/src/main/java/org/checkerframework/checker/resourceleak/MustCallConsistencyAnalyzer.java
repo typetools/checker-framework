@@ -739,7 +739,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
 
-    updateObligationsWithInvocationResult(obligations, node, true);
+    updateObligationsWithInvocationResult(obligations, node, exceptionType, true);
   }
 
   /**
@@ -986,10 +986,13 @@ public class MustCallConsistencyAnalyzer {
    *     Obligation with a single-element resource alias set is created and added.
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    * @param count true if -AcountMustCall should count the result as a found obligation
    */
   /*package-private*/ void updateObligationsWithInvocationResult(
-      Set<Obligation> obligations, Node node, boolean count) {
+      Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType, boolean count) {
     @SuppressWarnings("nullness:assignment") // an invocation node has a tree
     @NonNull Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
@@ -1046,8 +1049,11 @@ public class MustCallConsistencyAnalyzer {
             // A wrapper, such as a JDK stream that wraps a stream of a user-defined class, is
             // counted if the Obligation of the object that it wraps is not counted on some path.
             // A method that returns its receiver creates no object, so it is never counted.
+            // If the invocation throws an exception, then no wrapper is returned, so the wrapped
+            // Obligation keeps its count keys.
             ImmutableSet<Object> countKeys = obligationContainingMustCallAlias.countKeys;
             if (count
+                && exceptionType == null
                 && countKeys.contains(CountMarker.UNCOUNTED)
                 && !returnsThis
                 && cmAtf.declaredTypeHasMustCall(tree)) {

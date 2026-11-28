@@ -250,7 +250,7 @@ public class MustCallInference {
         // -AcountMustCall from counting the obligations that inference tracks.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           if (mcca.shouldTrackInvocationResult(obligations, node, true)) {
-            mcca.updateObligationsWithInvocationResult(obligations, node, false);
+            mcca.updateObligationsWithInvocationResult(obligations, node, null, false);
           }
           inferOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode an) {
