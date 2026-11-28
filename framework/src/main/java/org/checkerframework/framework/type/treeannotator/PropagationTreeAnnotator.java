@@ -29,6 +29,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.MapsP;
 
 /**
@@ -304,7 +305,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
       TypeKind castKind = type.getPrimitiveKind();
       if (castKind != null) {
-        TypeKind exprKind = exprType.getPrimitiveKind();
+        // Unboxing conversion applies to a type variable whose bound is a boxed primitive.
+        TypeKind exprKind =
+            TypeKindUtils.primitiveOrBoxedToTypeKind(
+                TypesUtils.unboxedTypeOrSelf(
+                    exprType.getUnderlyingType(), atypeFactory.getProcessingEnv().getTypeUtils()));
         if (exprKind != null) {
           switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
             case WIDENING ->

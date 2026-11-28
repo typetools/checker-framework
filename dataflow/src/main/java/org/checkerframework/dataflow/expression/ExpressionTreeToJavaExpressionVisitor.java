@@ -952,8 +952,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     JavaExpression rightJe = exprTree.getRightOperand().accept(this, null);
     TypeMirror leftType = leftJe.getType();
     TypeMirror rightType = rightJe.getType();
-    TypeMirror leftUnboxedType = unboxedTypeOrSelf(leftType);
-    TypeMirror rightUnboxedType = unboxedTypeOrSelf(rightType);
+    TypeMirror leftUnboxedType = TypesUtils.unboxedTypeOrSelf(leftType, types);
+    TypeMirror rightUnboxedType = TypesUtils.unboxedTypeOrSelf(rightType, types);
     TypeMirror type;
     // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
     if (operator == Tree.Kind.PLUS
@@ -962,8 +962,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
     } else if (SHIFT_OPERATORS.contains(operator)
-        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
-        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+        && isIntegralOrChar(leftUnboxedType)
+        && isIntegralOrChar(rightUnboxedType)) {
       // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
       // promotion, which converts a byte, short, or char to int.
       type =
@@ -1006,14 +1006,15 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   }
 
   /**
-   * Returns the primitive type that unboxing conversion converts the given type to, or the given
-   * type itself if it is not a boxed primitive type.
+   * Returns true if the given type is a primitive integral type (JLS 4.2.1), including {@code
+   * char}.
    *
-   * @param type a type, such as {@code Integer} or {@code int}
-   * @return the unboxed type, such as {@code int} for {@code Integer}, or {@code type} itself
+   * @param type a type
+   * @return true if the type is one of {@code byte}, {@code short}, {@code int}, {@code long}, or
+   *     {@code char}
    */
-  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
-    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
+  private static boolean isIntegralOrChar(TypeMirror type) {
+    return TypesUtils.isIntegralNumericPrimitive(type) || type.getKind() == TypeKind.CHAR;
   }
 
   /**

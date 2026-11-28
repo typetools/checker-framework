@@ -913,8 +913,8 @@ public abstract class CFAbstractTransfer<
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
-   * @param firstValue the abstract value that might be more precise
-   * @param secondValue the abstract value that might be less precise
+   * @param firstValue the abstract value that might be more precise, or null if nothing is known
+   * @param secondValue the abstract value that might be less precise, or null if nothing is known
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
@@ -924,8 +924,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1351,6 +1351,7 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    boolean canRefineSelectorExpression = canRefineSelectorExpression(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -1358,9 +1359,21 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (canRefineSelectorExpression) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      } else {
+        // The selector expression as a whole might have changed, but parts of it that are not
+        // assignable by other code have not; for example, `local` in `switch (local = field)`.
+        for (Node selectorPart : splitAssignments(assign.getExpression())) {
+          if (!JavaExpression.fromNode(selectorPart).isAssignableByOtherCode()) {
+            result =
+                strengthenAnnotationOfEqualTo(
+                    result, caseOperand, selectorPart, caseValue, switchValue, false);
+          }
+        }
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1378,6 +1391,24 @@ public abstract class CFAbstractTransfer<
       }
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the given case may refine the switch selector expression, not just the
+   * synthetic variable that holds the value of the selector expression.
+   *
+   * <p>A case tests the value of the selector expression when the switch began. A guard of an
+   * earlier case might have changed the current value of the selector expression since then, for
+   * example by setting a field to null. A guard cannot assign a local variable, so the current
+   * value of a selector expression that is not {@link JavaExpression#isAssignableByOtherCode()
+   * assignable by other code} is the value that the case tests.
+   *
+   * @param n a case node
+   * @return true if the case may refine the selector expression
+   */
+  protected boolean canRefineSelectorExpression(CaseNode n) {
+    return !n.selectorExprMayHaveChanged()
+        || !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
   }
 
   // /**
