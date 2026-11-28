@@ -9,6 +9,15 @@
 
 ### Changes for type system implementers
 
+New overridable method `BaseTypeVisitor.checkInstanceofPattern()` checks the
+binding variable of an `instanceof` type pattern.  A subclass can override the
+new method `BaseTypeVisitor.instanceofPatternMatchedType()` to exclude values
+that `instanceof` never matches, such as null.
+
+New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
+pattern variable.  New method `AnnotatedTypeFactory.isNestedBindingVariable()`
+returns true for a pattern variable nested in a record pattern.
+
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
 
