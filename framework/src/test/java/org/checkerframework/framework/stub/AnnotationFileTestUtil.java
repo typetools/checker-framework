@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
@@ -39,18 +40,33 @@ final class AnnotationFileTestUtil {
   /**
    * Creates a jar archive that contains one entry with the given name and contents.
    *
-   * @param jar the archive to create
-   * @param entryName the name of the entry
-   * @param contents the contents of the entry
+   * @param jar an archive to create
+   * @param entryName the name of the archive's entry
+   * @param contents the contents of the archive's entry
    * @return {@code jar}
    * @throws IOException if the archive cannot be written
    */
   static File writeJar(File jar, String entryName, String contents) throws IOException {
+    return writeJar(jar, Map.of(entryName, contents));
+  }
+
+  /**
+   * Creates a jar archive that contains the given entries, in the iteration order of {@code
+   * entries}.
+   *
+   * @param jar an archive to create
+   * @param entries a map from the name of each entry of the archive to its contents
+   * @return {@code jar}
+   * @throws IOException if the archive cannot be written
+   */
+  static File writeJar(File jar, Map<String, String> entries) throws IOException {
     try (OutputStream os = Files.newOutputStream(jar.toPath());
         JarOutputStream jos = new JarOutputStream(os)) {
-      jos.putNextEntry(new JarEntry(entryName));
-      jos.write(contents.getBytes(StandardCharsets.UTF_8));
-      jos.closeEntry();
+      for (Map.Entry<String, String> entry : entries.entrySet()) {
+        jos.putNextEntry(new JarEntry(entry.getKey()));
+        jos.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
+        jos.closeEntry();
+      }
     }
     return jar;
   }
