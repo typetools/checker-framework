@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -248,7 +249,7 @@ public class MustCallConsistencyAnalyzer {
     /**
      * The keys under which -AcountMustCall counted this Obligation as found. Empty if the
      * Obligation is not counted. See {@link ResourceLeakChecker#countFoundObligation}. Derived
-     * Obligations retain these keys.
+     * Obligations retain these keys, and equivalent analysis states combine their keys.
      *
      * <p>The keys are used only for statistics and are not part of {@link #equals} or {@link
      * #hashCode}.
@@ -279,6 +280,22 @@ public class MustCallConsistencyAnalyzer {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
       this.whenToEnforce = ImmutableSet.copyOf(whenToEnforce);
       this.countKeys = countKeys;
+    }
+
+    /**
+     * Return the Obligation that combines this Obligation's count keys with the count keys of the
+     * given Obligation.
+     *
+     * @param other an Obligation with the same resource aliases and enforcement exit kinds
+     * @return an Obligation with the combined count keys
+     */
+    public Obligation combineCountKeys(Obligation other) {
+      if (this.countKeys.containsAll(other.countKeys)) {
+        return this;
+      }
+      ImmutableSet<Object> keys =
+          ImmutableSet.<Object>builder().addAll(this.countKeys).addAll(other.countKeys).build();
+      return new Obligation(this.resourceAliases, this.whenToEnforce, keys);
     }
 
     /**
@@ -675,19 +692,25 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
-    // The `visited` set contains everything that has been added to the worklist, even if it has
-    // not yet been removed and analyzed.
-    Set<BlockWithObligations> visited = new HashSet<>();
+    // The `visited` map maps every analysis state that has been added to the worklist, including
+    // states that have not yet been analyzed, to its version with the latest count keys.
+    Map<BlockWithObligations, BlockWithObligations> visited = new HashMap<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
     // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
         new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
     worklist.add(entry);
-    visited.add(entry);
+    visited.put(entry, entry);
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
+      @SuppressWarnings(
+          "interning:not.interned") // a newer object for the same state has more count keys
+      boolean superseded = visited.get(current) != current;
+      if (superseded) {
+        continue;
+      }
       propagateObligationsToSuccessorBlocks(
           cfg, current.obligations, current.block, visited, worklist);
     }
@@ -708,7 +731,7 @@ public class MustCallConsistencyAnalyzer {
     if (node instanceof MethodInvocationNode min
         && cmAtf.canCreateObligations()
         && cmAtf.hasCreatesMustCallFor(min)) {
-      checkCreatesMustCallForInvocation(obligations, min);
+      checkCreatesMustCallForInvocation(obligations, min, exceptionType);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
@@ -722,9 +745,9 @@ public class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true for each
-   * expression in the argument to the CreatesMustCallFor annotation. As a special case, the
-   * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, Tree, TreePath, TypeMirror)} is true
+   * for each expression in the argument to the CreatesMustCallFor annotation. As a special case,
+   * the invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
    * constructor of the relevant class (invoking a constructor already creates an obligation). If
    * none of these conditions are true for any of the expressions, this method issues a
    * reset.not.owning error.
@@ -739,10 +762,15 @@ public class MustCallConsistencyAnalyzer {
    *     an Obligation in it which tracks any expression from the CreatesMustCallFor annotation as
    *     one of its resource aliases
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    */
   private void checkCreatesMustCallForInvocation(
-      Set<Obligation> obligations, MethodInvocationNode node) {
+      Set<Obligation> obligations, MethodInvocationNode node, @Nullable TypeMirror exceptionType) {
 
+    @SuppressWarnings("nullness:assignment") // an invocation node has a tree
+    @NonNull MethodInvocationTree invocation = node.getTree();
     // For an artificial invocation, such as the invocation of iterator() that an enhanced for loop
     // desugars to, this is the path to the source code construct that the invocation implements.
     TreePath currentPath = node.getTreePath();
@@ -751,7 +779,8 @@ public class MustCallConsistencyAnalyzer {
             node, cmAtf, cmAtf);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
-      if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
+      if (!isValidCreatesMustCallForExpression(
+          obligations, expression, invocation, currentPath, exceptionType)) {
         missing.add(expression);
       }
     }
@@ -788,7 +817,7 @@ public class MustCallConsistencyAnalyzer {
   /**
    * Checks the validity of the given expression from an invoked method's {@link
    * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. Helper method for
-   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
+   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode, TypeMirror)}.
    *
    * <p>An expression is valid if one of the following conditions is true:
    *
@@ -803,14 +832,22 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
-   *     annotation {@code expression} came; for an artificial invocation, such as the invocation of
-   *     iterator() that an enhanced for loop desugars to, the path to the source code construct
-   *     that the invocation implements
+   * @param invocation the invocation of the method from whose @CreatesMustCallFor annotation {@code
+   *     expression} came
+   * @param invocationPath the path to {@code invocation}; for an artificial invocation, such as the
+   *     invocation of iterator() that an enhanced for loop desugars to, the path to the source code
+   *     construct that the invocation implements
+   * @param exceptionType a description of the outgoing CFG edge from the invocation: {@code null}
+   *     to indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
-      Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
+      Set<Obligation> obligations,
+      JavaExpression expression,
+      Tree invocation,
+      TreePath invocationPath,
+      @Nullable TypeMirror exceptionType) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
@@ -838,11 +875,19 @@ public class MustCallConsistencyAnalyzer {
                   "tried to remove multiple sets containing a reset expression at once");
             }
             toRemove = obligation;
-            // -AcountMustCall does not count the invocation as creating a new resource, so
-            // toAdd retains the replaced Obligation's keys.
-            toAdd =
-                new Obligation(
-                    ImmutableSet.of(alias), obligation.whenToEnforce, obligation.countKeys);
+            // -AcountMustCall treats the invocation as creating a new resource, which toAdd
+            // tracks.  Treating the invocation as creating a resource could over-count, because
+            // @CreatesMustCallFor doesn't guarantee that a new resource is created: it just
+            // means that a new resource might have been created.  The @CreatesMustCallFor
+            // method is responsible for the resource that the replaced Obligation tracked.  If
+            // the invocation throws an exception, then the replaced resource is still
+            // outstanding, so toAdd retains the replaced Obligation's keys.
+            ImmutableSet<Object> countKeys =
+                exceptionType == null
+                    ? countFoundObligation(
+                        new CreatesMustCallForKey(invocation, expression), expression.getType())
+                    : obligation.countKeys;
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce, countKeys);
           }
         }
 
@@ -2071,14 +2116,15 @@ public class MustCallConsistencyAnalyzer {
    * @param cfg the control flow graph
    * @param incomingObligations the Obligations for the current block
    * @param currentBlock the current block
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlocks(
       ControlFlowGraph cfg,
       Set<Obligation> incomingObligations,
       Block currentBlock,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     // For each successor block that isn't caused by an ignored exception type, this loop
     // computes the set of Obligations that should be propagated to it and then adds it to the
@@ -2120,7 +2166,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
+   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Map,
    * Deque)} that propagates obligations along a single edge.
    *
    * @param obligations the Obligations for the current block
@@ -2128,7 +2174,8 @@ public class MustCallConsistencyAnalyzer {
    * @param successor a successor of the current block
    * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
    *     null} for normal control flow, or a throwable type for exceptional control flow
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
@@ -2136,7 +2183,7 @@ public class MustCallConsistencyAnalyzer {
       Block currentBlock,
       Block successor,
       @Nullable TypeMirror exceptionType,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     List<Node> currentBlockNodes = currentBlock.getNodes();
     // successorObligations eventually contains the Obligations to propagate to successor.
@@ -2547,6 +2594,17 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * The key under which -AcountMustCall counts the Obligation that an invocation of a {@code
+   * CreatesMustCallFor} method creates for one of the method's targets. See {@link
+   * ResourceLeakChecker#countFoundObligation}.
+   *
+   * @param invocation the invocation of the {@code CreatesMustCallFor} method
+   * @param target an expression from the method's {@code CreatesMustCallFor} annotation, at the
+   *     invocation
+   */
+  private record CreatesMustCallForKey(Tree invocation, JavaExpression target) {}
+
+  /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
    * the methods in {@code mustCallValues}?
    *
@@ -2578,21 +2636,59 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * If the input {@code state} has not been visited yet, add it to {@code visited} and {@code
-   * worklist}.
+   * Return the Obligation in the given set equal to {@code target}.
    *
-   * @param state the current state
-   * @param visited the states that have been analyzed or are already on the worklist
+   * @param obligations a set of Obligations
+   * @param target the Obligation to look for
+   * @return the Obligation in {@code obligations} equal to {@code target}
+   * @throws BugInCF if {@code obligations} contains no Obligation equal to {@code target}
+   */
+  private static Obligation getMatchingObligation(Set<Obligation> obligations, Obligation target) {
+    for (Obligation obligation : obligations) {
+      if (obligation.equals(target)) {
+        return obligation;
+      }
+    }
+    throw new BugInCF("No Obligation equal to %s in %s", target, obligations);
+  }
+
+  /**
+   * Add the given state to the worklist if the state is new or has additional count keys.
+   *
+   * @param state a state reaching the successor block
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist the states that will be analyzed
    */
-  private static void propagate(
+  private void propagate(
       BlockWithObligations state,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
-
-    if (visited.add(state)) {
-      worklist.add(state);
+    BlockWithObligations previous = visited.get(state);
+    if (previous != null) {
+      if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+        return;
+      }
+      boolean hasNewKeys = false;
+      for (Obligation obligation : state.obligations) {
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
+        if (!old.countKeys.containsAll(obligation.countKeys)) {
+          hasNewKeys = true;
+          break;
+        }
+      }
+      if (!hasNewKeys) {
+        return;
+      }
+      Set<Obligation> combined = new LinkedHashSet<>(state.obligations.size());
+      for (Obligation obligation : state.obligations) {
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
+        combined.add(old.combineCountKeys(obligation));
+      }
+      state = new BlockWithObligations(state.block, combined);
     }
+    visited.put(state, state);
+    worklist.add(state);
   }
 
   /**

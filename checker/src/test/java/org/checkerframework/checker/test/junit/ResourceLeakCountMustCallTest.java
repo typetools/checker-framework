@@ -47,6 +47,12 @@ public class ResourceLeakCountMustCallTest {
     assertCounts("UserClassAsJdkType.java", false, 0, 0);
   }
 
+  /** Independent conditional resets combine count keys without enumerating all combinations. */
+  @Test(timeout = 60000)
+  public void independentResetsDoNotMultiplyAnalysisStates() {
+    assertCounts("IndependentResets.java", false, 32, 0);
+  }
+
   /** A wrapper stream and the stream that it wraps are counted as one obligation. */
   @Test
   public void wrapperIsOneObligation() {
@@ -57,6 +63,24 @@ public class ResourceLeakCountMustCallTest {
   @Test
   public void wrapperOfUserClassIsCounted() {
     assertCounts("WrappedUserStream.java", false, 1, 0);
+  }
+
+  /**
+   * If a {@code CreatesMustCallFor} method throws an exception, the obligation that it would have
+   * replaced is not verified.
+   */
+  @Test
+  public void resetThatThrowsDoesNotVerifyReplacedObligation() {
+    assertCounts("ResetThrows.java", false, 2, 0);
+  }
+
+  /**
+   * When a path on which a {@code CreatesMustCallFor} method replaces an obligation merges with a
+   * path on which it does not, neither obligation is verified.
+   */
+  @Test
+  public void resetOnOneBranchVerifiesNeitherObligation() {
+    assertCounts("ResetOnOneBranch.java", false, 2, 0);
   }
 
   /**
