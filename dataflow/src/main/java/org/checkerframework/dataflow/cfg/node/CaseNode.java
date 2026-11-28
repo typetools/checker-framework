@@ -52,6 +52,11 @@ public class CaseNode extends Node {
   protected final boolean labelsMightHaveSideEffects;
 
   /**
+   * True if this case's guard might have a side effect; see {@link #guardMightHaveSideEffects()}.
+   */
+  protected final boolean guardMightHaveSideEffects;
+
+  /**
    * Creates a new CaseNode.
    *
    * @param tree the tree for this node
@@ -66,6 +71,8 @@ public class CaseNode extends Node {
    *     #sideEffectSinceSelector()}
    * @param labelsMightHaveSideEffects true if testing this case's labels might have a side effect;
    *     see {@link #labelsMightHaveSideEffects()}
+   * @param guardMightHaveSideEffects true if this case's guard might have a side effect; see {@link
+   *     #guardMightHaveSideEffects()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -75,6 +82,7 @@ public class CaseNode extends Node {
       boolean labelsUntested,
       boolean sideEffectSinceSelector,
       boolean labelsMightHaveSideEffects,
+      boolean guardMightHaveSideEffects,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
@@ -83,6 +91,7 @@ public class CaseNode extends Node {
     this.labelsUntested = labelsUntested;
     this.sideEffectSinceSelector = sideEffectSinceSelector;
     this.labelsMightHaveSideEffects = labelsMightHaveSideEffects;
+    this.guardMightHaveSideEffects = guardMightHaveSideEffects;
   }
 
   /**
@@ -169,6 +178,17 @@ public class CaseNode extends Node {
     return labelsMightHaveSideEffects;
   }
 
+  /**
+   * Returns true if this case has a guard that might have a side effect. The guard runs after this
+   * node, if one of this case's labels matches. If this method returns true, then {@link
+   * #sideEffectSinceSelector()} returns true for every later case of the switch.
+   *
+   * @return true if this case's guard might have a side effect
+   */
+  public boolean guardMightHaveSideEffects() {
+    return guardMightHaveSideEffects;
+  }
+
   @Override
   public CaseTree getTree() {
     return tree;
@@ -196,7 +216,8 @@ public class CaseNode extends Node {
         && getCaseOperands().equals(other.getCaseOperands())
         && labelsUntested == other.labelsUntested
         && sideEffectSinceSelector == other.sideEffectSinceSelector
-        && labelsMightHaveSideEffects == other.labelsMightHaveSideEffects;
+        && labelsMightHaveSideEffects == other.labelsMightHaveSideEffects
+        && guardMightHaveSideEffects == other.guardMightHaveSideEffects;
   }
 
   @Override
@@ -206,7 +227,8 @@ public class CaseNode extends Node {
         getCaseOperands(),
         labelsUntested,
         sideEffectSinceSelector,
-        labelsMightHaveSideEffects);
+        labelsMightHaveSideEffects,
+        guardMightHaveSideEffects);
   }
 
   @Override
