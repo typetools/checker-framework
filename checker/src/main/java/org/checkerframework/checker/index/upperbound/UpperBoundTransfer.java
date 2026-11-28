@@ -448,9 +448,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
 
       Node minuend = subtractionNode.getLeftOperand();
+      // The subtrahend might change the minuend, as in `m - (s = (m = bound)) >= 0`, so use the
+      // qualifier of the value that the subtraction used.
       UBQualifier minuendQual =
           removeBoundsChangedAfter(
-              qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend), minuend);
+              qualifierWhenComparisonCompletes(getUBQualifierWhenEvaluated(minuend, in), minuend),
+              minuend);
       Node subtrahend = subtractionNode.getRightOperand();
       UBQualifier subtrahendQual =
           qualifierWhenComparisonCompletes(getUBQualifier(subtrahend, in), subtrahend);
@@ -1037,6 +1040,28 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       // the type factory is @LTLength("a"), so use that type.
       CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
       return getUBQualifier(hierarchy, valueFromFactory);
+    }
+    return qualifier;
+  }
+
+  /**
+   * Returns the UBQualifier of the value that the given node had when it was evaluated. This is
+   * like {@link #getUBQualifier(Node, TransferInput)}, but if the node might have a different value
+   * when the comparison that contains it completes (see {@link #nodesWithValueOf}), then this
+   * method does not use the store in the transfer input, which describes the value at that point.
+   *
+   * @param n a node in an operand of a comparison
+   * @param in transfer input for the comparison
+   * @return the UBQualifier of the value of {@code n} when it was evaluated
+   */
+  private UBQualifier getUBQualifierWhenEvaluated(Node n, TransferInput<CFValue, CFStore> in) {
+    if (nodesWithValueOf(n).contains(n)) {
+      return getUBQualifier(n, in);
+    }
+    QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+    UBQualifier qualifier = getUBQualifier(hierarchy, analysis.getValue(n));
+    if (qualifier.isUnknown()) {
+      return getUBQualifier(hierarchy, getValueFromFactory(n.getTree(), n));
     }
     return qualifier;
   }

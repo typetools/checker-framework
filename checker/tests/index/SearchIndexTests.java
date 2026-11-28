@@ -73,6 +73,19 @@ public class SearchIndexTests {
     }
   }
 
+  // As above, but the left operand contains a cast, for which no store holds a value.
+  void otherOperandReassignsOneArrayCast(
+      int[] a, int[] b, @SearchIndexFor({"#1", "#2"}) int xyz) {
+    int copy;
+    if ((copy = (int) xyz) < zero(a = new int[0])) {
+      @NegativeIndexFor("b") int w = copy;
+      // :: error: [assignment]
+      @NegativeIndexFor("b") int v = xyz;
+      // :: error: [assignment]
+      @NegativeIndexFor("a") int u = copy;
+    }
+  }
+
   void otherOperandDoesNotReassignArray(int[] a, int[] b, @SearchIndexFor("#1") int xyz) {
     int copy;
     if ((copy = xyz) < zero(b = new int[0])) {

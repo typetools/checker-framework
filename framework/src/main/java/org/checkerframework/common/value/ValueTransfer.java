@@ -54,6 +54,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
+import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -423,14 +424,40 @@ public class ValueTransfer extends CFTransfer {
       List<Long> values = atypeFactory.getIntValues(val);
       range = ValueCheckerUtils.getRangeFromValues(values);
     } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
-      List<Double> values = atypeFactory.getDoubleValues(val);
-      range = ValueCheckerUtils.getRangeFromValues(values);
+      range = getIntRangeContaining(atypeFactory.getDoubleValues(val));
     } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       return Range.NOTHING;
     } else {
       range = Range.EVERYTHING;
     }
     return NumberUtils.castRange(node.getType(), range);
+  }
+
+  /**
+   * Returns the smallest range of integers that contains the floor and the ceiling of each of the
+   * given floating-point values. The range does not truncate a non-integral value: for example, it
+   * is [5, 6] for 5.5, so a comparison such as {@code i != 5.5} does not exclude 5 from the range of
+   * {@code i}. Returns {@link Range#EVERYTHING} if a value is NaN or infinite.
+   *
+   * @param values floating-point values
+   * @return the smallest range of integers that contains the floor and the ceiling of each value
+   */
+  private static Range getIntRangeContaining(List<Double> values) {
+    if (values.isEmpty()) {
+      return Range.NOTHING;
+    }
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    for (Double value : values) {
+      double v = value;
+      if (!Double.isFinite(v)) {
+        return Range.EVERYTHING;
+      }
+      min = Math.min(min, v);
+      max = Math.max(max, v);
+    }
+    // A double to long conversion saturates at Long.MIN_VALUE and Long.MAX_VALUE.
+    return Range.create((long) Math.floor(min), (long) Math.ceil(max));
   }
 
   /**
@@ -633,8 +660,64 @@ public class ValueTransfer extends CFTransfer {
       TypeMirror receiverTM = receiverJE.getType();
       combinedRecAnno =
           qualHierarchy.greatestLowerBoundShallow(oldRecAnno, receiverTM, newRecAnno, receiverTM);
+      if (AnnotationUtils.areSameByName(
+          combinedRecAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
+        // The GLB is bottom for some annotations that are incomparable but that have lengths in
+        // common, such as @ArrayLen({5, 7, 9}) and @ArrayLenRange(from = 6, to = 8).
+        combinedRecAnno = intersectArrayLengths(oldRecAnno, newRecAnno, combinedRecAnno);
+      }
     }
     store.insertValue(receiverJE, combinedRecAnno);
+  }
+
+  /**
+   * Returns an annotation for the lengths that are possible under both of the given {@code
+   * ArrayLen} or {@code ArrayLenRange} annotations.
+   *
+   * @param a1 an annotation for an array or string
+   * @param a2 an annotation for an array or string
+   * @param otherwise the result if {@code a1} or {@code a2} is neither {@code ArrayLen} nor {@code
+   *     ArrayLenRange}
+   * @return an annotation for the lengths that are possible under both {@code a1} and {@code a2},
+   *     or {@code otherwise}
+   */
+  private AnnotationMirror intersectArrayLengths(
+      AnnotationMirror a1, AnnotationMirror a2, AnnotationMirror otherwise) {
+    boolean a1IsList = AnnotationUtils.areSameByName(a1, ValueAnnotatedTypeFactory.ARRAYLEN_NAME);
+    boolean a2IsList = AnnotationUtils.areSameByName(a2, ValueAnnotatedTypeFactory.ARRAYLEN_NAME);
+    boolean a1IsRange =
+        AnnotationUtils.areSameByName(a1, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME);
+    boolean a2IsRange =
+        AnnotationUtils.areSameByName(a2, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME);
+    if (a1IsRange && a2IsRange) {
+      return atypeFactory.createArrayLenRangeAnnotation(
+          atypeFactory.getRange(a1).intersect(atypeFactory.getRange(a2)));
+    } else if (a1IsList && (a2IsList || a2IsRange)) {
+      return atypeFactory.createArrayLenAnnotation(lengthsAlsoIn(a1, a2));
+    } else if (a2IsList && a1IsRange) {
+      return atypeFactory.createArrayLenAnnotation(lengthsAlsoIn(a2, a1));
+    } else {
+      return otherwise;
+    }
+  }
+
+  /**
+   * Returns the lengths in the given {@code ArrayLen} annotation that are also possible under the
+   * other given {@code ArrayLen} or {@code ArrayLenRange} annotation.
+   *
+   * @param arrayLen an {@code ArrayLen} annotation
+   * @param other an {@code ArrayLen} or {@code ArrayLenRange} annotation
+   * @return the lengths in {@code arrayLen} that are possible under {@code other}
+   */
+  private List<Integer> lengthsAlsoIn(AnnotationMirror arrayLen, AnnotationMirror other) {
+    List<Integer> result = new ArrayList<>(atypeFactory.getArrayLength(arrayLen));
+    if (AnnotationUtils.areSameByName(other, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
+      result.retainAll(atypeFactory.getArrayLength(other));
+    } else {
+      Range range = atypeFactory.getRange(other);
+      result.removeIf(length -> !range.contains(length));
+    }
+    return result;
   }
 
   @Override
@@ -1406,7 +1489,14 @@ public class ValueTransfer extends CFTransfer {
    */
   private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
     // Refine each node that has the value of `node` when the comparison completes.
-    for (Node internal : nodesWithValueOf(node)) {
+    for (Node candidate : nodesWithValueOf(node)) {
+      // nodesWithValueOf returns a widening conversion only if it does not change the value of its
+      // operand, as in `a.length == 5.0`.  JavaExpression.fromNode ignores the conversion, so use
+      // its operand, whose type is the type of `je`, for the conversion and the dispatch below.
+      Node internal = candidate;
+      while (internal instanceof WideningConversionNode widening) {
+        internal = widening.getOperand();
+      }
       JavaExpression je = JavaExpression.fromNode(internal);
       CFValue currentValueFromStore;
       if (CFAbstractStore.canInsertJavaExpression(je)) {
