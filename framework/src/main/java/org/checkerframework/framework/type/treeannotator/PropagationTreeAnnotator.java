@@ -29,6 +29,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.MapsP;
 
 /**
@@ -95,11 +96,41 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getAnnotations();
 
+        // The type that `annos` describes.
+        TypeMirror annosTM = initType.getUnderlyingType();
+        // This code may modify `annosTM` to account for (un)boxing.
+        boolean initIsPrimitive = TypesUtils.isPrimitive(annosTM);
+        if (initIsPrimitive != TypesUtils.isPrimitive(componentTM)) {
+          // The initializer is boxed or unboxed (JLS 5.2).
+          if (initIsPrimitive) {
+            // A primitive initializer is boxed to the component type if that is a boxed
+            // primitive, as in `new Integer[] {anInt}`.  A constant initializer might first be
+            // narrowed to the component type's primitive type, as in `new Byte[] {1}` (JLS 5.2).
+            TypeKind initKind = annosTM.getKind();
+            TypeKind boxedKind =
+                TypesUtils.isBoxedPrimitive(componentTM)
+                    ? atypeFactory.types.unboxedType(componentTM).getKind()
+                    : initKind;
+            annos =
+                atypeFactory.getBoxedAnnotations(
+                    convertPrimitive(annos, initKind, boxedKind), boxedKind);
+          } else {
+            // A boxed initializer is unboxed to its own primitive type, which might then be
+            // widened to the component type, as in `new long[] {anInteger}` (JLS 5.1.8, 5.1.2).
+            TypeKind unboxedKind = unboxedKind(annosTM, componentTM);
+            annos =
+                convertPrimitive(
+                    atypeFactory.getUnboxedAnnotations(annos, unboxedKind),
+                    unboxedKind,
+                    componentTM.getKind());
+          }
+          annosTM = componentTM;
+        }
+
         prev =
             (prev == null)
                 ? annos
-                : qualHierarchy.leastUpperBoundsShallow(
-                    prev, componentTM, annos, initType.getUnderlyingType());
+                : qualHierarchy.leastUpperBoundsShallow(prev, componentTM, annos, annosTM);
       }
     } else {
       prev = componentType.getPrimaryAnnotations();
@@ -198,6 +229,54 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
+  /**
+   * Returns the kind of the primitive type that a value of type {@code type} unboxes to when it is
+   * converted to {@code primitiveTarget}. If {@code type} is not a boxed primitive, nor a type
+   * variable or intersection type whose bound is one, returns the kind of {@code primitiveTarget}.
+   * For example, for {@code Object} and {@code int}, returns {@code int}: the cast {@code (int)
+   * anObject} casts its operand to {@code Integer} and then unboxes it (JLS 5.5).
+   *
+   * @param type a non-primitive type, such as {@code Integer} or a type variable whose bound is a
+   *     boxed primitive
+   * @param primitiveTarget the primitive type that the value is converted to, such as the component
+   *     type of an array being created or the type of a cast
+   * @return the kind of the primitive type that {@code type} unboxes to
+   */
+  private TypeKind unboxedKind(TypeMirror type, TypeMirror primitiveTarget) {
+    // Erase `type` so that a type variable or intersection type unboxes to the primitive type of
+    // its boxed-primitive bound.
+    TypeMirror erased = atypeFactory.types.erasure(type);
+    return TypesUtils.isBoxedPrimitive(erased)
+        ? atypeFactory.types.unboxedType(erased).getKind()
+        : primitiveTarget.getKind();
+  }
+
+  /**
+   * Returns the annotations that a widening or narrowing primitive conversion (JLS 5.1.2, 5.1.3)
+   * from {@code fromKind} to {@code toKind} gives a value whose annotations are {@code annos}, as
+   * computed by {@link AnnotatedTypeFactory#getWidenedAnnotations} or {@link
+   * AnnotatedTypeFactory#getNarrowedAnnotations}. Returns {@code annos} if the two kinds are the
+   * same or if either is not numeric.
+   *
+   * @param annos the annotations of a value of primitive type {@code fromKind}
+   * @param fromKind the primitive type to convert from, such as {@code int}
+   * @param toKind the primitive type to convert to, such as {@code long}
+   * @return the annotations of the converted value
+   */
+  private AnnotationMirrorSet convertPrimitive(
+      AnnotationMirrorSet annos, TypeKind fromKind, TypeKind toKind) {
+    if (fromKind == toKind
+        || !TypeKindUtils.isNumericPrimitive(fromKind)
+        || !TypeKindUtils.isNumericPrimitive(toKind)) {
+      return annos;
+    }
+    return switch (TypeKindUtils.getPrimitiveConversionKind(fromKind, toKind)) {
+      case WIDENING -> atypeFactory.getWidenedAnnotations(annos, fromKind, toKind);
+      case NARROWING -> atypeFactory.getNarrowedAnnotations(annos, fromKind, toKind);
+      case SAME -> annos;
+    };
+  }
+
   @Override
   public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
     if (hasPrimaryAnnotationInAllHierarchies(type)) {
@@ -258,6 +337,20 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     }
 
     AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(tree.getExpression());
+    switch (tree.getKind()) {
+      case UNARY_PLUS, UNARY_MINUS, BITWISE_COMPLEMENT ->
+          // The operand undergoes unary numeric promotion, which might unbox it (JLS 15.15).
+          exp = atypeFactory.unaryNumericPromotion(exp);
+      case LOGICAL_COMPLEMENT -> {
+        // A `Boolean` operand is unboxed (JLS 15.15.6).
+        if (TypesUtils.isUnboxable(exp.getUnderlyingType(), atypeFactory.types)) {
+          exp = atypeFactory.applyUnboxing(exp);
+        }
+      }
+      default -> {
+        // An increment or decrement has the type of its variable operand, which might be boxed.
+      }
+    }
     type.addMissingAnnotations(exp.getPrimaryAnnotations());
     return null;
   }
@@ -303,19 +396,24 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
           tree, type, exprType, expressionAnnos);
 
       TypeKind castKind = type.getPrimitiveKind();
-      if (castKind != null) {
-        TypeKind exprKind = exprType.getPrimitiveKind();
-        if (exprKind != null) {
-          switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
-            case WIDENING ->
-                expressionAnnos =
-                    atypeFactory.getWidenedAnnotations(expressionAnnos, exprKind, castKind);
-            case NARROWING ->
-                expressionAnnos =
-                    atypeFactory.getNarrowedAnnotations(expressionAnnos, exprKind, castKind);
-            case SAME -> {} // Nothing to do
-          }
-        }
+      TypeKind exprKind = exprType.getPrimitiveKind();
+      boolean exprIsPrimitive = TypesUtils.isPrimitive(exprType.getUnderlyingType());
+      boolean castIsPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
+      if (castIsPrimitive && !exprIsPrimitive) {
+        // A cast of a reference to a primitive type unboxes the expression before any primitive
+        // conversion (JLS 5.5).  The expression unboxes to its own primitive type, as in
+        // `(long) anInteger` or `(long) t` where `T extends Integer`, or, if its type is not a
+        // boxed primitive, to the cast type, as in `(int) anObject`.
+        exprKind = unboxedKind(exprType.getUnderlyingType(), type.getUnderlyingType());
+        expressionAnnos = atypeFactory.getUnboxedAnnotations(expressionAnnos, exprKind);
+      }
+      if (castKind != null && exprKind != null) {
+        expressionAnnos = convertPrimitive(expressionAnnos, exprKind, castKind);
+      }
+      // A cast of a primitive to a reference type, such as `(Integer) anInt` or `(Object) anInt`,
+      // boxes the primitive (JLS 5.5).
+      if (exprIsPrimitive && !castIsPrimitive) {
+        expressionAnnos = atypeFactory.getBoxedAnnotations(expressionAnnos, exprType.getKind());
       }
 
       // If the qualifier on the expression type is a supertype of the qualifier upper bound
