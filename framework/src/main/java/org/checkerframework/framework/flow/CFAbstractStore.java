@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -43,6 +45,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1100,6 +1103,41 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
+   * Removes each value in this store that has a dependent type annotation that might name {@code
+   * variable}. Call this when {@code variable} is assigned a new value. For example, after {@code a
+   * = c}, the type {@code @LTLengthOf("a")} of {@code i} would claim that {@code i} is less than
+   * the length of the new array, but it was established for the old one.
+   *
+   * <p>This removes the whole value, so a local variable reverts to its declared type. That is
+   * sound only if the declared type does not depend on the old value of {@code variable}; {@link
+   * org.checkerframework.common.basetype.BaseTypeVisitor} reports an error at an assignment that
+   * might invalidate the declared type of a local variable in scope.
+   *
+   * <p>The whole value is removed, even its annotations in other qualifier hierarchies. Replacing
+   * only the annotations that name {@code variable} by top would be less precise, because a top
+   * value in the store hides the declared type of an expression from code that reads the store
+   * directly.
+   *
+   * @param variable a local variable or a field access that is assigned
+   * @param path the location of the assignment, at which to parse the expressions in the
+   *     annotations, or null if it is not known
+   */
+  public void removeValuesThatMightName(JavaExpression variable, @Nullable TreePath path) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    Predicate<V> mightName =
+        value -> dependentTypesHelper.mightName(value.getAnnotations(), variable, path);
+    localVariableValues.values().removeIf(mightName);
+    fieldValues.values().removeIf(mightName);
+    arrayValues.values().removeIf(mightName);
+    methodCallExpressions.values().removeIf(mightName);
+    classValues.values().removeIf(mightName);
+    iteratedCollectionElements.values().removeIf(mightName);
+    if (thisValue != null && mightName.test(thisValue)) {
+      thisValue = null;
+    }
+  }
+
+  /**
    * Updates the information in the store by considering a field assignment with target {@code
    * fieldAccess}, where the right-hand side has the abstract value {@code val}.
    *
@@ -1154,6 +1192,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     removeConflicting(receiver);
     if (val != null) {
       localVariableValues.put(receiver, val);
+    } else {
+      localVariableValues.remove(receiver);
     }
   }
 

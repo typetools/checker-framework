@@ -227,13 +227,17 @@ because the checker infers it based on usage patterns.  When the Map Key
 Checker encounters a run-time check for map keys, such as
 ``\<if (m.containsKey(k)) ...>'', then the Map Key Checker refines the type of
 \<k> to \<@KeyFor("m")> within the scope of the test (or until \<k> is
-side-effected within that scope).  The Map Key Checker also infers \<@KeyFor>
+side-effected or \<m> is reassigned within that scope).  The Map Key Checker also infers \<@KeyFor>
 annotations based on iteration over a map's
 \sunjavadoc{java.base/java/util/Map.html\#keySet()}{\textrm{key set}} or calls to
 \sunjavadoc{java.base/java/util/Map.html\#put(K,V)}{put}
 or
 \sunjavadoc{java.base/java/util/Map.html\#containsKey(java.lang.Object)}{containsKey}.
 For more details about type refinement, see Section~\ref{type-refinement}.
+
+Reassigning \<m> is an error if the declared type of a local variable or
+formal parameter in scope is \<@KeyFor("m")> and the type might not hold for
+the new map; see Section~\ref{java-expressions-reassignment}.
 
 Suppose we have these declarations:
 
