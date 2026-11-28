@@ -365,12 +365,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       AnnotationMirror smallerAnno,
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
-    // If evaluating `smaller` might change the value of `larger`, as in `arr.length > (i =
-    // clear())` where `clear()` reassigns `arr`, then `largerAnno` and the qualifiers derived from
-    // it might not hold after the comparison.
-    if (mayBeChangedByLaterOperand(larger)) {
-      return;
-    }
+    // `larger` itself might change after it is evaluated, as in `limit > i + (limit = 0)`. That
+    // does not matter: the qualifiers below describe the value that was compared, and they omit
+    // each bound that might not hold when the comparison completes, such as `arr` in `arr.length >
+    // (i = clear())` where `clear()` reassigns `arr`. Each store is only into an expression that
+    // still has the compared value (see insertValueForComparedNode).
     // larger > smaller
     UBQualifier largerQual = qualifierWhenComparisonCompletes(largerAnno, larger);
     // larger + 1 >= smaller
@@ -405,12 +404,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       AnnotationMirror rightAnno,
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
-    // If evaluating `right` might change the value of `left`, as in `arr.length >= (i = clear())`
-    // where `clear()` reassigns `arr`, then `leftAnno` and the qualifiers derived from it might not
-    // hold after the comparison.
-    if (mayBeChangedByLaterOperand(left)) {
-      return;
-    }
+    // As in refineGT, it does not matter whether `left` changes after it is evaluated.
     UBQualifier leftQualifier = qualifierWhenComparisonCompletes(leftAnno, left);
     // `right` might be the left operand of the comparison, so its own qualifier might not hold when
     // the comparison completes either.

@@ -103,6 +103,25 @@ public class AssignmentInComparison {
     }
   }
 
+  // The right operand reassigns `limit`, but the compared value of `limit` is `a.length`, and the
+  // right operand does not reassign `a`.
+  static void otherOperandReassignsLargerOperand(int[] a, @NonNegative int i) {
+    int limit = a.length;
+    if (limit > i + (limit = 0)) {
+      int value = a[i];
+    }
+  }
+
+  // The right operand reassigns the subtrahend `y`.  The comparison implies `old y + 5 < a.length`,
+  // but not `new y + 5 < a.length`.
+  static void otherOperandReassignsSubtrahend(int[] a, @NonNegative int y) {
+    int x = a.length;
+    if (x - y > (y = 5)) {
+      // :: error: [assignment]
+      @LTLengthOf(value = "a", offset = "5") int z = y;
+    }
+  }
+
   // The right operand assigns `k`, so the comparison does not imply that `j + k < a.length` for
   // the new value of `k`.
   static void otherOperandReassignsOffset(@NonNegative int k, @NonNegative int j) {

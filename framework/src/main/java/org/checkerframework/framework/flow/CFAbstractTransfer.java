@@ -1927,8 +1927,8 @@ public abstract class CFAbstractTransfer<
      *
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
-     * element changes only accesses of arrays that might alias the written array, and method calls.
-     * A call to {@code String.length()} changes only if its receiver changes, because a {@code
+     * element changes only accesses of arrays that might alias the written array (except at a
+     * different constant index), and method calls. A call to {@code String.length()} changes only if its receiver changes, because a {@code
      * String} is immutable. A string concatenation with an operand whose string conversion calls
      * {@code toString()} on a possibly mutable object, as in {@code "p" + box}, changes like a
      * method call. A change to the abstract value of a receiver, index, argument, or operand does
@@ -2077,12 +2077,37 @@ public abstract class CFAbstractTransfer<
       if (anyHeapLocation) {
         return true;
       }
+      Long index = constantIndex(aa.getIndex());
       for (ArrayAccess arrayElement : arrayElements) {
+        Long writtenIndex = constantIndex(arrayElement.getIndex());
+        if (index != null && writtenIndex != null && !index.equals(writtenIndex)) {
+          // Distinct constant indices denote distinct elements, even of the same array.
+          continue;
+        }
         if (analysis.canAlias(arrayElement.getArray(), aa.getArray())) {
           return true;
         }
       }
       return false;
+    }
+
+    /**
+     * Returns the value of the given array index if it is an integral or character literal, or null
+     * otherwise.
+     *
+     * @param index an array index
+     * @return the value of {@code index} if it is a literal, or null
+     */
+    private @Nullable Long constantIndex(JavaExpression index) {
+      if (index instanceof ValueLiteral literal) {
+        Object value = literal.getValue();
+        if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+          return ((Number) value).longValue();
+        } else if (value instanceof Character c) {
+          return (long) c.charValue();
+        }
+      }
+      return null;
     }
   }
 

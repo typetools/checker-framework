@@ -49,9 +49,9 @@ public class SameLenComparisonChangesOperand {
   void changedByAssignmentInCast(String s, String t) {
     if (((String) (s = s + "x")).length() == t.length()) {
       String u = s + "x";
-      for (int k = 0; k < t.length(); k++) {
+      for (int k = 0; k < u.length(); k++) {
         // :: error: (argument)
-        u.charAt(k);
+        t.charAt(k);
       }
     }
   }
@@ -59,8 +59,8 @@ public class SameLenComparisonChangesOperand {
   void unchangedInCast(String s, String t, String v) {
     if (((String) (v = s + "x")).length() == t.length()) {
       String u = s + "x";
-      for (int k = 0; k < t.length(); k++) {
-        u.charAt(k);
+      for (int k = 0; k < u.length(); k++) {
+        t.charAt(k);
       }
     }
   }
