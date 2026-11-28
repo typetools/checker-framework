@@ -6,13 +6,15 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 // inference determines its member types from its supertypes, which must therefore include the
 // implicit `java.lang.Enum`.  Inference must resolve the name "EnumDesc" to
 // `java.lang.Enum.EnumDesc`, which is irrelevant, rather than to the top-level class `EnumDesc`,
-// which is relevant.  Inference infers `@AinferSibling1` for both fields, as their types, as
-// postconditions of `assignFields`, and as preconditions of `useFields`, which
-// `assignFieldsThenUseThem` calls after assigning both fields.  The goal file shows that inference
-// discards all three annotations about `enumDescField`, but writes all three annotations about
-// `charSequenceField`.  Only the decision about the annotation on the field depends on how
-// inference resolves the name "EnumDesc"; the decisions about the contracts use javac's resolution
-// of the name.
+// which is relevant.  Inference infers `@AinferSibling1` as the type of each field.  Inference also
+// infers `@AinferSibling1` about `charSequenceField` as a postcondition of `assignFields` and as a
+// precondition of `useFields`, which `assignFieldsThenUseThem` calls after assigning both fields.
+// Inference infers no contract about `enumDescField`, because javac resolves the field's type to
+// `java.lang.Enum.EnumDesc`, which is irrelevant.  The goal file shows that inference writes no
+// annotation about `enumDescField`, because it discards the field's annotation when it writes the
+// file, and that inference writes all three annotations about `charSequenceField`.  Only the
+// decision about the annotation on the field depends on how inference resolves the name "EnumDesc";
+// the decisions about the contracts use javac's resolution of the name.
 //
 // Writing `@AinferSibling1` on a `java.lang.Enum.EnumDesc` is itself a relevance violation, which
 // this test suppresses because the warning would appear in both passes of the test and the
