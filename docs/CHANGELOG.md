@@ -7,6 +7,24 @@
 
 ### User-visible changes
 
+Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
+`-AintellijAnnotations` command-line option.
+An IntelliJ IDEA annotation file that cannot be read yields an error.
+
+An archive, or a directory that cannot be listed, within a directory that is
+named in the `-Astubs` or `-Aajava` command-line option is ignored, with a
+note.  Within a directory or archive,
+hidden files and directories (whose names start with `.`), such as the
+`._Foo.astub` files that macOS creates, are ignored.
+
+All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
+they conventionally end `.astub`.  A file named in `-Astubs` or `-Aajava` that
+violates this rule yields a warning.
+
+The `-Astubs` and `-Aajava` command-line options accept a `.zip` archive as
+well as a `.jar` archive.  An ajava file within an archive is read as a stub
+file; it is never treated as corresponding to a source file.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
@@ -39,6 +57,10 @@ returns true if a tree is a constant expression.
 new first argument, the `BaseTypeVisitor` that uses it.  A subclass that is an
 inner class of a visitor can pass the visitor, as in
 `super(MyVisitor.this, overriderTree, ...)`.
+
+Removed `SystemUtil.isWhitespaceOnly()` and `SystemUtil.readCodePoint()`.
+Removed `AnnotationFileUtil.allAnnotationFiles()`; use
+`AnnotationFileUtil.forEachAnnotationFile()` instead.
 
 Deprecated methods:
 

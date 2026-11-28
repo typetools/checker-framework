@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- The Nullness Checker ignores @Contract, so the annotated JDK's types for Map.get apply. -->
+  <item name="java.util.Map V get(java.lang.Object)">
+    <annotation name="org.jetbrains.annotations.Contract">
+      <val name="pure" val="true" />
+    </annotation>
+  </item>
+</root>
