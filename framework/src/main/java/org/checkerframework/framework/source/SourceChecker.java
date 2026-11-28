@@ -653,6 +653,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private @Nullable CompilationUnitTree reportOnceCompilationUnit = null;
 
+  /**
+   * The messages that {@link #messageOnce} has printed, each formatted as its kind, a colon, and
+   * its text, such as "WARNING: Could not read ...". Only the ultimate parent checker's set is
+   * consulted, so all the checkers of a compound checker share one set.
+   */
+  private final Set<String> messageOncePrinted = new HashSet<>();
+
   /** True if the -Afilenames command-line argument was passed. */
   private boolean printFilenames;
 
@@ -693,7 +700,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * TreePathCacher to share between subcheckers. Initialized either in {@link #getTreePathCacher()}
    * or {@link #instantiateSubcheckers(Map)}.
    */
-  protected TreePathCacher treePathCacher = null;
+  protected @MonotonicNonNull TreePathCacher treePathCacher = null;
 
   /** Creates a source checker. */
   protected SourceChecker() {}
@@ -787,7 +794,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     visitor.setRoot(currentRoot);
     if (parentChecker == null) {
       // Only clear the path cache if this is the main checker.
-      treePathCacher.clear();
+      // Use the getter, because the field is null in a checker that has no subcheckers and that
+      // creates no AnnotatedTypeFactory.
+      getTreePathCacher().clear();
     }
   }
 
@@ -1481,10 +1490,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   @SuppressWarnings("interning:not.interned") // each compilation unit is a distinct tree
   public void reportOnce(TreePath path, DiagMessage d) {
-    SourceChecker ultimateParent = this;
-    while (ultimateParent.parentChecker != null) {
-      ultimateParent = ultimateParent.parentChecker;
-    }
+    SourceChecker ultimateParent = getUltimateParentChecker();
     // Retaining a tree retains its whole compilation unit, so retain only the trees of the
     // compilation unit that is being processed.  A compilation unit is never processed again after
     // the next one has been processed, so discarding the other compilation units' trees does not
@@ -1642,6 +1648,39 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager = processingEnv.getMessager();
     }
     messager.printMessage(kind, msg);
+  }
+
+  /**
+   * Prints a non-localized message using the javac messager, as {@link #message(Diagnostic.Kind,
+   * String)} does, unless this checker or another checker of the same compound checker has already
+   * printed the same message via this method.
+   *
+   * <p>Use this for a message that does not depend on which checker computes it, but that every
+   * checker of a compound checker computes independently -- such as a message about a file that is
+   * named in a command-line option that all the checkers read.
+   *
+   * @param kind the kind of message to print
+   * @param msg the message text
+   */
+  public void messageOnce(Diagnostic.Kind kind, String msg) {
+    if (getUltimateParentChecker().messageOncePrinted.add(kind + ": " + msg)) {
+      message(kind, msg);
+    }
+  }
+
+  /**
+   * Returns the outermost checker of the compound checker that this checker is part of, or this
+   * checker if it has no parent checker.
+   *
+   * @return the checker that has no parent checker and that this checker is a subchecker of
+   *     (transitively), or this checker if it has no parent checker
+   */
+  private SourceChecker getUltimateParentChecker() {
+    SourceChecker ultimateParent = this;
+    while (ultimateParent.parentChecker != null) {
+      ultimateParent = ultimateParent.parentChecker;
+    }
+    return ultimateParent;
   }
 
   /**

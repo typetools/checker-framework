@@ -592,6 +592,52 @@ to add an additional exception to the set of ignored exceptions, use one of thes
   -AresourceLeakIgnoredExceptions="default,=package.MyCustomException"
 \end{verbatim}
 
+
+\sectionAndLabel{Closing a resource only if an operation fails}{resource-leak-success-flag}
+
+Some code closes a resource in a \<finally> block only if a boolean
+variable records that the \<try> block did not complete:
+
+\begin{verbatim}
+  @Owning Closeable open() throws IOException {
+    Closeable c = alloc();
+    boolean success = false;
+    try {
+      initialize(c);    // might throw IOException
+      success = true;
+      return c;
+    } finally {
+      if (!success) {
+        c.close();
+      }
+    }
+  }
+\end{verbatim}
+
+\noindent
+The Resource Leak Checker does not track the value of \<success>, so it
+reports that \<c> might not be closed when the \<finally> block rethrows an
+\<IOException>.  To avoid the false positive warning, close the resource
+in a \<catch> block and rethrow the exception:
+
+\begin{verbatim}
+  @Owning Closeable open() throws IOException {
+    Closeable c = alloc();
+    try {
+      initialize(c);    // might throw IOException
+      return c;
+    } catch (Throwable t) {
+      c.close();
+      throw t;
+    }
+  }
+\end{verbatim}
+
+\noindent
+Java permits \<throw t> in a method that is declared to throw only
+\<IOException>, because the only checked exceptions that \<t> can hold are
+those that the \<try> block can throw.
+
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
 
 % Arguably, this is working around a bug in the
