@@ -289,16 +289,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * The maximum number of nodes in extra exceptional copies of finally blocks. Once the extra
-   * copies contain this many nodes, the exception types that reach a finally block and do not yet
-   * have a copy share one exceptional copy of that finally block, so a finally block that the CFG
-   * builder translates after that point has only one exceptional copy. An exceptional copy of a
-   * finally block is a translation of the finally block that runs when an exception reaches the
-   * finally block, and that rethrows the exception after the finally block completes normally. An
-   * extra copy is one other than the first exceptional copy of a given finally block. See {@link
-   * #handleFinally}.
+   * copies contain this many nodes, new exception types that reach a finally block share one
+   * exceptional copy of that finally block.
    *
-   * <p>The test {@code checker/tests/nullness/FinallyCopyBudget.java} uses up this budget. If you
-   * increase it, check that the test still uses it up.
+   * <p>An exceptional copy of a finally block is a translation of the finally block that runs when
+   * an exception reaches the finally block, and that rethrows the exception after the finally block
+   * completes normally. An extra copy is one other than the first exceptional copy of a given
+   * finally block. See {@link #handleFinally}.
+   *
+   * <p>The test {@code checker/tests/nullness/FinallyCopyBudget.java} uses up this budget, and it
+   * fails if it does not use up the budget.
    */
   private static final int EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET = 10_000;
 
@@ -3016,31 +3016,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
 
-    // `groups` partitions the types of the exceptions that reach the finally block.  For each
-    // group, a copy of the finally block starts at the group's entry labels, which exceptions of
-    // the group's types jump to when they reach the finally block, and the copy rethrows the
-    // group's types after the finally block completes normally.
+    // `groups` partitions the types of the exceptions that the try block and the catch blocks
+    // throw to this finally block (the one that `finallyBlockCFGGenerator` generates), that is,
+    // the exceptions that reach `exceptionalFinallyFrame`.  For each group, a copy of this
+    // finally block starts at the group's entry labels, which exceptions of the group's types
+    // jump to when they reach this finally block, and the copy rethrows the group's types after
+    // this finally block completes normally.
     //
-    // For precision, until the budget described below is used up, two types share a copy if and
-    // only if the copy rethrows them to the same places:  the same catch blocks, or the exit, past
-    // any enclosing finally blocks.  The analysis merges the stores of the paths that reach a copy.
-    // Types that go to the same places lose no precision by sharing a copy, because the analysis
-    // merges their stores at those places anyway.  Types that go to different places get different
+    // For precision, until the EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET budget is used up, two types
+    // share a copy if and only if the copy rethrows them to the same places.  The analysis merges
+    // the stores of the paths that reach a copy.  Types that go to the same places lose little
+    // precision by sharing a copy, because the analysis merges their stores at those places anyway.
+    // Sharing a copy merges the stores before the finally block rather than after it, which loses
+    // precision only if a transfer function in the finally block yields more precise results on
+    // the separate stores than on their merge.  Types that go to different places get different
     // copies, so that the analysis does not merge stores of paths that never meet.  For example,
     // the Resource Leak Checker would otherwise report a leak when an exception thrown while a
     // resource is open is caught by a catch block that closes the resource, and another exception,
     // thrown after the resource is closed, propagates out of the method.
     //
     // The number of copies grows exponentially with the depth of the nesting of finally blocks in
-    // finally blocks, with a base that grows with the number of copies per finally block.  To
-    // bound that growth, once the copies beyond the first copy for each finally block have
-    // contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that do not yet have a
-    // copy share a single copy, which rethrows each of their exceptions.  A finally block that the
-    // CFG builder translates after that point has a single exceptional copy, which all of its
-    // groups share, as if all of its exceptions went to the same places.
+    // finally blocks.  To bound that growth, once the copies beyond the first copy for each finally
+    // block have contributed EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET nodes, the groups that do not
+    // yet have a copy share a single copy, which rethrows each of their exceptions.
     List<RethrowGroup> groups = new ArrayList<>(rethrowGroups(exceptionalFinallyFrame));
 
     for (int i = 0; i < groups.size(); i++) {
+      // Making the previous copies, and the copies of finally blocks nested in them, might have
+      // used up the budget.  This merges groups, before finally blocks are created for them.
       if (i < groups.size() - 1
           && extraExceptionalFinallyNodes >= EXTRA_EXCEPTIONAL_FINALLY_NODES_BUDGET) {
         List<RethrowGroup> remainingGroups = groups.subList(i, groups.size());
@@ -3213,9 +3216,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * TryStack#possibleLabelsPastFinally} returns the same set of labels for each of them.
    *
    * @param frame a frame for a finally block, which the CFG builder has popped from the try stack
-   * @return the groups, in a deterministic order: the order in which the first type of each group
-   *     reaches {@code frame} (see {@link TryFinallyFrame#getExceptionLabels}); the entry label of
-   *     each type is its label in {@code frame}. Empty if no exception reaches {@code frame}.
+   * @return the groups, in a deterministic order; the entry label of each type is its label in
+   *     {@code frame}. Empty if no exception reaches {@code frame}.
    */
   private Collection<RethrowGroup> rethrowGroups(TryFinallyFrame frame) {
     Map<Set<Label>, RethrowGroup> groups = new LinkedHashMap<>();
