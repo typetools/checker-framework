@@ -52,6 +52,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -1069,11 +1070,11 @@ public abstract class CFAbstractTransfer<
    * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
    * {@code (int) s == 5L}, is looked through: the candidate is its operand, such as {@code (int)
    * s}. To test whether the result contains {@code node} itself, use {@link
-   * #keepsValueUntilComparisonCompletes}. There is no candidate if {@code node} is (after
-   * looking through value-preserving widening conversions) a conversion that might change the value
-   * of its operand, such as the binary numeric promotion of {@code i} in {@code i == 16_777_216f}:
-   * {@link JavaExpression#fromNode} ignores the conversion, so the expression for the conversion is
-   * its operand, which might have a different value.
+   * #keepsValueUntilComparisonCompletes}. There is no candidate if {@code node} is (after looking
+   * through value-preserving widening conversions) a conversion that might change the value of its
+   * operand, such as the binary numeric promotion of {@code i} in {@code i == 16_777_216f}: {@link
+   * JavaExpression#fromNode} ignores the conversion, so the expression for the conversion is its
+   * operand, which might have a different value.
    *
    * <p>The result omits each candidate that a store can hold a value for (see {@link
    * CFAbstractStore#canInsertJavaExpression}), or that is a unary or binary operation, and that,
@@ -1340,10 +1341,10 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if the given node has its own value when the comparison that contains it completes: that is, if {@link #nodesWithValueOf} returns
-   * the node itself, after looking through value-preserving widening conversions. For example,
-   * returns true for {@code k} in {@code j + k < a.length}, but false for {@code k} in {@code j + k
-   * < (k = a.length)}.
+   * Returns true if the given node has its own value when the comparison that contains it
+   * completes: that is, if {@link #nodesWithValueOf} returns the node itself, after looking through
+   * value-preserving widening conversions. For example, returns true for {@code k} in {@code j + k
+   * < a.length}, but false for {@code k} in {@code j + k < (k = a.length)}.
    *
    * @param node a node in an operand of a comparison
    * @return true if {@code node} has its own value when the comparison completes
@@ -1594,6 +1595,9 @@ public abstract class CFAbstractTransfer<
    * <p>If no comparison encloses the node, the result contains the locations written up to the
    * outermost enclosing expression, or up to an enclosing lambda or switch expression.
    *
+   * <p>If the source tree of the node cannot be found, the result contains every location, because
+   * the writes are unknown.
+   *
    * @param node a node
    * @return the locations that are written after {@code node} is evaluated and before the
    *     comparison that contains it completes
@@ -1602,7 +1606,14 @@ public abstract class CFAbstractTransfer<
     WrittenLocations result = new WrittenLocations();
     TreePath path = sourcePath(node);
     if (path == null) {
+      result.addEveryLocation();
       return result;
+    }
+    UnaryTree postfixTree = postfixTreeOfTemporary(node);
+    if (postfixTree != null) {
+      // The temporary holds the value of the operand before the increment or decrement, which
+      // writes the operand afterward.
+      result.addOwnWrites(postfixTree);
     }
     TreePath parentPath = path.getParentPath();
     while (parentPath != null) {
@@ -1778,7 +1789,9 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns the path to the tree of the given node. If the node has no tree, or if its tree is not
    * in the compilation unit (as for the artificial tree of an unboxing conversion), returns the
-   * result of this method for the first operand of the node for which that result is non-null.
+   * path to the postfix increment or decrement if the node is the temporary variable that holds its
+   * value (see {@link #postfixTreeOfTemporary}), and otherwise the result of this method for the
+   * first operand of the node for which that result is non-null.
    *
    * @param node a node
    * @return the path to the source tree that {@code node} represents, or null if there is none
@@ -1791,10 +1804,52 @@ public abstract class CFAbstractTransfer<
         return path;
       }
     }
+    UnaryTree postfixTree = postfixTreeOfTemporary(node);
+    if (postfixTree != null) {
+      return analysis.atypeFactory.getPath(postfixTree);
+    }
     for (Node operand : node.getOperands()) {
       TreePath path = sourcePath(operand);
       if (path != null) {
         return path;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * If the given node is the artificial temporary variable that the CFG uses for the value of a
+   * postfix increment or decrement such as {@code i++}, returns the postfix tree. Otherwise,
+   * returns null.
+   *
+   * <p>The CFG translates {@code i++} to an assignment {@code tempPostfix = i}, whose tree is the
+   * postfix tree, immediately followed by a use of {@code tempPostfix}, which is the value of the
+   * postfix expression.
+   *
+   * @param node a node
+   * @return the postfix increment or decrement whose value {@code node} holds, or null
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of CFG nodes
+  private static @Nullable UnaryTree postfixTreeOfTemporary(Node node) {
+    if (!(node instanceof LocalVariableNode local) || node.getInSource()) {
+      return null;
+    }
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    List<Node> blockNodes = block.getNodes();
+    for (int i = 1; i < blockNodes.size(); i++) {
+      if (blockNodes.get(i) == node) {
+        if (blockNodes.get(i - 1) instanceof AssignmentNode assignment
+            && assignment.getTree() instanceof UnaryTree unaryTree
+            && (unaryTree.getKind() == Tree.Kind.POSTFIX_INCREMENT
+                || unaryTree.getKind() == Tree.Kind.POSTFIX_DECREMENT)
+            && assignment.getTarget() instanceof LocalVariableNode target
+            && target.getName().equals(local.getName())) {
+          return unaryTree;
+        }
+        return null;
       }
     }
     return null;
@@ -1873,8 +1928,20 @@ public abstract class CFAbstractTransfer<
      */
     private boolean anyHeapLocationByAssignment = false;
 
+    /**
+     * True if every local variable might be written, as when the writes are unknown. If true, then
+     * {@link #anyHeapLocation} is also true.
+     */
+    private boolean anyLocal = false;
+
     /** Creates an empty set of locations. */
     WrittenLocations() {}
+
+    /** Adds a write to every location: every local variable, field, and array element. */
+    void addEveryLocation() {
+      anyLocal = true;
+      anyHeapLocation = true;
+    }
 
     /**
      * Returns true if no location might be written.
@@ -1882,7 +1949,11 @@ public abstract class CFAbstractTransfer<
      * @return true if no location might be written
      */
     boolean isEmpty() {
-      return locals.isEmpty() && fields.isEmpty() && arrayElements.isEmpty() && !anyHeapLocation;
+      return locals.isEmpty()
+          && fields.isEmpty()
+          && arrayElements.isEmpty()
+          && !anyHeapLocation
+          && !anyLocal;
     }
 
     /**
@@ -2102,12 +2173,13 @@ public abstract class CFAbstractTransfer<
      *
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
-     * element changes only accesses of arrays that might alias the written array, and method calls.
-     * A call to {@code String.length()} changes only if its receiver changes, because a {@code
-     * String} is immutable. A string concatenation with an operand whose string conversion calls
-     * {@code toString()} on a possibly mutable object, as in {@code "p" + box}, changes like a
-     * method call. A change to the abstract value of a receiver, index, argument, or operand does
-     * not matter (see {@link #valueMayChange}). If side effects unrefine aliases (see {@link
+     * element changes only accesses of arrays that might alias the written array (except at a
+     * different constant index), and method calls. A call to {@code String.length()} changes only
+     * if its receiver changes, because a {@code String} is immutable. A string concatenation with
+     * an operand whose string conversion calls {@code toString()} on a possibly mutable object, as
+     * in {@code "p" + box}, changes like a method call. A change to the abstract value of a
+     * receiver, index, argument, or operand does not matter (see {@link #valueMayChange}). If side
+     * effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes {@code expr} itself (but not its subexpressions, such as a receiver or
      * index) if other code can modify its abstract value (see {@link
@@ -2156,7 +2228,7 @@ public abstract class CFAbstractTransfer<
      */
     boolean valueMayChange(JavaExpression expr, boolean ignoreOwnLocation) {
       if (expr instanceof LocalVariable) {
-        return !ignoreOwnLocation && locals.contains(expr);
+        return !ignoreOwnLocation && (anyLocal || locals.contains(expr));
       } else if (expr instanceof FieldAccess fa) {
         return (!ignoreOwnLocation && mayWriteField(fa)) || valueMayChange(fa.getReceiver(), false);
       } else if (expr instanceof ArrayAccess aa) {
@@ -2282,12 +2354,37 @@ public abstract class CFAbstractTransfer<
       if (anyHeapLocation) {
         return true;
       }
+      Long index = constantIndex(aa.getIndex());
       for (ArrayAccess arrayElement : arrayElements) {
+        Long writtenIndex = constantIndex(arrayElement.getIndex());
+        if (index != null && writtenIndex != null && !index.equals(writtenIndex)) {
+          // Distinct constant indices denote distinct elements, even of the same array.
+          continue;
+        }
         if (analysis.canAlias(arrayElement.getArray(), aa.getArray())) {
           return true;
         }
       }
       return false;
+    }
+
+    /**
+     * Returns the value of the given array index if it is an integral or character literal, or null
+     * otherwise.
+     *
+     * @param index an array index
+     * @return the value of {@code index} if it is a literal, or null
+     */
+    private @Nullable Long constantIndex(JavaExpression index) {
+      if (index instanceof ValueLiteral literal) {
+        Object value = literal.getValue();
+        if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+          return ((Number) value).longValue();
+        } else if (value instanceof Character c) {
+          return (long) c.charValue();
+        }
+      }
+      return null;
     }
   }
 

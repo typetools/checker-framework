@@ -34,6 +34,16 @@ public class CastInComparison {
     }
   }
 
+  // Binary numeric promotion widens `i` to double, which does not change its value.  The
+  // refinement of the promoted `i` is a @DoubleVal, which is converted to an @IntVal for `i`.
+  void promotionToDouble(@IntVal({5, 6}) int i) {
+    if (i == 5.0) {
+      @IntVal(5) int j = i;
+      // :: error: [assignment]
+      @IntVal(7) int w = i;
+    }
+  }
+
   // No int value equals 5.5, so the then branch is unreachable.  The value 5.5 is not truncated
   // to 5.
   void wideningCastToDoubleNonIntegral(@IntVal({5, 6}) int i) {

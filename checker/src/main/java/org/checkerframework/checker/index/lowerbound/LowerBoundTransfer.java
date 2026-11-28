@@ -38,6 +38,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Implements dataflow refinement rules based on tests: &lt;, &gt;, ==, and their derivatives.
@@ -299,6 +300,10 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     AnnotationMirror newLBType;
     if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
+      // For a floating-point value, x > -1 does not imply x >= 0 (e.g., x = -0.5).
+      if (TypesUtils.isFloatingPoint(left.getType())) {
+        return;
+      }
       newLBType = NN;
     } else if (AnnotationUtils.areSame(rightAnno, NN) || AnnotationUtils.areSame(rightAnno, POS)) {
       newLBType = POS;
