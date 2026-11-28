@@ -61,9 +61,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
    */
   /*package-private*/ void removeRedundantReturnTypeAnnotations(
       AnnotatedTypeMirror returnType, ExecutableElement methodElt) {
-    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
-    removeRedundantPrimaryAnnotationsUsingDefaulted(
-        returnType, methodType == null ? null : methodType.getReturnType());
+    removeRedundantPrimaryAnnotationsUsingDefaulted(returnType, defaultedReturnType(methodElt));
   }
 
   /**
@@ -76,9 +74,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
    */
   /*package-private*/ void removeRedundantReceiverAnnotations(
       AnnotatedTypeMirror receiverType, ExecutableElement methodElt) {
-    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
-    removeRedundantPrimaryAnnotationsUsingDefaulted(
-        receiverType, methodType == null ? null : methodType.getReceiverType());
+    removeRedundantPrimaryAnnotationsUsingDefaulted(receiverType, defaultedReceiverType(methodElt));
   }
 
   /**
@@ -110,7 +106,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
    * @return the type that {@code elt} has when no annotation is written on it, or null if that type
    *     is not known
    */
-  private @Nullable AnnotatedTypeMirror defaultedType(Element elt) {
+  /*package-private*/ @Nullable AnnotatedTypeMirror defaultedType(Element elt) {
     if (defaultedTypes.containsKey(elt)) {
       return defaultedTypes.get(elt);
     }
@@ -143,6 +139,34 @@ import org.checkerframework.javacutil.AnnotationUtils;
   }
 
   /**
+   * Returns the type that the return type of {@code methodElt} has when no annotation is written on
+   * it. The result must not be side-effected.
+   *
+   * @param methodElt a method
+   * @return the type that the return type of {@code methodElt} has when no annotation is written on
+   *     it, or null if that type is not known
+   */
+  /*package-private*/ @Nullable AnnotatedTypeMirror defaultedReturnType(
+      ExecutableElement methodElt) {
+    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
+    return methodType == null ? null : methodType.getReturnType();
+  }
+
+  /**
+   * Returns the type that the receiver of {@code methodElt} has when no annotation is written on
+   * it. The result must not be side-effected.
+   *
+   * @param methodElt a method or constructor
+   * @return the type that the receiver of {@code methodElt} has when no annotation is written on
+   *     it, or null if that type is not known or {@code methodElt} has no receiver
+   */
+  /*package-private*/ @Nullable AnnotatedTypeMirror defaultedReceiverType(
+      ExecutableElement methodElt) {
+    AnnotatedExecutableType methodType = (AnnotatedExecutableType) defaultedType(methodElt);
+    return methodType == null ? null : methodType.getReceiverType();
+  }
+
+  /**
    * Removes from {@code atm} each primary annotation that would be redundant (see {@link
    * #isRedundant}).
    *
@@ -153,7 +177,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
   private void removeRedundantPrimaryAnnotationsUsingDefaulted(
       AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
     for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
-      if (isRedundant(anno, atm, defaulted)) {
+      if (isRedundant(anno, defaulted)) {
         atm.removePrimaryAnnotation(anno);
       }
     }
@@ -163,20 +187,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
    * Returns true if writing {@code anno} at a location would be redundant, because the location has
    * that qualifier even when no annotation is written there.
    *
-   * <p>Returns false if {@code atm} is a type variable or a wildcard. A primary annotation on a use
-   * of a type variable or wildcard overrides its bounds, so it is never redundant.
+   * <p>Returns false if the location's type is a type variable or a wildcard. A primary annotation
+   * on a use of a type variable or wildcard overrides its bounds, so it is never redundant. The
+   * location's type, not the inferred type, determines this: for example, a type-variable argument
+   * can be passed to a formal parameter of type {@code Object}.
    *
    * @param anno a qualifier that whole-program inference inferred for a location
-   * @param atm the inferred type of the location, whose primary annotations include {@code anno}
    * @param defaulted the type that the location has when no annotation is written there, or null if
    *     that type is not known
    * @return true if writing {@code anno} at the location would be redundant
    */
-  private boolean isRedundant(
-      AnnotationMirror anno, AnnotatedTypeMirror atm, @Nullable AnnotatedTypeMirror defaulted) {
+  /*package-private*/ boolean isRedundant(
+      AnnotationMirror anno, @Nullable AnnotatedTypeMirror defaulted) {
     if (defaulted == null
-        || atm.getKind() == TypeKind.TYPEVAR
-        || atm.getKind() == TypeKind.WILDCARD) {
+        || defaulted.getKind() == TypeKind.TYPEVAR
+        || defaulted.getKind() == TypeKind.WILDCARD) {
       return false;
     }
     AnnotationMirror defaultedAnno = defaulted.getPrimaryAnnotationInHierarchy(anno);

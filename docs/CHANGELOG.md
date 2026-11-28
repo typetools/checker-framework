@@ -24,6 +24,9 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+`WholeProgramInferenceStorage.updateStorageLocationFromAtm()` no longer takes a
+`TypeUseLocation` argument.
+
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
 opposite order.  It returns true for any compile-time constant of type `byte`,
