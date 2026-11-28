@@ -1,6 +1,7 @@
 package org.checkerframework.checker.test.junit;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -39,6 +40,142 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
+   * A leaked object that is created by an expression whose type is not in the JDK is not counted,
+   * even if it is assigned to a variable whose type is in the JDK.
+   */
+  @Test
+  public void userClassIsNotCounted() {
+    assertCounts("UserClassAsJdkType.java", false, 0, 0);
+  }
+
+  /** An owning field is counted, and is not verified if it is overwritten. */
+  @Test
+  public void overwrittenFieldIsNotVerified() {
+    assertCounts("OverwrittenField.java", false, 3, 2);
+  }
+
+  /**
+   * An owning field is not verified if a method that reassigns it lacks a {@code
+   * CreatesMustCallFor} annotation for the field's receiver.
+   */
+  @Test
+  public void fieldReassignedWithoutCreatesMustCallForIsNotVerified() {
+    assertCounts("MissingCreatesMustCallFor.java", false, 2, 1);
+  }
+
+  /**
+   * An owning field is not verified if a method that reassigns it has a {@code CreatesMustCallFor}
+   * annotation for a different target.
+   */
+  @Test
+  public void fieldReassignedWithIncompatibleCreatesMustCallForIsNotVerified() {
+    assertCounts("IncompatibleCreatesMustCallFor.java", false, 2, 1);
+  }
+
+  /** An owning field is counted, and is not verified if the destructor does not close it. */
+  @Test
+  public void unclosedFieldIsNotVerified() {
+    assertCounts("UnclosedField.java", false, 2, 1);
+  }
+
+  /** A field is not verified if its destructor's declared cleanup postcondition fails. */
+  @Test
+  public void failedDestructorPostconditionIsNotVerified() {
+    assertCounts("BadDestructor.java", false, 2, 1);
+  }
+
+  /**
+   * A field is not verified if its destructor relies on a helper method whose cleanup postcondition
+   * fails.
+   */
+  @Test
+  public void failedHelperPostconditionIsNotVerified() {
+    assertCounts("FailedHelperPostcondition.java", false, 2, 1);
+  }
+
+  /** Suppressing a failed cleanup postcondition does not verify the field. */
+  @Test
+  public void suppressedDestructorPostconditionIsNotVerified() {
+    assertCounts("SuppressedBadDestructor.java", true, 2, 1);
+  }
+
+  /** A field is not verified if its destructor fails to clean up on an exceptional exit. */
+  @Test
+  public void failedExceptionalDestructorPostconditionIsNotVerified() {
+    assertCounts("ExceptionalBadDestructor.java", false, 2, 1);
+  }
+
+  /** A failed promise to call an unrelated method does not invalidate verified cleanup. */
+  @Test
+  public void unrelatedPostconditionDoesNotFailFieldObligation() {
+    assertCounts("UnrelatedPostcondition.java", false, 2, 2);
+  }
+
+  /** Independent conditional resets combine count keys without enumerating all combinations. */
+  @Test(timeout = 60000)
+  public void independentResetsDoNotMultiplyAnalysisStates() {
+    assertCounts("IndependentResets.java", false, 32, 0);
+  }
+
+  /** A wrapper stream and the stream that it wraps are counted as one obligation. */
+  @Test
+  public void wrapperIsOneObligation() {
+    assertCounts("Wrapper.java", false, 1, 0);
+  }
+
+  /** A wrapper is counted if the object that it wraps is not counted. */
+  @Test
+  public void wrapperOfUserClassIsCounted() {
+    assertCounts("WrappedUserStream.java", false, 1, 0);
+  }
+
+  /**
+   * A field is not verified if its destructor relies on a helper method whose conditional cleanup
+   * postcondition fails.
+   */
+  @Test
+  public void failedConditionalHelperPostconditionIsNotVerified() {
+    assertCounts("FailedConditionalHelperPostcondition.java", false, 2, 1);
+  }
+
+  /**
+   * If a {@code CreatesMustCallFor} method throws an exception, the obligation that it would have
+   * replaced is not verified.
+   */
+  @Test
+  public void resetThatThrowsDoesNotVerifyReplacedObligation() {
+    assertCounts("ResetThrows.java", false, 2, 0);
+  }
+
+  /**
+   * When a path on which a {@code CreatesMustCallFor} method replaces an obligation merges with a
+   * path on which it does not, neither obligation is verified.
+   */
+  @Test
+  public void resetOnOneBranchVerifiesNeitherObligation() {
+    assertCounts("ResetOnOneBranch.java", false, 2, 0);
+  }
+
+  /**
+   * A {@code CreatesMustCallFor} invocation whose target is a target of the enclosing method's
+   * {@code CreatesMustCallFor} annotation is not counted, because the enclosing method's caller
+   * counts it.
+   */
+  @Test
+  public void resetOfEnclosingTargetIsNotCounted() {
+    assertCounts("ResetEnclosingTarget.java", true, 1, 1);
+  }
+
+  /**
+   * A wrapper is counted if the object that it wraps is not counted on some path, regardless of the
+   * order in which the analysis processes the paths.
+   */
+  @Test
+  public void wrapperAfterResetOnOneBranchIsCounted() {
+    assertCounts("WrapAfterResetOnOneBranch.java", false, 2, 0);
+  }
+
+  /**
    * A leaked resource whose type is a type variable is counted as found but not as verified, using
    * the erasure of the type variable for both counts.
    */
@@ -47,8 +184,26 @@ public class ResourceLeakCountMustCallTest {
     assertCounts("TypeVariableLeak.java", false, 1, 0);
   }
 
+  /** A must-call-alias formal parameter that goes out of scope is counted but not verified. */
+  @Test
+  public void mustCallAliasOutOfScopeIsNotVerified() {
+    assertCounts("MustCallAliasOutOfScope.java", false, 1, 0);
+  }
+
+  /** A resource that is created in a finally block, which the CFG duplicates, is counted once. */
+  @Test
+  public void createdInFinallyIsCountedOnce() {
+    assertCounts("CreatedInFinally.java", true, 1, 1);
+  }
+
+  /** The obligations that whole-program inference tracks are not counted. */
+  @Test
+  public void inferenceIsNotCounted() {
+    assertCounts("InferenceIsNotCounted.java", List.of("-Ainfer=ajava", "-Awarns"), true, 0, 0);
+  }
+
   /**
-   * Runs the Resource Leak Checker with {@code -AcountMustCall} on the given file and checks the
+   * Run the Resource Leak Checker with {@code -AcountMustCall} on the given file and check the
    * statistics that it prints.
    *
    * @param fileName a file in {@code tests/resourceleak-countmustcall}
@@ -58,13 +213,34 @@ public class ResourceLeakCountMustCallTest {
    */
   private static void assertCounts(
       String fileName, boolean expectNoErrors, int expectedFound, int expectedVerified) {
+    assertCounts(fileName, List.of(), expectNoErrors, expectedFound, expectedVerified);
+  }
+
+  /**
+   * Run the Resource Leak Checker with {@code -AcountMustCall} and the given options on the given
+   * file and check the statistics that it prints.
+   *
+   * @param fileName a file in {@code tests/resourceleak-countmustcall}
+   * @param options command-line options to pass in addition to {@code -AcountMustCall}
+   * @param expectNoErrors true if the checker should report no errors for the file
+   * @param expectedFound the expected number of found must-call obligations
+   * @param expectedVerified the expected number of verified must-call obligations
+   */
+  private static void assertCounts(
+      String fileName,
+      List<String> options,
+      boolean expectNoErrors,
+      int expectedFound,
+      int expectedVerified) {
+    List<String> allOptions = new ArrayList<>(options);
+    allOptions.add("-AcountMustCall");
     String testDir = "tests/resourceleak-countmustcall";
     TestConfiguration config =
         TestConfigurationBuilder.buildDefaultConfiguration(
             testDir,
             new File(testDir, fileName),
             ResourceLeakChecker.class,
-            List.of("-AcountMustCall"),
+            allOptions,
             TestUtilities.getShouldEmitDebugInfo());
     CompilationResult result = new TypecheckExecutor().compile(config);
     List<String> messages =

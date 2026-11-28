@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -183,24 +184,6 @@ public class MustCallConsistencyAnalyzer {
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
-  /** True if -AcountMustCall was passed on the command line. */
-  private final boolean countMustCall;
-
-  /**
-   * The invocations whose result has been counted for -AcountMustCall. The analysis processes an
-   * invocation once per outgoing CFG edge and once per set of Obligations that reaches it, but
-   * counts the invocation's result only once.
-   */
-  private final Set<Node> countedInvocationResults =
-      Collections.newSetFromMap(new IdentityHashMap<>());
-
-  /**
-   * The invocations of {@code @CreatesMustCallFor} methods that have been counted for
-   * -AcountMustCall. See {@link #countedInvocationResults}.
-   */
-  private final Set<Node> countedCreatesMustCallForInvocations =
-      Collections.newSetFromMap(new IdentityHashMap<>());
-
   /** A description for how a method might exit. */
   public enum MethodExitKind {
 
@@ -264,14 +247,56 @@ public class MustCallConsistencyAnalyzer {
     public final ImmutableSet<MethodExitKind> whenToEnforce;
 
     /**
-     * Create an Obligation from a set of resource aliases.
+     * The keys under which -AcountMustCall counted this Obligation as found, on the paths that
+     * reach this analysis state. Contains {@link CountMarker#UNCOUNTED} if the Obligation is not
+     * counted on some such path. See {@link ResourceLeakChecker#countFoundObligation}. Derived
+     * Obligations retain these keys, and equivalent analysis states combine their keys.
+     *
+     * <p>The keys are used only for statistics and are not part of {@link #equals} or {@link
+     * #hashCode}.
+     */
+    public final ImmutableSet<Object> countKeys;
+
+    /**
+     * Create an Obligation from a set of resource aliases. -AcountMustCall does not count it.
      *
      * @param resourceAliases a set of resource aliases
      * @param whenToEnforce when this Obligation should be enforced
      */
     public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
+      this(resourceAliases, whenToEnforce, NOT_COUNTED);
+    }
+
+    /**
+     * Create an Obligation from a set of resource aliases.
+     *
+     * @param resourceAliases a set of resource aliases
+     * @param whenToEnforce when this Obligation should be enforced
+     * @param countKeys the keys under which -AcountMustCall counted the Obligation as found
+     */
+    public Obligation(
+        Set<ResourceAlias> resourceAliases,
+        Set<MethodExitKind> whenToEnforce,
+        ImmutableSet<Object> countKeys) {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
       this.whenToEnforce = ImmutableSet.copyOf(whenToEnforce);
+      this.countKeys = countKeys;
+    }
+
+    /**
+     * Return the Obligation that combines this Obligation's count keys with the count keys of the
+     * given Obligation.
+     *
+     * @param other an Obligation with the same resource aliases and enforcement exit kinds
+     * @return an Obligation with the combined count keys
+     */
+    public Obligation combineCountKeys(Obligation other) {
+      if (this.countKeys.containsAll(other.countKeys)) {
+        return this;
+      }
+      ImmutableSet<Object> keys =
+          ImmutableSet.<Object>builder().addAll(this.countKeys).addAll(other.countKeys).build();
+      return new Obligation(this.resourceAliases, this.whenToEnforce, keys);
     }
 
     /**
@@ -647,7 +672,6 @@ public class MustCallConsistencyAnalyzer {
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
     this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
-    this.countMustCall = checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL);
   }
 
   /**
@@ -669,19 +693,25 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
-    // The `visited` set contains everything that has been added to the worklist, even if it has
-    // not yet been removed and analyzed.
-    Set<BlockWithObligations> visited = new HashSet<>();
+    // The `visited` map maps every analysis state that has been added to the worklist, including
+    // states that have not yet been analyzed, to its version with the latest count keys.
+    Map<BlockWithObligations, BlockWithObligations> visited = new HashMap<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
     // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
         new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
     worklist.add(entry);
-    visited.add(entry);
+    visited.put(entry, entry);
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
+      @SuppressWarnings(
+          "interning:not.interned") // a newer object for the same state has more count keys
+      boolean superseded = visited.get(current) != current;
+      if (superseded) {
+        continue;
+      }
       propagateObligationsToSuccessorBlocks(
           cfg, current.obligations, current.block, visited, worklist);
     }
@@ -702,34 +732,23 @@ public class MustCallConsistencyAnalyzer {
     if (node instanceof MethodInvocationNode min
         && cmAtf.canCreateObligations()
         && cmAtf.hasCreatesMustCallFor(min)) {
-      checkCreatesMustCallForInvocation(obligations, min);
-      // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
-      // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
-      // a new resource is created: it just means that a new resource might have been created.
-      incrementNumMustCall(node, countedCreatesMustCallForInvocations);
+      checkCreatesMustCallForInvocation(obligations, min, exceptionType);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
       return;
     }
 
-    if (cmAtf.declaredTypeHasMustCall(node.getTree())) {
-      // The incrementNumMustCall call above increments the count for the target of the
-      // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the
-      // return value of the method (which can't be the target of the annotation, because our
-      // syntax doesn't support that).
-      incrementNumMustCall(node, countedInvocationResults);
-    }
-    updateObligationsWithInvocationResult(obligations, node);
+    updateObligationsWithInvocationResult(obligations, node, true);
   }
 
   /**
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true for each
-   * expression in the argument to the CreatesMustCallFor annotation. As a special case, the
-   * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, Tree, TreePath, TypeMirror)} is true
+   * for each expression in the argument to the CreatesMustCallFor annotation. As a special case,
+   * the invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
    * constructor of the relevant class (invoking a constructor already creates an obligation). If
    * none of these conditions are true for any of the expressions, this method issues a
    * reset.not.owning error.
@@ -744,10 +763,15 @@ public class MustCallConsistencyAnalyzer {
    *     an Obligation in it which tracks any expression from the CreatesMustCallFor annotation as
    *     one of its resource aliases
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    */
   private void checkCreatesMustCallForInvocation(
-      Set<Obligation> obligations, MethodInvocationNode node) {
+      Set<Obligation> obligations, MethodInvocationNode node, @Nullable TypeMirror exceptionType) {
 
+    @SuppressWarnings("nullness:assignment") // an invocation node has a tree
+    @NonNull MethodInvocationTree invocation = node.getTree();
     // For an artificial invocation, such as the invocation of iterator() that an enhanced for loop
     // desugars to, this is the path to the source code construct that the invocation implements.
     TreePath currentPath = node.getTreePath();
@@ -756,7 +780,8 @@ public class MustCallConsistencyAnalyzer {
             node, cmAtf, cmAtf);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
-      if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
+      if (!isValidCreatesMustCallForExpression(
+          obligations, expression, invocation, currentPath, exceptionType)) {
         missing.add(expression);
       }
     }
@@ -793,7 +818,7 @@ public class MustCallConsistencyAnalyzer {
   /**
    * Checks the validity of the given expression from an invoked method's {@link
    * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. Helper method for
-   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
+   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode, TypeMirror)}.
    *
    * <p>An expression is valid if one of the following conditions is true:
    *
@@ -808,14 +833,22 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
-   *     annotation {@code expression} came; for an artificial invocation, such as the invocation of
-   *     iterator() that an enhanced for loop desugars to, the path to the source code construct
-   *     that the invocation implements
+   * @param invocation the invocation of the method from whose @CreatesMustCallFor annotation {@code
+   *     expression} came
+   * @param invocationPath the path to {@code invocation}; for an artificial invocation, such as the
+   *     invocation of iterator() that an enhanced for loop desugars to, the path to the source code
+   *     construct that the invocation implements
+   * @param exceptionType a description of the outgoing CFG edge from the invocation: {@code null}
+   *     to indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
-      Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
+      Set<Obligation> obligations,
+      JavaExpression expression,
+      Tree invocation,
+      TreePath invocationPath,
+      @Nullable TypeMirror exceptionType) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
@@ -843,7 +876,24 @@ public class MustCallConsistencyAnalyzer {
                   "tried to remove multiple sets containing a reset expression at once");
             }
             toRemove = obligation;
-            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce);
+            // -AcountMustCall treats the invocation as creating a new resource, which toAdd
+            // tracks.  Treating the invocation as creating a resource could over-count, because
+            // @CreatesMustCallFor doesn't guarantee that a new resource is created: it just
+            // means that a new resource might have been created.  The @CreatesMustCallFor
+            // method is responsible for the resource that the replaced Obligation tracked.  If
+            // the invocation throws an exception, then the replaced resource is still
+            // outstanding, so toAdd retains the replaced Obligation's keys.  If the expression
+            // is a target of the enclosing method's @CreatesMustCallFor annotation, then the
+            // enclosing method's caller counts the new resource, so toAdd also retains the
+            // replaced Obligation's keys.
+            ImmutableSet<Object> countKeys =
+                exceptionType == null
+                        && checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)
+                        && !isEnclosingCreatesMustCallForTarget(expression, invocationPath)
+                    ? countFoundObligation(
+                        new CreatesMustCallForKey(invocation, expression), expression.getType())
+                    : obligation.countKeys;
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce, countKeys);
           }
         }
 
@@ -856,6 +906,22 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
+    // This satisfies case 3 if the result is true.
+    return isEnclosingCreatesMustCallForTarget(expression, invocationPath);
+  }
+
+  /**
+   * Returns true if the given expression is a target of the {@code @CreatesMustCallFor} annotation
+   * of the method that encloses the given invocation.
+   *
+   * @param expression an element of an invoked method's @CreatesMustCallFor annotation
+   * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
+   *     annotation {@code expression} came
+   * @return true iff {@code expression} is a target of the enclosing method's
+   *     {@code @CreatesMustCallFor} annotation
+   */
+  private boolean isEnclosingCreatesMustCallForTarget(
+      JavaExpression expression, TreePath invocationPath) {
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
     // annotations, but that should be rare.
     MethodTree callerMethodTree = TreePathUtil.enclosingMethod(invocationPath);
@@ -882,7 +948,6 @@ public class MustCallConsistencyAnalyzer {
       }
 
       if (areSame(expression, callerTarget)) {
-        // This satisfies case 3.
         return true;
       }
     }
@@ -921,10 +986,12 @@ public class MustCallConsistencyAnalyzer {
    *     Obligation with a single-element resource alias set is created and added.
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
+   * @param count true if -AcountMustCall should count the result as a found obligation
    */
   /*package-private*/ void updateObligationsWithInvocationResult(
-      Set<Obligation> obligations, Node node) {
-    Tree tree = node.getTree();
+      Set<Obligation> obligations, Node node, boolean count) {
+    @SuppressWarnings("nullness:assignment") // an invocation node has a tree
+    @NonNull Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
     // such as a primitive type).
@@ -937,15 +1004,23 @@ public class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode min2
-        && cmAtf.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(min2.getTarget().getReceiver()));
+    boolean returnsThis =
+        node instanceof MethodInvocationNode && cmAtf.returnsThis((MethodInvocationTree) tree);
+    if (returnsThis) {
+      mustCallAliases.add(
+          removeCastsAndGetTmpVarIfPresent(
+              ((MethodInvocationNode) node).getTarget().getReceiver()));
     }
 
     if (mustCallAliases.isEmpty()) {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-      obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
+      ImmutableSet<Object> countKeys =
+          count && cmAtf.declaredTypeHasMustCall(tree)
+              ? countFoundObligation(tmpVar.getElement(), node.getType())
+              : NOT_COUNTED;
+      obligations.add(
+          new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL, countKeys));
     } else {
       for (Node mustCallAlias : mustCallAliases) {
         if (mustCallAlias instanceof FieldAccessNode) {
@@ -968,10 +1043,33 @@ public class MustCallConsistencyAnalyzer {
                 FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
                     .append(tmpVarAsResourceAlias)
                     .toSet();
+            // A wrapper, such as a JDK stream that wraps a stream of a user-defined class, is
+            // counted if the Obligation of the object that it wraps is not counted on some path.
+            // A method that returns its receiver creates no object, so it is never counted.
+            ImmutableSet<Object> countKeys = obligationContainingMustCallAlias.countKeys;
+            if (count
+                && countKeys.contains(CountMarker.UNCOUNTED)
+                && !returnsThis
+                && cmAtf.declaredTypeHasMustCall(tree)) {
+              ImmutableSet<Object> wrapperKeys =
+                  countFoundObligation(tmpVar.getElement(), node.getType());
+              if (!wrapperKeys.contains(CountMarker.UNCOUNTED)) {
+                // On the paths where the wrapped Obligation is not counted, the wrapper is.
+                ImmutableSet.Builder<Object> newKeys = ImmutableSet.builder();
+                for (Object key : countKeys) {
+                  if (!key.equals(CountMarker.UNCOUNTED)) {
+                    newKeys.add(key);
+                  }
+                }
+                countKeys = newKeys.addAll(wrapperKeys).build();
+              }
+            }
             obligations.remove(obligationContainingMustCallAlias);
             obligations.add(
                 new Obligation(
-                    newResourceAliasSet, obligationContainingMustCallAlias.whenToEnforce));
+                    newResourceAliasSet,
+                    obligationContainingMustCallAlias.whenToEnforce,
+                    countKeys));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
             // created in the first place.
@@ -1333,7 +1431,8 @@ public class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> newAliases = new LinkedHashSet<>(obligation.resourceAliases);
         newAliases.add(newAlias);
 
-        newObligations.add(new Obligation(newAliases, obligation.whenToEnforce));
+        newObligations.add(
+            new Obligation(newAliases, obligation.whenToEnforce, obligation.countKeys));
       }
     }
 
@@ -1404,7 +1503,8 @@ public class MustCallConsistencyAnalyzer {
         whenToEnforce.removeAll(whatToClear);
 
         if (!whenToEnforce.isEmpty()) {
-          newObligations.add(new Obligation(obligation.resourceAliases, whenToEnforce));
+          newObligations.add(
+              new Obligation(obligation.resourceAliases, whenToEnforce, obligation.countKeys));
         }
       }
     }
@@ -1497,7 +1597,9 @@ public class MustCallConsistencyAnalyzer {
         replacements.put(obligation, null);
       } else {
         replacements.put(
-            obligation, new Obligation(newResourceAliasesForObligation, obligation.whenToEnforce));
+            obligation,
+            new Obligation(
+                newResourceAliasesForObligation, obligation.whenToEnforce, obligation.countKeys));
       }
     }
 
@@ -1584,7 +1686,7 @@ public class MustCallConsistencyAnalyzer {
           return;
         }
         VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
-        incrementNumMustCallFailed(lhsElement.asType());
+        checker.countFailedObligation(lhsElement);
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -1729,8 +1831,8 @@ public class MustCallConsistencyAnalyzer {
     }
     if (!calledMethodsSatisfyMustCall(mcValues, cmAnno)) {
       VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+      checker.countFailedObligation(lhsElement);
       if (!checker.shouldSkipUses(lhsElement)) {
-        incrementNumMustCallFailed(lhsElement.asType());
         checker.reportError(
             node.getTree(),
             "required.method.not.called",
@@ -1772,6 +1874,7 @@ public class MustCallConsistencyAnalyzer {
         RLCCalledMethodsVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, cmAtf);
 
     if (cmcfValues.isEmpty()) {
+      checker.countFailedObligation(lhsFan.getElement());
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",
@@ -1801,6 +1904,7 @@ public class MustCallConsistencyAnalyzer {
       }
       checked.add(targetStr);
     }
+    checker.countFailedObligation(lhsFan.getElement());
     checker.reportError(
         enclosingMethod,
         "incompatible.creates.mustcall.for",
@@ -2052,14 +2156,15 @@ public class MustCallConsistencyAnalyzer {
    * @param cfg the control flow graph
    * @param incomingObligations the Obligations for the current block
    * @param currentBlock the current block
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlocks(
       ControlFlowGraph cfg,
       Set<Obligation> incomingObligations,
       Block currentBlock,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     // For each successor block that isn't caused by an ignored exception type, this loop
     // computes the set of Obligations that should be propagated to it and then adds it to the
@@ -2101,7 +2206,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
+   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Map,
    * Deque)} that propagates obligations along a single edge.
    *
    * @param obligations the Obligations for the current block
@@ -2109,7 +2214,8 @@ public class MustCallConsistencyAnalyzer {
    * @param successor a successor of the current block
    * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
    *     null} for normal control flow, or a throwable type for exceptional control flow
-   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
@@ -2117,7 +2223,7 @@ public class MustCallConsistencyAnalyzer {
       Block currentBlock,
       Block successor,
       @Nullable TypeMirror exceptionType,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
     List<Node> currentBlockNodes = currentBlock.getNodes();
     // successorObligations eventually contains the Obligations to propagate to successor.
@@ -2197,6 +2303,7 @@ public class MustCallConsistencyAnalyzer {
           // normal exit path.
           if (exceptionType == null
               && obligation.whenToEnforce.contains(MethodExitKind.NORMAL_RETURN)) {
+            obligation.countKeys.forEach(checker::countFailedObligation);
             checker.reportError(
                 obligation.resourceAliases.asList().get(0).tree,
                 "mustcallalias.out.of.scope",
@@ -2280,7 +2387,8 @@ public class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
             alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
-        successorObligations.add(new Obligation(copyOfResourceAliases, obligation.whenToEnforce));
+        successorObligations.add(
+            new Obligation(copyOfResourceAliases, obligation.whenToEnforce, obligation.countKeys));
       }
     }
 
@@ -2348,7 +2456,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds {@link Owning} formal parameters for the method corresponding to a CFG.
+   * Return the {@link Owning} formal parameters for the method corresponding to the given CFG.
    *
    * @param cfg the CFG
    * @return the owning formal parameters of the method that corresponds to the given cfg, or an
@@ -2361,20 +2469,24 @@ public class MustCallConsistencyAnalyzer {
       Set<Obligation> result = new LinkedHashSet<>(1);
       for (VariableTree param : method.getParameters()) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
+        assert paramElement != null : "@AssumeAssertion(nullness): the method has been attributed";
         boolean hasMustCallAlias = cmAtf.hasMustCallAlias(paramElement);
+        boolean declaredTypeHasMustCall = cmAtf.declaredTypeHasMustCall(param);
         if (hasMustCallAlias
-            || (cmAtf.declaredTypeHasMustCall(param)
+            || (declaredTypeHasMustCall
                 && !noLightweightOwnership
                 && paramElement.getAnnotation(Owning.class) != null)) {
+          ImmutableSet<Object> countKeys =
+              declaredTypeHasMustCall
+                  ? countFoundObligation(paramElement, paramElement.asType())
+                  : NOT_COUNTED;
           result.add(
               new Obligation(
                   ImmutableSet.of(
                       new ResourceAlias(
                           new LocalVariable(paramElement), paramElement, param, hasMustCallAlias)),
-                  Collections.singleton(MethodExitKind.NORMAL_RETURN)));
-          // Increment numMustCall for each @Owning parameter tracked by the enclosing
-          // method.
-          incrementNumMustCall(paramElement);
+                  Collections.singleton(MethodExitKind.NORMAL_RETURN),
+                  countKeys));
         }
       }
       return result;
@@ -2439,6 +2551,7 @@ public class MustCallConsistencyAnalyzer {
     // satisfy the check). A null mustCallValue occurs when the type is top
     // (@MustCallUnknown).
     if (mustCallValues == null) {
+      obligation.countKeys.forEach(checker::countFailedObligation);
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
@@ -2501,13 +2614,13 @@ public class MustCallConsistencyAnalyzer {
     }
 
     if (!mustCallSatisfied) {
+      obligation.countKeys.forEach(checker::countFailedObligation);
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
           reportedErrorAliases.add(firstAlias);
-          incrementNumMustCallFailed(firstAlias.reference.getType());
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
@@ -2521,79 +2634,29 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Increments the -AcountMustCall counter, unless {@code counted} already contains {@code node}.
-   * Adds {@code node} to {@code counted}.
+   * The key under which -AcountMustCall counts the Obligation that an invocation of a {@code
+   * CreatesMustCallFor} method creates for one of the method's targets. See {@link
+   * ResourceLeakChecker#countFoundObligation}.
    *
-   * @param node the node being counted, to extract the type
-   * @param counted the nodes that have already been counted
+   * @param invocation the invocation of the {@code CreatesMustCallFor} method
+   * @param target an expression from the method's {@code CreatesMustCallFor} annotation, at the
+   *     invocation
    */
-  private void incrementNumMustCall(Node node, Set<Node> counted) {
-    if (countMustCall && counted.add(node)) {
-      TypeMirror type = node.getType();
-      incrementMustCallImpl(type);
-    }
+  private record CreatesMustCallForKey(Tree invocation, JavaExpression target) {}
+
+  /** A marker that can appear in {@link Obligation#countKeys}. */
+  private enum CountMarker {
+    /**
+     * Indicates that -AcountMustCall does not count the Obligation on some path. Unlike an empty
+     * set of keys, this marker survives when analysis states combine their count keys, so the
+     * result does not depend on the order in which the analysis processes states. It is never
+     * recorded as a found obligation, so recording it as a failure has no effect.
+     */
+    UNCOUNTED
   }
 
-  /**
-   * Increments the -AcountMustCall counter.
-   *
-   * @param elt the elt being counted, to extract the type
-   */
-  private void incrementNumMustCall(Element elt) {
-    if (countMustCall) {
-      TypeMirror type = elt.asType();
-      incrementMustCallImpl(type);
-    }
-  }
-
-  /**
-   * Shared implementation for the two versions of incrementNumMustCall. Don't call this directly.
-   *
-   * @param type the type of the object that has a must-call obligation
-   */
-  private void incrementMustCallImpl(TypeMirror type) {
-    if (isCountedType(type)) {
-      checker.numMustCall++;
-    }
-  }
-
-  /**
-   * Increments the -AcountMustCall counter of failures. Call this when issuing a {@code
-   * required.method.not.called} error. Uses the same classification as {@link
-   * #incrementMustCallImpl}, so that the two counters are consistent.
-   *
-   * @param type the type of the object whose must-call obligation is not satisfied
-   */
-  private void incrementNumMustCallFailed(TypeMirror type) {
-    if (countMustCall && isCountedType(type)) {
-      checker.numMustCallFailed++;
-    }
-  }
-
-  /**
-   * Returns true if an object of the given type should be counted by -AcountMustCall. Only uses of
-   * JDK classes are counted, since that's what the paper reported.
-   *
-   * @param type the type of an object that has a must-call obligation
-   * @return true if an object of the given type should be counted by -AcountMustCall
-   */
-  private boolean isCountedType(TypeMirror type) {
-    // The erasure of a type variable is the erasure of its upper bound.
-    TypeElement typeElement = TypesUtils.getTypeElement(checker.getTypeUtils().erasure(type));
-    return typeElement != null && isJdkClass(typeElement.getQualifiedName().toString());
-  }
-
-  /**
-   * Is the given class a java* class? This is a heuristic for whether the class was defined in the
-   * JDK.
-   *
-   * @param qualifiedName a fully qualified name of a class
-   * @return true iff the type's fully-qualified name starts with "java", indicating that it is from
-   *     a java.* or javax.* package (probably)
-   */
-  /*package-private*/ static boolean isJdkClass(String qualifiedName) {
-    return qualifiedName.startsWith("java");
-  }
+  /** The count keys of an Obligation that -AcountMustCall does not count. */
+  private static final ImmutableSet<Object> NOT_COUNTED = ImmutableSet.of(CountMarker.UNCOUNTED);
 
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
@@ -2614,21 +2677,72 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * If the input {@code state} has not been visited yet, add it to {@code visited} and {@code
-   * worklist}.
+   * Return a set containing the given key if -AcountMustCall recorded it, or {@link #NOT_COUNTED}
+   * otherwise. See {@link ResourceLeakChecker#countFoundObligation}.
    *
-   * @param state the current state
-   * @param visited the states that have been analyzed or are already on the worklist
+   * @param key an object that identifies a must-call obligation
+   * @param type the static type of the expression that holds the obligation when it is created
+   * @return the keys under which the obligation was counted
+   */
+  private ImmutableSet<Object> countFoundObligation(Object key, TypeMirror type) {
+    Object countKey = checker.countFoundObligation(key, type);
+    return countKey == null ? NOT_COUNTED : ImmutableSet.of(countKey);
+  }
+
+  /**
+   * Return the Obligation in the given set equal to {@code target}. Such an Obligation must exist.
+   *
+   * @param obligations a set of Obligations
+   * @param target the Obligation to look for
+   * @return the Obligation in {@code obligations} equal to {@code target}
+   * @throws BugInCF if {@code obligations} contains no Obligation equal to {@code target}
+   */
+  private static Obligation getMatchingObligation(Set<Obligation> obligations, Obligation target) {
+    for (Obligation obligation : obligations) {
+      if (obligation.equals(target)) {
+        return obligation;
+      }
+    }
+    throw new BugInCF("No Obligation equal to %s in %s", target, obligations);
+  }
+
+  /**
+   * Add the given state to the worklist if the state is new or has additional count keys.
+   *
+   * @param state a state reaching the successor block
+   * @param visited a map from each state already added to the worklist to its version with the
+   *     latest count keys
    * @param worklist the states that will be analyzed
    */
-  private static void propagate(
+  private void propagate(
       BlockWithObligations state,
-      Set<BlockWithObligations> visited,
+      Map<BlockWithObligations, BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
-
-    if (visited.add(state)) {
-      worklist.add(state);
+    BlockWithObligations previous = visited.get(state);
+    if (previous != null) {
+      if (!checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+        return;
+      }
+      boolean hasNewKeys = false;
+      for (Obligation obligation : state.obligations) {
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
+        if (!old.countKeys.containsAll(obligation.countKeys)) {
+          hasNewKeys = true;
+          break;
+        }
+      }
+      if (!hasNewKeys) {
+        return;
+      }
+      Set<Obligation> combined = new LinkedHashSet<>(state.obligations.size());
+      for (Obligation obligation : state.obligations) {
+        Obligation old = getMatchingObligation(previous.obligations, obligation);
+        combined.add(old.combineCountKeys(obligation));
+      }
+      state = new BlockWithObligations(state.block, combined);
     }
+    visited.put(state, state);
+    worklist.add(state);
   }
 
   /**
