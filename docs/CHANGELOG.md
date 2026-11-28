@@ -9,6 +9,10 @@
 
 ### Changes for type system implementers
 
+New overridable method `CFAbstractTransfer.refineBindingVariable()` refines a
+pattern variable.  New method `AnnotatedTypeFactory.isNestedBindingVariable()`
+returns true for a pattern variable nested in a record pattern.
+
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
 
