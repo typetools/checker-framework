@@ -219,6 +219,20 @@ public abstract class JavaExpression {
   }
 
   /**
+   * Returns true if some element of the list {@link #containsModifiableAliasOf contains a
+   * modifiable alias of} {@code other}.
+   *
+   * @param list a list of expressions, each of which might be {@code null}
+   * @param store the store, which determines whether two expressions might alias
+   * @param other a local variable, field access, or array access that is assigned
+   * @return true if assigning {@code other} might change the value of some element of {@code list}
+   */
+  public static boolean listContainsModifiableAliasOf(
+      List<? extends @Nullable JavaExpression> list, Store<?> store, JavaExpression other) {
+    return list.stream().anyMatch(je -> je != null && je.containsModifiableAliasOf(store, other));
+  }
+
+  /**
    * Returns true if the given expression is equal to this or equal to the receiver of this,
    * recursively. For example, {@code a.f.g} contains {@code a.f} and {@code a} as receivers.
    *
@@ -269,15 +283,22 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns true if and only if {@code other} appears anywhere in this or an expression appears in
-   * this such that {@code other} might alias this expression, and that expression is modifiable.
+   * Returns true if assigning {@code other} might change the value of this expression: that is, if
+   * {@code other} might denote a location (a variable, field, or array element) that this
+   * expression or one of its subexpressions reads. For example, assigning {@code y.f} might change
+   * the value of {@code x.f.g} if {@code x} and {@code y} might be the same object, but assigning
+   * {@code y.h} does not change the value of {@code x.f.g}, nor of the local variable {@code x}.
    *
-   * <p>This is always true, except for cases where the Java type information prevents aliasing and
-   * none of the subexpressions can alias 'other'.
+   * <p>This implementation conservatively returns true. A subclass that knows the locations it
+   * reads overrides it.
+   *
+   * @param store the store, which determines whether two expressions might alias
+   * @param other a local variable, field access, or array access that is assigned
+   * @return true if assigning {@code other} might change the value of this expression
    */
   @Pure
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    return this.equals(other) || store.canAlias(this, other);
+    return true;
   }
 
   /**
