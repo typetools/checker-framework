@@ -459,9 +459,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * offset), then refine the other node's type to less than the sequence length (minus the offset).
    * This is case 12.
    *
-   * <p>Does nothing if the sequence might change after {@code lengthAccess} is evaluated and before
-   * the comparison completes, because then the comparison does not relate the other node to the
-   * length of the sequence that the new type refers to. Omits the bounds of the other node's type
+   * <p>Does nothing if the sequence might change after its length is read and before the
+   * comparison completes (including by the subtracted offset), because then the comparison does
+   * not relate the other node to the length of the sequence that the new type refers to. Omits the bounds of the other node's type
    * that might not hold when the comparison completes (see {@link #removeBoundsChangedAfter}).
    *
    * @param lengthAccess an operand of a comparison
@@ -471,9 +471,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    */
   private void refineNeqSequenceLength(
       Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
-    // The operand of the comparison, before any subtraction of a constant is stripped.
-    Node lengthAccessOperand = lengthAccess;
-
     // If lengthAccess is "receiver.length - c" where c is an integer constant,
     // then lengthOffset is "c".
     int lengthOffset = 0;
@@ -507,7 +504,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     if (receiver != null && !receiver.containsUnknown()) {
-      Predicate<JavaExpression> mayChange = mayChangeAfterOperand(lengthAccessOperand);
+      // Use the length access itself, not the entire operand: the subtracted constant, as in
+      // `a.length - reset()` where `reset()` has a known value, is evaluated after the length is
+      // read and might change the sequence.
+      Predicate<JavaExpression> mayChange = mayChangeAfterOperand(lengthAccess);
       if (mayChange != null && mayChange.test(receiver)) {
         // The comparison used the length of the sequence before it changed.
         return;
