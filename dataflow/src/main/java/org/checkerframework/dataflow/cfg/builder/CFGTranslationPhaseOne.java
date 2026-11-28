@@ -2396,6 +2396,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(selectorVarUseNode);
 
       Node selectorExprNode = scan(selectorExprTree, null);
+      // If the switch has a `case null` label, a null selector does not throw a
+      // NullPointerException, so do not unbox the selector.  Unboxing would insert a synthetic
+      // method invocation on the selector, which would make dataflow treat the selector as non-null
+      // and would make case refinement apply to the invocation rather than to the selector.
       if (!TreeUtils.hasNullCaseLabel(switchTree)) {
         selectorExprNode = unbox(selectorExprNode, true);
       }
