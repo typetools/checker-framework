@@ -60,6 +60,10 @@ public class ResourceLeakChecker extends AggregateChecker {
    *       non-owning local variable or formal parameter that already has a tracked obligation.
    * </ul>
    *
+   * <p>Such an obligation is <em>found</em>; the first number that the checker emits is the number
+   * of found obligations. A found obligation is <em>verified</em> unless the checker fails to
+   * verify it; the second number is the number of verified obligations.
+   *
    * <p>The class of the run-time object is not considered. For example, {@code Closeable c = new
    * MyCloseable();} creates no counted obligation, because the type of {@code new MyCloseable()} is
    * not a JDK class. By contrast, the formal parameter of {@code void m(@Owning Closeable c)} has a
