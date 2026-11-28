@@ -1,6 +1,7 @@
 package org.checkerframework.checker.test.junit;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -111,24 +112,63 @@ public class ResourceLeakCountMustCallTest {
     assertCounts("TypeVariableLeak.java", false, 1, 0);
   }
 
+  /** A must-call-alias formal parameter that goes out of scope is counted but not verified. */
+  @Test
+  public void mustCallAliasOutOfScopeIsNotVerified() {
+    assertCounts("MustCallAliasOutOfScope.java", false, 1, 0);
+  }
+
+  /** A resource that is created in a finally block, which the CFG duplicates, is counted once. */
+  @Test
+  public void createdInFinallyIsCountedOnce() {
+    assertCounts("CreatedInFinally.java", true, 1, 1);
+  }
+
+  /** The obligations that whole-program inference tracks are not counted. */
+  @Test
+  public void inferenceIsNotCounted() {
+    assertCounts("InferenceIsNotCounted.java", List.of("-Ainfer=ajava", "-Awarns"), true, 0, 0);
+  }
+
   /**
    * Run the Resource Leak Checker with {@code -AcountMustCall} on the given file and check the
    * statistics that it prints.
    *
    * @param fileName a file in {@code tests/resourceleak-countmustcall}
-   * @param expectNoErrors True if the checker should report no errors for the file
+   * @param expectNoErrors true if the checker should report no errors for the file
    * @param expectedFound the expected number of found must-call obligations
    * @param expectedVerified the expected number of verified must-call obligations
    */
   private static void assertCounts(
       String fileName, boolean expectNoErrors, int expectedFound, int expectedVerified) {
+    assertCounts(fileName, List.of(), expectNoErrors, expectedFound, expectedVerified);
+  }
+
+  /**
+   * Run the Resource Leak Checker with {@code -AcountMustCall} and the given options on the given
+   * file and check the statistics that it prints.
+   *
+   * @param fileName a file in {@code tests/resourceleak-countmustcall}
+   * @param options command-line options to pass in addition to {@code -AcountMustCall}
+   * @param expectNoErrors true if the checker should report no errors for the file
+   * @param expectedFound the expected number of found must-call obligations
+   * @param expectedVerified the expected number of verified must-call obligations
+   */
+  private static void assertCounts(
+      String fileName,
+      List<String> options,
+      boolean expectNoErrors,
+      int expectedFound,
+      int expectedVerified) {
+    List<String> allOptions = new ArrayList<>(options);
+    allOptions.add("-AcountMustCall");
     String testDir = "tests/resourceleak-countmustcall";
     TestConfiguration config =
         TestConfigurationBuilder.buildDefaultConfiguration(
             testDir,
             new File(testDir, fileName),
             ResourceLeakChecker.class,
-            List.of("-AcountMustCall"),
+            allOptions,
             TestUtilities.getShouldEmitDebugInfo());
     CompilationResult result = new TypecheckExecutor().compile(config);
     List<String> messages =

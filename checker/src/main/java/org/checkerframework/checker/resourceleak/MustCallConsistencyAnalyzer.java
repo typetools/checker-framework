@@ -739,7 +739,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
 
-    updateObligationsWithInvocationResult(obligations, node);
+    updateObligationsWithInvocationResult(obligations, node, true);
   }
 
   /**
@@ -986,9 +986,10 @@ public class MustCallConsistencyAnalyzer {
    *     Obligation with a single-element resource alias set is created and added.
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
+   * @param count true if -AcountMustCall should count the result as a found obligation
    */
   /*package-private*/ void updateObligationsWithInvocationResult(
-      Set<Obligation> obligations, Node node) {
+      Set<Obligation> obligations, Node node, boolean count) {
     @SuppressWarnings("nullness:assignment") // an invocation node has a tree
     @NonNull Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
@@ -1015,7 +1016,7 @@ public class MustCallConsistencyAnalyzer {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
       ImmutableSet<Object> countKeys =
-          cmAtf.declaredTypeHasMustCall(tree)
+          count && cmAtf.declaredTypeHasMustCall(tree)
               ? countFoundObligation(tmpVar.getElement(), node.getType())
               : NOT_COUNTED;
       obligations.add(
@@ -1046,7 +1047,8 @@ public class MustCallConsistencyAnalyzer {
             // counted if the Obligation of the object that it wraps is not counted on some path.
             // A method that returns its receiver creates no object, so it is never counted.
             ImmutableSet<Object> countKeys = obligationContainingMustCallAlias.countKeys;
-            if (countKeys.contains(CountMarker.UNCOUNTED)
+            if (count
+                && countKeys.contains(CountMarker.UNCOUNTED)
                 && !returnsThis
                 && cmAtf.declaredTypeHasMustCall(tree)) {
               ImmutableSet<Object> wrapperKeys =

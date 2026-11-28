@@ -75,9 +75,8 @@ public class ResourceLeakChecker extends AggregateChecker {
    * counted on some path to the wrapper. An invocation of a {@code CreatesMustCallFor} method whose
    * target is an owning field, an owning formal parameter, {@code this}, or a target of the
    * enclosing method's {@code CreatesMustCallFor} annotation creates no counted obligation. An
-   * obligation that
-   * the checker fails to verify is not counted as verified, even if the checker does not report the
-   * failure (for example, because a warning is suppressed).
+   * obligation that the checker fails to verify is not counted as verified, even if the checker
+   * does not report the failure (for example, because a warning is suppressed).
    *
    * <p>An owning field is not counted. Storing a resource in an owning field verifies the
    * obligation of the resource.
