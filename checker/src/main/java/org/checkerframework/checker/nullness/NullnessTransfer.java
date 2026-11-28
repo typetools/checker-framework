@@ -1,12 +1,27 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreeScanner;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -19,10 +34,10 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
@@ -30,6 +45,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -39,6 +55,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -95,6 +112,12 @@ public class NullnessTransfer
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
+  /** The type {@code java.lang.NullPointerException}. */
+  private final TypeMirror nullPointerExceptionType;
+
+  /** The method {@code Object.toString()}. */
+  private final ExecutableElement objectToString;
+
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -131,6 +154,11 @@ public class NullnessTransfer
             .getTypeFactory()
             .getChecker()
             .getBooleanOption("invocationPreservesArgumentNullness", true);
+
+    nullPointerExceptionType =
+        TypesUtils.typeFromClass(NullPointerException.class, analysis.getTypes(), elements);
+
+    objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
   }
 
   /**
@@ -363,18 +391,6 @@ public class NullnessTransfer
   }
 
   @Override
-  public TransferResult<NullnessValue, NullnessStore> visitMethodAccess(
-      MethodAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
-    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodAccess(n, p);
-    // The receiver of an instance method access is non-null. A static method access does not
-    // ensure that the receiver is non-null.
-    if (!n.isStatic()) {
-      makeNonNull(result, n.getReceiver());
-    }
-    return result;
-  }
-
-  @Override
   public TransferResult<NullnessValue, NullnessStore> visitFieldAccess(
       FieldAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitFieldAccess(n, p);
@@ -403,7 +419,9 @@ public class NullnessTransfer
    *
    * <p>When the flag is turned off, the analysis is sound: it checks that the method is
    * SideEffectFree or the receiver is unassignable. Only if either one of the two is true is the
-   * receiver made non-null. Similar logic is applied to the arguments of the invocation.
+   * receiver made non-null. The receiver is also made non-null if the method is annotated {@link
+   * org.checkerframework.framework.qual.DoesNotUnrefineReceiver}. Similar logic is applied to the
+   * arguments of the invocation.
    *
    * <p>The receiver of a static method invocation is never made non-null, because the invocation
    * does not dereference it.
@@ -418,35 +436,72 @@ public class NullnessTransfer
   @Override
   public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<NullnessValue, NullnessStore> in) {
-    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
-
     MethodInvocationTree tree = n.getTree();
     ExecutableElement method = n.getTarget().getMethod();
 
     boolean isMethodSideEffectFree = atypeFactory.isSideEffectFree(method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
-    if (!n.getTarget().isStatic()
-        && (nonNullAssumptionAfterInvocation
-            || isMethodSideEffectFree
-            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
+    // The receiver is refined here, after the invocation completes normally.  A call tests its
+    // receiver for nullness after evaluating its arguments (at the MethodAccessNode, which follows
+    // the arguments), so neither the arguments nor a handler for the NullPointerException may
+    // assume that the receiver is non-null.
+    // The refinement applies to the receiver expression, not to the value that was evaluated
+    // before the arguments, so it is skipped if evaluating the arguments might reassign the
+    // receiver expression, as in `r.m(r = null)`.  It is also skipped for a synthetic invocation
+    // that has no tree, whose arguments cannot be examined.
+    // A method annotated @DoesNotUnrefineReceiver does not reassign its receiver expression.
+    JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+    boolean refineReceiver =
+        !n.getTarget().isStatic()
+            && (nonNullAssumptionAfterInvocation
+                || isMethodSideEffectFree
+                || atypeFactory.hasDoesNotUnrefineReceiver(method)
+                || !mayChangeByOtherCode(receiverExpr))
+            && tree != null
+            && !argumentsMayReassign(tree.getArguments(), receiverExpr);
+
+    // The exceptional successors of the invocation get the store before the invocation, which
+    // super.visitMethodInvocation modifies in place.  So, copy it first.
+    @Nullable NullnessStore storeBeforeInvocation =
+        refineReceiver && n.getBlock() instanceof ExceptionBlock
+            ? in.getRegularStore().copy()
+            : null;
+
+    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
+
+    if (refineReceiver) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
+      if (storeBeforeInvocation != null) {
+        result = refineReceiverOnExceptionalSuccessors(n, result, storeBeforeInvocation);
+      }
+    }
+
+    // The refinements below examine the arguments in the tree.  A synthetic invocation without a
+    // tree is not refined.
+    if (tree == null) {
+      return result;
     }
 
     // For all formal parameters with a non-null annotation, make the actual argument non-null.
     // The point of this is to prevent cascaded errors -- the Nullness Checker will issue a
     // warning for the method invocation, but not for subsequent uses of the argument.  See test
     // case FlowNullness.java.
+    // As for the receiver, the refinement is skipped if evaluating a later argument might reassign
+    // the argument expression, as in `r.m(r, r = null)`.
     AnnotatedExecutableType methodType = nullnessTypeFactory.getAnnotatedType(method);
     List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
     List<? extends ExpressionTree> methodArgs = tree.getArguments();
     for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
-          && (nonNullAssumptionAfterInvocation
-              || isMethodSideEffectFree
-              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
-        makeNonNull(result, n.getArgument(i));
+      if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)) {
+        JavaExpression argExpr = JavaExpression.fromTree(methodArgs.get(i));
+        if ((nonNullAssumptionAfterInvocation
+                || isMethodSideEffectFree
+                || !mayChangeByOtherCode(argExpr))
+            && !argumentsMayReassign(methodArgs.subList(i + 1, methodArgs.size()), argExpr)) {
+          makeNonNull(result, n.getArgument(i));
+        }
       }
     }
 
@@ -470,6 +525,336 @@ public class NullnessTransfer
     }
 
     return result;
+  }
+
+  /**
+   * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
+   * on exceptional successors of {@code n}.
+   *
+   * <p>For an invocation in source code, the receiver is non-null on every exceptional successor.
+   * Its {@code NullPointerException} for a null receiver comes from its {@code MethodAccessNode},
+   * not from {@code n}. So every exception that {@code n} throws comes from the invoked method,
+   * which the invocation entered only because the receiver is non-null. A handler that the {@code
+   * MethodAccessNode}'s {@code NullPointerException} edge reaches, such as a handler for {@code
+   * NullPointerException} or {@code RuntimeException}, merges in the unrefined store from that edge,
+   * so the receiver is not non-null there.
+   *
+   * <p>For a synthetic invocation, the receiver is non-null only on each exceptional successor
+   * whose exception type excludes {@code NullPointerException}, such as a handler for a checked
+   * exception that the invoked method declares. A synthetic invocation, such as the {@code
+   * iterator()} call of an enhanced {@code for} loop, can throw the {@code NullPointerException}
+   * for a null receiver itself.
+   *
+   * @param n a method invocation whose receiver should be refined
+   * @param result the transfer result for {@code n}
+   * @param storeBefore the store before {@code n}; is not side-effected
+   * @return a transfer result like {@code result}, with the receiver refined on some exceptional
+   *     successors
+   */
+  private TransferResult<NullnessValue, NullnessStore> refineReceiverOnExceptionalSuccessors(
+      MethodInvocationNode n,
+      TransferResult<NullnessValue, NullnessStore> result,
+      NullnessStore storeBefore) {
+    if (!(n.getBlock() instanceof ExceptionBlock exceptionBlock)) {
+      return result;
+    }
+    Node receiver = n.getTarget().getReceiver();
+    Map<TypeMirror, NullnessStore> oldExceptionalStores = result.getExceptionalStores();
+    Map<TypeMirror, NullnessStore> newExceptionalStores =
+        oldExceptionalStores == null ? new HashMap<>() : new HashMap<>(oldExceptionalStores);
+    boolean refined = false;
+    boolean isInSource = n.isInSource();
+    for (TypeMirror exceptionType : exceptionBlock.getExceptionalSuccessors().keySet()) {
+      if (!isInSource && analysis.getTypes().isSubtype(nullPointerExceptionType, exceptionType)) {
+        continue;
+      }
+      NullnessStore exceptionalStore = newExceptionalStores.get(exceptionType);
+      NullnessStore refinedStore =
+          (exceptionalStore == null ? storeBefore : exceptionalStore).copy();
+      makeNonNull(refinedStore, receiver);
+      newExceptionalStores.put(exceptionType, refinedStore);
+      refined = true;
+    }
+    return refined ? result.withExceptionalStores(newExceptionalStores) : result;
+  }
+
+  /**
+   * Returns true if evaluating the given method arguments might reassign the given receiver
+   * expression or a subexpression of it. The "receiver" may also be an earlier argument of the
+   * invocation. This is conservative. It returns true if an argument assigns any part of the
+   * receiver expression. If the receiver expression is assignable by other code or contains a
+   * method call (whose value might depend on state that does not appear in the expression), it also
+   * returns true if an argument assigns a non-local variable or (unless {@link
+   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
+   * side-effect-free.
+   *
+   * <p>Matching a record pattern, as in {@code o instanceof R(int i)}, implicitly invokes the
+   * record's component accessors. Likewise, string conversion implicitly invokes {@code
+   * toString()}, an enhanced {@code for} loop over an {@code Iterable} implicitly invokes {@code
+   * iterator()}, {@code hasNext()}, and {@code next()}, and a try-with-resources statement (within
+   * a switch expression) implicitly invokes {@code close()}. This method handles them as it handles
+   * explicit method invocations.
+   *
+   * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
+   * arguments. Evaluating the arguments executes such a body only through a method or constructor
+   * invocation (an anonymous class's initializers run as part of its constructor), which this
+   * method handles as described above.
+   *
+   * @param arguments the arguments of a method invocation
+   * @param receiverExpr the receiver of the method invocation
+   * @return true if evaluating {@code arguments} might reassign {@code receiverExpr}
+   */
+  private boolean argumentsMayReassign(
+      List<? extends ExpressionTree> arguments, JavaExpression receiverExpr) {
+    if (arguments.isEmpty()) {
+      return false;
+    }
+    // An assignment to a non-local variable or a call with side effects might change the value of
+    // a receiver that is assignable by other code or that contains a method call.
+    boolean receiverMayChangeByOtherCode = mayChangeByOtherCode(receiverExpr);
+    TreeScanner<Boolean, Void> scanner =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean reduce(Boolean r1, Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+
+          @Override
+          public Boolean visitAssignment(AssignmentTree tree, Void p) {
+            return assignsReceiver(tree.getVariable()) || super.visitAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+            // `s += o`, for a String variable s, implicitly invokes o.toString().
+            return assignsReceiver(tree.getVariable())
+                || (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
+                    && TypesUtils.isString(TreeUtils.typeOf(tree.getVariable()))
+                    && stringConversionMayHaveSideEffect(tree.getExpression()))
+                || super.visitCompoundAssignment(tree, p);
+          }
+
+          // String concatenation implicitly invokes toString() on an operand that is not a String.
+          @Override
+          public Boolean visitBinary(BinaryTree tree, Void p) {
+            return (tree.getKind() == Tree.Kind.PLUS
+                    && TypesUtils.isString(TreeUtils.typeOf(tree))
+                    && (stringConversionMayHaveSideEffect(tree.getLeftOperand())
+                        || stringConversionMayHaveSideEffect(tree.getRightOperand())))
+                || super.visitBinary(tree, p);
+          }
+
+          @Override
+          public Boolean visitUnary(UnaryTree tree, Void p) {
+            switch (tree.getKind()) {
+              case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT -> {
+                if (assignsReceiver(tree.getExpression())) {
+                  return true;
+                }
+              }
+              default -> {}
+            }
+            return super.visitUnary(tree, p);
+          }
+
+          @Override
+          public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+            return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
+                || super.visitMethodInvocation(tree, p);
+          }
+
+          @Override
+          public Boolean visitNewClass(NewClassTree tree, Void p) {
+            return mayHaveSideEffect(TreeUtils.elementFromUse(tree))
+                || super.visitNewClass(tree, p);
+          }
+
+          // Matching a record pattern implicitly invokes the record's component accessors.
+          // TreeScanner has no visitDeconstructionPattern method before Java 21, so this method
+          // overrides scan instead.
+          @Override
+          public Boolean scan(@Nullable Tree tree, Void p) {
+            if (tree != null
+                && tree.getKind().name().equals("DECONSTRUCTION_PATTERN")
+                && recordPatternMayHaveSideEffect(tree)) {
+              return true;
+            }
+            return super.scan(tree, p);
+          }
+
+          // An enhanced for loop over an Iterable implicitly invokes iterator(), hasNext(), and
+          // next().  Iterator.next() is not side-effect-free, so this does not examine the
+          // individual methods.  A loop over an array invokes no method.
+          @Override
+          public Boolean visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+            return (TreeUtils.typeOf(tree.getExpression()).getKind() != TypeKind.ARRAY
+                    && mayHaveUnknownSideEffect())
+                || super.visitEnhancedForLoop(tree, p);
+          }
+
+          // A try-with-resources statement implicitly invokes close() on each resource.
+          @Override
+          public Boolean visitTry(TryTree tree, Void p) {
+            for (Tree resource : tree.getResources()) {
+              // A resource is a variable declaration or an expression.  The type of a variable
+              // declaration tree is the type of the variable.
+              if (implicitCallMayHaveSideEffect(TreeUtils.typeOf(resource), "close", null)) {
+                return true;
+              }
+            }
+            return super.visitTry(tree, p);
+          }
+
+          // visitMethodInvocation and visitNewClass handle the invocations that execute the body
+          // of a lambda expression or anonymous class.
+
+          @Override
+          public Boolean visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+            return false;
+          }
+
+          @Override
+          public Boolean visitClass(ClassTree tree, Void p) {
+            return false;
+          }
+
+          // An annotation is not evaluated at run time.  Its element-value pairs, such as
+          // `value = 1`, are AssignmentTrees whose left-hand side is not a variable.
+          @Override
+          public Boolean visitAnnotation(AnnotationTree tree, Void p) {
+            return false;
+          }
+
+          /*
+           * Returns true if assigning the given variable might reassign the receiver.
+           *
+           * @param variable the left-hand side of an assignment
+           * @return true if assigning {@code variable} might reassign the receiver
+           */
+          private boolean assignsReceiver(ExpressionTree variable) {
+            JavaExpression assigned = JavaExpression.fromTree(variable);
+            if (receiverExpr.containsSyntacticEqualJavaExpression(assigned)) {
+              return true;
+            }
+            return receiverMayChangeByOtherCode && !(assigned instanceof LocalVariable);
+          }
+
+          /*
+           * Returns true if matching the given record pattern might reassign the receiver, by
+           * invoking one of the record's component accessors.  Does not examine nested patterns;
+           * scan visits them.
+           *
+           * @param recordPattern a record pattern (a deconstruction pattern)
+           * @return true if matching {@code recordPattern} might reassign the receiver
+           */
+          private boolean recordPatternMayHaveSideEffect(Tree recordPattern) {
+            TypeElement recordElement = TypesUtils.getTypeElement(TreeUtils.typeOf(recordPattern));
+            if (recordElement == null) {
+              return mayHaveUnknownSideEffect();
+            }
+            for (RecordComponentElement component : recordElement.getRecordComponents()) {
+              if (mayHaveSideEffect(component.getAccessor())) {
+                return true;
+              }
+            }
+            return false;
+          }
+
+          /*
+           * Returns true if converting the given expression to a string, as string concatenation
+           * does, might reassign the receiver by invoking a toString() method.  Does not examine
+           * the subexpressions of the operand; scan visits them.
+           *
+           * @param operand an operand of string concatenation
+           * @return true if converting {@code operand} to a string might reassign the receiver
+           */
+          private boolean stringConversionMayHaveSideEffect(ExpressionTree operand) {
+            TypeMirror type = TreeUtils.typeOf(operand);
+            if (type.getKind().isPrimitive()
+                || type.getKind() == TypeKind.NULL
+                || TypesUtils.isString(type)) {
+              return false;
+            }
+            // An interface need not declare or inherit a toString() method.
+            return implicitCallMayHaveSideEffect(type, "toString", objectToString);
+          }
+
+          /*
+           * Returns true if an implicit invocation of the given no-argument method on a value of
+           * the given type might reassign the receiver.
+           *
+           * @param type the static type of the value on which the method is invoked
+           * @param methodName the name of the no-argument method that is invoked
+           * @param fallback the method that is invoked if {@code type} has no such method, or null
+           *     if it is unknown
+           * @return true if the implicit invocation might reassign the receiver
+           */
+          private boolean implicitCallMayHaveSideEffect(
+              TypeMirror type, String methodName, @Nullable ExecutableElement fallback) {
+            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+            if (typeElement == null) {
+              // For example, an array type or a type variable.
+              return fallback == null ? mayHaveUnknownSideEffect() : mayHaveSideEffect(fallback);
+            }
+            // As for an explicit invocation, use the methods of the static type.
+            // getAllMethodsIn also returns overridden methods, which is conservative.
+            boolean foundMethod = false;
+            for (ExecutableElement m :
+                ElementUtils.getAllMethodsIn(typeElement, nullnessTypeFactory.getElementUtils())) {
+              if (m.getSimpleName().contentEquals(methodName) && m.getParameters().isEmpty()) {
+                foundMethod = true;
+                if (mayHaveSideEffect(m)) {
+                  return true;
+                }
+              }
+            }
+            if (foundMethod) {
+              return false;
+            }
+            return fallback == null ? mayHaveUnknownSideEffect() : mayHaveSideEffect(fallback);
+          }
+
+          /*
+           * Returns true if invoking the given method or constructor might reassign the receiver.
+           *
+           * @param executable a method or constructor
+           * @return true if invoking {@code executable} might reassign the receiver
+           */
+          private boolean mayHaveSideEffect(ExecutableElement executable) {
+            return receiverMayChangeByOtherCode
+                && !nonNullAssumptionAfterInvocation
+                && !atypeFactory.isSideEffectFree(executable);
+          }
+
+          /*
+           * Returns true if invoking a method that is not known might reassign the receiver.
+           *
+           * @return true if invoking a method that is not known might reassign the receiver
+           */
+          private boolean mayHaveUnknownSideEffect() {
+            return receiverMayChangeByOtherCode && !nonNullAssumptionAfterInvocation;
+          }
+        };
+    for (ExpressionTree argument : arguments) {
+      if (Boolean.TRUE.equals(scanner.scan(argument, null))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if code other than an assignment to the given expression (or to a subexpression of
+   * it) might change the expression's value. That is the case if the expression is assignable by
+   * other code or contains a method call. A method call's value can depend on state that does not
+   * appear in the expression, such as a static field that the method reads. ({@link
+   * MethodCall#isAssignableByOtherCode()} examines only the receiver and arguments.)
+   *
+   * @param expr an expression
+   * @return true if code other than an assignment to {@code expr} might change its value
+   */
+  private static boolean mayChangeByOtherCode(JavaExpression expr) {
+    return expr.isAssignableByOtherCode() || expr.containsOfClass(MethodCall.class);
   }
 
   /**
