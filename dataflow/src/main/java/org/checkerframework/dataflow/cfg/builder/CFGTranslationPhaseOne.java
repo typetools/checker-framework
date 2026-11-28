@@ -2844,9 +2844,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     tryStack.popFrame();
 
-    // The return, break, and continue statements of the try block and of the catch blocks jump
-    // directly to these labels.  Each such label marks the entry of a copy of the finally block,
-    // and that copy ends with a jump to the statement's destination outside the try statement.
+    // A return statement in the try block or in a catch block, and a break, continue, or yield
+    // statement there whose target is outside the try statement, jumps directly to one of these
+    // labels.  Each such label marks the entry of a copy of the finally block, and that copy ends
+    // with a jump to the statement's destination outside the try statement.
     LabelCell tryReturnTargetLC = returnTargetLC;
     LabelCell tryBreakTargetLC = breakTargetLC;
     TryFinallyScopeMap tryBreakLabels = (TryFinallyScopeMap) breakLabels;
