@@ -1361,15 +1361,23 @@ public abstract class CFAbstractTransfer<
       // A record accessor that a record pattern of this case invokes might have side effects.  The
       // CFG does not represent the accessor calls, so their effect is applied here, before the
       // facts implied by a successful match (which hold after the accessor calls).
-      store = applyRecordAccessorSideEffects(store, n, refineSelectorExpression);
-      thenStoreIn = applyRecordAccessorSideEffects(thenStoreIn, n, refineSelectorExpression);
-      elseStoreIn = applyRecordAccessorSideEffects(elseStoreIn, n, refineSelectorExpression);
-      if (n.getBlock() instanceof ExceptionBlock block
-          && !block.getExceptionalSuccessors().isEmpty()) {
-        exceptionalStores = new LinkedHashMap<>();
-        for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
-          exceptionalStores.put(exceptionType, store.copy());
-        }
+      store = applyRecordAccessorSideEffects(store);
+      thenStoreIn = applyRecordAccessorSideEffects(thenStoreIn);
+      elseStoreIn = applyRecordAccessorSideEffects(elseStoreIn);
+    }
+    if (!refineSelectorExpression) {
+      // Code with side effects ran since the switch evaluated the selector expression, so the
+      // store's value for (each part of) the selector expression might be stale.
+      store = clearStaleSelectorValues(store, n);
+      thenStoreIn = clearStaleSelectorValues(thenStoreIn, n);
+      elseStoreIn = clearStaleSelectorValues(elseStoreIn, n);
+    }
+    if (n.labelsMightHaveSideEffects()
+        && n.getBlock() instanceof ExceptionBlock block
+        && !block.getExceptionalSuccessors().isEmpty()) {
+      exceptionalStores = new LinkedHashMap<>();
+      for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
+        exceptionalStores.put(exceptionType, store.copy());
       }
     }
     TransferResult<V, S> lubResult = null;
@@ -1423,28 +1431,53 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns a copy of {@code store} with the effect of record accessor calls that might have side
-   * effects applied. The record patterns of {@code n} invoke the accessors, but the CFG does not
-   * represent the calls.
+   * effects applied. A case's record patterns invoke the accessors, but the CFG does not represent
+   * the calls.
    *
    * @param store a store before the record accessor calls; is not side-effected by this method
-   * @param n the case node whose record patterns invoke the accessors
-   * @param refineSelectorExpression the result of {@link #selectorExpressionDenotesSwitchValue} for
-   *     {@code n}
    * @return a copy of {@code store} with the effect of the accessor calls applied
    */
-  private S applyRecordAccessorSideEffects(S store, CaseNode n, boolean refineSelectorExpression) {
+  private S applyRecordAccessorSideEffects(S store) {
     S result = store.copy();
     result.updateForUnknownSideEffect();
-    if (!refineSelectorExpression) {
-      JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
-      // An accessor might have changed the value of a selector expression that contains a method
-      // call, even a call to a pure method, by changing the state that the method reads.
-      // updateForUnknownSideEffect might not unrefine such an expression.  For a field access,
-      // updateForUnknownSideEffect keeps only facts that an assignment cannot falsify, such as a
-      // fact about an unassignable field or a monotonic qualifier like @MonotonicNonNull, so
-      // those facts remain valid.
-      if (!(selector instanceof FieldAccess) || selector.containsOfClass(MethodCall.class)) {
-        result.clearValue(selector);
+    return result;
+  }
+
+  /**
+   * Returns a copy of {@code store} without the values of (the parts of) the switch selector
+   * expression that might be stale at {@code n}, because code with side effects ran since the
+   * switch evaluated the selector expression. A value is cleared in two situations:
+   *
+   * <ul>
+   *   <li>A record accessor that a record pattern of {@code n} invokes might have changed the
+   *       selector expression. The CFG does not represent the accessor calls, so their effect on
+   *       the selector expression is applied here. A field access is not cleared: for it, {@code
+   *       updateForUnknownSideEffect} keeps only facts that an assignment cannot falsify, such as a
+   *       fact about an unassignable field or a monotonic qualifier like {@code @MonotonicNonNull},
+   *       so those facts remain valid.
+   *   <li>The store does not unrefine a method call whose receiver and arguments are unmodifiable
+   *       at a side effect, such as a guard, even though the method might read mutable state that
+   *       the side effect changed.
+   * </ul>
+   *
+   * If the selector expression is an assignment, such as {@code switch (selector = saved)}, each
+   * assignment target and the right-hand side are handled separately.
+   *
+   * @param store a store; not modified
+   * @param n a case node whose switch selector expression might not denote the value that the
+   *     switch tests; see {@link #selectorExpressionDenotesSwitchValue}
+   * @return a copy of {@code store}, without the values of the parts of the selector expression
+   *     that might be stale
+   */
+  private S clearStaleSelectorValues(S store, CaseNode n) {
+    S result = store.copy();
+    for (Node part : splitAssignments(n.getSwitchOperand().getExpression())) {
+      JavaExpression partExpr = JavaExpression.fromNode(part);
+      if (partExpr.containsOfClass(MethodCall.class)
+          || (n.labelsMightHaveSideEffects()
+              && !(partExpr instanceof FieldAccess)
+              && mightBeChangedByOtherCode(partExpr))) {
+        result.clearValue(partExpr);
       }
     }
     return result;
@@ -1474,11 +1507,22 @@ public abstract class CFAbstractTransfer<
     if (selector.containsOfClass(MethodCall.class)) {
       return false;
     }
-    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  Neither a
-    // guard nor a record accessor can assign a local variable that is declared outside it.
+    return !mightBeChangedByOtherCode(selector);
+  }
+
+  /**
+   * Returns true if code with side effects, such as a guard or a record accessor, might change the
+   * abstract value of {@code expr}. This mirrors the unrefinement that {@link CFAbstractStore}
+   * performs at a side effect. Neither a guard nor a record accessor can assign a local variable
+   * that is declared outside it.
+   *
+   * @param expr an expression
+   * @return true if code with side effects might change the abstract value of {@code expr}
+   */
+  private boolean mightBeChangedByOtherCode(JavaExpression expr) {
     return analysis.atypeFactory.sideEffectsUnrefineAliases
-        ? !selector.isModifiableByOtherCode()
-        : !selector.isAssignableByOtherCode();
+        ? expr.isModifiableByOtherCode()
+        : expr.isAssignableByOtherCode();
   }
 
   // /**
