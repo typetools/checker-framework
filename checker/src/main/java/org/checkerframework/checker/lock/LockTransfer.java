@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -150,5 +151,49 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
     }
 
     return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, LockStore> visitMethodInvocation(
+      MethodInvocationNode n, TransferInput<CFValue, LockStore> in) {
+    TransferResult<CFValue, LockStore> result = super.visitMethodInvocation(n, in);
+    CFValue resultValue = result.getResultValue();
+    if (resultValue == null) {
+      return result;
+    }
+    // Unlike getRegularStore(), getThenStore() and getElseStore() neither copy nor merge a store.
+    LockStore thenStore = result.getThenStore();
+    if (isHeldAfterCall(n, thenStore, result.getElseStore())) {
+      // A postcondition of the call (such as @EnsuresLockHeld) establishes that the call
+      // expression is held after the call, so the result is held.
+      result.setResultValue(resultValue.mostSpecific(thenStore.getValue(n), resultValue));
+    } else if (!atypeFactory.isSideEffectFree(n.getTarget().getMethod())
+        && thenStore.hasLockHeld(resultValue)) {
+      // The value of the call might come from the store before the call.  A @LockHeld fact in it
+      // might be stale, because a call that is not side-effect-free might release the lock that
+      // it returns.  LockStore.updateForMethodCall removes such a fact from the store.
+      result.setResultValue(thenStore.changeLockAnnoToTop(resultValue));
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if both given stores, which are the stores after the method invocation {@code n},
+   * record that the value of {@code n} is @LockHeld. That is the case when a postcondition of the
+   * invoked method establishes that its result is held.
+   *
+   * @param n a method invocation
+   * @param thenStore the then store after {@code n}
+   * @param elseStore the else store after {@code n}
+   * @return true if both stores record that the value of {@code n} is @LockHeld
+   */
+  private boolean isHeldAfterCall(
+      MethodInvocationNode n, LockStore thenStore, LockStore elseStore) {
+    CFValue thenValue = thenStore.getValue(n);
+    if (thenValue == null || !thenStore.hasLockHeld(thenValue)) {
+      return false;
+    }
+    CFValue elseValue = elseStore.getValue(n);
+    return elseValue != null && elseStore.hasLockHeld(elseValue);
   }
 }

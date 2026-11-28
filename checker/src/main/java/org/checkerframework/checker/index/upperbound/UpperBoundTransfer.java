@@ -399,8 +399,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       TransferResult<CFValue, CFStore> res,
       Node firstNode,
       Node secondNode,
-      CFValue firstValue,
-      CFValue secondValue,
+      @Nullable CFValue firstValue,
+      @Nullable CFValue secondValue,
       boolean notEqualTo) {
     TransferResult<CFValue, CFStore> result =
         super.strengthenAnnotationOfEqualTo(
@@ -887,6 +887,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public TransferResult<CFValue, CFStore> visitCase(
       CaseNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
+    if (!selectorExpressionDenotesSwitchValue(n)) {
+      return result;
+    }
     // Refines subtrahend in the switch expression
     // TODO: This cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
     // transfer input.

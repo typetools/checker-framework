@@ -1,6 +1,7 @@
 package org.checkerframework.checker.lock;
 
 import java.util.ArrayList;
+import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -141,7 +142,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
    *     LockPossiblyHeld, or null if {@code currentValue} has no annotation in the GuardedBy
    *     hierarchy
    */
-  private @Nullable CFValue changeLockAnnoToTop(CFValue currentValue) {
+  /*package-private*/ @Nullable CFValue changeLockAnnoToTop(CFValue currentValue) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
@@ -191,49 +192,63 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     // LockAnnotatedTypeFactory, but it affects only the LockPossiblyHeld type hierarchy (not
     // the @GuardedBy hierarchy), so it cannot use that logic.
     if (!atypeFactory.isSideEffectFree(method)) {
-      // After the call to super.updateForMethodCall, only final fields are left in
-      // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
-      // hierarchy, even a final field might be locked or unlocked by a side-effecting method.
-      // So, final fields must be set to @LockPossiblyHeld, but the annotation in the
-      // GuardedBy hierarchy should not be changed.
-      for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
-        if (newValue != null) {
-          fieldValues.put(field, newValue);
-        } else {
-          fieldValues.remove(field);
-        }
-      }
+      changeLockAnnosToTopAfterSideEffect();
+    }
+  }
 
-      // Local variables and iterated collection elements could also be unlocked via an alias
-      for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
-        if (newValue != null) {
-          localVariableValues.put(var, newValue);
-        }
-      }
-      for (IteratedCollectionElement ice : new ArrayList<>(iteratedCollectionElements.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(ice, iteratedCollectionElements.get(ice));
-        if (newValue != null) {
-          iteratedCollectionElements.put(ice, newValue);
-        }
-      }
+  @Override
+  public void updateForUnknownSideEffect() {
+    super.updateForUnknownSideEffect();
+    changeLockAnnosToTopAfterSideEffect();
+  }
 
-      // super.updateForMethodCall keeps the stored values of some method calls, such as a call
-      // whose receiver and arguments no other code can modify (for example, a static @Pure
-      // method with no arguments).  The lock that such a call returns might have been locked or
-      // unlocked by the side effect, so set it to @LockPossiblyHeld without changing its
-      // GuardedBy annotation.
-      for (MethodCall mc : new ArrayList<>(methodCallExpressions.keySet())) {
-        CFValue newValue = changeLockAnnoToTop(mc, methodCallExpressions.get(mc));
-        if (newValue != null) {
-          methodCallExpressions.put(mc, newValue);
-        }
+  /**
+   * Changes the LockPossiblyHeld annotation of each stored value to top, because code that is not
+   * side-effect-free might lock or unlock any lock. The annotation in the GuardedBy hierarchy is
+   * not changed. Call this method after the superclass has removed the values that such code might
+   * change.
+   */
+  private void changeLockAnnosToTopAfterSideEffect() {
+    // After the superclass has handled a side effect, only final fields are left in fieldValues.
+    // For the LockPossiblyHeld hierarchy, even a final field might be locked or unlocked by a
+    // side-effecting method.  So, final fields must be set to @LockPossiblyHeld, but the
+    // annotation in the GuardedBy hierarchy should not be changed.
+    for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
+      if (newValue != null) {
+        fieldValues.put(field, newValue);
+      } else {
+        fieldValues.remove(field);
       }
+    }
 
-      if (thisValue != null) {
-        thisValue = changeLockAnnoToTop(thisValue);
+    // Local variables and iterated collection elements could also be unlocked via an alias
+    for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
+      if (newValue != null) {
+        localVariableValues.put(var, newValue);
       }
+    }
+    for (IteratedCollectionElement ice : new ArrayList<>(iteratedCollectionElements.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(ice, iteratedCollectionElements.get(ice));
+      if (newValue != null) {
+        iteratedCollectionElements.put(ice, newValue);
+      }
+    }
+
+    // The superclass keeps the stored values of some method calls, such as a call whose receiver
+    // and arguments no other code can modify (for example, a static @Pure method with no
+    // arguments).  The lock that such a call returns might have been locked or unlocked by the
+    // side effect, so set it to @LockPossiblyHeld without changing its GuardedBy annotation.
+    for (MethodCall mc : new ArrayList<>(methodCallExpressions.keySet())) {
+      CFValue newValue = changeLockAnnoToTop(mc, methodCallExpressions.get(mc));
+      if (newValue != null) {
+        methodCallExpressions.put(mc, newValue);
+      }
+    }
+
+    if (thisValue != null) {
+      thisValue = changeLockAnnoToTop(thisValue);
     }
   }
 
@@ -245,9 +260,15 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     return AnnotationUtils.containsSame(value.getAnnotations(), atypeFactory.LOCKPOSSIBLYHELD);
   }
 
+  // This overrides computeNewValueAndInsert rather than insertValue, because insertOrRefine (which
+  // processes postconditions such as @EnsuresLockHeld) calls computeNewValueAndInsert directly when
+  // the store already has a value for the expression.
   @Override
-  public void insertValue(
-      JavaExpression je, @Nullable CFValue value, boolean permitNondeterministic) {
+  protected void computeNewValueAndInsert(
+      JavaExpression je,
+      @Nullable CFValue value,
+      BinaryOperator<@Nullable CFValue> merger,
+      boolean permitNondeterministic) {
     if (!shouldInsert(je, value, permitNondeterministic)) {
       return;
     }
@@ -259,20 +280,18 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     //    side effect the lock expression that has value @LockHeld.
     if (hasLockHeld(value)) {
       if (je instanceof FieldAccess fieldAcc) {
-        CFValue oldValue = fieldValues.get(fieldAcc);
-        CFValue newValue = value.mostSpecific(oldValue, null);
+        CFValue newValue = merger.apply(fieldValues.get(fieldAcc), value);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
       } else if (je instanceof MethodCall method) {
-        CFValue oldValue = methodCallExpressions.get(method);
-        CFValue newValue = value.mostSpecific(oldValue, null);
+        CFValue newValue = merger.apply(methodCallExpressions.get(method), value);
         if (newValue != null) {
           methodCallExpressions.put(method, newValue);
         }
       }
     }
 
-    super.insertValue(je, value, permitNondeterministic);
+    super.computeNewValueAndInsert(je, value, merger, permitNondeterministic);
   }
 }
