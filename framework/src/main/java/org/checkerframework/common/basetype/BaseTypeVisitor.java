@@ -265,7 +265,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * True if "-AcheckPurityAnnotations" itself was passed on the command line. Unlike {@link
    * #checkPurityAnnotations}, this is not implied by "-AsuggestPureMethods" or "-Ainfer".
    */
-  private final boolean checkPurityAnnotationsOption;
+  final boolean checkPurityAnnotationsOption;
 
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
