@@ -2592,6 +2592,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           sideEffectSinceSelector = true;
         }
 
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
+        boolean guardMightHaveSideEffects =
+            guardTree != null
+                && SideEffectScanner.mightHaveSideEffects(guardTree, annotationProvider);
+
         boolean labelAlwaysMatches = labelAlwaysMatches(caseTree, index);
         // If true, the labels are not tested.
         boolean labelsUntested = isLastCaseOfExhaustive || labelAlwaysMatches;
@@ -2603,6 +2608,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 labelsUntested,
                 sideEffectSinceSelector,
                 labelsMightHaveSideEffects,
+                guardMightHaveSideEffects,
                 env.getTypeUtils());
         if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
@@ -2618,10 +2624,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         // The guard is evaluated only if the labels match.
-        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          if (SideEffectScanner.mightHaveSideEffects(guardTree, annotationProvider)) {
+          if (guardMightHaveSideEffects) {
             sideEffectSinceSelector = true;
           }
           if (!isLastCaseOfExhaustive) {

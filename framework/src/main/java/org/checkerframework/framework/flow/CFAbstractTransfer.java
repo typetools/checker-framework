@@ -1364,13 +1364,11 @@ public abstract class CFAbstractTransfer<
       store = applyRecordAccessorSideEffects(store);
       thenStoreIn = applyRecordAccessorSideEffects(thenStoreIn);
       elseStoreIn = applyRecordAccessorSideEffects(elseStoreIn);
-    }
-    if (!refineSelectorExpression) {
-      // Code with side effects ran since the switch evaluated the selector expression, so the
-      // store's value for (each part of) the selector expression might be stale.
-      store = clearStaleSelectorValues(store, n);
-      thenStoreIn = clearStaleSelectorValues(thenStoreIn, n);
-      elseStoreIn = clearStaleSelectorValues(elseStoreIn, n);
+      // The accessors might have changed the selector expression, so the store's value for (each
+      // part of) the selector expression might be stale.
+      store = clearStaleSelectorValues(store, n, true);
+      thenStoreIn = clearStaleSelectorValues(thenStoreIn, n, true);
+      elseStoreIn = clearStaleSelectorValues(elseStoreIn, n, true);
     }
     if (n.labelsMightHaveSideEffects()
         && n.getBlock() instanceof ExceptionBlock block
@@ -1417,6 +1415,19 @@ public abstract class CFAbstractTransfer<
     }
     assert lubResult != null
         : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (n.guardMightHaveSideEffects()) {
+      // The guard runs only if one of this case's labels matches, and it might change the result
+      // of a method call in the selector expression.  The store does not unrefine such a method
+      // call at the guard's side effects, so clear its value from the store that flows into the
+      // guard.  A fact that the guard establishes about the method call after its side effects
+      // still reaches the body and the later cases.
+      lubResult =
+          new ConditionalTransferResult<>(
+              lubResult.getResultValue(),
+              clearStaleSelectorValues(lubResult.getThenStore(), n, false),
+              lubResult.getElseStore(),
+              true);
+    }
     if (n.labelsUntested()) {
       // The CFG omits the test of this case's labels, so the facts that hold when one of this
       // case's labels matches hold after this node.
@@ -1445,34 +1456,36 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns a copy of {@code store} without the values of (the parts of) the switch selector
-   * expression that might be stale at {@code n}, because code with side effects ran since the
-   * switch evaluated the selector expression. A value is cleared in two situations:
+   * expression of {@code n} that code with side effects might make stale. A value is cleared in two
+   * situations:
    *
    * <ul>
-   *   <li>A record accessor that a record pattern of {@code n} invokes might have changed the
-   *       selector expression, even if the selector expression is a field with a monotonic
-   *       qualifier, which {@code updateForUnknownSideEffect} does not unrefine. The CFG does not
-   *       represent the accessor calls, so their effect on the selector expression is applied here.
+   *   <li>A record accessor that a record pattern of {@code n} invokes might change the selector
+   *       expression, even if the selector expression is a field with a monotonic qualifier, which
+   *       {@code updateForUnknownSideEffect} does not unrefine. The CFG does not represent the
+   *       accessor calls, so their effect on the selector expression is applied here. The caller
+   *       passes true for {@code clearModifiable}.
    *   <li>The store does not unrefine a method call whose receiver and arguments are unmodifiable
-   *       at a side effect, such as a guard, even though the method might read mutable state that
-   *       the side effect changed.
+   *       at a side effect, such as one in a guard, even though the method might read mutable state
+   *       that the side effect changes.
    * </ul>
    *
    * If the selector expression is an assignment, such as {@code switch (selector = saved)}, each
    * assignment target and the right-hand side are handled separately.
    *
    * @param store a store; not modified
-   * @param n a case node whose switch selector expression might not denote the value that the
-   *     switch tests; see {@link #selectorExpressionDenotesSwitchValue}
+   * @param n a case node
+   * @param clearModifiable if true, also clear the value of each part that code with side effects
+   *     might change, not only of each part that contains a method call
    * @return a copy of {@code store}, without the values of the parts of the selector expression
    *     that might be stale
    */
-  private S clearStaleSelectorValues(S store, CaseNode n) {
+  private S clearStaleSelectorValues(S store, CaseNode n, boolean clearModifiable) {
     S result = store.copy();
     for (Node part : splitAssignments(n.getSwitchOperand().getExpression())) {
       JavaExpression partExpr = JavaExpression.fromNode(part);
       if (partExpr.containsOfClass(MethodCall.class)
-          || (n.labelsMightHaveSideEffects() && mightBeChangedByOtherCode(partExpr))) {
+          || (clearModifiable && mightBeChangedByOtherCode(partExpr))) {
         result.clearValue(partExpr);
       }
     }
