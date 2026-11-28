@@ -1002,9 +1002,9 @@ public class WholeProgramInferenceJavaParserStorage
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
-      if (fieldAnnos.type != null
-          && !containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
-        redundancyRemover.removeRedundantAnnotations(fieldAnnos.type, fieldAnnos.element);
+      if (fieldAnnos.type != null) {
+        redundancyRemover.removeRedundantAnnotations(
+            fieldAnnos.type, fieldAnnos.element, fieldAnnos.declarationAnnotations);
       }
     }
 
@@ -1032,9 +1032,9 @@ public class WholeProgramInferenceJavaParserStorage
     ExecutableElement methodElt = methodAnnos.element;
     // A declaration annotation on a method that is an alias for a type qualifier applies to the
     // method's return type.
-    if (methodAnnos.returnType != null
-        && !containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
-      redundancyRemover.removeRedundantReturnTypeAnnotations(methodAnnos.returnType, methodElt);
+    if (methodAnnos.returnType != null) {
+      redundancyRemover.removeRedundantReturnTypeAnnotations(
+          methodAnnos.returnType, methodElt, methodAnnos.declarationAnnotations);
     }
     if (methodAnnos.receiverType != null) {
       redundancyRemover.removeRedundantReceiverAnnotations(methodAnnos.receiverType, methodElt);
@@ -1043,58 +1043,37 @@ public class WholeProgramInferenceJavaParserStorage
       List<? extends VariableElement> paramElts = methodElt.getParameters();
       for (int i = 0; i < methodAnnos.parameterTypes.size() && i < paramElts.size(); i++) {
         AnnotatedTypeMirror paramType = methodAnnos.parameterTypes.get(i);
-        if (paramType != null && !parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+        if (paramType != null) {
           // The parameter's own element is used, rather than the method's type, so that a
           // `@DefaultQualifier` annotation written on the parameter declaration is respected.
-          redundancyRemover.removeRedundantAnnotations(paramType, paramElts.get(i));
+          redundancyRemover.removeRedundantAnnotations(
+              paramType, paramElts.get(i), parameterDeclarationAnnotations(methodAnnos, i + 1));
         }
       }
     }
   }
 
   /**
-   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
-   * annotation that is an alias for a type qualifier.
+   * Returns the declaration annotations that whole-program inference inferred for the given formal
+   * parameter.
    *
    * @param methodAnnos annotations for a method or constructor
    * @param index1based the 1-based index of one of its formal parameters
-   * @return true if the formal parameter has a declaration annotation that is an alias for a type
-   *     qualifier
+   * @return the declaration annotations that whole-program inference inferred for the formal
+   *     parameter
    */
-  private boolean parameterHasAliasForTypeQualifier(
+  private List<AnnotationMirror> parameterDeclarationAnnotations(
       CallableDeclarationAnnos methodAnnos, int index1based) {
     if (methodAnnos.paramsDeclAnnos == null) {
-      return false;
+      return Collections.emptyList();
     }
+    List<AnnotationMirror> result = new ArrayList<>();
     for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
-      if (paramDeclAnno.index1based() == index1based
-          && redundancyRemover.isAliasForTypeQualifier(paramDeclAnno.annotation())) {
-        return true;
+      if (paramDeclAnno.index1based() == index1based) {
+        result.add(paramDeclAnno.annotation());
       }
     }
-    return false;
-  }
-
-  /**
-   * Returns true if {@code declarationAnnotations} contains an alias for a type qualifier. Reading
-   * the output file gives the annotated element the aliased type qualifier, so none of the
-   * element's type annotations is redundant, even one that is the default.
-   *
-   * @param declarationAnnotations the declaration annotations that whole-program inference inferred
-   *     for an element, or null if there are none
-   * @return true if {@code declarationAnnotations} contains an alias for a type qualifier
-   */
-  private boolean containsAliasForTypeQualifier(
-      @Nullable AnnotationMirrorSet declarationAnnotations) {
-    if (declarationAnnotations == null) {
-      return false;
-    }
-    for (AnnotationMirror anno : declarationAnnotations) {
-      if (redundancyRemover.isAliasForTypeQualifier(anno)) {
-        return true;
-      }
-    }
-    return false;
+    return result;
   }
 
   /**
