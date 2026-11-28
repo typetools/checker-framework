@@ -66,7 +66,39 @@ public class MethodInvocationNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
-   * Creates a MethodInvocationNode.
+   * Whether a method invocation is a boxing or unboxing conversion that the CFG builder inserted
+   * for an implicit conversion in the source code.
+   */
+  public enum BoxingConversion {
+    /**
+     * The method invocation is neither a boxing conversion that the CFG builder inserted nor an
+     * unboxing call.
+     */
+    NONE,
+    /**
+     * The method invocation is a boxing conversion that the CFG builder inserted, such as the call
+     * to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument of such a call
+     * is the value being boxed.
+     */
+    BOXING,
+    /**
+     * The method invocation is an unboxing call: a call to the method that unboxes a value of a
+     * boxed primitive type, such as {@code Integer.intValue()} (but not {@code
+     * Integer.longValue()}). The CFG builder inserts such a call wherever Java unboxes a value
+     * implicitly, as the call to {@code intValue()} in {@code int i = anInteger;}, and the source
+     * code can contain one explicitly, as in {@code b.booleanValue()}. The receiver of such a call
+     * is the value being unboxed.
+     */
+    UNBOXING
+  }
+
+  /**
+   * The implicit boxing or unboxing conversion that this MethodInvocationNode represents, if any.
+   */
+  protected final BoxingConversion boxingConversion;
+
+  /**
+   * Creates a MethodInvocationNode that is neither a boxing conversion nor an unboxing call.
    *
    * @param tree the tree for the method invocation
    * @param target the MethodAccessNode for the method being invoked
@@ -78,11 +110,32 @@ public class MethodInvocationNode extends Node {
       MethodAccessNode target,
       List<Node> arguments,
       TreePath treePath) {
+    this(tree, target, arguments, treePath, BoxingConversion.NONE);
+  }
+
+  /**
+   * Creates a MethodInvocationNode.
+   *
+   * @param tree a tree for a method invocation, or null if the method invocation corresponds to no
+   *     AST tree
+   * @param target the MethodAccessNode for the method being invoked
+   * @param arguments the arguments of the method invocation
+   * @param treePath the path to the method invocation
+   * @param boxingConversion the boxing or unboxing that the method invocation performs, if any; see
+   *     {@link BoxingConversion}
+   */
+  public MethodInvocationNode(
+      @Nullable MethodInvocationTree tree,
+      MethodAccessNode target,
+      List<Node> arguments,
+      TreePath treePath,
+      BoxingConversion boxingConversion) {
     super(tree != null ? TreeUtils.typeOf(tree) : target.getMethod().getReturnType());
     this.tree = tree;
     this.target = target;
     this.arguments = arguments;
     this.treePath = treePath;
+    this.boxingConversion = boxingConversion;
   }
 
   public MethodInvocationNode(MethodAccessNode target, List<Node> arguments, TreePath treePath) {
@@ -155,6 +208,30 @@ public class MethodInvocationNode extends Node {
    */
   public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
     this.enhancedForLoop = enhancedForLoop;
+  }
+
+  /**
+   * Returns true if this MethodInvocationNode is a boxing conversion that the CFG builder inserted,
+   * such as the call to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument
+   * of such a call is the value being boxed.
+   *
+   * @return true if this is a boxing conversion that the CFG builder inserted
+   */
+  public boolean isBoxing() {
+    return boxingConversion == BoxingConversion.BOXING;
+  }
+
+  /**
+   * Returns true if this MethodInvocationNode is an unboxing call, which the CFG builder inserted
+   * (such as the call to {@code intValue()} in {@code int i = anInteger;}) or which is written
+   * explicitly (such as {@code b.booleanValue()}). The receiver of such a call is the value being
+   * unboxed.
+   *
+   * @return true if this is an unboxing call
+   * @see BoxingConversion#UNBOXING
+   */
+  public boolean isUnboxing() {
+    return boxingConversion == BoxingConversion.UNBOXING;
   }
 
   @Override

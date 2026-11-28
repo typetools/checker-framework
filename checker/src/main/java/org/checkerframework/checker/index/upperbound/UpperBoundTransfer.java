@@ -760,7 +760,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   protected void processConditionalPostconditions(
       MethodInvocationNode n,
       ExecutableElement methodElement,
-      ExpressionTree tree,
+      @Nullable ExpressionTree tree,
       CFStore thenStore,
       CFStore elseStore) {
 

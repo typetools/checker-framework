@@ -2,10 +2,12 @@ package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -124,13 +126,15 @@ public class AliasingTransfer extends CFTransfer {
    */
   @Override
   protected void processPostconditions(
-      Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
+      Node n, CFStore store, ExecutableElement executableElement, @Nullable ExpressionTree tree) {
     // TODO: Process ObjectCreationNode here after fixing issue:
     // https://github.com/eisop/checker-framework/issues/400
     if (!(n instanceof MethodInvocationNode min)) {
       return;
     }
-    if (TreeUtils.isEnumSuperCall(min.getTree())) {
+    // A call without a tree, such as an unboxing call in a custom CFG, is not an enum super call.
+    MethodInvocationTree invocationTree = min.getTree();
+    if (invocationTree != null && TreeUtils.isEnumSuperCall(invocationTree)) {
       // Skipping the init() method for enums.
       return;
     }
@@ -176,12 +180,15 @@ public class AliasingTransfer extends CFTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    Tree parent = n.getTreePath().getParentPath().getLeaf();
-    boolean parentIsStatement = parent instanceof ExpressionStatementTree;
+    // A method call in a custom CFG might have no tree, and then its parent is unknown.  Treat such
+    // a call conservatively, as if its parent is not a statement.
+    boolean parentIsStatement =
+        n.getTree() != null
+            && n.getTreePath().getParentPath().getLeaf() instanceof ExpressionStatementTree;
 
     if (!parentIsStatement) {
 
-      ExecutableElement methodElement = TreeUtils.elementFromUse(n.getTree());
+      ExecutableElement methodElement = n.getTarget().getMethod();
       List<Node> args = n.getArguments();
       List<? extends VariableElement> params = methodElement.getParameters();
       assert (args.size() == params.size())
@@ -191,7 +198,13 @@ public class AliasingTransfer extends CFTransfer {
               + " is different from the"
               + " number of parameters for the method declaration: "
               + methodElement.getSimpleName();
-      CFStore store = in.getRegularStore();
+      // Clear values in the stores that super.visitMethodInvocation reads.  If `in` has a
+      // then-store and an else-store, then `in.getRegularStore()` returns a new store each time,
+      // so clearing a value in it would have no effect.
+      List<CFStore> stores =
+          in.containsTwoStores()
+              ? List.of(in.getThenStore(), in.getElseStore())
+              : List.of(in.getRegularStore());
 
       for (int i = 0; i < args.size(); i++) {
         Node arg = args.get(i);
@@ -199,7 +212,10 @@ public class AliasingTransfer extends CFTransfer {
         if (factory.getAnnotatedType(param).hasPrimaryAnnotation(LeakedToResult.class)) {
           // If argument can leak to result, and parent is not a
           // single statement, remove that node from store.
-          store.clearValue(JavaExpression.fromNode(arg));
+          JavaExpression argExpr = JavaExpression.fromNode(arg);
+          for (CFStore store : stores) {
+            store.clearValue(argExpr);
+          }
         }
       }
 
@@ -208,7 +224,10 @@ public class AliasingTransfer extends CFTransfer {
       AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
       AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
       if (receiverType != null && receiverType.hasPrimaryAnnotation(LeakedToResult.class)) {
-        store.clearValue(JavaExpression.fromNode(receiver));
+        JavaExpression receiverExpr = JavaExpression.fromNode(receiver);
+        for (CFStore store : stores) {
+          store.clearValue(receiverExpr);
+        }
       }
     }
     // If parent is a statement, processPostconditions will handle the pseudo-assignments.
