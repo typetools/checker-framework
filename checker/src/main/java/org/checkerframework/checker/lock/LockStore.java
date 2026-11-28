@@ -1,6 +1,7 @@
 package org.checkerframework.checker.lock;
 
 import java.util.ArrayList;
+import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -259,9 +260,15 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     return AnnotationUtils.containsSame(value.getAnnotations(), atypeFactory.LOCKPOSSIBLYHELD);
   }
 
+  // This overrides computeNewValueAndInsert rather than insertValue, because insertOrRefine (which
+  // processes postconditions such as @EnsuresLockHeld) calls computeNewValueAndInsert directly when
+  // the store already has a value for the expression.
   @Override
-  public void insertValue(
-      JavaExpression je, @Nullable CFValue value, boolean permitNondeterministic) {
+  protected void computeNewValueAndInsert(
+      JavaExpression je,
+      @Nullable CFValue value,
+      BinaryOperator<@Nullable CFValue> merger,
+      boolean permitNondeterministic) {
     if (!shouldInsert(je, value, permitNondeterministic)) {
       return;
     }
@@ -273,20 +280,18 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     //    side effect the lock expression that has value @LockHeld.
     if (hasLockHeld(value)) {
       if (je instanceof FieldAccess fieldAcc) {
-        CFValue oldValue = fieldValues.get(fieldAcc);
-        CFValue newValue = value.mostSpecific(oldValue, null);
+        CFValue newValue = merger.apply(fieldValues.get(fieldAcc), value);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
       } else if (je instanceof MethodCall method) {
-        CFValue oldValue = methodCallExpressions.get(method);
-        CFValue newValue = value.mostSpecific(oldValue, null);
+        CFValue newValue = merger.apply(methodCallExpressions.get(method), value);
         if (newValue != null) {
           methodCallExpressions.put(method, newValue);
         }
       }
     }
 
-    super.insertValue(je, value, permitNondeterministic);
+    super.computeNewValueAndInsert(je, value, merger, permitNondeterministic);
   }
 }
