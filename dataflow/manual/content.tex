@@ -1221,6 +1221,17 @@ within \code{try} blocks will cause execution of the \code{finally} block before
 continuing at the target of the jump. The Dataflow Framework models this
 behavior by adding a jump to a duplicate of the finally block before the
 jump to the original target of the control flow statement.
+A \code{return} statement within the \code{finally} block itself, or a
+\code{break}, \code{continue}, or \code{yield} statement there whose target
+is outside the \code{try} statement, leaves the \code{try} statement without
+executing that \code{finally} block again.  On the way to its target, it still
+executes the \code{finally} block of each enclosing \code{try} statement whose
+\code{try} block or \code{catch} block it leaves.  It does not execute again the
+\code{finally} block of an enclosing \code{try} statement whose \code{finally}
+block contains the jump, because that \code{finally} block is already executing.
+If one of the \code{finally} blocks that a jump executes itself completes
+abruptly, such as by a \code{return} statement, then that abrupt completion
+replaces the original jump.
 
 
 \subsection{AST to CFG Translation}

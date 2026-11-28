@@ -261,6 +261,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private @Nullable LabelCell breakTargetLC;
 
   /**
+   * Current {@link LabelCell} to which a yield statement should jump, or null if there is no valid
+   * destination. This differs from {@link #breakTargetLC} within a loop or a switch statement that
+   * is nested in a switch expression.
+   */
+  private @Nullable LabelCell yieldTargetLC;
+
+  /**
    * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates two
    * CFG {@link Label}s, one for break and one for continue.
    */
@@ -2254,7 +2261,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     public @Nullable SwitchExpressionNode build() {
       LabelCell oldBreakTargetLC = breakTargetLC;
+      LabelCell oldYieldTargetLC = yieldTargetLC;
       breakTargetLC = new LabelCell(new Label());
+      if (!TreeUtils.isSwitchStatement(switchTree)) {
+        // A yield statement leaves the innermost enclosing switch expression.
+        yieldTargetLC = breakTargetLC;
+      }
       int numCases = caseTrees.size();
 
       for (int i = 0; i < numCases; ++i) {
@@ -2310,6 +2322,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       addLabelForNextNode(breakTargetLC.peekLabel());
       breakTargetLC = oldBreakTargetLC;
+      yieldTargetLC = oldYieldTargetLC;
       if (TreeUtils.isSwitchStatement(switchTree)) {
         // It's a switch statement, not a switch expression.
         extendWithNode(
@@ -2495,8 +2508,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *   <li>Builds the CFG for the switch expression result.
      *   <li>Creates an assignment node for the assignment of {@code resultExpression} to {@code
      *       switchExprVarTree}.
-     *   <li>Adds an unconditional jump to {@link #breakTargetLC} (the end of the switch
-     *       expression).
+     *   <li>Adds an unconditional jump to {@link #yieldTargetLC} (the end of the switch
+     *       expression, possibly via copies of the finally blocks of try statements that the
+     *       yield leaves).
      * </ol>
      *
      * @param resultExpression the result of a switch expression; either from a yield or an
@@ -2519,9 +2533,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new AssignmentNode(assign, switchExprVarUseNode, resultExprNode);
       assignmentNode.setInSource(false);
       extendWithNode(assignmentNode);
-      // Switch rules never fall through so add jump to the break target.
-      assert breakTargetLC != null : "no target for case statement";
-      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+      // Leave the switch expression.  Within a loop or a switch statement, the break target
+      // differs from the yield target.
+      assert yieldTargetLC != null : "no target for yield";
+      extendWithExtendedNode(new UnconditionalJump(yieldTargetLC.accessLabel()));
     }
   }
 
@@ -2602,6 +2617,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Store return/break/continue labels, just in case we need them for a finally block.
     LabelCell oldReturnTargetLC = returnTargetLC;
     LabelCell oldBreakTargetLC = breakTargetLC;
+    LabelCell oldYieldTargetLC = yieldTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
@@ -2619,6 +2635,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       breakTargetLC = new LabelCell();
       breakLabels = new TryFinallyScopeMap();
+
+      if (yieldTargetLC != null) {
+        yieldTargetLC = new LabelCell();
+      }
 
       continueTargetLC = new LabelCell();
       continueLabels = new TryFinallyScopeMap();
@@ -2664,6 +2684,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           () -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
+          oldYieldTargetLC,
           oldBreakLabels,
           oldContinueTargetLC,
           oldContinueLabels);
@@ -2712,6 +2733,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // labels afterward.
     LabelCell oldReturnTargetLC = returnTargetLC;
     LabelCell oldBreakTargetLC = breakTargetLC;
+    LabelCell oldYieldTargetLC = yieldTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
@@ -2734,6 +2756,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     breakTargetLC = new LabelCell();
     breakLabels = new TryFinallyScopeMap();
+
+    if (yieldTargetLC != null) {
+      yieldTargetLC = new LabelCell();
+    }
 
     continueTargetLC = new LabelCell();
     continueLabels = new TryFinallyScopeMap();
@@ -2762,6 +2788,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         () -> addCloseCallForResource(resourceDeclarationTree, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
+        oldYieldTargetLC,
         oldBreakLabels,
         oldContinueTargetLC,
         oldContinueLabels);
@@ -2857,16 +2884,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
-   * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
-   *     #returnTargetLC} while handling the finally block
-   * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
-   *     #breakTargetLC} while handling the finally block
-   * @param oldBreakLabels old break labels, which get restored to {@link #breakLabels} while
-   *     handling the finally block
-   * @param oldContinueTargetLC old continue target label cell, which gets restored to {@link
-   *     #continueTargetLC} while handling the finally block
-   * @param oldContinueLabels old continue labels, which get restored to {@link #continueLabels}
-   *     while handling the finally block
+   * @param oldReturnTargetLC the return target label cell of the code that encloses the try
+   *     statement. This method assigns it to {@link #returnTargetLC} before it generates any copy
+   *     of the finally block, and the copy for a return jumps to its label at the end.
+   * @param oldBreakTargetLC the break target label cell of the code that encloses the try
+   *     statement. This method assigns it to {@link #breakTargetLC} before it generates any copy of
+   *     the finally block, and the copy for an unlabeled break jumps to its label at the end.
+   * @param oldYieldTargetLC the yield target label cell of the code that encloses the try
+   *     statement, or null if the try statement is not within a switch expression. This method
+   *     assigns it to {@link #yieldTargetLC} before it generates any copy of the finally block, and
+   *     the copy for a yield jumps to its label at the end.
+   * @param oldBreakLabels the break labels of the code that encloses the try statement. This method
+   *     assigns them to {@link #breakLabels} before it generates any copy of the finally block, and
+   *     the copy for a labeled break jumps at the end to the label that this map gives for the
+   *     statement's label.
+   * @param oldContinueTargetLC the continue target label cell of the code that encloses the try
+   *     statement. This method assigns it to {@link #continueTargetLC} before it generates any copy
+   *     of the finally block, and the copy for an unlabeled continue jumps to its label at the end.
+   * @param oldContinueLabels the continue labels of the code that encloses the try statement. This
+   *     method assigns them to {@link #continueLabels} before it generates any copy of the finally
+   *     block, and the copy for a labeled continue jumps at the end to the label that this map
+   *     gives for the statement's label.
    */
   private void handleFinally(
       Tree markerTree,
@@ -2876,12 +2914,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Runnable finallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
+      @Nullable LabelCell oldYieldTargetLC,
       Map<Name, Label> oldBreakLabels,
       LabelCell oldContinueTargetLC,
       Map<Name, Label> oldContinueLabels) {
     // Reset values before analyzing the finally block!
 
     tryStack.popFrame();
+
+    // Each return statement in the try block or in a catch block, and each break, continue, or
+    // yield statement there whose target is outside the try statement, jumps directly to one of
+    // these labels.  Each such label marks the entry of a copy of the finally block, and that copy
+    // ends with a jump to the statement's destination outside the try statement.
+    LabelCell tryReturnTargetLC = returnTargetLC;
+    LabelCell tryBreakTargetLC = breakTargetLC;
+    LabelCell tryYieldTargetLC = yieldTargetLC;
+    TryFinallyScopeMap tryBreakLabels = (TryFinallyScopeMap) breakLabels;
+    LabelCell tryContinueTargetLC = continueTargetLC;
+    TryFinallyScopeMap tryContinueLabels = (TryFinallyScopeMap) continueLabels;
+
+    // Every copy of the finally block uses the targets of the code that encloses the try
+    // statement, so a jump from the finally block to a target outside the try statement does not
+    // run the finally block again.
+    returnTargetLC = oldReturnTargetLC;
+    breakTargetLC = oldBreakTargetLC;
+    yieldTargetLC = oldYieldTargetLC;
+    breakLabels = oldBreakLabels;
+    continueTargetLC = oldContinueTargetLC;
+    continueLabels = oldContinueLabels;
 
     { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
       addLabelForNextNode(finallyLabel);
@@ -2924,124 +2984,94 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       throwing.setTerminatesExecution(true);
     }
 
-    if (returnTargetLC.wasAccessed()) {
-      addLabelForNextNode(returnTargetLC.peekLabel());
-      returnTargetLC = oldReturnTargetLC;
-
-      extendWithNode(
-          new MarkerNode(
-              markerTree,
-              "start of finally block for return #" + TreeUtils.treeUids.get(markerTree),
-              env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
-      extendWithNode(
-          new MarkerNode(
-              markerTree,
-              "end of finally block for return #" + TreeUtils.treeUids.get(markerTree),
-              env.getTypeUtils()));
-      extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
-    } else {
-      returnTargetLC = oldReturnTargetLC;
+    if (tryReturnTargetLC.wasAccessed()) {
+      addFinallyCopyForJump(
+          markerTree,
+          tryReturnTargetLC.peekLabel(),
+          "return",
+          oldReturnTargetLC.accessLabel(),
+          finallyBlockCFGGenerator);
     }
 
-    if (breakTargetLC.wasAccessed()) {
-      addLabelForNextNode(breakTargetLC.peekLabel());
-      breakTargetLC = oldBreakTargetLC;
-
-      extendWithNode(
-          new MarkerNode(
-              markerTree,
-              "start of finally block for break #" + TreeUtils.treeUids.get(markerTree),
-              env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
-      extendWithNode(
-          new MarkerNode(
-              markerTree,
-              "end of finally block for break #" + TreeUtils.treeUids.get(markerTree),
-              env.getTypeUtils()));
-      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
-    } else {
-      breakTargetLC = oldBreakTargetLC;
+    if (tryBreakTargetLC.wasAccessed()) {
+      addFinallyCopyForJump(
+          markerTree,
+          tryBreakTargetLC.peekLabel(),
+          "break",
+          oldBreakTargetLC.accessLabel(),
+          finallyBlockCFGGenerator);
     }
 
-    Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
-    if (!accessedBreakLabels.isEmpty()) {
-      breakLabels = oldBreakLabels;
-
-      for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
-        addLabelForNextNode(access.getValue());
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "start of finally block for break label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "end of finally block for break label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
-      }
-    } else {
-      breakLabels = oldBreakLabels;
+    if (tryYieldTargetLC != null && tryYieldTargetLC.wasAccessed()) {
+      assert oldYieldTargetLC != null : "no target for yield";
+      addFinallyCopyForJump(
+          markerTree,
+          tryYieldTargetLC.peekLabel(),
+          "yield",
+          oldYieldTargetLC.accessLabel(),
+          finallyBlockCFGGenerator);
     }
 
-    if (continueTargetLC.wasAccessed()) {
-      addLabelForNextNode(continueTargetLC.peekLabel());
-      continueTargetLC = oldContinueTargetLC;
-
-      extendWithNode(
-          new MarkerNode(
-              markerTree,
-              "start of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
-              env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
-      extendWithNode(
-          new MarkerNode(
-              markerTree,
-              "end of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
-              env.getTypeUtils()));
-      extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
-    } else {
-      continueTargetLC = oldContinueTargetLC;
+    for (Map.Entry<Name, Label> nameAndLabel : tryBreakLabels.getAccessedNames().entrySet()) {
+      addFinallyCopyForJump(
+          markerTree,
+          nameAndLabel.getValue(),
+          "break label " + nameAndLabel.getKey(),
+          oldBreakLabels.get(nameAndLabel.getKey()),
+          finallyBlockCFGGenerator);
     }
 
-    Map<Name, Label> accessedContinueLabels =
-        ((TryFinallyScopeMap) continueLabels).getAccessedNames();
-    if (!accessedContinueLabels.isEmpty()) {
-      continueLabels = oldContinueLabels;
-
-      for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
-        addLabelForNextNode(access.getValue());
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "start of finally block for continue label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
-        extendWithNode(
-            new MarkerNode(
-                markerTree,
-                "end of finally block for continue label "
-                    + access.getKey()
-                    + " #"
-                    + TreeUtils.treeUids.get(markerTree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
-      }
-    } else {
-      continueLabels = oldContinueLabels;
+    if (tryContinueTargetLC.wasAccessed()) {
+      addFinallyCopyForJump(
+          markerTree,
+          tryContinueTargetLC.peekLabel(),
+          "continue",
+          oldContinueTargetLC.accessLabel(),
+          finallyBlockCFGGenerator);
     }
+
+    for (Map.Entry<Name, Label> nameAndLabel : tryContinueLabels.getAccessedNames().entrySet()) {
+      addFinallyCopyForJump(
+          markerTree,
+          nameAndLabel.getValue(),
+          "continue label " + nameAndLabel.getKey(),
+          oldContinueLabels.get(nameAndLabel.getKey()),
+          finallyBlockCFGGenerator);
+    }
+  }
+
+  /**
+   * Adds to the CFG a copy of the given finally block, for the jumps of one kind that leave its try
+   * block or a catch block. An example of a kind is the return statements, or the break statements
+   * with a given label.
+   *
+   * @param markerTree tree to reference when creating {@link MarkerNode}s for the copy
+   * @param entryLabel the label of the entry of the copy, which is the target of each such jump
+   * @param jumpKind the kind of jump, such as "return" or "break label outer", which appears in the
+   *     text of the {@link MarkerNode}s
+   * @param exitLabel the label that the copy jumps to at its end, which is the destination of each
+   *     such jump outside the try statement
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for a finally block
+   */
+  private void addFinallyCopyForJump(
+      Tree markerTree,
+      Label entryLabel,
+      String jumpKind,
+      Label exitLabel,
+      Runnable finallyBlockCFGGenerator) {
+    addLabelForNextNode(entryLabel);
+    extendWithNode(
+        new MarkerNode(
+            markerTree,
+            "start of finally block for " + jumpKind + " #" + TreeUtils.treeUids.get(markerTree),
+            env.getTypeUtils()));
+    finallyBlockCFGGenerator.run();
+    extendWithNode(
+        new MarkerNode(
+            markerTree,
+            "end of finally block for " + jumpKind + " #" + TreeUtils.treeUids.get(markerTree),
+            env.getTypeUtils()));
+    extendWithExtendedNode(new UnconditionalJump(exitLabel));
   }
 
   /**
