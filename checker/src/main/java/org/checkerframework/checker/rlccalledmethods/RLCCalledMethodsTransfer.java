@@ -1,6 +1,7 @@
 package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodInvocationTree;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -8,20 +9,24 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
+import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -45,6 +50,68 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   public RLCCalledMethodsTransfer(RLCCalledMethodsAnalysis analysis) {
     super(analysis);
     this.rlTypeFactory = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
+  }
+
+  @Override
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
+    super.accumulate(node, result, values);
+    updateStoreForIteratedCollectionElement(Arrays.asList(values), result, node);
+  }
+
+  /**
+   * Returns the initial store, plus an {@link IteratedCollectionElement} entry for the element
+   * iterated over by each {@linkplain DisposalLoopInfo potential disposal loop} in the method, such
+   * as {@code r} in {@code for (Resource r : list)} or {@code list.get(i)} in an indexed loop.
+   *
+   * <p>These entries determine which iterated elements this analysis tracks: {@link #accumulate}
+   * adds called methods to an iterated element only if the store has an entry for it. After the
+   * analysis, {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} reads the entries to find the
+   * methods that a loop body calls on every iterated element.
+   *
+   * @param underlyingAST the code being analyzed
+   * @param parameters the parameters of the method being analyzed
+   * @return the initial store
+   */
+  @Override
+  public AccumulationStore initialStore(
+      UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
+    AccumulationStore store = super.initialStore(underlyingAST, parameters);
+    for (DisposalLoopInfo disposalLoopInfo :
+        ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(rlTypeFactory)
+            .getDisposalLoopInfos(underlyingAST)) {
+      IteratedCollectionElement collectionElementJE =
+          new IteratedCollectionElement(
+              disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
+      store.insertValue(collectionElementJE, rlTypeFactory.top);
+    }
+    return store;
+  }
+
+  /**
+   * If {@code node} is the element iterated over by a {@linkplain DisposalLoopInfo potential
+   * disposal loop}, adds the called methods to its {@link IteratedCollectionElement}.
+   *
+   * @param valuesAsList the newly called methods
+   * @param result the transfer result
+   * @param node a cfg node
+   */
+  private void updateStoreForIteratedCollectionElement(
+      List<String> valuesAsList,
+      TransferResult<AccumulationValue, AccumulationStore> result,
+      Node node) {
+    IteratedCollectionElement collectionElement =
+        result.getRegularStore().getIteratedCollectionElement(node, node.getTree());
+    if (collectionElement == null) {
+      return;
+    }
+    if (result.containsTwoStores()) {
+      updateValueAndInsertIntoStore(result.getThenStore(), collectionElement, valuesAsList);
+      updateValueAndInsertIntoStore(result.getElseStore(), collectionElement, valuesAsList);
+    } else {
+      updateValueAndInsertIntoStore(result.getRegularStore(), collectionElement, valuesAsList);
+    }
+    accumulateInExceptionalStores(collectionElement, result, valuesAsList);
   }
 
   @Override

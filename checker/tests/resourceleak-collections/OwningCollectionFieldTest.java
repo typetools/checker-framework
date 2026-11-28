@@ -1,0 +1,142 @@
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
+import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.checker.collectionownership.qual.*;
+import org.checkerframework.checker.mustcall.qual.*;
+
+// 2. check that Aggregator has MustCall method
+class Aggregator implements Closeable {
+  // 1. infer this field as @OwningCollection
+  List<Resource> resList = new ArrayList<>();
+
+  public Aggregator() {}
+
+  public Aggregator(@OwningCollection List<Resource> list) {
+    resList = list;
+  }
+
+  // 5. demand methods adding elements to have @CreatesMustCallFor("this")
+  @CreatesMustCallFor("this")
+  void add(@Owning Resource r) {
+    resList.add(r);
+  }
+
+  // 3. check that mustcall method has a @CollectionFieldDestructor annotation
+  // 4. check that field has @OCwO as postcondition
+  @Override
+  @CollectionFieldDestructor("resList")
+  public void close() {
+    for (Resource r : resList) {
+      r.close();
+      r.flush();
+    }
+  }
+
+  // :: error: missing.creates.mustcall.for
+  void addIllegal(@Owning Resource r) {
+    resList.add(r);
+  }
+
+  @CollectionFieldDestructor("resList")
+  // :: error: contracts.postcondition
+  public void partialClose() {
+    for (Resource r : resList) {
+      r.flush();
+    }
+  }
+
+  @CollectionFieldDestructor("resList")
+  public void closeIndexed() {
+    for (int i = 0; i < resList.size(); i++) {
+      resList.get(i).close();
+      resList.get(i).flush();
+    }
+  }
+
+  @CollectionFieldDestructor("resList")
+  public void closeIndexedThis() {
+    for (int i = 0; i < this.resList.size(); i++) {
+      this.resList.get(i).close();
+      this.resList.get(i).flush();
+    }
+  }
+
+  @CollectionFieldDestructor("resList")
+  // :: error: contracts.postcondition
+  public void partialCloseIndexed() {
+    for (int i = 0; i < resList.size(); i++) {
+      resList.get(i).flush();
+    }
+  }
+
+  // The loop header uses a local variable that shadows the field, so the loop does not dispose
+  // the local collection's elements.
+  void indexedLoopOverShadowedField() {
+    List<Resource> resList = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    resList.add(new Resource());
+    for (int i = 0; i < resList.size(); i++) {
+      this.resList.get(i).close();
+      this.resList.get(i).flush();
+    }
+  }
+}
+
+// has no @MustCall method
+class IllegalAggregator {
+  // :: error: unfulfilled.field.obligations
+  List<Resource> resList = new ArrayList<>();
+
+  @CollectionFieldDestructor("resList")
+  public void close() {
+    for (Resource r : resList) {
+      r.close();
+      r.flush();
+    }
+  }
+}
+
+public class OwningCollectionFieldTest {
+  void addToAggregator(Resource @OwningCollection [] resources) {
+    Aggregator agg = new Aggregator();
+    for (Resource r : resources) {
+      agg.add(r);
+    }
+    agg.close();
+  }
+
+  // Mainly test that accessing the owning resource collection field of another class is
+  // forbidden.
+  // since an obligaton for the field agg.resList is created, a @CreatesMustCallFor("agg")
+  // annotation is expected, which is nonsensical (why the assignment of this field itself
+  // is forbidden).
+  // :: error: missing.creates.mustcall.for
+  void accessOwningFieldAfterClosing(Resource @OwningCollection [] resources) {
+    Aggregator agg = new Aggregator();
+    for (Resource r : resources) {
+      agg.add(r);
+    }
+    agg.close();
+    // :: error: foreign.owningcollection.field.access
+    agg.resList.add(new Resource());
+  }
+
+  void failToDestructAggregator(Resource @OwningCollection [] resources) {
+    // :: error: required.method.not.called
+    Aggregator agg = new Aggregator();
+    for (Resource r : resources) {
+      agg.add(r);
+    }
+  }
+
+  void addAfterDestructing(Resource @OwningCollection [] resources) {
+    // :: error: required.method.not.called
+    Aggregator agg = new Aggregator();
+    for (Resource r : resources) {
+      agg.add(r);
+    }
+    agg.close();
+    agg.add(new Resource());
+  }
+}
