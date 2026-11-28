@@ -107,7 +107,12 @@ public class QualifierUpperBounds {
   }
 
   /**
-   * Returns the set of qualifiers that are the upper bounds for a use of the type.
+   * Returns the set of qualifiers that are the upper bounds for a use of the type. The result
+   * contains exactly one qualifier in each type hierarchy. In a hierarchy in which no bound is
+   * specified for the type (by {@link #getAnnotationFromElement}, which by default returns the
+   * annotations on the type's declaration; by {@link UpperBoundFor}; or by {@link
+   * AnnotatedTypeFactory#getDefaultTypeDeclarationBounds}), the bound is top. An overriding method
+   * must also return exactly one qualifier in each type hierarchy.
    *
    * @param type the TypeMirror
    * @return the set of qualifiers that are the upper bounds for a use of the type
@@ -138,6 +143,7 @@ public class QualifierUpperBounds {
     }
 
     addMissingAnnotations(bounds, atypeFactory.getDefaultTypeDeclarationBounds());
+    addMissingAnnotations(bounds, qualHierarchy.getTopAnnotations());
     return bounds;
   }
 
@@ -157,7 +163,9 @@ public class QualifierUpperBounds {
       AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
       if (bound == null) {
         throw new BugInCF(
-            "QualifierUpperBounds: no bound for %s in the bounds %s of %s", anno, boundAnnos, type);
+            "QualifierUpperBounds: getBoundQualifiers(%s) returned %s, which has no qualifier in the"
+                + " hierarchy of %s",
+            type, boundAnnos, anno);
       }
       limitedAnnos.add(qualHierarchy.isSubtypeShallow(anno, type, bound, type) ? anno : bound);
     }
