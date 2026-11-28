@@ -139,7 +139,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * unit that contains them (JLS 7.5). In a stub file, however, the stub parser gives every
    * compilation unit all of the stub file's imports, so an import applies throughout the stub file.
    *
-   * @param pkgName the package name, or null for the unnamed package
+   * @param pkgName a package name, such as {@code java.util}, or null for the unnamed package
    * @param singleTypeImports the types that single-type imports import, such as {@code
    *     java.util.List} for {@code import java.util.List;}
    * @param singleStaticImports the members that single-static-imports import, such as {@code
@@ -160,10 +160,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       List<String> staticOnDemandImports) {
 
     /**
-     * Creates the import context of a compilation unit.
+     * Creates the import context of the compilation unit that has the given package declaration and
+     * import declarations.
      *
-     * @param pkgDecl the package declaration, or null if there is none
-     * @param importDecls the import declarations, or null if there are none
+     * @param pkgDecl a compilation unit's package declaration, or null if there is none
+     * @param importDecls the compilation unit's import declarations, or null if there are none
      * @return the import context
      */
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
@@ -207,7 +208,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Creates the import context of a compilation unit.
+     * Creates the import context of the given compilation unit.
      *
      * @param cu a compilation unit
      * @return the import context of {@code cu}
@@ -263,8 +264,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       topLevelTypeCache = new IdentityHashMap<>();
 
   /**
-   * A cache for {@link #classpathDeclaredMemberType}. Maps a type declaration of the stub file to
-   * the class on the classpath that has the same binary name, or to null if there is none.
+   * A cache for {@link #classpathClass}. Maps a type declaration of the stub file to the class on
+   * the classpath that has the same binary name, or to null if there is none.
    */
   private final IdentityHashMap<TypeDeclaration<?>, @Nullable Class<?>> classpathClassCache =
       new IdentityHashMap<>();
@@ -358,6 +359,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Creates a new ToIndexFileConverter for one compilation unit of a stub file. The converter does
    * not consider the types that other compilation units of the stub file declare.
    *
+   * <p>The given package and imports apply only to a name in a node that is not part of any
+   * compilation unit. A name in a node that is part of a compilation unit is resolved with that
+   * compilation unit's own package and imports.
+   *
    * @param pkgDecl the AST node for the package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
@@ -390,7 +395,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the import context of a compilation unit of the stub file.
+   * Returns the import context of the given compilation unit of the stub file.
    *
    * @param cu a compilation unit of the stub file, or null for a name that is not in any
    *     compilation unit
@@ -1429,7 +1434,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable @BinaryName String resolveUncached(
       @FullyQualifiedName String className, @Nullable CompilationUnit cu) {
-    // The package applies only within the compilation unit that declares it (JLS 7.5).  The stub
+    // The package applies only within the compilation unit that declares it (JLS 7.4).  The stub
     // parser gives every compilation unit of a stub file all of the file's imports, so an import
     // applies throughout the stub file.
     ImportContext context = importContext(cu);
@@ -1512,9 +1517,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * top-level type of package {@code prefix} or a member type, declared or inherited, of type
    * {@code prefix}; the import does not make available any other name.
    *
-   * @param prefix the name of the package or type that the import on demand imports from
-   * @param className the class name, in which a {@code .} separates a nested class from its
-   *     enclosing class
+   * @param prefix a package or type name that an import on demand imports from, such as {@code
+   *     java.util} for {@code import java.util.*;}
+   * @param className a class name, in which a {@code .} separates a nested class from its enclosing
+   *     class
    * @param cu the stub file's compilation unit, or null not to consider the types that the stub
    *     file declares
    * @return the binary name of the class that {@code className} names via the import, or null
@@ -1644,9 +1650,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * package that the stub file declares, or a member type of a type that the stub file declares,
    * returns the binary name of the type that {@code className} names. Otherwise returns null.
    *
-   * @param prefix the name of the package or type that the import on demand imports from
-   * @param className the class name, in which a {@code .} separates a nested class from its
-   *     enclosing class
+   * @param prefix a package or type name that an import on demand imports from, such as {@code
+   *     java.util} for {@code import java.util.*;}
+   * @param className a class name, in which a {@code .} separates a nested class from its enclosing
+   *     class
    * @param cu the stub file's compilation unit in which the import is written
    * @return the binary name of the class that {@code className} names via the import, or null
    */
@@ -1790,15 +1797,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns true if a top-level or member type is accessible to an import on demand in the given
-   * compilation unit, as javac determines it: a public type, or a member type of an interface or
-   * annotation interface, is accessible; a private member type is not; a protected or
+   * Returns true if the given top-level or member type is accessible to an import on demand in the
+   * given compilation unit, as javac determines it: a public type, or a member type of an interface
+   * or annotation interface, is accessible; a private member type is not; a protected or
    * package-private type is accessible only in its own package.
+   *
+   * <p>A stub file can omit the access modifier of a type. The accessibility of such a type is that
+   * of the class on the classpath that has the same binary name, if there is one. Otherwise, the
+   * type is treated as public.
    *
    * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
    *     Class} on the classpath, or null
-   * @param cu the stub file's compilation unit in which the import is written, or null for a name
-   *     that is not in any compilation unit, which uses the converter's import context
+   * @param cu a compilation unit of the stub file, in which the import is written, or null for a
+   *     name that is not in any compilation unit, which uses the converter's import context
    * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
   private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
@@ -1814,12 +1825,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return false;
       }
       if (!memberDecl.isProtected()) {
-        // A stub file may omit the access modifier of a type that is on the classpath; the
-        // classpath declaration determines its accessibility.
         Class<?> classpathType = classpathClass(memberDecl);
-        if (classpathType != null) {
-          return isImportAccessible(classpathType, cu);
-        }
+        return classpathType == null || isImportAccessible(classpathType, cu);
       }
       return stubPackage(memberDecl).equals(cuPackage);
     } else if (member instanceof Class<?> memberClass) {
@@ -1838,8 +1845,28 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the binary name of the class that a fully qualified name refers to: the class that the
-   * stub file declares, if the stub file declares it, and otherwise a class on the classpath.
+   * Returns the classpath class with the same binary name as the given type declaration of the stub
+   * file.
+   *
+   * @param declaration a type declaration in the stub file
+   * @return the classpath class with the same binary name as {@code declaration}, or null if there
+   *     is none
+   */
+  private @Nullable Class<?> classpathClass(TypeDeclaration<?> declaration) {
+    if (classpathClassCache.containsKey(declaration)) {
+      return classpathClassCache.get(declaration);
+    }
+    @SuppressWarnings("signature") // the binary name of a class
+    @ClassGetName String binaryName = qualifiedStubBinaryName(declaration);
+    Class<?> clazz = loadClass(binaryName);
+    classpathClassCache.put(declaration, clazz);
+    return clazz;
+  }
+
+  /**
+   * Returns the binary name of the class that the given fully qualified name refers to: the class
+   * that the stub file declares, if the stub file declares it, and otherwise a class on the
+   * classpath.
    *
    * @param fqName a fully qualified class name
    * @param cu the stub file's compilation unit, or null not to consider the types that the stub
@@ -1958,24 +1985,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       result.append('$').append(identifiers[i]);
     }
     return result.toString();
-  }
-
-  /**
-   * Returns the classpath class with the same binary name as a type declaration of the stub file.
-   *
-   * @param declaration a type declaration in the stub file
-   * @return the classpath class with the same binary name as {@code declaration}, or null if there
-   *     is none
-   */
-  private @Nullable Class<?> classpathClass(TypeDeclaration<?> declaration) {
-    if (classpathClassCache.containsKey(declaration)) {
-      return classpathClassCache.get(declaration);
-    }
-    @SuppressWarnings("signature") // the binary name of a class
-    @ClassGetName String binaryName = qualifiedStubBinaryName(declaration);
-    Class<?> clazz = loadClass(binaryName);
-    classpathClassCache.put(declaration, clazz);
-    return clazz;
   }
 
   /**
@@ -2228,9 +2237,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * along an inheritance path. As for {@link #memberClass}, a member type is inherited only if it
    * is not private and it is accessible in every subtype along the path (JLS 8.5): it is public or
    * protected, it is a member of an interface or annotation interface (and so implicitly public),
-   * or every subtype along the path is in its package. If the stub file omits the access modifier
-   * of a member type that is on the classpath, the classpath declaration determines whether the
-   * member type is inherited.
+   * or every subtype along the path is in its package.
+   *
+   * <p>A stub file can omit the access modifier of a member type. Whether such a member type is
+   * inherited is determined by the class on the classpath that has the same binary name, if there
+   * is one. Otherwise, the member type is treated as public.
    *
    * @param declaringType a type declaration of the stub file
    * @param member a member type that {@code declaringType} declares
@@ -2258,12 +2269,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return true;
     }
     if (!member.isProtected()) {
-      // A stub file may omit the access modifier of a member type that is on the classpath; the
-      // classpath declaration determines its accessibility.
       Class<?> classpathMember = classpathClass(member);
-      Class<?> classpathDeclaringType =
-          classpathMember == null ? null : classpathMember.getDeclaringClass();
-      if (classpathMember != null && classpathDeclaringType != null) {
+      if (classpathMember == null) {
+        return true;
+      }
+      Class<?> classpathDeclaringType = classpathMember.getDeclaringClass();
+      if (classpathDeclaringType != null) {
         return isAccessible(classpathMember, pathPackage, importPackage);
       }
     }
@@ -2275,7 +2286,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the package of a type declaration of the stub file, in the form that {@link
+   * Returns the package of the given type declaration of the stub file, in the form that {@link
    * Class#getPackageName} returns.
    *
    * <p>A declaration that is not part of any compilation unit is in the package that the public

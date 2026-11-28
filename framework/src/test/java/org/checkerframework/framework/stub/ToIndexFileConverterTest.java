@@ -1168,26 +1168,27 @@ public class ToIndexFileConverterTest {
   /**
    * An import on demand from a type in another package makes available a protected member type that
    * the type inherits, if the import is in the package that declares the member type. A
-   * package-private member type is not inherited by a subclass in another package.
+   * package-private member type, such as {@code java.util.HashMap.Node}, is not inherited by a
+   * subclass in another package.
    */
   @Test
   public void testOnDemandImportOfProtectedInheritedMemberType() throws Exception {
     String jaif =
         convert(
-            "package p;",
+            "package java.util;",
             "import q.Sub.*;",
             "class Use {",
             "  void m(N x) {}",
-            "  void n(Integer i) {}",
+            "  void n(Node x) {}",
             "}",
-            "public class Base {",
+            "public class HashMap<K, V> {",
             "  protected static class N {}",
-            "  static class Integer {}",
+            "  static class Node<K, V> {}",
             "}",
             "package q;",
-            "public class Sub extends p.Base {}");
-    assertMethod(jaif, "Use", "m(Lp/Base$N;)V");
-    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+            "public class Sub extends java.util.HashMap {}");
+    assertMethod(jaif, "Use", "m(Ljava/util/HashMap$N;)V");
+    assertNoMethod(jaif, "Use", "n(Ljava/util/HashMap$Node;)V");
 
     // The same, for classes on the classpath.
     jaif =
@@ -1234,11 +1235,11 @@ public class ToIndexFileConverterTest {
             "package p;",
             "public class Outer {",
             "  private static class String {}",
-            "  static class Integer {}",
+            "  protected static class Integer {}",
             "  public static class Pub {}",
             "}");
     assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
-    // A package-private member type is not accessible in another package.
+    // A protected member type is not accessible to an import in another package.
     assertMethod(jaif, "C", "n(Ljava/lang/Integer;)V");
     assertMethod(jaif, "C", "o(Lp/Outer$Pub;)V");
 
@@ -1260,24 +1261,53 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * An import on demand of a package does not make available a package-private top-level type of
-   * another package, so the top-level type does not shadow a type in {@code java.lang}.
+   * An import on demand of a package does not make available a top-level type of another package
+   * that is package-private on the classpath, even if the stub file omits its access modifier, so
+   * the top-level type does not shadow a type that a later import on demand makes available.
    */
   @Test
   public void testOnDemandImportOfInaccessibleTopLevelType() throws Exception {
     String jaif =
         convert(
             "package q;",
-            "import p.*;",
+            "import java.util.*;",
+            "import r.*;",
             "class C {",
-            "  void m(String s) {}",
-            "  void n(Pub x) {}",
+            "  void m(RegularEnumSet.Extra x) {}",
+            "}",
+            "package java.util;",
+            "class RegularEnumSet {",
+            "  public static class Extra {}",
+            "}",
+            "package r;",
+            "public class RegularEnumSet {",
+            "  public static class Extra {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lr/RegularEnumSet$Extra;)V");
+  }
+
+  /**
+   * A stub file can omit the access modifier of a type. An import on demand in another package
+   * makes available such a type that is not on the classpath.
+   */
+  @Test
+  public void testOnDemandImportOfStubTypeWithoutAccessModifier() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.*;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(Foo f) {}",
+            "  void n(Inner i) {}",
             "}",
             "package p;",
-            "class String {}",
-            "public class Pub {}");
-    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
-    assertMethod(jaif, "C", "n(Lp/Pub;)V");
+            "class Foo {}",
+            "class Outer {",
+            "  static class Inner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Foo;)V");
+    assertMethod(jaif, "C", "n(Lp/Outer$Inner;)V");
   }
 
   /**
@@ -1395,36 +1425,58 @@ public class ToIndexFileConverterTest {
   /**
    * A package-private member type of a supertype in another package is not inherited, so it does
    * not hide a member type of a later supertype. A member type of an interface is implicitly
-   * public, so it is inherited from another package.
+   * public, so it is inherited from another package. The stub file omits the access modifier of
+   * {@code HashMap.Node}, which is package-private on the classpath.
    */
   @Test
   public void testInaccessibleInheritedMemberTypeOfStubSupertype() throws Exception {
     String jaif =
         convert(
             "package q;",
-            "class C extends p.Base implements I {",
-            "  void m(Inner x) {}",
+            "abstract class C extends java.util.HashMap implements I {",
+            "  void m(Node x) {}",
             "}",
             "interface I {",
-            "  class Inner {}",
+            "  class Node {}",
             "}",
             "class D implements p.J {",
             "  void m(JInner x) {}",
             "}",
-            "class E extends p.Base {",
-            "  void m(Inner x) {}",
+            "abstract class E extends java.util.HashMap {",
+            "  void m(Node x) {}",
+            "}",
+            "package java.util;",
+            "public class HashMap<K, V> {",
+            "  static class Node<K, V> {}",
+            "}",
+            "package p;",
+            "public interface J {",
+            "  class JInner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$Node;)V");
+    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
+    // `E` inherits no member type `Node`, so `Node` is not resolved to `java.util.HashMap.Node`.
+    assertNoMethod(jaif, "E", "m(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * A stub file can omit the access modifier of a member type. A member type that is not on the
+   * classpath and whose stub declaration omits its access modifier is inherited by a subtype in
+   * another package.
+   */
+  @Test
+  public void testStubMemberTypeWithoutAccessModifierIsInherited() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class C extends p.Base {",
+            "  void m(C.Inner x) {}",
             "}",
             "package p;",
             "public class Base {",
             "  static class Inner {}",
-            "}",
-            "public interface J {",
-            "  class JInner {}",
             "}");
-    assertMethod(jaif, "C", "m(Lq/I$Inner;)V");
-    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
-    // `E` inherits no member type `Inner`, so `Inner` is not resolved to `p.Base.Inner`.
-    assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
+    assertMethod(jaif, "C", "m(Lp/Base$Inner;)V");
   }
 
   /**
@@ -1440,22 +1492,22 @@ public class ToIndexFileConverterTest {
         convert(
             "package q;",
             "public interface I {",
-            "  class N {}",
+            "  class Node {}",
             "}",
-            "class C extends p.B {",
-            "  void m(N x) {}",
+            "abstract class C extends java.util.LinkedHashMap {",
+            "  void m(Node x) {}",
             "}",
-            "package p;",
-            "class A {",
-            "  static class N {}",
+            "package java.util;",
+            "public class HashMap<K, V> {",
+            "  static class Node<K, V> {}",
             "}",
-            "public class B extends A implements q.I {}",
-            "class E extends A {}",
-            "class F extends E {",
-            "  void m(N x) {}",
+            "public class LinkedHashMap<K, V> extends HashMap<K, V> implements q.I {}",
+            "abstract class E extends HashMap {}",
+            "abstract class F extends E {",
+            "  void m(Node x) {}",
             "}");
-    assertMethod(jaif, "C", "m(Lq/I$N;)V");
-    assertMethod(jaif, "F", "m(Lp/A$N;)V");
+    assertMethod(jaif, "C", "m(Lq/I$Node;)V");
+    assertMethod(jaif, "F", "m(Ljava/util/HashMap$Node;)V");
   }
 
   /**
@@ -1497,44 +1549,46 @@ public class ToIndexFileConverterTest {
   /**
    * An import on demand of the member types of a type makes available the accessible member types
    * that the type inherits. An inherited member type that is inaccessible to the import does not
-   * hide one, from a later supertype, that is accessible.
+   * hide one, from a later supertype, that is accessible. The stub file omits the access modifier
+   * of {@code java.util.HashMap.Node}, which is package-private on the classpath.
    */
   @Test
   public void testOnDemandImportOfInheritedMemberTypeSkipsInaccessibleOne() throws Exception {
-    String[] pkgP = {
-      "package p;",
-      "public class Base {",
-      "  static class N {}",
+    String[] pkgs = {
+      "package java.util;",
+      "public class HashMap<K, V> {",
+      "  static class Node<K, V> {}",
       "}",
+      "public class LinkedHashMap<K, V> extends HashMap<K, V> implements p.I {}",
+      "package p;",
       "public class ProtectedBase {",
-      "  protected static class N {}",
+      "  protected static class Node {}",
       "}",
       "public interface I {",
-      "  class N {}",
+      "  class Node {}",
       "}",
-      "public class Sub extends Base implements I {}",
       "public class ProtectedSub extends ProtectedBase implements I {}"
     };
     List<String> lines = new ArrayList<>();
     lines.add("package q;");
-    lines.add("import p.Sub.*;");
+    lines.add("import java.util.LinkedHashMap.*;");
     lines.add("class C {");
-    lines.add("  void m(N x) {}");
+    lines.add("  void m(Node x) {}");
     lines.add("}");
-    lines.addAll(Arrays.asList(pkgP));
+    lines.addAll(Arrays.asList(pkgs));
     String jaif = convert(lines.toArray(new String[0]));
-    assertMethod(jaif, "C", "m(Lp/I$N;)V");
+    assertMethod(jaif, "C", "m(Lp/I$Node;)V");
 
     // A protected member type is not accessible to an import in another package.
     lines.set(1, "import p.ProtectedSub.*;");
     jaif = convert(lines.toArray(new String[0]));
-    assertMethod(jaif, "C", "m(Lp/I$N;)V");
+    assertMethod(jaif, "C", "m(Lp/I$Node;)V");
 
-    // In the package of `Base`, its package-private member type is accessible.
-    lines.set(0, "package p;");
-    lines.set(1, "import p.Sub.*;");
+    // In the package of `HashMap`, its package-private member type is accessible.
+    lines.set(0, "package java.util;");
+    lines.set(1, "import java.util.LinkedHashMap.*;");
     jaif = convert(lines.toArray(new String[0]));
-    assertMethod(jaif, "C", "m(Lp/Base$N;)V");
+    assertMethod(jaif, "C", "m(Ljava/util/HashMap$Node;)V");
   }
 
   /**
