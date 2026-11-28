@@ -2,7 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +10,8 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -315,34 +317,32 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.stubDebugStatic(
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
+    // We use parseStubFile here even for ajava files because at this stage ajava files are parsed
+    // as stub files. The extra annotation data in an ajava file is parsed when type-checking the
+    // ajava file's corresponding Java file.
+    AnnotationFileType parseType =
+        fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType;
     for (String path : annotationFiles) {
-      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
-      if (allFiles != null) {
-        for (AnnotationFileResource resource : allFiles) {
-          try (BufferedInputStream annotationFileStream =
-              new BufferedInputStream(resource.getInputStream())) {
-            // Is it necessary to also skip files that consist only of Java comments?
-            Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-            if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-              continue;
-            }
-            // We use parseStubFile here even for ajava files because at this stage
-            // ajava files are parsed as stub files. The extra annotation data in an
-            // ajava file is parsed when type-checking the ajava file's corresponding
-            // Java file.
-            AnnotationFileParser.parseStubFile(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
-          } catch (IOException e) {
-            checker.messageOnce(
-                Diagnostic.Kind.WARNING,
-                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
-          }
-        }
+      File location = AnnotationFileUtil.findFileSystemLocation(path);
+      if (location != null) {
+        AnnotationFileUtil.forEachAnnotationFile(
+            location,
+            fileType,
+            resource -> parseAnnotationFileResource(resource, parseType),
+            skipped ->
+                checker.messageOnce(
+                    Diagnostic.Kind.NOTE,
+                    skipped.isDirectory()
+                        ? "Not reading directory "
+                            + skipped
+                            + ", which is within directory "
+                            + location
+                            + ", because it cannot be listed"
+                        : "Not reading archive "
+                            + skipped
+                            + ", which is within directory "
+                            + location
+                            + "; to read it, name the archive itself"));
       } else {
         // We didn't find the files.
         // If the file has a prefix of "checker.jar/" then look for the file in the top
@@ -350,69 +350,165 @@ public class AnnotationFileElementTypes {
         if (path.startsWith("checker.jar/")) {
           path = "/" + path.substring("checker.jar/".length());
         }
-        try (InputStream in = checker.getClass().getResourceAsStream(path)) {
-          if (in != null) {
-            AnnotationFileParser.parseStubFile(
-                path, in, factory, processingEnv, annotationFileAnnos, fileType);
-          } else {
-            // Didn't find the file.  Issue a warning.
+        URL classpathResource = checker.getClass().getResource(path);
+        if (classpathResource != null) {
+          parseAnnotationFileResource(urlResource(path, classpathResource), parseType);
+        } else {
+          // Didn't find the file.  Issue a warning.
 
-            // When using a compound checker, the target file may be found by the
-            // current checker's parent checkers. Also check this to avoid a false
-            // warning. Currently, only the original checker will try to parse the
-            // target file, the parent checkers are only used to reduce false
-            // warnings.
-            SourceChecker currentChecker = checker;
-            boolean findByParentCheckers = false;
-            while (currentChecker != null) {
-              URL topLevelResource = currentChecker.getClass().getResource("/" + path);
-              if (topLevelResource != null) {
-                currentChecker.message(
-                    Diagnostic.Kind.WARNING,
-                    path
-                        + " should be in the same directory as "
-                        + currentChecker.getClass().getSimpleName()
-                        + ".class, but is at the top level of a jar file: "
-                        + topLevelResource);
-                findByParentCheckers = true;
-                break;
-              } else {
-                currentChecker = currentChecker.getParentChecker();
-              }
-            }
-            // If there exists one parent checker that can find this file, don't report
-            // a warning.
-            if (!findByParentCheckers) {
-              File parentPath = new File(path).getParentFile();
-              String parentPathDescription =
-                  (parentPath == null
-                      ? "current directory"
-                      : "directory " + parentPath.getAbsolutePath());
-              String testSrc = System.getProperty("test.src");
-              String msg =
-                  checker.getClass().getSimpleName()
-                      + " did not find annotation file or directory "
-                      + path
-                      + " on classpath or within "
-                      + parentPathDescription
-                      + ((testSrc == null || new File(path).isAbsolute())
-                          ? ""
-                          : (" or within directory " + testSrc));
-              StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
-              sj.add(msg);
-              sj.add("Classpath:");
-              for (URI uri : new ClassGraph().getClasspathURIs()) {
-                sj.add(uri.toString());
-              }
-              checker.message(Diagnostic.Kind.WARNING, sj.toString());
+          // When using a compound checker, the target file may be found by the
+          // current checker's parent checkers. Also check this to avoid a false
+          // warning. Currently, only the original checker will try to parse the
+          // target file, the parent checkers are only used to reduce false
+          // warnings.
+          SourceChecker currentChecker = checker;
+          boolean findByParentCheckers = false;
+          while (currentChecker != null) {
+            URL topLevelResource = currentChecker.getClass().getResource("/" + path);
+            if (topLevelResource != null) {
+              currentChecker.message(
+                  Diagnostic.Kind.WARNING,
+                  path
+                      + " should be in the same directory as "
+                      + currentChecker.getClass().getSimpleName()
+                      + ".class, but is at the top level of a jar file: "
+                      + topLevelResource);
+              findByParentCheckers = true;
+              break;
+            } else {
+              currentChecker = currentChecker.getParentChecker();
             }
           }
-        } catch (IOException e) {
-          checker.messageOnce(
-              Diagnostic.Kind.WARNING, "Could not read annotation resource: " + path + ": " + e);
+          // If there exists one parent checker that can find this file, don't report
+          // a warning.
+          if (!findByParentCheckers) {
+            File parentPath = new File(path).getParentFile();
+            String parentPathDescription =
+                (parentPath == null
+                    ? "current directory"
+                    : "directory " + parentPath.getAbsolutePath());
+            String testSrc = System.getProperty("test.src");
+            String msg =
+                checker.getClass().getSimpleName()
+                    + " did not find annotation file or directory "
+                    + path
+                    + " on classpath or within "
+                    + parentPathDescription
+                    + ((testSrc == null || new File(path).isAbsolute())
+                        ? ""
+                        : (" or within directory " + testSrc));
+            StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
+            sj.add(msg);
+            sj.add("Classpath:");
+            for (URI uri : new ClassGraph().getClasspathURIs()) {
+              sj.add(uri.toString());
+            }
+            checker.message(Diagnostic.Kind.WARNING, sj.toString());
+          }
         }
       }
     }
+  }
+
+  /**
+   * Returns an annotation file resource whose contents are read from the given URL.
+   *
+   * @param description a description of the resource, such as the path that was used to find it;
+   *     used for diagnostics
+   * @param url a URL, such as the one that {@link Class#getResource} returns
+   * @return an annotation file resource whose contents are read from {@code url}
+   */
+  private static AnnotationFileResource urlResource(String description, URL url) {
+    return new AnnotationFileResource() {
+      @Override
+      public String getDescription() {
+        return description;
+      }
+
+      @Override
+      public InputStream getInputStream() throws IOException {
+        URLConnection connection = url.openConnection();
+        // Without this, a "jar:" URL reads from a JarFile that the JDK caches and never closes,
+        // so the jar stays open (and, on Windows, locked) after the compilation ends.
+        connection.setUseCaches(false);
+        return connection.getInputStream();
+      }
+    };
+  }
+
+  /**
+   * Parses the given annotation file as a stub file and adds its annotations to {@link
+   * #annotationFileAnnos}. Issues a warning if the file cannot be read. Does nothing if the file
+   * consists only of whitespace, as {@link #isStubWhitespace} defines it.
+   *
+   * @param resource an annotation file
+   * @param parseType the file type to parse {@code resource} as; a stub file type
+   */
+  private void parseAnnotationFileResource(
+      AnnotationFileResource resource, AnnotationFileType parseType) {
+    // Read the entire file, so that a read failure is reported below as an IOException and so
+    // that the whole file can be checked for being whitespace-only.
+    byte[] contents;
+    try (InputStream in = resource.getInputStream()) {
+      contents = in.readAllBytes();
+    } catch (IOException e) {
+      factory
+          .getChecker()
+          .messageOnce(
+              Diagnostic.Kind.WARNING,
+              "Could not read annotation resource: " + resource.getDescription() + ": " + e);
+      return;
+    }
+    // Is it necessary to also skip files that consist only of Java comments?
+    if (isBlank(contents)) {
+      return;
+    }
+    AnnotationFileParser.parseStubFile(
+        resource.getDescription(),
+        new ByteArrayInputStream(contents),
+        factory,
+        factory.getProcessingEnv(),
+        annotationFileAnnos,
+        parseType);
+  }
+
+  /**
+   * Returns true if the given UTF-8 text consists only of whitespace, as {@link #isStubWhitespace}
+   * defines it.
+   *
+   * @param contents UTF-8 text
+   * @return true if {@code contents} consists only of whitespace
+   */
+  private static boolean isBlank(byte[] contents) {
+    for (int i = 0; i < contents.length; i++) {
+      byte b = contents[i];
+      if (b < 0) {
+        // A non-ASCII character, which might be whitespace. Decode only the rest of the text.
+        return new String(contents, i, contents.length - i, StandardCharsets.UTF_8)
+            .codePoints()
+            .allMatch(AnnotationFileElementTypes::isStubWhitespace);
+      }
+      if (!isStubWhitespace(b)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if the stub file parser treats the given character as whitespace. Those characters
+   * are the ASCII characters that are whitespace in Java (space, tab, form feed, and the line
+   * terminators CR and LF) and the non-ASCII characters that {@link Character#isWhitespace}
+   * accepts, such as U+2003 (em space).
+   *
+   * @param c a Unicode code point
+   * @return true if the stub file parser treats {@code c} as whitespace
+   */
+  private static boolean isStubWhitespace(int c) {
+    if (c > 0x7F) {
+      return Character.isWhitespace(c);
+    }
+    return c == ' ' || c == '\t' || c == '\f' || c == '\r' || c == '\n';
   }
 
   /**
