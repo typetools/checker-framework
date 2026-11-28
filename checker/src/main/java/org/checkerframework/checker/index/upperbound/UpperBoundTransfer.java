@@ -534,11 +534,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * #qualifierWhenComparisonCompletes}), and each bound that might not hold when the comparison
    * completes (see {@link #removeBoundsChangedAfter}).
    *
-   * @param left the left operand of the comparison
+   * @param left the left operand of the equality comparison
    * @param leftAnno the upper bound annotation of {@code left}
-   * @param right the right operand of the comparison
+   * @param right the right operand of the equality comparison
    * @param rightAnno the upper bound annotation of {@code right}
-   * @param store the store to refine
+   * @param store the store to refine, in which the operands are equal
    */
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {
