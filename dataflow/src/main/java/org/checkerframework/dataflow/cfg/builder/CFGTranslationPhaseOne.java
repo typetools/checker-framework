@@ -2580,8 +2580,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
         boolean labelsMightHaveSideEffects = false;
+        // True if a label is a record pattern.  Matching it invokes record accessors.
+        boolean labelsContainRecordPattern = false;
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
+          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+            labelsContainRecordPattern = true;
+          }
           if (SideEffectScanner.mightHaveSideEffects(exprTree, annotationProvider)) {
             // Matching a record pattern invokes record accessors, which might have side effects,
             // even if the match fails.  mightHaveSideEffects also examines nested record patterns.
@@ -2610,9 +2615,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 labelsMightHaveSideEffects,
                 guardMightHaveSideEffects,
                 env.getTypeUtils());
-        if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
+        if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || labelsContainRecordPattern) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
-          // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
+          // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.  Also, if a
+          // record accessor that a record pattern invokes throws an exception, the switch throws
+          // MatchException (JLS 14.30.2), whether or not the labels always match.
           extendWithNodeWithException(caseNode, matchExceptionType);
         } else {
           extendWithNode(caseNode);
