@@ -312,12 +312,14 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           } else {
             ExpressionTree left = tree.getLeftOperand();
             if (tree.getKind() == Tree.Kind.LEFT_SHIFT
-                && TypesUtils.isCharOrCharacter(TreeUtils.typeOf(left))) {
+                && TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(left), types).getKind()
+                    == TypeKind.CHAR) {
               // Unary numeric promotion widens a char to an @SignedPositive int.  A right shift
               // preserves that, but a left shift can set the sign bit:  (char) 0x8000 << 16 is
               // Integer.MIN_VALUE.  The test examines the Java type of the operand because its
               // annotated type might already be promoted:  dataflow maps a primitive char
-              // operand to the CFG node that widens it.
+              // operand to the CFG node that widens it.  The test unboxes the Java type, so it
+              // also handles a Character operand and a type variable bounded by Character.
               type.replaceAnnotation(UNSIGNED);
             } else {
               AnnotatedTypeMirror lht = unaryNumericPromotion(getAnnotatedType(left));
