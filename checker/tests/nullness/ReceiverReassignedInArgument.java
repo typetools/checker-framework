@@ -2,6 +2,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.DoesNotUnrefineReceiver;
 
 // A call's receiver is evaluated before its arguments.  If an argument reassigns the receiver
@@ -147,6 +148,31 @@ public class ReceiverReassignedInArgument {
   void sideEffectField() {
     // :: error: (dereference.of.nullable)
     f.sideEffect();
+    // :: error: (dereference.of.nullable)
+    f.toString();
+  }
+
+  int count;
+
+  @SideEffectsOnly("this.count")
+  void bump() {
+    count++;
+  }
+
+  @SideEffectsOnly("this")
+  void bumpThis() {}
+
+  // The method changes only f.count, not f, so normal completion shows that f is non-null.
+  void sideEffectsOnlyField() {
+    // :: error: (dereference.of.nullable)
+    f.bump();
+    f.toString();
+  }
+
+  // The method might change f.
+  void sideEffectsOnlyThisField() {
+    // :: error: (dereference.of.nullable)
+    f.bumpThis();
     // :: error: (dereference.of.nullable)
     f.toString();
   }

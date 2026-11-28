@@ -39,6 +39,37 @@ public class MonotonicNonNullReceiverRefinement {
     nble.act();
   }
 
+  int count;
+
+  int tick() {
+    return count++;
+  }
+
+  void consume(int i) {}
+
+  // An argument with side effects cannot make the field null again.
+  void monotonicReceiverEffectfulArgument() {
+    // :: error: (dereference.of.nullable)
+    mnn.consume(tick());
+    mnn.act();
+  }
+
+  void monotonicReceiverOfOtherObjectEffectfulArgument(MonotonicNonNullReceiverRefinement other) {
+    // :: error: (dereference.of.nullable)
+    other.mnn.consume(tick());
+    other.mnn.act();
+  }
+
+  // An argument that reassigns the receiver of the field access makes the expression denote a
+  // different, possibly null, field.
+  void monotonicReceiverOfReassignedObject(
+      MonotonicNonNullReceiverRefinement other, MonotonicNonNullReceiverRefinement replacement) {
+    // :: error: (dereference.of.nullable)
+    other.mnn.take(other = replacement);
+    // :: error: (dereference.of.nullable)
+    other.mnn.act();
+  }
+
   MonotonicNonNullReceiverRefinement nn = new MonotonicNonNullReceiverRefinement();
 
   // The call might reassign the receiver of the field access, so that the expression denotes a

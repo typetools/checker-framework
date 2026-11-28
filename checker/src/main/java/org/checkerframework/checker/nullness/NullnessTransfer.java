@@ -5,14 +5,18 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -421,8 +425,9 @@ public class NullnessTransfer
    * SideEffectFree, the receiver is unassignable, or the receiver is a {@link MonotonicNonNull}
    * field whose own receiver is unassignable. Only if one of these is true is the receiver made
    * non-null. The receiver is also made non-null if the method is annotated {@link
-   * org.checkerframework.framework.qual.DoesNotUnrefineReceiver}. Similar logic is applied to the
-   * arguments of the invocation.
+   * org.checkerframework.framework.qual.DoesNotUnrefineReceiver}, or if it is annotated {@link
+   * org.checkerframework.dataflow.qual.SideEffectsOnly} with expressions that do not include the
+   * receiver. Similar logic is applied to the arguments of the invocation.
    *
    * <p>The receiver of a static method invocation is never made non-null, because the invocation
    * does not dereference it.
@@ -459,7 +464,8 @@ public class NullnessTransfer
                 || isMethodSideEffectFree
                 || atypeFactory.hasDoesNotUnrefineReceiver(method)
                 || !receiverExpr.isAssignableByOtherCode()
-                || isMonotonicNonNullFieldWithStableReceiver(receiverExpr))
+                || isMonotonicNonNullFieldWithStableReceiver(receiverExpr)
+                || !sideEffectsOnlyMayChange(n, receiverExpr))
             && tree != null
             && !argumentsMayReassign(tree.getArguments(), receiverExpr);
 
@@ -549,6 +555,29 @@ public class NullnessTransfer
   }
 
   /**
+   * Returns true unless the invoked method has a {@code @SideEffectsOnly} annotation that
+   * guarantees that the invocation does not change the value of the given expression. This is
+   * conservative: it returns true if the expression contains a method call, whose value might
+   * depend on state that the annotation's expressions do not syntactically contain.
+   *
+   * @param n a method invocation
+   * @param expr an expression
+   * @return true if invocation {@code n} might change the value of {@code expr}
+   */
+  private boolean sideEffectsOnlyMayChange(MethodInvocationNode n, JavaExpression expr) {
+    @Nullable List<JavaExpression> seOnlyExpressions = analysis.getSideEffectsOnlyExpressions(n);
+    if (seOnlyExpressions == null || expr.containsOfClass(MethodCall.class)) {
+      return true;
+    }
+    for (JavaExpression seOnlyExpr : seOnlyExpressions) {
+      if (expr.containsSyntacticEqualJavaExpression(seOnlyExpr)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Returns a transfer result like {@code result}, in which the receiver of {@code n} is non-null
    * on some exceptional successors.
    *
@@ -602,14 +631,22 @@ public class NullnessTransfer
    * expression or a subexpression of it. The "receiver" may also be an earlier argument of the
    * invocation. This is conservative. It returns true if an argument assigns any part of the
    * receiver expression. If the receiver expression is assignable by other code or contains a
-   * method call (whose value might depend on state that does not appear in the expression), it also
-   * returns true if an argument assigns a non-local variable or (unless {@link
-   * #nonNullAssumptionAfterInvocation} is set) invokes a method or constructor that is not
-   * side-effect-free.
+   * method call (whose value might depend on state that does not appear in the expression), and it
+   * is not a {@link MonotonicNonNull} field with a stable receiver (see {@link
+   * #isMonotonicNonNullFieldWithStableReceiver}), it also returns true if an argument assigns a
+   * non-local variable or (unless {@link #nonNullAssumptionAfterInvocation} is set) invokes a method
+   * or constructor that is not side-effect-free, including implicitly: by string conversion, by
+   * matching a record pattern, by closing the resources of a try-with-resources statement, or by
+   * iterating over an {@code Iterable} in an enhanced for loop.
    *
    * <p>Matching a record pattern, as in {@code o instanceof R(int i)}, implicitly invokes the
    * record's component accessors. This method handles them as it handles explicit method
-   * invocations.
+   * invocations. Likewise for the implicit {@code close()} calls of a try-with-resources statement
+   * and the implicit {@code iterator()}, {@code hasNext()}, and {@code next()} calls of an enhanced
+   * for loop over an {@code Iterable}, which an argument can contain within a switch expression.
+   *
+   * <p>This method ignores the side effects of class initialization, as the rest of the Checker
+   * Framework does.
    *
    * <p>This method does not examine the bodies of lambda expressions and anonymous classes in the
    * arguments. Evaluating the arguments executes such a body only through a method or constructor
@@ -629,8 +666,11 @@ public class NullnessTransfer
     // static field that the method reads.  (MethodCall.isAssignableByOtherCode() examines only the
     // receiver and arguments.)  So, an assignment to a non-local variable or a call with side
     // effects might change the value of a receiver that contains a method call.
+    // However, no code can make a non-null @MonotonicNonNull field null again, so only an explicit
+    // assignment to (part of) its stable receiver can make the expression denote a null value.
     boolean receiverMayChangeByOtherCode =
-        receiverExpr.isAssignableByOtherCode() || receiverExpr.containsOfClass(MethodCall.class);
+        (receiverExpr.isAssignableByOtherCode() || receiverExpr.containsOfClass(MethodCall.class))
+            && !isMonotonicNonNullFieldWithStableReceiver(receiverExpr);
     TreeScanner<Boolean, Void> scanner =
         new TreeScanner<Boolean, Void>() {
           @Override
@@ -705,6 +745,33 @@ public class NullnessTransfer
             return super.scan(tree, p);
           }
 
+          // A try-with-resources statement implicitly invokes the close() method of each resource.
+          @Override
+          public Boolean visitTry(TryTree tree, Void p) {
+            for (Tree resource : tree.getResources()) {
+              TypeMirror resourceType =
+                  resource instanceof VariableTree variableTree
+                      ? TreeUtils.elementFromDeclaration(variableTree).asType()
+                      : TreeUtils.typeOf(resource);
+              if (closeMayHaveSideEffect(resourceType)) {
+                return true;
+              }
+            }
+            return super.visitTry(tree, p);
+          }
+
+          // An enhanced for loop over an Iterable implicitly invokes iterator(), hasNext(), and
+          // next().  An enhanced for loop over an array invokes no method.
+          @Override
+          public Boolean visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+            TypeMirror iterableType = TreeUtils.typeOf(tree.getExpression());
+            if (iterableType.getKind() != TypeKind.ARRAY
+                && iterationMayHaveSideEffect(iterableType)) {
+              return true;
+            }
+            return super.visitEnhancedForLoop(tree, p);
+          }
+
           // visitMethodInvocation and visitNewClass handle the invocations that execute the body
           // of a lambda expression or anonymous class.
 
@@ -750,7 +817,7 @@ public class NullnessTransfer
           private boolean recordPatternMayHaveSideEffect(Tree recordPattern) {
             TypeElement recordElement = TypesUtils.getTypeElement(TreeUtils.typeOf(recordPattern));
             if (recordElement == null) {
-              return receiverMayChangeByOtherCode && !nonNullAssumptionAfterInvocation;
+              return mayHaveUnknownSideEffect();
             }
             for (RecordComponentElement component : recordElement.getRecordComponents()) {
               if (mayHaveSideEffect(component.getAccessor())) {
@@ -775,25 +842,111 @@ public class NullnessTransfer
                 || TypesUtils.isString(type)) {
               return false;
             }
-            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
-            if (typeElement == null) {
-              // For example, an array type.
+            List<ExecutableElement> toStringMethods = noArgMethods(type, "toString");
+            if (toStringMethods.isEmpty()) {
+              // For example, an array type, or an interface, which need not declare or inherit a
+              // toString() method.
               return mayHaveSideEffect(objectToString);
             }
-            // As for an explicit invocation, use the toString() methods of the static type.
-            // getAllMethodsIn also returns overridden methods, which is conservative.
-            boolean foundToString = false;
-            for (ExecutableElement m :
-                ElementUtils.getAllMethodsIn(typeElement, nullnessTypeFactory.getElementUtils())) {
-              if (m.getSimpleName().contentEquals("toString") && m.getParameters().isEmpty()) {
-                foundToString = true;
-                if (mayHaveSideEffect(m)) {
+            return anyMayHaveSideEffect(toStringMethods);
+          }
+
+          /*
+           * Returns true if closing a resource of the given type, as a try-with-resources
+           * statement does, might reassign the receiver by invoking a close() method.
+           *
+           * @param resourceType the type of a resource of a try-with-resources statement
+           * @return true if closing a resource of type {@code resourceType} might reassign the
+           *     receiver
+           */
+          private boolean closeMayHaveSideEffect(TypeMirror resourceType) {
+            List<ExecutableElement> closeMethods = noArgMethods(resourceType, "close");
+            return closeMethods.isEmpty()
+                ? mayHaveUnknownSideEffect()
+                : anyMayHaveSideEffect(closeMethods);
+          }
+
+          /*
+           * Returns true if iterating over an expression of the given type, as an enhanced for loop
+           * over an Iterable does, might reassign the receiver by invoking an iterator() method or
+           * the hasNext() or next() method of the iterator.
+           *
+           * @param iterableType the type of the expression of an enhanced for loop; not an array
+           *     type
+           * @return true if iterating over an expression of type {@code iterableType} might
+           *     reassign the receiver
+           */
+          private boolean iterationMayHaveSideEffect(TypeMirror iterableType) {
+            List<ExecutableElement> iteratorMethods = noArgMethods(iterableType, "iterator");
+            if (iteratorMethods.isEmpty()) {
+              return mayHaveUnknownSideEffect();
+            }
+            for (ExecutableElement iteratorMethod : iteratorMethods) {
+              if (mayHaveSideEffect(iteratorMethod)) {
+                return true;
+              }
+              TypeMirror iteratorType = iteratorMethod.getReturnType();
+              List<ExecutableElement> hasNextMethods = noArgMethods(iteratorType, "hasNext");
+              List<ExecutableElement> nextMethods = noArgMethods(iteratorType, "next");
+              if (hasNextMethods.isEmpty() || nextMethods.isEmpty()) {
+                if (mayHaveUnknownSideEffect()) {
                   return true;
                 }
+              } else if (anyMayHaveSideEffect(hasNextMethods)
+                  || anyMayHaveSideEffect(nextMethods)) {
+                return true;
               }
             }
-            // An interface need not declare or inherit a toString() method.
-            return !foundToString && mayHaveSideEffect(objectToString);
+            return false;
+          }
+
+          /*
+           * Returns the no-argument methods with the given name of the given type.  As for an
+           * explicit invocation, uses the methods of the static type.  The result includes
+           * overridden methods, which is conservative.
+           *
+           * @param type a type
+           * @param methodName a method name
+           * @return the no-argument methods named {@code methodName} of {@code type}; empty if
+           *     {@code type} is not a class or interface type, possibly after erasure
+           */
+          private List<ExecutableElement> noArgMethods(TypeMirror type, String methodName) {
+            TypeElement typeElement = TypesUtils.getTypeElement(analysis.getTypes().erasure(type));
+            if (typeElement == null) {
+              return List.of();
+            }
+            List<ExecutableElement> result = new ArrayList<>();
+            for (ExecutableElement m :
+                ElementUtils.getAllMethodsIn(typeElement, nullnessTypeFactory.getElementUtils())) {
+              if (m.getSimpleName().contentEquals(methodName) && m.getParameters().isEmpty()) {
+                result.add(m);
+              }
+            }
+            return result;
+          }
+
+          /*
+           * Returns true if invoking any of the given methods might reassign the receiver.
+           *
+           * @param methods methods
+           * @return true if invoking any of {@code methods} might reassign the receiver
+           */
+          private boolean anyMayHaveSideEffect(List<ExecutableElement> methods) {
+            for (ExecutableElement m : methods) {
+              if (mayHaveSideEffect(m)) {
+                return true;
+              }
+            }
+            return false;
+          }
+
+          /*
+           * Returns true if invoking an unknown method might reassign the receiver.
+           *
+           * @return true if invoking an unknown method might reassign the receiver
+           */
+          private boolean mayHaveUnknownSideEffect() {
+            return receiverMayChangeByOtherCode && !nonNullAssumptionAfterInvocation;
           }
 
           /*
