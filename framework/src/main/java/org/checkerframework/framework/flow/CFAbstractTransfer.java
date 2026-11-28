@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -924,8 +926,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1343,7 +1345,39 @@ public abstract class CFAbstractTransfer<
    */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
+    // The case labels are tested against the value of the selector expression that was saved
+    // before the switch.  If the selector expression might have changed since then, do not refine
+    // it.
+    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     S store = in.getRegularStore();
+    S thenStoreIn = in.getThenStore();
+    S elseStoreIn = in.getElseStore();
+    // Non-null if a record accessor might have side effects and the case node has exceptional
+    // successors (for a MatchException, for example when an accessor throws an exception).  These
+    // stores contain the effect of the accessor calls but not the facts implied by a successful
+    // match.
+    Map<TypeMirror, S> exceptionalStores = null;
+    if (n.labelsMightHaveSideEffects()) {
+      // A record accessor that a record pattern of this case invokes might have side effects.  The
+      // CFG does not represent the accessor calls, so their effect is applied here, before the
+      // facts implied by a successful match (which hold after the accessor calls).
+      store = applyRecordAccessorSideEffects(store);
+      thenStoreIn = applyRecordAccessorSideEffects(thenStoreIn);
+      elseStoreIn = applyRecordAccessorSideEffects(elseStoreIn);
+      // The accessors might have changed the selector expression, so the store's value for (each
+      // part of) the selector expression might be stale.
+      store = clearStaleSelectorValues(store, n, true);
+      thenStoreIn = clearStaleSelectorValues(thenStoreIn, n, true);
+      elseStoreIn = clearStaleSelectorValues(elseStoreIn, n, true);
+    }
+    if (n.labelsMightHaveSideEffects()
+        && n.getBlock() instanceof ExceptionBlock block
+        && !block.getExceptionalSuccessors().isEmpty()) {
+      exceptionalStores = new LinkedHashMap<>();
+      for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
+        exceptionalStores.put(exceptionType, store.copy());
+      }
+    }
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1351,16 +1385,18 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    AssignmentNode assign = n.getSwitchOperand();
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
-              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
+              finishValue(null, store), thenStoreIn.copy(), elseStoreIn.copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (refineSelectorExpression) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1377,7 +1413,125 @@ public abstract class CFAbstractTransfer<
                 null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
       }
     }
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (n.guardMightHaveSideEffects()) {
+      // The guard runs only if one of this case's labels matches, and it might change the result
+      // of a method call in the selector expression.  The store does not unrefine such a method
+      // call at the guard's side effects, so clear its value from the store that flows into the
+      // guard.  A fact that the guard establishes about the method call after its side effects
+      // still reaches the body and the later cases.
+      lubResult =
+          new ConditionalTransferResult<>(
+              lubResult.getResultValue(),
+              clearStaleSelectorValues(lubResult.getThenStore(), n, false),
+              lubResult.getElseStore(),
+              true);
+    }
+    if (n.labelsUntested()) {
+      // The CFG omits the test of this case's labels, so the facts that hold when one of this
+      // case's labels matches hold after this node.
+      return new RegularTransferResult<>(
+          null, lubResult.getThenStore(), exceptionalStores, lubResult.storeChanged());
+    }
+    if (exceptionalStores != null) {
+      return lubResult.withExceptionalStores(exceptionalStores);
+    }
     return lubResult;
+  }
+
+  /**
+   * Returns a copy of {@code store} with the effect of record accessor calls that might have side
+   * effects applied. A case's record patterns invoke the accessors, but the CFG does not represent
+   * the calls.
+   *
+   * @param store a store before the record accessor calls; is not side-effected by this method
+   * @return a copy of {@code store} with the effect of the accessor calls applied
+   */
+  private S applyRecordAccessorSideEffects(S store) {
+    S result = store.copy();
+    result.updateForUnknownSideEffect();
+    return result;
+  }
+
+  /**
+   * Returns a copy of {@code store} without the values of (the parts of) the switch selector
+   * expression of {@code n} that code with side effects might make stale. A value is cleared in two
+   * situations:
+   *
+   * <ul>
+   *   <li>A record accessor that a record pattern of {@code n} invokes might change the selector
+   *       expression, even if the selector expression is a field with a monotonic qualifier, which
+   *       {@code updateForUnknownSideEffect} does not unrefine. The CFG does not represent the
+   *       accessor calls, so their effect on the selector expression is applied here. The caller
+   *       passes true for {@code clearModifiable}.
+   *   <li>The store does not unrefine a method call whose receiver and arguments are unmodifiable
+   *       at a side effect, such as one in a guard, even though the method might read mutable state
+   *       that the side effect changes.
+   * </ul>
+   *
+   * If the selector expression is an assignment, such as {@code switch (selector = saved)}, each
+   * assignment target and the right-hand side are handled separately.
+   *
+   * @param store a store; not modified
+   * @param n a case node
+   * @param clearModifiable if true, also clear the value of each part that code with side effects
+   *     might change, not only of each part that contains a method call
+   * @return a copy of {@code store}, without the values of the parts of the selector expression
+   *     that might be stale
+   */
+  private S clearStaleSelectorValues(S store, CaseNode n, boolean clearModifiable) {
+    S result = store.copy();
+    for (Node part : splitAssignments(n.getSwitchOperand().getExpression())) {
+      JavaExpression partExpr = JavaExpression.fromNode(part);
+      if (partExpr.containsOfClass(MethodCall.class)
+          || (clearModifiable && mightBeChangedByOtherCode(partExpr))) {
+        result.clearValue(partExpr);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if the switch selector expression (the right-hand side of {@code
+   * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
+   *
+   * <p>The selector expression might not denote the tested value if code with side effects, such as
+   * the guard of an earlier case or a record accessor that a record pattern invokes, ran after the
+   * switch evaluated the selector expression (see {@link CaseNode#sideEffectSinceSelector()}). That
+   * code cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign a
+   * field, change the result of a method call, or mutate the object that the selector expression
+   * evaluates to.
+   *
+   * @param n a case node
+   * @return true if the switch selector expression still denotes the value that the switch tests
+   */
+  protected boolean selectorExpressionDenotesSwitchValue(CaseNode n) {
+    if (!n.sideEffectSinceSelector()) {
+      return true;
+    }
+    JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    // A method call is excluded even if its receiver and arguments are unassignable, because the
+    // method might read mutable state (such as a static field) that the intervening code changed.
+    if (selector.containsOfClass(MethodCall.class)) {
+      return false;
+    }
+    return !mightBeChangedByOtherCode(selector);
+  }
+
+  /**
+   * Returns true if code with side effects, such as a guard or a record accessor, might change the
+   * abstract value of {@code expr}. This mirrors the unrefinement that {@link CFAbstractStore}
+   * performs at a side effect. Neither a guard nor a record accessor can assign a local variable
+   * that is declared outside it.
+   *
+   * @param expr an expression
+   * @return true if code with side effects might change the abstract value of {@code expr}
+   */
+  private boolean mightBeChangedByOtherCode(JavaExpression expr) {
+    return analysis.atypeFactory.sideEffectsUnrefineAliases
+        ? expr.isModifiableByOtherCode()
+        : expr.isAssignableByOtherCode();
   }
 
   // /**
@@ -1423,7 +1577,9 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
-    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    // The binding variable is declared before the CaseNode, and visitCase refines the selector by
+    // the binding variable, not the binding variable by the selector.  Refine it here, so that the
+    // guard and the body see the refinement.
     ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
     if (selector != null) {
       refineCaseLabelBindingVariable(store, n.getTree(), selector);
