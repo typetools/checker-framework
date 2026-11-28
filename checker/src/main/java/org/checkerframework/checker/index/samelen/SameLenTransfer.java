@@ -192,11 +192,11 @@ public class SameLenTransfer extends CFTransfer {
   private void refineEq(Node left, Node right, CFStore store) {
     List<JavaExpression> exprs = new ArrayList<>(2);
     List<AnnotationMirror> annos = new ArrayList<>(2);
-    for (Node internal : splitAssignments(left)) {
+    for (Node internal : nodesWithValueOf(left)) {
       exprs.add(JavaExpression.fromNode(internal));
       annos.add(getAnno(internal));
     }
-    for (Node internal : splitAssignments(right)) {
+    for (Node internal : nodesWithValueOf(right)) {
       exprs.add(JavaExpression.fromNode(internal));
       annos.add(getAnno(internal));
     }
