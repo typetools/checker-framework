@@ -2081,21 +2081,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * nodes[0].f = x;}, the annotation permits both statements, but the second one modifies {@code
    * SHARED} rather than the argument.
    *
-   * <p>The result is false only if {@code method} is a variable-arity method that cannot be
-   * overridden, its body is in source code, and the body uses the varargs parameter only to read an
-   * element or its length, or as the expression of an enhanced {@code for} statement. An override
-   * of {@code method} inherits its annotation but might assign an element.
+   * <p>The result is false only if {@code method} is a variable-arity method, its body is in source
+   * code, the body uses the varargs parameter only to read an element or its length, or as the
+   * expression of an enhanced {@code for} statement, and the call runs that body: either {@code
+   * method} cannot be overridden, or the call is through a {@code super} method reference such as
+   * {@code super::m}, which is not dispatched dynamically (JLS 15.13.3). An override of {@code
+   * method} inherits its annotation but might assign an element.
    *
    * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
    * has the name of the varargs parameter is treated as a use of it.
    *
    * @param method a method or constructor
+   * @param isSuperReference true if the call is through a {@code super} method reference, which
+   *     runs {@code method} itself rather than an override of it
    * @return true if code that a call to {@code method} runs might reassign an element of its
    *     varargs parameter
    */
-  boolean varargsElementsMightBeReassigned(ExecutableElement method) {
+  boolean varargsElementsMightBeReassigned(ExecutableElement method, boolean isSuperReference) {
     List<? extends VariableElement> parameters = method.getParameters();
-    if (!method.isVarArgs() || parameters.isEmpty() || isOverridable(method)) {
+    if (!method.isVarArgs()
+        || parameters.isEmpty()
+        || (!isSuperReference && isOverridable(method))) {
       return true;
     }
     if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)

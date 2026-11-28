@@ -740,7 +740,8 @@ public class OverrideChecker {
               int firstVarargsIndex = subParameterCount - 1 + shift;
               // Compare `k` before adding to it, because the sum can overflow.
               if (k >= 0 && k < superParameters.size() - firstVarargsIndex) {
-                if (visitor.varargsElementsMightBeReassigned(overrider.getElement())) {
+                if (visitor.varargsElementsMightBeReassigned(
+                    overrider.getElement(), methodRefKind == MemberReferenceKind.SUPER)) {
                   // The parameters correspond, but the element might not hold the argument when
                   // the effect occurs.  Do not report that the parameters do not correspond.
                   return new Unknown(arrayAccess.getType());

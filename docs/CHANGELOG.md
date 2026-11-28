@@ -47,6 +47,10 @@ two-argument method to customize purity errors should override the
 three-argument method instead, so that the customization also applies to
 lambdas.
 
+New method `JavaExpression.atMethodInvocation(MethodInvocationTree,
+UnaryOperator)` normalizes the receiver and arguments of the invocation before
+viewpoint-adapting.
+
 Deprecated methods:
 
 * `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`

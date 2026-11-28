@@ -310,6 +310,39 @@ public class MethodRefSideEffectsOnly {
     NodeMutator m = MethodRefSideEffectsOnly::readsFirstThenMutates;
   }
 
+  static class VarargsBase {
+    @SideEffectsOnly("#1[0]")
+    void readsFirst(Node... nodes) {
+      nodes[0].child.add(1);
+    }
+
+    @SideEffectsOnly("#1[0]")
+    void reassignsFirst(Node... nodes) {
+      nodes[0] = shared;
+      nodes[0].child.add(1);
+    }
+  }
+
+  static class VarargsDerived extends VarargsBase {
+    void overridableOk() {
+      // `super::readsFirst` runs `VarargsBase.readsFirst` itself, not an override of it, and that
+      // body only reads the elements of `nodes`.
+      NodeMutator m = super::readsFirst;
+    }
+
+    void overridableThisNotOk() {
+      // `this::readsFirst` dispatches dynamically, and an override of `readsFirst` inherits its
+      // annotation but might reassign an element of `nodes`.
+      // :: error: (purity.methodref)
+      NodeMutator m = this::readsFirst;
+    }
+
+    void overridableReassignsNotOk() {
+      // :: error: (purity.methodref)
+      NodeMutator m = super::reassignsFirst;
+    }
+  }
+
   @SideEffectsOnly("#1[2147483647].child")
   static void mutatesHugeIndex(Node... nodes) {}
 

@@ -18,6 +18,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -423,6 +424,34 @@ public abstract class JavaExpression {
             TreeUtils.elementFromUse(methodInvocationTree),
             methodInvocationTree,
             methodInvocationTree.getArguments());
+    return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
+  }
+
+  /**
+   * Viewpoint-adapts {@code this} to the {@code methodInvocationTree}, first applying {@code
+   * normalizer} to the receiver and to each argument of the invocation. Only the call site's
+   * expressions are normalized; the parts of the result that come from {@code this} are not.
+   *
+   * <p>For example, passing {@link #superToThisExceptCallReceivers} as {@code normalizer} turns a
+   * receiver {@code super} into {@code this}, so that a call written on the callee's {@code this}
+   * remains a virtual call, while preserving a call such as {@code super.m()} that is written
+   * literally in an argument.
+   *
+   * @param methodInvocationTree method invocation
+   * @param normalizer a function to apply to the receiver and to each argument of {@code
+   *     methodInvocationTree}
+   * @return viewpoint-adapted version of this
+   */
+  public final JavaExpression atMethodInvocation(
+      MethodInvocationTree methodInvocationTree, UnaryOperator<JavaExpression> normalizer) {
+    JavaExpression receiverJe = normalizer.apply(getReceiver(methodInvocationTree));
+    List<JavaExpression> argumentsJe =
+        CollectionsP.mapList(
+            normalizer,
+            argumentTreesToJavaExpressions(
+                TreeUtils.elementFromUse(methodInvocationTree),
+                methodInvocationTree,
+                methodInvocationTree.getArguments()));
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
   }
 

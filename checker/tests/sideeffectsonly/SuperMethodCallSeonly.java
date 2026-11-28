@@ -81,6 +81,29 @@ public class SuperMethodCallSeonly {
       // :: error: (purity.incorrect.sideeffectsonly)
       super.callsGet();
     }
+
+    @SideEffectsOnly("#1")
+    static void touch(Box b) {
+      b.content = null;
+    }
+
+    // A `super.get()` that the caller passes as an argument still dispatches directly.
+    @SideEffectsOnly("super.get()")
+    void passesSuperGet() {
+      touch(super.get());
+    }
+
+    @SideEffectsOnly("this.get()")
+    void passesSuperGetThisGetListed() {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      touch(super.get());
+    }
+
+    @SideEffectsOnly("super.get()")
+    void passesThisGetSuperGetListed() {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      touch(this.get());
+    }
   }
 
   static class Caller {

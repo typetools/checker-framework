@@ -459,12 +459,15 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           // observe a modification of it.
           continue;
         }
-        // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields `super`,
-        // which denotes the same object that the caller writes as `this`.  Every call on it
-        // dispatches virtually, just as a call on the callee's `this` does, so rewriting it as
-        // `this` is correct even for a method call.  (`calleeExpression` has already rejected any
-        // `super` that the callee's annotation itself contains.)
-        result.add(JavaExpression.superToThis(atDeclaration.atMethodInvocation(node)));
+        // The receiver and arguments are normalized as `expressionFromTree` normalizes the
+        // caller's own expressions.  At a call of the form `super.m()`, the receiver `super`
+        // becomes `this`, which denotes the same object; every call on the callee's `this`
+        // dispatches virtually, and so does the corresponding call on the caller's `this`.  A call
+        // such as `super.pick()` that the caller writes in an argument keeps its `super`, because
+        // it dispatches directly.  (`calleeExpression` has already rejected any `super` that the
+        // callee's annotation itself contains.)
+        result.add(
+            atDeclaration.atMethodInvocation(node, JavaExpression::superToThisExceptCallReceivers));
       }
     }
     return result;

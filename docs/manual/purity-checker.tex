@@ -126,9 +126,19 @@ as pure as each of them.  Likewise, if a lambda or a method reference is
 cast to an intersection type, as in \<(A \& B) Util::m>, then a call through
 a method of any bound can run it.
 
-The errors shown in this section are reported only when purity annotations
-are checked:  by the Purity Checker, or by another checker when you pass
-\<-AcheckPurityAnnotations>.  With \<-Ainfer>, the body of a lambda is not
+The errors shown in this section, and in
+Section~\ref{purity-functional-interface-parameters}, are reported only when
+purity annotations are checked:  by the Purity Checker, or by another checker
+when you pass \<-AcheckPurityAnnotations> or \<-AsuggestPureMethods>.  For
+example, \<-AsuggestPureMethods> alone suffices to report a
+\<purity.methodref.functional.parameter> error.
+\iffalse
+By contrast, comparing the expressions of
+\refqualclass{dataflow/qual}{SideEffectsOnly} annotations, such as those of a
+method reference and of the functional interface method, requires
+\<-AcheckPurityAnnotations> itself; \<-AsuggestPureMethods> does not do it.
+\fi
+With \<-Ainfer>, the body of a lambda is not
 checked; instead, it is used to infer the purity of the functional interface
 method.  With \<-Ainfer>, the purity annotations of the method that a method
 reference refers to are also used to infer the purity of the functional
@@ -205,9 +215,12 @@ a \<@SideEffectsOnly> method).  The requirement is the same for every
 functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
 type is a functional interface, or a type variable whose upper bound is one,
-is checked:  the method can assume nothing about an argument to a parameter
-whose type is a type variable with no functional-interface upper bound, nor
-about the elements of a varargs array.  How the argument is checked depends on its form.
+is checked.  For a parameter whose type is a type variable with no
+functional-interface upper bound, and for the elements of a varargs array, the
+method's purity annotation adds no guarantee about the argument; a call to such
+an argument has only the purity that its type provides, such as that of a bound
+whose implementation of the method is \<@SideEffectFree>.  How the argument is
+checked depends on its form.
 Parentheses around the argument are ignored, and so is a cast of a lambda, a
 method reference, a conditional expression, or a switch expression, because
 such a cast does not change the code that the argument denotes.
