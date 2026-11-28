@@ -515,7 +515,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
         || !rlTypeFactory.hasOwning(fieldAccess.getField())) {
       return;
     }
-    @Nullable CFAbstractValue<? extends @Nullable Object> value = exitStore.getValue(expression);
+    CFAbstractValue<? extends @Nullable Object> value = exitStore.getValue(expression);
     AnnotationMirror inferred =
         value == null
             ? null
