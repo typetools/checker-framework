@@ -3,6 +3,12 @@
 
 // @below-java21-jdk-skip-test
 
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
+// do.
+// @infer-jaifs-skip-test
+// @infer-ajava-skip-test
+// @infer-stubs-skip-test
+
 @SuppressWarnings("all") // Just check for crashes.
 public class BoxedSelectorCaseNull {
 

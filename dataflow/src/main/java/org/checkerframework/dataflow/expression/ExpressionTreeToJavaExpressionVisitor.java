@@ -894,11 +894,14 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
   public JavaExpression visitUnary(UnaryTree exprTree, Void unused) {
     Tree.Kind treeKind = exprTree.getKind();
     JavaExpression operand = exprTree.getExpression().accept(this, null);
-    // This eliminates + and performs constant-folding for -; it could also do so for other
-    // operations.
+    TypeMirror type = unaryOperationType(treeKind, operand.getType());
+    // This eliminates + when it does not change the type and performs constant-folding for -; it
+    // could also do so for other operations.
     switch (treeKind) {
       case UNARY_PLUS -> {
-        return operand;
+        if (types.isSameType(type, operand.getType())) {
+          return operand;
+        }
       }
       case UNARY_MINUS -> {
         // A literal of a non-numeric type, such as a boolean, is not folded.
@@ -913,7 +916,33 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       }
       default -> {} // No optimization for this operand
     }
-    return new UnaryOperation(operand.getType(), treeKind, operand);
+    return new UnaryOperation(type, treeKind, operand);
+  }
+
+  /**
+   * Returns the type of the unary operation of the given kind whose operand has the given type.
+   *
+   * @param operationKind a unary operation's kind, such as {@code Tree.Kind.UNARY_MINUS}
+   * @param operandType the type of the operation's operand
+   * @return the type of the unary operation
+   */
+  private TypeMirror unaryOperationType(Tree.Kind operationKind, TypeMirror operandType) {
+    return switch (operationKind) {
+      case UNARY_PLUS, UNARY_MINUS, BITWISE_COMPLEMENT -> {
+        // Unary numeric promotion (JLS 5.6):  for example, the negation of a byte is an int.
+        TypeMirror unboxedType =
+            TypesUtils.isBoxedPrimitive(operandType) ? types.unboxedType(operandType) : operandType;
+        TypeKind unboxedKind = unboxedType.getKind();
+        yield (unboxedKind == TypeKind.BYTE
+                || unboxedKind == TypeKind.SHORT
+                || unboxedKind == TypeKind.CHAR)
+            ? types.getPrimitiveType(TypeKind.INT)
+            : unboxedType;
+      }
+      case LOGICAL_COMPLEMENT -> booleanTypeMirror;
+      // An increment or decrement has the type of its variable.
+      default -> operandType;
+    };
   }
 
   @Override

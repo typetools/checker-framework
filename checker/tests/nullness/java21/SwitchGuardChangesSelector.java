@@ -8,8 +8,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// A guard can change the value of a selector field.  A case label is matched against the saved
-// value of the selector, so a case label does not refine the selector field after a guard has run.
+// A guard can change the value of a selector field, and so can a record accessor method that a
+// record pattern calls.  A case label is matched against the saved value of the selector, so a case
+// label does not refine the selector field after a guard or a record pattern has run.
 public class SwitchGuardChangesSelector {
 
   @Nullable Integer boxedField;
@@ -40,6 +41,27 @@ public class SwitchGuardChangesSelector {
       default -> {
         // :: error: [dereference.of.nullable]
         stringField.toString();
+      }
+    }
+  }
+
+  static @Nullable Object staticField;
+
+  record ClearingRecord(Object component) {
+    @Override
+    public Object component() {
+      staticField = null;
+      return component;
+    }
+  }
+
+  void recordPattern() {
+    switch (staticField) {
+      case ClearingRecord(String s) -> {}
+      case null -> {}
+      default -> {
+        // :: error: [dereference.of.nullable]
+        staticField.toString();
       }
     }
   }

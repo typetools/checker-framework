@@ -913,8 +913,8 @@ public abstract class CFAbstractTransfer<
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
-   * @param firstValue the abstract value that might be more precise
-   * @param secondValue the abstract value that might be less precise
+   * @param firstValue the abstract value that might be more precise, or null if nothing is known
+   * @param secondValue the abstract value that might be less precise, or null if nothing is known
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
@@ -924,8 +924,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1359,13 +1359,10 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      // A null value means that nothing is known, so there is nothing to refine with.
-      if (caseValue != null && switchValue != null) {
-        for (Node selectorPart : selectorPartsToRefine) {
-          result =
-              strengthenAnnotationOfEqualTo(
-                  result, caseOperand, selectorPart, caseValue, switchValue, false);
-        }
+      for (Node selectorPart : selectorPartsToRefine) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, selectorPart, caseValue, switchValue, false);
       }
       // Update value of switch temporary variable
       result =
