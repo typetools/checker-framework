@@ -1,0 +1,14 @@
+// By default, the Path Shape Checker assumes that File.toPath() preserves the path shape:  a File
+// that is @HasName or @HasParent yields a Path that is @HasName or @HasParent.  That is not true on
+// Windows:  `new File("//server/share")` has a parent (`\\server`), but its toPath() is a root.
+//
+// Pass this stub file to the Nullness Checker (`-Astubs=sound-file-topath.astub`) to make the
+// Path Shape Checker sound for such paths.  Then, File.toPath() returns @UnknownPathShape.
+
+import org.checkerframework.checker.nullness.qual.UnknownPathShape;
+
+package java.io;
+
+class File {
+  @UnknownPathShape java.nio.file.Path toPath(@UnknownPathShape File this);
+}
