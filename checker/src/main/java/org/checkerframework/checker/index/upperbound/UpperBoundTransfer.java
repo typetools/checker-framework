@@ -126,6 +126,17 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   private final ExecutableElement stringLengthMethod;
 
   /**
+   * The variable that {@link #visitAssignment} is assigning, or null when it is not computing
+   * refinements for an assignment. While it is non-null, {@link #getUBQualifier(Node,
+   * TransferInput)} disregards a qualifier that might name it, because such a qualifier describes
+   * the variable's value before the assignment.
+   */
+  private @Nullable JavaExpression reassignedVariable = null;
+
+  /** The location of the assignment that assigns {@link #reassignedVariable}, if known. */
+  private @Nullable TreePath reassignmentPath = null;
+
+  /**
    * Creates a new UpperBoundTransfer.
    *
    * @param analysis the analysis for this transfer function
@@ -167,18 +178,31 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         return result;
       }
       Node dim = acNode.getDimension(0);
-
-      UBQualifier previousQualifier = getUBQualifier(dim, in);
       JavaExpression arrayExpr = JavaExpression.fromNode(node.getTarget());
-      String arrayString = arrayExpr.toString();
-      LessThanLengthOf newInfo =
-          (LessThanLengthOf) UBQualifier.createUBQualifier(arrayString, "-1");
-      UBQualifier combined = previousQualifier.glb(newInfo);
-      AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(combined);
-
       JavaExpression dimExpr = JavaExpression.fromNode(dim);
-      result.getRegularStore().insertValue(dimExpr, newAnno);
-      propagateToOperands(newInfo, dim, in, result.getRegularStore());
+      TreePath path = atypeFactory.getPath(node.getTree());
+      if (atypeFactory.getDependentTypesHelper().mightName(dimExpr.toString(), arrayExpr, path)) {
+        // In `a = new int[a.length + 1]`, the dimension is computed from the old value of `a`, but
+        // after the assignment, the same text denotes a value computed from the new array.
+        return result;
+      }
+
+      reassignedVariable = arrayExpr;
+      reassignmentPath = path;
+      try {
+        UBQualifier previousQualifier = getUBQualifier(dim, in);
+        String arrayString = arrayExpr.toString();
+        LessThanLengthOf newInfo =
+            (LessThanLengthOf) UBQualifier.createUBQualifier(arrayString, "-1");
+        UBQualifier combined = previousQualifier.glb(newInfo);
+        AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(combined);
+
+        result.getRegularStore().insertValue(dimExpr, newAnno);
+        propagateToOperands(newInfo, dim, in, result.getRegularStore());
+      } finally {
+        reassignedVariable = null;
+        reassignmentPath = null;
+      }
     }
     return result;
   }
@@ -838,6 +862,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * checks the store in the transfer input. If one isn't there, the analysis is checked. If the
    * UNKNOWN qualifier is returned, then the AnnotatedTypeMirror from the type factory is used.
    *
+   * <p>Returns UNKNOWN if the qualifier might name {@link #reassignedVariable}.
+   *
    * @param n node
    * @param in transfer input
    * @return the UBQualifier for node
@@ -853,19 +879,31 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       value = analysis.getValue(n);
     }
     UBQualifier qualifier = getUBQualifier(hierarchy, value);
-    if (qualifier.isUnknown()) {
+    Tree tree = n.getTree();
+    if (qualifier.isUnknown() && tree != null) {
       // The qualifier from the store or analysis might be UNKNOWN if there was some error.
       // For example,
       //   @LTLength("a") int i = 4;  // error
       // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
       // the type factory is @LTLength("a"), so use that type.
-      CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
-      return getUBQualifier(hierarchy, valueFromFactory);
+      CFValue valueFromFactory = getValueFromFactory(tree, n);
+      qualifier = getUBQualifier(hierarchy, valueFromFactory);
+    }
+    JavaExpression reassigned = reassignedVariable;
+    if (reassigned != null
+        && !qualifier.isUnknown()
+        && atypeFactory
+            .getDependentTypesHelper()
+            .mightName(
+                atypeFactory.convertUBQualifierToAnnotation(qualifier),
+                reassigned,
+                reassignmentPath)) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
     }
     return qualifier;
   }
 
-  private UBQualifier getUBQualifier(QualifierHierarchy hierarchy, CFValue value) {
+  private UBQualifier getUBQualifier(QualifierHierarchy hierarchy, @Nullable CFValue value) {
     if (value == null) {
       return UpperBoundUnknownQualifier.UNKNOWN;
     }

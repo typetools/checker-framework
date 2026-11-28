@@ -90,6 +90,7 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1006,14 +1007,15 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
-      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      @Nullable V thenValue = processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
+      @Nullable V elseValue = processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      @Nullable V targetValue = (thenValue == null || elseValue == null) ? null : thenValue;
       return new ConditionalTransferResult<>(
-          finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
+          finishValue(targetValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, lhs, rhs, store, rhsValue);
-      return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+      @Nullable V targetValue = processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      return new RegularTransferResult<>(finishValue(targetValue, store), store);
     }
   }
 
@@ -1057,17 +1059,42 @@ public abstract class CFAbstractTransfer<
   /**
    * Determines the abstract value of the right-hand side and updates the store accordingly.
    *
+   * <p>If the target is a local variable or a field, this also removes from the store each value
+   * whose dependent type annotation might name the target (see {@link
+   * CFAbstractStore#removeValuesThatMightName}). If {@code rhsValue} itself has such an annotation,
+   * the target gets no value: the annotation names the target's value before the assignment, but
+   * after the assignment the same text would name the new value. A self-assignment, such as {@code
+   * a = a}, does not change the target's value, so it removes no values.
+   *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
    * @param store the regular input store (from {@code in})
    * @param rhsValue the value of the right-hand side of the assignment
+   * @return the value that the store now holds for the target, or null if it holds none; this is
+   *     also the value of the assignment expression
    */
-  protected void processCommonAssignment(
+  protected @Nullable V processCommonAssignment(
       TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
+    @Nullable V targetValue = rhsValue;
+    JavaExpression target = JavaExpression.fromNode(lhs);
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if ((target instanceof LocalVariable || target instanceof FieldAccess)
+        && dependentTypesHelper.hasDependentAnnotations()
+        && !JavaExpression.fromNode(rhs).syntacticEquals(target)) {
+      Tree lhsTree = lhs.getTree();
+      TreePath path = lhsTree == null ? null : analysis.getTypeFactory().getPath(lhsTree);
+      store.removeValuesThatMightName(target, path);
+      if (targetValue != null
+          && dependentTypesHelper.mightName(targetValue.getAnnotations(), target, path)) {
+        targetValue = null;
+      }
+    }
+
     // update information in the store
-    store.updateForAssignment(lhs, rhsValue);
+    store.updateForAssignment(lhs, targetValue);
+    return targetValue;
   }
 
   @Override

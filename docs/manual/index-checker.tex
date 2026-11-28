@@ -51,6 +51,11 @@ changed after creation.  A fixed-size data structure has no \<add> or
 support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
 
+An annotation such as \<@IndexFor("a")> or \<@SameLen("a")> is about the
+sequence that the variable \<a> currently refers to.  If \<a> is
+reassigned, then a refined type that names \<a> is discarded.  See
+Section~\ref{java-expressions-reassignment}.
+
 To run the Index Checker, run either of these commands:
 
 \begin{alltt}

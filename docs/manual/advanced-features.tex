@@ -1446,6 +1446,23 @@ systems) ``\code{<self>}''.
 %% TODO: we might eventually have an @SpecField annotation
 
 
+\subsectionAndLabel{Reassigning a variable that a type names}{java-expressions-reassignment}
+
+A type that names a variable describes the variable's current value.  For
+example, \<@IndexFor("a") int i> states that \<i> is a valid index for the
+array that \<a> currently refers to.  If \<a> is reassigned, the type of
+\<i> refers to the new array, so the type might no longer be true.
+
+A refined type (Section~\ref{type-refinement}) that names the reassigned
+variable is discarded.  For example, within the \<then> branch of
+\code{if (i < a.length)}, the type of \<i> is refined to
+\<@LTLengthOf("a")>; after \<a = c;>, the type of \<i> reverts to its
+declared type.
+
+The checker does not check that a declared type that names the reassigned
+variable still holds after the reassignment.
+
+
 \subsectionAndLabel{Limitations}{java-expressions-limitations}
 
 If you mention a class in a Java expression, then that class must be

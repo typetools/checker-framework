@@ -30,6 +30,7 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -111,7 +112,10 @@ public class SameLenTransfer extends CFTransfer {
 
           AnnotationMirror combinedSameLen =
               atypeFactory.createCombinedSameLen(
-                  Arrays.asList(targetRec, otherRec), Arrays.asList(UNKNOWN, lengthNodeAnnotation));
+                  Arrays.asList(targetRec, otherRec),
+                  Arrays.asList(
+                      UNKNOWN, lengthNodeAnnotation == null ? UNKNOWN : lengthNodeAnnotation));
+          combinedSameLen = removeNamesOfOldValue(combinedSameLen, targetRec, null, node);
 
           propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
           return result;
@@ -137,11 +141,55 @@ public class SameLenTransfer extends CFTransfer {
       AnnotationMirror combinedSameLen =
           atypeFactory.createCombinedSameLen(
               Arrays.asList(targetRec, exprRec), Arrays.asList(UNKNOWN, rightAnnoOrUnknown));
+      combinedSameLen = removeNamesOfOldValue(combinedSameLen, targetRec, exprRec, node);
 
       propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
     }
 
     return result;
+  }
+
+  /**
+   * Returns a copy of {@code sameLenAnno}, which describes the values before the assignment {@code
+   * node}, without the expressions that might name the old value of {@code target}. For example,
+   * after {@code m = x}, where {@code x} is {@code @SameLen("m[0]")}, the result does not contain
+   * "m[0]", because after the assignment "m[0]" denotes an element of the new value of {@code m}.
+   * The result contains {@code target} itself, which denotes the new value.
+   *
+   * @param sameLenAnno a {@code @SameLen} annotation that describes the values before {@code node}
+   * @param target the variable that {@code node} assigns
+   * @param value the right-hand side of {@code node}, or null if {@code node} does not assign a
+   *     sequence expression to {@code target}, as in {@code b = new int[a.length]}
+   * @param node an assignment
+   * @return a copy of {@code sameLenAnno} without the expressions that might name the old value of
+   *     {@code target}
+   */
+  private AnnotationMirror removeNamesOfOldValue(
+      AnnotationMirror sameLenAnno,
+      JavaExpression target,
+      @Nullable JavaExpression value,
+      AssignmentNode node) {
+    if (value != null && value.syntacticEquals(target)) {
+      // A self-assignment such as `a = a` does not change the value of `a`.
+      return sameLenAnno;
+    }
+    TreePath path = atypeFactory.getPath(node.getTree());
+    DependentTypesHelper dependentTypesHelper = atypeFactory.getDependentTypesHelper();
+    String targetString = target.toString();
+    List<String> exprs =
+        AnnotationUtils.getElementValueArray(
+            sameLenAnno, atypeFactory.sameLenValueElement, String.class);
+    List<String> result = new ArrayList<>(exprs.size());
+    for (String expr : exprs) {
+      if (expr.equals(targetString) || !dependentTypesHelper.mightName(expr, target, path)) {
+        result.add(expr);
+      }
+    }
+    if (result.size() == exprs.size()) {
+      return sameLenAnno;
+    }
+    // Removing elements preserves the alphabetical order that createSameLen requires.
+    return atypeFactory.createSameLen(result);
   }
 
   /**
