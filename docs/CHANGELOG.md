@@ -7,6 +7,10 @@
 
 ### User-visible changes
 
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
@@ -23,6 +27,13 @@ element's enclosing elements.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
+
+Dataflow analysis gives the result of a boxing or unboxing conversion the
+qualifiers of the converted value, as adapted by the new methods
+`AnnotatedTypeFactory.getBoxedAnnotations()` and
+`AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
+qualifiers at boxing or unboxing should override those methods rather than
+`getBoxedType()` and `getUnboxedType()`.
 
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
