@@ -960,11 +960,18 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // JLS 15.18.1 says, "If only one operand expression is of type String, then string
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
-    } else if (SHIFT_OPERATORS.contains(operator)
-        && TypesUtils.isIntegralPrimitive(leftUnboxedType)
-        && TypesUtils.isIntegralPrimitive(rightUnboxedType)) {
-      // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
-      // promotion, which converts a byte, short, or char to int.
+    } else if (SHIFT_OPERATORS.contains(operator)) {
+      // JLS 15.19:  each operand of a shift must be convertible to a primitive integral type.
+      if (!TypesUtils.isIntegralPrimitive(leftUnboxedType)
+          || !TypesUtils.isIntegralPrimitive(rightUnboxedType)) {
+        throw new JavaExpressionParseExceptionUnchecked(
+            JavaExpressionParseException.construct(
+                exprTree.toString(),
+                String.format(
+                    "non-integral operand types %s %s for %s", leftType, rightType, exprTree)));
+      }
+      // The type of a shift is the type of its left operand after unary numeric promotion, which
+      // converts a byte, short, or char to int.  The right operand is promoted independently.
       type =
           types.getPrimitiveType(
               TypeKindUtils.widenedNumericType(leftUnboxedType.getKind(), TypeKind.INT));
