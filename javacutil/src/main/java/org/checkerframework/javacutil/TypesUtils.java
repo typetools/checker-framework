@@ -1047,8 +1047,9 @@ public final class TypesUtils {
     // cannot be the same object as an expression of type `E3`, though the erasure of the type of
     // `e` is `Base`. When the alternatives' least upper bound is an intersection type, using
     // `erasure()` would also make this method unsound, as for an intersection type. For example,
-    // the erasure of `Integer | Long` is `Number`, which is unrelated to `Comparable`, but a value
-    // of type `Integer | Long` is a `Comparable`.
+    // if `E4` and `E5` are subclasses of `Base` that implement `Runnable`, and `Base` does not
+    // implement `Runnable`, then the erasure of `E4 | E5` is `Base`, which is unrelated to
+    // `Runnable`, but a value of type `E4 | E5` is a `Runnable`.
     List<TypeMirror> boundsA = erasedBounds(a, types);
     List<TypeMirror> boundsB = erasedBounds(b, types);
     for (TypeMirror boundA : boundsA) {

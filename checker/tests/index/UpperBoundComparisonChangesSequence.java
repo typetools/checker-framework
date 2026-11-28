@@ -80,6 +80,36 @@ public class UpperBoundComparisonChangesSequence {
     }
   }
 
+  int[] b = new int[3];
+
+  // Not side-effect-free.
+  int replaceBAndReturnTwo() {
+    b = new int[0];
+    return 2;
+  }
+
+  // If this.b has length 3 and k is 0, then the comparison is 3 > 0 + 2, but this.b has length 0
+  // after the call.
+  void gtAssignmentOperandChangedNoOverflow(@NonNegative int k) {
+    int limit;
+    if ((limit = this.b.length) > k + replaceBAndReturnTwo()) {
+      // :: error: (array.access.unsafe.high)
+      int x = this.b[k];
+    }
+  }
+
+  final int[] c = new int[3];
+
+  // shrink() reassigns this.a, so the bound for this.a does not hold after the comparison, but the
+  // bound for the final field this.c does.
+  void gtKeepsUnchangedBound(@LTEqLengthOf({"this.a", "this.c"}) int limit, @NonNegative int k) {
+    if (limit > k + shrink()) {
+      int x = this.c[k];
+      // :: error: (array.access.unsafe.high)
+      int y = this.a[k];
+    }
+  }
+
   // If a has length 10 and b has length 1, then the comparison is 10 > 1, but x is 1 and a has
   // length 1 after the comparison.
   void gtChanged(int[] a, int[] b) {

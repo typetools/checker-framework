@@ -1431,8 +1431,10 @@ public class ValueTransfer extends CFTransfer {
         store.insertValue(je, newAnno);
       }
 
-      if (internal instanceof FieldAccessNode fieldNode) {
-        refineArrayAtLengthAccess(fieldNode, store);
+      // Dispatch on `internal`, not `node`:  if `node` is an assignment such as `n = a.length`,
+      // then `internal` might be its right-hand side.
+      if (internal instanceof FieldAccessNode faNode) {
+        refineArrayAtLengthAccess(faNode, store);
       } else if (internal instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
       }
