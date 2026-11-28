@@ -60,10 +60,9 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.el.AClass;
 import org.checkerframework.afu.scenelib.el.ADeclaration;
@@ -96,17 +95,6 @@ import org.checkerframework.javacutil.BugInCF;
  * #main(String[])} method converts multiple stub files, instantiating the class multiple times.
  */
 public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> {
-  // The possessive modifiers "*+" are for efficiency only.
-  // private static Pattern packagePattern =
-  //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
-  /**
-   * A pattern that matches an import statement. Its group 1 matches the imported name: a fully
-   * qualified type name such as {@code java.util.Map.Entry} for a single-type import, or a name
-   * followed by {@code .*} such as {@code java.util.*} for an import-on-demand. For a static
-   * import, group 1 starts with {@code static}, so callers skip static imports before matching.
-   */
-  private static final Pattern importPattern =
-      Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
   // The asm library is not on this class's compile classpath, so the following three constants
   // are written literally rather than as references to fields of org.objectweb.asm.TypePath.
@@ -130,21 +118,90 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static final int TYPE_ARGUMENT = 3;
 
   /**
-   * Package name that is active at the current point in the input file. Changes as package
-   * declarations are encountered. Null if the input file has no package declaration.
+   * The package and imports that determine the meaning of a type name written in a node that is not
+   * part of any compilation unit, such as a node that a test creates.
    */
-  private final @Nullable @DotSeparatedIdentifiers String pkgName;
+  private final ImportContext importContext;
 
-  /** Single-type imports that appear in the stub file, such as {@code java.util.List}. */
-  private final List<String> singleTypeImports;
+  /**
+   * The package and the imports of a compilation unit, which determine the meaning of a simple or
+   * partially qualified type name written in it. In Java, imports apply only within the compilation
+   * unit that contains them (JLS 7.5). In a stub file, however, the stub parser gives every
+   * compilation unit all of the stub file's imports, so an import applies throughout the stub file.
+   *
+   * @param pkgName a package name, such as {@code java.util}, or null for the unnamed package
+   * @param singleTypeImports the types that single-type imports import, such as {@code
+   *     java.util.List} for {@code import java.util.List;}
+   * @param onDemandImports the packages and types that imports-on-demand import from, such as
+   *     {@code java.util} for {@code import java.util.*;}
+   */
+  private record ImportContext(
+      @Nullable @DotSeparatedIdentifiers String pkgName,
+      List<String> singleTypeImports,
+      List<String> onDemandImports) {
 
-  /** Imports-on-demand that appear in the stub file, such as {@code java.util.*}. */
-  private final List<String> onDemandImports;
+    /**
+     * Creates the import context of the compilation unit that has the given package declaration and
+     * import declarations.
+     *
+     * @param pkgDecl a compilation unit's package declaration, or null if there is none
+     * @param importDecls the compilation unit's import declarations, or null if there are none
+     * @return the import context
+     */
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
+    static ImportContext of(
+        @Nullable PackageDeclaration pkgDecl, @Nullable List<ImportDeclaration> importDecls) {
+      String pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
+      if (importDecls == null) {
+        return new ImportContext(pkgName, Collections.emptyList(), Collections.emptyList());
+      }
+      ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
+      for (ImportDeclaration decl : importDecls) {
+        // A static import imports members, not types, and a module import is not used in a stub
+        // file.
+        if (!decl.isStatic() && !decl.isModule()) {
+          (decl.isAsterisk() ? onDemands : singles).add(decl.getNameAsString());
+        }
+      }
+      singles.trimToSize();
+      onDemands.trimToSize();
+      return new ImportContext(
+          pkgName, Collections.unmodifiableList(singles), Collections.unmodifiableList(onDemands));
+    }
+
+    /**
+     * Creates the import context of the given compilation unit.
+     *
+     * @param cu a compilation unit
+     * @return the import context of {@code cu}
+     */
+    static ImportContext of(CompilationUnit cu) {
+      return of(cu.getPackageDeclaration().orElse(null), cu.getImports());
+    }
+  }
+
+  /**
+   * A cache of the import contexts of the stub file's compilation units. It is an identity map
+   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
+   */
+  private final IdentityHashMap<CompilationUnit, ImportContext> importContexts =
+      new IdentityHashMap<>();
 
   /**
    * A scene that is read from the input JAIF file and that will be written to the output JAIF file.
    */
   private final AScene scene;
+
+  /**
+   * Maps a package name, such as {@code java.util}, to the compilation units of the stub file that
+   * declare that package. A stub file has one compilation unit per {@code package} declaration, so
+   * different compilation units can declare types in different packages. It omits the compilation
+   * units in the unnamed package, because a type in the unnamed package cannot be referred to from
+   * another package. It is empty for a converter that the public constructor creates, which knows
+   * only the compilation unit in which each name is written.
+   */
+  private final Map<String, List<CompilationUnit>> compilationUnitsByPackage = new HashMap<>();
 
   /**
    * A cache for {@link #getTargets}. Maps the binary name of an annotation interface to the element
@@ -153,18 +210,39 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final Map<String, @Nullable List<ElementType>> getTargetsCache = new HashMap<>();
 
   /**
-   * A cache for {@link #resolve}. Maps a class name, as written in the stub file, to the binary
-   * name that it identifies, or to null if resolution fails.
+   * A cache for {@link #resolve}. Maps a compilation unit of the stub file, and a class name as
+   * written in it, to the binary name that the class name identifies, or to null if resolution
+   * fails. The compilation unit is part of the key because its package and imports affect the
+   * result. It is an identity map because a JavaParser node's {@code equals} and {@code hashCode}
+   * compare its whole subtree.
    */
-  private final Map<String, @Nullable @BinaryName String> resolveCache = new HashMap<>();
+  private final IdentityHashMap<CompilationUnit, Map<String, @Nullable @BinaryName String>>
+      resolveCache = new IdentityHashMap<>();
 
   /**
-   * A cache for {@link #memberTypeDeclaration}. Maps a the simple name of a simple name type
-   * declaration of the stub file to its member types. It is an identity map because a JavaParser
-   * node's {@code equals} and {@code hashCode} compare its whole subtree.
+   * A cache for {@link #memberTypeDeclaration}. Maps a type declaration of the stub file to a map
+   * from the simple name of each of its member types to that member type's declaration. It is an
+   * identity map because a JavaParser node's {@code equals} and {@code hashCode} compare its whole
+   * subtree.
    */
   private final IdentityHashMap<TypeDeclaration<?>, Map<String, TypeDeclaration<?>>>
       memberTypeDeclarationCache = new IdentityHashMap<>();
+
+  /**
+   * A cache for {@link #topLevelType}. Maps a compilation unit of the stub file to a map from the
+   * simple name of each of its top-level types to that type's declaration. It is an identity map
+   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
+   */
+  private final IdentityHashMap<CompilationUnit, Map<String, TypeDeclaration<?>>>
+      topLevelTypeCache = new IdentityHashMap<>();
+
+  /**
+   * A cache for {@link #classpathClass}. Maps a type declaration of the stub file to the class on
+   * the classpath that has the same binary name, or to null if there is none. It is an identity map
+   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
+   */
+  private final IdentityHashMap<TypeDeclaration<?>, @Nullable Class<?>> classpathClassCache =
+      new IdentityHashMap<>();
 
   /**
    * The type declarations of the stub file whose inherited member types are being sought by {@link
@@ -175,39 +253,53 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
-   * Creates a new ToIndexFileConverter.
+   * Creates a new ToIndexFileConverter for one compilation unit of a stub file. The converter does
+   * not consider the types that other compilation units of the stub file declare.
+   *
+   * <p>The given package and imports apply only to a name in a node that is not part of any
+   * compilation unit. A name in a node that is part of a compilation unit is resolved with that
+   * compilation unit's own package and imports.
    *
    * @param pkgDecl the AST node for the package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    */
-  @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
   public ToIndexFileConverter(
       @Nullable PackageDeclaration pkgDecl, List<ImportDeclaration> importDecls, AScene scene) {
+    this(ImportContext.of(pkgDecl, importDecls), Collections.emptyList(), scene);
+  }
+
+  /**
+   * Creates a new ToIndexFileConverter.
+   *
+   * @param importContext the package and imports for a name that is not in any compilation unit
+   * @param compilationUnits the compilation units of a stub file, or an empty list if the converter
+   *     does not consider the types that other compilation units declare
+   * @param scene scene for visitor methods to fill in
+   */
+  private ToIndexFileConverter(
+      ImportContext importContext, List<CompilationUnit> compilationUnits, AScene scene) {
     this.scene = scene;
-    pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
-    if (importDecls == null) {
-      singleTypeImports = Collections.emptyList();
-      onDemandImports = Collections.emptyList();
-    } else {
-      ArrayList<String> singles = new ArrayList<>(importDecls.size());
-      ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
-      for (ImportDeclaration decl : importDecls) {
-        if (!decl.isStatic()) {
-          Matcher m = importPattern.matcher(decl.toString());
-          if (m.find()) {
-            String s = m.group(1);
-            if (s != null) {
-              (s.endsWith("*") ? onDemands : singles).add(s);
-            }
-          }
-        }
+    this.importContext = importContext;
+    for (CompilationUnit cu : compilationUnits) {
+      ImportContext cuContext = ImportContext.of(cu);
+      importContexts.put(cu, cuContext);
+      String pkg = cuContext.pkgName();
+      if (pkg != null) {
+        compilationUnitsByPackage.computeIfAbsent(pkg, k -> new ArrayList<>()).add(cu);
       }
-      singles.trimToSize();
-      onDemands.trimToSize();
-      singleTypeImports = Collections.unmodifiableList(singles);
-      onDemandImports = Collections.unmodifiableList(onDemands);
     }
+  }
+
+  /**
+   * Returns the import context of the given compilation unit of the stub file.
+   *
+   * @param cu a compilation unit of the stub file, or null for a name that is not in any
+   *     compilation unit
+   * @return the package and imports of {@code cu}
+   */
+  private ImportContext importContext(@Nullable CompilationUnit cu) {
+    return cu == null ? importContext : importContexts.computeIfAbsent(cu, ImportContext::of);
   }
 
   /**
@@ -285,20 +377,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * scene (it does not create a new scene).
    *
    * @param iu {@link StubUnit} representing stubfile
+   * @param scene the scene to augment with the annotations in {@code iu}
    */
   private static void extractScene(StubUnit iu, AScene scene) {
+    // Every name is written in a compilation unit, whose package and imports apply to it.
+    ToIndexFileConverter converter =
+        new ToIndexFileConverter(ImportContext.of(null, null), iu.getCompilationUnits(), scene);
     for (CompilationUnit cu : iu.getCompilationUnits()) {
       NodeList<TypeDeclaration<?>> typeDecls = cu.getTypes();
-      if (typeDecls != null && cu.getPackageDeclaration().isPresent()) {
-        List<ImportDeclaration> impDecls = cu.getImports();
-        PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
-        ToIndexFileConverter converter = new ToIndexFileConverter(pkgDecl, impDecls, scene);
-        String pkgName = converter.pkgName;
+      String pkgName = converter.importContext(cu).pkgName();
+      if (typeDecls != null && pkgName != null) {
         for (TypeDeclaration<?> typeDecl : typeDecls) {
-          String name = typeDecl.getNameAsString();
-          if (pkgName != null) {
-            name = pkgName + "." + name;
-          }
+          String name = pkgName + "." + typeDecl.getNameAsString();
           typeDecl.accept(converter, scene.classes.getVivify(name));
         }
       }
@@ -905,8 +995,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (declaration instanceof TypeDeclaration<?> typeDecl) {
       return memberBinaryName(typeDecl, identifiers, 1);
     }
-    String result = packageQualifiedStubBinaryName(node, name);
-    return result != null ? result : resolve(name);
+    return resolve(name, node.findCompilationUnit().orElse(null));
   }
 
   /**
@@ -919,35 +1008,114 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return the binary name of {@code declaration}
    */
   private String qualifiedStubBinaryName(TypeDeclaration<?> declaration) {
+    String pkg = stubPackage(declaration);
     String binaryName = stubBinaryName(declaration);
-    return pkgName == null ? binaryName : pkgName + "." + binaryName;
+    return pkg.isEmpty() ? binaryName : pkg + "." + binaryName;
   }
 
   /**
-   * If {@code typeName} starts with the stub file's package name followed by {@code .}, and the
-   * identifier that follows names a top-level type of the stub file, returns the binary name of the
-   * type that {@code typeName} names. Otherwise returns null. As for an unqualified name, {@link
-   * #memberBinaryName} resolves the identifiers after the top-level type, so {@code p.B.Missing}
-   * and {@code B.Missing} have the same binary name.
+   * If the stub file declares the type whose fully qualified name is {@code fqName}, in any of its
+   * compilation units, returns that type's binary name; otherwise returns null.
    *
-   * @param node a node in the stub file's AST
-   * @param typeName a type name as written in Java source, not necessarily fully qualified, such as
-   *     {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
-   * @return the binary name of {@code typeName}, or null
+   * @param cu the stub file's compilation unit in which the name is written
+   * @param fqName a fully qualified type name, in which a {@code .} separates a nested class from
+   *     its enclosing class
+   * @return the binary name of {@code fqName}, or null if the stub file does not declare it
    */
-  private @Nullable String packageQualifiedStubBinaryName(Node node, String typeName) {
-    if (pkgName == null || !typeName.startsWith(pkgName + ".")) {
-      return null;
+  private @Nullable String declaredInStubFile(CompilationUnit cu, String fqName) {
+    // A fully qualified name does not indicate which of its identifiers name packages and which
+    // name types.  As in Java (JLS 6.5.5.2), the shortest prefix of `fqName` that is a package and
+    // that is followed by a top-level type of that package determines the type.
+    if (importContext(cu).pkgName() == null) {
+      String result = declaredInPackage(cu, null, fqName);
+      if (result != null) {
+        return result;
+      }
     }
-    CompilationUnit cu = node.findCompilationUnit().orElse(null);
-    if (cu == null) {
-      return null;
+    for (int dot = fqName.indexOf('.'); dot != -1; dot = fqName.indexOf('.', dot + 1)) {
+      String result = declaredInPackage(cu, fqName.substring(0, dot), fqName.substring(dot + 1));
+      if (result != null) {
+        return result;
+      }
     }
-    String[] identifiers = typeName.substring(pkgName.length() + 1).split("\\.", -1);
-    Node first = firstDeclarationAt(cu, identifiers, true, true);
-    return (first instanceof TypeDeclaration<?> typeDecl)
-        ? memberBinaryName(typeDecl, identifiers, 1)
-        : null;
+    return null;
+  }
+
+  /**
+   * If the stub file declares, in package {@code pkg}, the type that {@code relativeName} names,
+   * returns that type's binary name; otherwise returns null. The first identifier of {@code
+   * relativeName} names a top-level type of {@code pkg}, not a subpackage. As for an unqualified
+   * name, {@link #memberBinaryName} resolves the identifiers after the top-level type, so {@code
+   * p.B.Missing} and {@code B.Missing} have the same binary name.
+   *
+   * @param cu the stub file's compilation unit in which the name is written
+   * @param pkg a package name, or null for the unnamed package
+   * @param relativeName a type name relative to {@code pkg}, in which a {@code .} separates a
+   *     nested class from its enclosing class
+   * @return the binary name of the type, or null if the stub file does not declare it in {@code
+   *     pkg}
+   */
+  private @Nullable String declaredInPackage(
+      CompilationUnit cu, @Nullable String pkg, String relativeName) {
+    String[] identifiers = relativeName.split("\\.", -1);
+    TypeDeclaration<?> topLevel = stubTopLevelType(cu, pkg, identifiers[0]);
+    return topLevel == null ? null : memberBinaryName(topLevel, identifiers, 1);
+  }
+
+  /**
+   * Returns the top-level type that the stub file declares, in package {@code pkg}, with the given
+   * simple name. The search considers {@code cu} first. A type in the unnamed package is sought
+   * only in {@code cu}, because a type in the unnamed package cannot be referred to from another
+   * compilation unit.
+   *
+   * @param cu the stub file's compilation unit in which the name is written, or null
+   * @param pkg a package name, or null for the unnamed package
+   * @param simpleName the simple name of a type
+   * @return the top-level type of {@code pkg} named {@code simpleName}, or null if the stub file
+   *     declares none
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+  private @Nullable TypeDeclaration<?> stubTopLevelType(
+      @Nullable CompilationUnit cu, @Nullable String pkg, String simpleName) {
+    if (cu != null && Objects.equals(pkg, importContext(cu).pkgName())) {
+      TypeDeclaration<?> result = topLevelType(cu, simpleName);
+      if (result != null) {
+        return result;
+      }
+    }
+    if (pkg != null) {
+      for (CompilationUnit unit : compilationUnitsByPackage.getOrDefault(pkg, List.of())) {
+        if (unit != cu) {
+          TypeDeclaration<?> result = topLevelType(unit, simpleName);
+          if (result != null) {
+            return result;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the top-level type that the given compilation unit of the stub file declares with the
+   * given simple name.
+   *
+   * @param cu a compilation unit of the stub file
+   * @param simpleName the simple name of a type
+   * @return the top-level type of {@code cu} named {@code simpleName}, or null if there is none
+   */
+  private @Nullable TypeDeclaration<?> topLevelType(CompilationUnit cu, String simpleName) {
+    return topLevelTypeCache
+        .computeIfAbsent(
+            cu,
+            c -> {
+              Map<String, TypeDeclaration<?>> topLevelTypes = new HashMap<>();
+              for (TypeDeclaration<?> topLevel : c.getTypes()) {
+                topLevelTypes.putIfAbsent(topLevel.getNameAsString(), topLevel);
+              }
+              return topLevelTypes;
+            })
+        .get(simpleName);
   }
 
   /**
@@ -1030,11 +1198,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (n instanceof TypeDeclaration<?> typeDecl) {
       return memberTypesInScope ? memberTypeDeclaration(typeDecl, identifiers[0]) : null;
     } else if (n instanceof CompilationUnit compilationUnit) {
-      for (TypeDeclaration<?> topLevel : compilationUnit.getTypes()) {
-        if (topLevel.getNameAsString().equals(identifiers[0])) {
-          return topLevel;
-        }
-      }
+      return topLevelType(compilationUnit, identifiers[0]);
     }
     return null;
   }
@@ -1088,15 +1252,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param className a type name as written in Java source, not necessarily fully qualified, such
    *     as {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
+   * @param cu the stub file's compilation unit in which {@code className} is written, whose package
+   *     and imports are used; or null for a name that is not in any compilation unit, to use the
+   *     package and imports that the public constructor received and not to consider the types that
+   *     the stub file declares
    * @return binary name of class that {@code className} identifies in the current context, or null
    *     if resolution fails
    */
-  private @Nullable @BinaryName String resolve(@FullyQualifiedName String className) {
-    if (resolveCache.containsKey(className)) {
-      return resolveCache.get(className);
+  private @Nullable @BinaryName String resolve(
+      @FullyQualifiedName String className, @Nullable CompilationUnit cu) {
+    // The cache holds results for non-null compilation units only.
+    if (cu == null) {
+      return resolveUncached(className, null);
     }
-    String result = resolveUncached(className);
-    resolveCache.put(className, result);
+    Map<String, @Nullable @BinaryName String> cache =
+        resolveCache.computeIfAbsent(cu, c -> new HashMap<>());
+    if (cache.containsKey(className)) {
+      return cache.get(className);
+    }
+    String result = resolveUncached(className, cu);
+    cache.put(className, result);
     return result;
   }
 
@@ -1105,58 +1280,342 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param className a type name as written in Java source, not necessarily fully qualified, such
    *     as {@code Entry}, {@code Map.Entry}, or {@code java.util.Map.Entry}
+   * @param cu the stub file's compilation unit in which {@code className} is written, whose package
+   *     and imports are used; or null for a name that is not in any compilation unit, to use the
+   *     package and imports that the public constructor received and not to consider the types that
+   *     the stub file declares
    * @return binary name of class that {@code className} identifies in the current context, or null
    *     if resolution fails
    */
-  private @Nullable @BinaryName String resolveUncached(@FullyQualifiedName String className) {
+  private @Nullable @BinaryName String resolveUncached(
+      @FullyQualifiedName String className, @Nullable CompilationUnit cu) {
+    // The package applies only within the compilation unit that declares it (JLS 7.4).  The stub
+    // parser gives every compilation unit of a stub file all of the file's imports, so an import
+    // applies throughout the stub file.
+    ImportContext context = importContext(cu);
+    String cuPkgName = context.pkgName();
+
     // The order of the lookups below is the order in which Java resolves a type name: a
     // single-type import shadows a type in the current package, which shadows a type that an
     // import-on-demand declaration makes available.
 
-    for (String declName : singleTypeImports) {
+    for (String declName : context.singleTypeImports()) {
       String qualifiedName = mergeImport(declName, className);
       if (qualifiedName != null) {
-        String binaryName = loadClassBinaryName(qualifiedName);
+        String binaryName = classBinaryName(qualifiedName, cu);
         if (binaryName != null) {
           return binaryName;
         }
       }
     }
-    if (pkgName != null) {
+    if (cuPkgName != null) {
       // The first identifier of `className` names a type in the current package, not a
-      // subpackage, so every later identifier names a member type.
+      // subpackage, so every later identifier names a member type.  Therefore, search only the
+      // stub file's declarations in the current package itself.
+      @SuppressWarnings("signature") // the stub file's declarations determine the binary name
+      @BinaryName String declared = (cu == null) ? null : declaredInPackage(cu, cuPkgName, className);
+      if (declared != null) {
+        return declared;
+      }
       @SuppressWarnings("signature") // a type in a package, followed by its member types
-      @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
+      @BinaryName String binaryName = cuPkgName + "." + className.replace('.', '$');
       if (loadClass(binaryName) != null) {
         return binaryName;
       }
     }
 
-    for (String declName : onDemandImports) {
-      String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null) {
-        String binaryName = loadClassBinaryName(qualifiedName);
-        // An import on demand makes available the member types of a package or type, not its
-        // subpackages, so the first identifier of `className` names a type.  Therefore no `.`
-        // follows the part of `binaryName` that comes from the import, such as `x.` in `x.*`.
-        if (binaryName != null && binaryName.lastIndexOf('.') < declName.length() - 1) {
-          return binaryName;
-        }
+    for (String prefix : context.onDemandImports()) {
+      String binaryName = onDemandImportBinaryName(prefix, className, cu);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String binaryName = loadClassBinaryName("java.lang." + className);
-      // As for any import on demand, the first identifier of `className` names a type, not a
-      // subpackage of java.lang.
-      if (binaryName != null && binaryName.lastIndexOf('.') == "java.lang".length()) {
+      String binaryName = onDemandImportBinaryName("java.lang", className, cu);
+      if (binaryName != null) {
         return binaryName;
       }
     }
 
-    return loadClassBinaryName(className);
+    return classBinaryName(className, cu);
+  }
+
+  /**
+   * Returns the binary name of the class that {@code className} names via the import on demand
+   * {@code prefix.*}.
+   *
+   * <p>An import on demand makes available the top-level types of a package, not its subpackages,
+   * or the member types of a type. Therefore, the first identifier of {@code className} names a
+   * top-level type of package {@code prefix} or a member type, declared or inherited, of type
+   * {@code prefix}; the import does not make available any other name.
+   *
+   * @param prefix a package or type name that an import on demand imports from, such as {@code
+   *     java.util} for {@code import java.util.*;}
+   * @param className a class name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @param cu the stub file's compilation unit, or null not to consider the types that the stub
+   *     file declares
+   * @return the binary name of the class that {@code className} names via the import, or null
+   */
+  private @Nullable @BinaryName String onDemandImportBinaryName(
+      String prefix, String className, @Nullable CompilationUnit cu) {
+    if (cu != null) {
+      @SuppressWarnings("signature") // the stub file's declarations determine the binary name
+      @BinaryName String declared = onDemandImportStubBinaryName(prefix, className, cu);
+      if (declared != null) {
+        return declared;
+      }
+    }
+    String qualifiedName = prefix + "." + className;
+    String binaryName = loadClassBinaryName(qualifiedName);
+    if (binaryName == null) {
+      // A later identifier of `className` may name a member type that the type named by an earlier
+      // identifier inherits, rather than declares.  The binary name of that member type does not
+      // start with `prefix`.  `prefix` names either a package, whose top-level type the first
+      // identifier names, or a class on the classpath, whose member type the first identifier
+      // names.
+      String result = onDemandImportPackageMemberBinaryName(prefix, className, cu);
+      return result != null ? result : onDemandImportClassMemberBinaryName(prefix, className, cu);
+    }
+    // No `.` follows the part of `binaryName` that comes from the import.
+    if (binaryName.lastIndexOf('.') > prefix.length()) {
+      return null;
+    }
+    // An import on demand makes available only the accessible top-level or member types (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.  The first identifier of `className` names the type that the import makes
+    // available; the binary name of that type is a prefix of `binaryName`.
+    int firstLength = className.indexOf('.');
+    if (firstLength < 0) {
+      firstLength = className.length();
+    }
+    @SuppressWarnings("signature") // a prefix of a binary name, ending at the end of an identifier
+    @ClassGetName String firstBinaryName = binaryName.substring(0, prefix.length() + 1 + firstLength);
+    if (!isImportAccessible(loadClass(firstBinaryName), cu)) {
+      return null;
+    }
+    return binaryName;
+  }
+
+  /**
+   * If {@code prefix} names a package, and the first identifier of {@code className} names a
+   * top-level type of that package on the classpath that is accessible to an import on demand in
+   * {@code cu}, returns the binary name of the type that {@code className} names. Each later
+   * identifier names a member type, declared or inherited. Otherwise returns null. For example, via
+   * {@code import java.util.*;}, {@code AbstractMap.Entry} names {@code java.util.Map$Entry}.
+   *
+   * @param prefix the name of the package or type that the import on demand imports from
+   * @param className the class name, in which a {@code .} separates a nested class from its
+   *     enclosing class
+   * @param cu the stub file's compilation unit, or null for the converter's import context
+   * @return the binary name of the class that {@code className} names via the import, or null
+   */
+  private @Nullable @BinaryName String onDemandImportPackageMemberBinaryName(
+      String prefix, String className, @Nullable CompilationUnit cu) {
+    String[] identifiers = className.split("\\.", -1);
+    if (identifiers.length < 2) {
+      // `onDemandImportBinaryName` already tried a single identifier.
+      return null;
+    }
+    // If `prefix` names a type rather than a package, then the binary name of its member type
+    // contains `$`, so no class has this name.
+    @SuppressWarnings("signature") // a package name followed by an identifier
+    @ClassGetName String firstName = prefix + "." + identifiers[0];
+    Class<?> first = loadClass(firstName);
+    // An import on demand makes available only the accessible top-level types (JLS 7.5.2).
+    if (first == null || !isImportAccessible(first, cu)) {
+      return null;
+    }
+    @SuppressWarnings("signature") // the binary name of a class, followed by its member types
+    @BinaryName String result = classMemberBinaryName(first, identifiers, 1);
+    // As when `loadClassBinaryName` fails for the whole name, an unresolvable member type yields
+    // null, so that a later import may supply the name.
+    return loadClass(result) == null ? null : result;
+  }
+
+  /**
+   * If {@code prefix} names a class on the classpath, and the first identifier of {@code className}
+   * names a member type, declared or inherited, of that class that is accessible to an import on
+   * demand in {@code cu}, returns the binary name of the type that {@code className} names.
+   * Otherwise returns null.
+   *
+   * @param prefix the name of the type that the import on demand imports from
+   * @param className the class name, in which a {@code .} separates a nested class from its
+   *     enclosing class
+   * @param cu the stub file's compilation unit, or null for the converter's import context
+   * @return the binary name of the class that {@code className} names via the import, or null
+   */
+  private @Nullable @BinaryName String onDemandImportClassMemberBinaryName(
+      String prefix, String className, @Nullable CompilationUnit cu) {
+    @BinaryName String prefixBinaryName = loadClassBinaryName(prefix);
+    Class<?> prefixClass = prefixBinaryName == null ? null : loadClass(prefixBinaryName);
+    if (prefixClass == null) {
+      return null;
+    }
+    String[] identifiers = className.split("\\.", -1);
+    Class<?> first;
+    try {
+      first = declaredMemberType(prefixClass, identifiers[0]);
+    } catch (NoClassDefFoundError | SecurityException e) {
+      return null;
+    }
+    if (first == null) {
+      // `classMemberType` applies the rules of inheritance and hiding (JLS 8.5).  An inherited
+      // member type that is inaccessible to the import does not hide one, from a later supertype,
+      // that is accessible.
+      first =
+          classMemberType(
+              prefixClass, identifiers[0], prefixClass.getPackageName(), importPackage(cu));
+    }
+    // An import on demand makes available only the accessible member types (JLS 7.5.2).
+    if (first == null || !isImportAccessible(first, cu)) {
+      return null;
+    }
+    @SuppressWarnings("signature") // the binary name of a class, followed by its member types
+    @BinaryName String result = classMemberBinaryName(first, identifiers, 1);
+    return result;
+  }
+
+  /**
+   * If {@code className} names, via the import on demand {@code prefix.*}, a top-level type of a
+   * package that the stub file declares, or a member type of a type that the stub file declares,
+   * returns the binary name of the type that {@code className} names. Otherwise returns null.
+   *
+   * @param prefix a package or type name that an import on demand imports from, such as {@code
+   *     java.util} for {@code import java.util.*;}
+   * @param className a class name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @param cu the stub file's compilation unit in which the import is written
+   * @return the binary name of the class that {@code className} names via the import, or null
+   */
+  private @Nullable String onDemandImportStubBinaryName(
+      String prefix, String className, CompilationUnit cu) {
+    String[] identifiers = className.split("\\.", -1);
+    // An import on demand makes available only the accessible top-level types of a package (JLS
+    // 7.5.2).  An inaccessible one does not shadow a type that a later import on demand makes
+    // available.
+    TypeDeclaration<?> topLevel = stubTopLevelType(cu, prefix, identifiers[0]);
+    if (topLevel != null && isImportAccessible(topLevel, cu)) {
+      return memberBinaryName(topLevel, identifiers, 1);
+    }
+    String prefixBinaryName = declaredInStubFile(cu, prefix);
+    TypeDeclaration<?> prefixDecl =
+        prefixBinaryName == null ? null : stubDeclarationOfBinaryName(cu, prefixBinaryName);
+    if (prefixDecl == null) {
+      return null;
+    }
+    // An import on demand makes available only the accessible member types (JLS 7.5.2).  An
+    // inaccessible one does not shadow a type that a later import on demand makes available.
+    TypeDeclaration<?> first = memberTypeDeclaration(prefixDecl, identifiers[0]);
+    if (first == null || !isImportAccessible(first, cu)) {
+      return null;
+    }
+    return memberBinaryName(first, identifiers, 1);
+  }
+
+  /**
+   * Returns the package in which an import on demand in {@code cu} is written. A package-private or
+   * protected member type is accessible to the import only if it is declared in that package (JLS
+   * 6.6.1).
+   *
+   * @param cu a compilation unit of the stub file, or null for the converter's import context
+   * @return the package of {@code cu}; the unnamed package is {@code ""}
+   */
+  private String importPackage(@Nullable CompilationUnit cu) {
+    String cuPkgName = importContext(cu).pkgName();
+    return cuPkgName == null ? "" : cuPkgName;
+  }
+
+  /**
+   * Returns true if the given top-level or member type is accessible to an import on demand in the
+   * given compilation unit, as javac determines it: a public type, or a member type of an interface
+   * or annotation interface, is accessible; a private member type is not; a protected or
+   * package-private type is accessible only in its own package.
+   *
+   * <p>A stub file can omit the access modifier of a type. The accessibility of such a type is that
+   * of the class on the classpath that has the same binary name, if there is one. Otherwise, the
+   * type is treated as public.
+   *
+   * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
+   *     Class} on the classpath, or null
+   * @param cu a compilation unit of the stub file, in which the import is written, or null for the
+   *     converter's import context
+   * @return true if {@code member} is non-null and accessible to an import in {@code cu}
+   */
+  private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
+    String cuPackage = importPackage(cu);
+    if (member instanceof TypeDeclaration<?> memberDecl) {
+      Node parent = memberDecl.getParentNode().orElse(null);
+      if ((parent instanceof ClassOrInterfaceDeclaration classDecl && classDecl.isInterface())
+          || parent instanceof AnnotationDeclaration
+          || memberDecl.isPublic()) {
+        return true;
+      }
+      if (memberDecl.isPrivate()) {
+        return false;
+      }
+      if (!memberDecl.isProtected()) {
+        Class<?> classpathType = classpathClass(memberDecl);
+        return classpathType == null || isImportAccessible(classpathType, cu);
+      }
+      return stubPackage(memberDecl).equals(cuPackage);
+    } else if (member instanceof Class<?> memberClass) {
+      Class<?> declaringClass = memberClass.getDeclaringClass();
+      int modifiers = memberClass.getModifiers();
+      if ((declaringClass != null && declaringClass.isInterface())
+          || java.lang.reflect.Modifier.isPublic(modifiers)) {
+        return true;
+      }
+      if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
+        return false;
+      }
+      return memberClass.getPackageName().equals(cuPackage);
+    }
+    return false;
+  }
+
+  /**
+   * Returns the classpath class with the same binary name as the given type declaration of the stub
+   * file.
+   *
+   * @param declaration a type declaration in the stub file
+   * @return the classpath class with the same binary name as {@code declaration}, or null if there
+   *     is none
+   */
+  private @Nullable Class<?> classpathClass(TypeDeclaration<?> declaration) {
+    if (classpathClassCache.containsKey(declaration)) {
+      return classpathClassCache.get(declaration);
+    }
+    @SuppressWarnings("signature") // the binary name of a class
+    @ClassGetName String binaryName = qualifiedStubBinaryName(declaration);
+    Class<?> clazz = loadClass(binaryName);
+    classpathClassCache.put(declaration, clazz);
+    return clazz;
+  }
+
+  /**
+   * Returns the binary name of the class that the given fully qualified name refers to: the class
+   * that the stub file declares, if the stub file declares it, and otherwise a class on the
+   * classpath.
+   *
+   * @param fqName a fully qualified class name
+   * @param cu the stub file's compilation unit, or null not to consider the types that the stub
+   *     file declares
+   * @return the binary name of the class that {@code fqName} refers to, or null
+   */
+  private @Nullable @BinaryName String classBinaryName(
+      String fqName, @Nullable CompilationUnit cu) {
+    if (cu != null) {
+      @SuppressWarnings("signature") // the stub file's declarations determine the binary name
+      @BinaryName String declared = declaredInStubFile(cu, fqName);
+      if (declared != null) {
+        return declared;
+      }
+    }
+    return loadClassBinaryName(fqName);
   }
 
   /**
@@ -1238,7 +1697,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     determined
    */
   private static @Nullable Class<?> classMemberType(Class<?> clazz, String identifier) {
-    return classMemberType(clazz, identifier, null);
+    return classMemberType(clazz, identifier, null, null);
   }
 
   /**
@@ -1262,17 +1721,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * <p>If {@code subclassPackage} is null, then the result can be a member type, even a private
    * one, that {@code clazz} declares, because no subclass needs to inherit it.
    *
+   * <p>If {@code importPackage} is non-null, then the member type must also be accessible to an
+   * import on demand written in {@code importPackage}: a protected or package-private member type
+   * counts only if it is declared in that package (JLS 6.6.1). An inaccessible member type that a
+   * class declares still hides the member types of the same name in that class's supertypes.
+   *
    * @param clazz a class on the classpath
    * @param identifier the simple name of a member type
    * @param subclassPackage the package of every subclass along the inheritance path that inherits
    *     the member types of {@code clazz}, {@link #MIXED_PACKAGES} if they are not all in one
    *     package, or null if {@code clazz} is the type whose member is sought; the unnamed package
    *     is {@code ""}
+   * @param importPackage the package of the import on demand to which the member type must also be
+   *     accessible, or null if there is no such import; the unnamed package is {@code ""}
    * @return the member type named {@code identifier}, or null if there is none or it cannot be
    *     determined
    */
   private static @Nullable Class<?> classMemberType(
-      Class<?> clazz, String identifier, @Nullable String subclassPackage) {
+      Class<?> clazz,
+      String identifier,
+      @Nullable String subclassPackage,
+      @Nullable String importPackage) {
     List<Class<?>> worklist = new ArrayList<>();
     // For each element of `worklist`, the package of every class on the inheritance path from
     // `clazz` to it, excluding the element itself, as for `subclassPackage`.
@@ -1295,7 +1764,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         Class<?> nestedType = declaredMemberType(c, identifier);
         if (nestedType != null) {
           if (pathPackage == null
-              || isInheritedMemberType(c, nestedType, packagePrivateInherited)) {
+              || isInheritedMemberType(c, nestedType, packagePrivateInherited, importPackage)) {
             return nestedType;
           }
           // A member type that `c` declares hides every member type of the same name in the
@@ -1345,10 +1814,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param nestedType a member type that {@code c} declares
    * @param packagePrivateInherited whether a package-private member type of {@code c} is inherited
    *     along the inheritance path
+   * @param importPackage the package of an import on demand to which {@code nestedType} must also
+   *     be accessible, or null if there is no such import; a protected or package-private member
+   *     type is accessible to the import only if {@code c} is in {@code importPackage}
    * @return true if {@code nestedType} is inherited along the inheritance path
    */
   private static boolean isInheritedMemberType(
-      Class<?> c, Class<?> nestedType, boolean packagePrivateInherited) {
+      Class<?> c,
+      Class<?> nestedType,
+      boolean packagePrivateInherited,
+      @Nullable String importPackage) {
     if (c.isInterface()) {
       // A member type of an interface is implicitly public.
       return true;
@@ -1357,9 +1832,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
       return false;
     }
-    return packagePrivateInherited
-        || java.lang.reflect.Modifier.isPublic(modifiers)
-        || java.lang.reflect.Modifier.isProtected(modifiers);
+    if (java.lang.reflect.Modifier.isPublic(modifiers)) {
+      return true;
+    }
+    if (importPackage != null && !c.getPackageName().equals(importPackage)) {
+      return false;
+    }
+    return packagePrivateInherited || java.lang.reflect.Modifier.isProtected(modifiers);
   }
 
   /**
@@ -1394,7 +1873,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             return inherited;
           }
         } else if (superDecl instanceof Class<?> superClass) {
-          Class<?> nestedType = classMemberType(superClass, identifier, stubPackage());
+          Class<?> nestedType =
+              classMemberType(superClass, identifier, stubPackage(declaration), null);
           if (nestedType != null) {
             return nestedType;
           }
@@ -1402,7 +1882,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       if (declaration instanceof EnumDeclaration) {
         // The implicit superclass of an enum declares the member type `Enum.EnumDesc`.
-        return classMemberType(Enum.class, identifier, stubPackage());
+        return classMemberType(Enum.class, identifier, stubPackage(declaration), null);
       }
       return null;
     } finally {
@@ -1411,13 +1891,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the package of the stub file's types, in the form that {@link Class#getPackageName}
-   * returns.
+   * Returns the package of the given type declaration of the stub file, in the form that {@link
+   * Class#getPackageName} returns.
    *
-   * @return the stub file's package, or {@code ""} for the unnamed package
+   * <p>A declaration that is not part of any compilation unit is in the package that the public
+   * constructor received.
+   *
+   * @param declaration a type declaration in the stub file
+   * @return the package of {@code declaration}, or {@code ""} for the unnamed package
    */
-  private String stubPackage() {
-    return pkgName == null ? "" : pkgName;
+  private String stubPackage(TypeDeclaration<?> declaration) {
+    CompilationUnit cu = declaration.findCompilationUnit().orElse(null);
+    String result = importContext(cu).pkgName();
+    return result == null ? "" : result;
   }
 
   /**
@@ -1472,41 +1958,35 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the type declaration of the stub file that has the given binary name.
    *
+   * <p>The declaration is in a compilation unit of the stub file whose package is the package of
+   * {@code binaryName}. A type in the unnamed package is sought only in {@code node}'s compilation
+   * unit, because a type in the unnamed package cannot be referred to from another package.
+   *
    * <p>A {@code $} in a binary name may separate a member type from its enclosing type, or it may
    * be part of an identifier, as in a class named {@code Base$Generated}. This method matches the
    * names of actual declarations, so it handles both.
    *
    * @param node a node in the stub file's AST
    * @param binaryName a binary name
-   * @return the type declaration, in {@code node}'s compilation unit, whose binary name is {@code
-   *     binaryName}, or null if there is none
+   * @return the type declaration of the stub file whose binary name is {@code binaryName}, or null
+   *     if there is none
    */
   private @Nullable TypeDeclaration<?> stubDeclarationOfBinaryName(Node node, String binaryName) {
-    String prefix = pkgName == null ? "" : pkgName + ".";
-    if (!binaryName.startsWith(prefix)) {
-      return null;
-    }
-    String nameInPackage = binaryName.substring(prefix.length());
-    if (nameInPackage.contains(".")) {
-      return null;
-    }
+    int lastDot = binaryName.lastIndexOf('.');
+    String pkg = lastDot < 0 ? null : binaryName.substring(0, lastDot);
+    String nameInPackage = binaryName.substring(lastDot + 1);
     CompilationUnit cu = node.findCompilationUnit().orElse(null);
-    if (cu == null) {
-      return null;
-    }
     int end = -1;
     do {
       end = nameInPackage.indexOf('$', end + 1);
       if (end < 0) {
         end = nameInPackage.length();
       }
-      String topLevelName = nameInPackage.substring(0, end);
-      for (TypeDeclaration<?> topLevel : cu.getTypes()) {
-        if (topLevel.getNameAsString().equals(topLevelName)) {
-          TypeDeclaration<?> result = memberDeclarationOfBinaryName(topLevel, nameInPackage, end);
-          if (result != null) {
-            return result;
-          }
+      TypeDeclaration<?> topLevel = stubTopLevelType(cu, pkg, nameInPackage.substring(0, end));
+      if (topLevel != null) {
+        TypeDeclaration<?> result = memberDeclarationOfBinaryName(topLevel, nameInPackage, end);
+        if (result != null) {
+          return result;
         }
       }
     } while (end < nameInPackage.length());
@@ -1576,23 +2056,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Combines an import with a partially qualified name, yielding a fully qualified name.
+   * Combines a single-type import with a partially qualified name, yielding a fully qualified name.
    *
-   * @param importName package name or (for an inner class) the outer class name
+   * @param importName the type that a single-type import imports, such as {@code java.util.Map}
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
   private static @Nullable @FullyQualifiedName String mergeImport(
       String importName, @FullyQualifiedName String className) {
-    if (importName.isEmpty() || importName.equals(className)) {
+    if (importName.equals(className)) {
       return className;
     }
-    String[] importSplit = importName.split("\\.");
-    String importEnd = importSplit[importSplit.length - 1];
-    if ("*".equals(importEnd)) {
-      return importName.substring(0, importName.length() - 1) + className;
-    } else if (className.equals(importEnd) || className.startsWith(importEnd + ".")) {
+    String importEnd = importName.substring(importName.lastIndexOf('.') + 1);
+    if (className.equals(importEnd) || className.startsWith(importEnd + ".")) {
       // The import supplies the prefix, such as in
       //   import a.b.C;
       //   C.D myvar;
