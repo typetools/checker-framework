@@ -261,6 +261,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private @Nullable LabelCell breakTargetLC;
 
   /**
+   * Current {@link LabelCell} to which a yield statement should jump, or null if there is no valid
+   * destination. This differs from {@link #breakTargetLC} within a loop or a switch statement that
+   * is nested in a switch expression.
+   */
+  private @Nullable LabelCell yieldTargetLC;
+
+  /**
    * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates two
    * CFG {@link Label}s, one for break and one for continue.
    */
@@ -2217,7 +2224,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     public @Nullable SwitchExpressionNode build() {
       LabelCell oldBreakTargetLC = breakTargetLC;
+      LabelCell oldYieldTargetLC = yieldTargetLC;
       breakTargetLC = new LabelCell(new Label());
+      if (!TreeUtils.isSwitchStatement(switchTree)) {
+        // A yield statement leaves the innermost enclosing switch expression.
+        yieldTargetLC = breakTargetLC;
+      }
       int numCases = caseTrees.size();
 
       for (int i = 0; i < numCases; ++i) {
@@ -2273,6 +2285,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       addLabelForNextNode(breakTargetLC.peekLabel());
       breakTargetLC = oldBreakTargetLC;
+      yieldTargetLC = oldYieldTargetLC;
       if (TreeUtils.isSwitchStatement(switchTree)) {
         // It's a switch statement, not a switch expression.
         extendWithNode(
@@ -2458,8 +2471,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *   <li>Builds the CFG for the switch expression result.
      *   <li>Creates an assignment node for the assignment of {@code resultExpression} to {@code
      *       switchExprVarTree}.
-     *   <li>Adds an unconditional jump to {@link #breakTargetLC} (the end of the switch
-     *       expression).
+     *   <li>Adds an unconditional jump to {@link #yieldTargetLC} (the end of the switch
+     *       expression, possibly via copies of the finally blocks of try statements that the
+     *       yield leaves).
      * </ol>
      *
      * @param resultExpression the result of a switch expression; either from a yield or an
@@ -2482,9 +2496,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new AssignmentNode(assign, switchExprVarUseNode, resultExprNode);
       assignmentNode.setInSource(false);
       extendWithNode(assignmentNode);
-      // Switch rules never fall through so add jump to the break target.
-      assert breakTargetLC != null : "no target for case statement";
-      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+      // Leave the switch expression.  Within a loop or a switch statement, the break target
+      // differs from the yield target.
+      assert yieldTargetLC != null : "no target for yield";
+      extendWithExtendedNode(new UnconditionalJump(yieldTargetLC.accessLabel()));
     }
   }
 
@@ -2565,6 +2580,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Store return/break/continue labels, just in case we need them for a finally block.
     LabelCell oldReturnTargetLC = returnTargetLC;
     LabelCell oldBreakTargetLC = breakTargetLC;
+    LabelCell oldYieldTargetLC = yieldTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
@@ -2582,6 +2598,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       breakTargetLC = new LabelCell();
       breakLabels = new TryFinallyScopeMap();
+
+      if (yieldTargetLC != null) {
+        yieldTargetLC = new LabelCell();
+      }
 
       continueTargetLC = new LabelCell();
       continueLabels = new TryFinallyScopeMap();
@@ -2627,6 +2647,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           () -> scan(finallyBlock, p),
           oldReturnTargetLC,
           oldBreakTargetLC,
+          oldYieldTargetLC,
           oldBreakLabels,
           oldContinueTargetLC,
           oldContinueLabels);
@@ -2675,6 +2696,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // labels afterward.
     LabelCell oldReturnTargetLC = returnTargetLC;
     LabelCell oldBreakTargetLC = breakTargetLC;
+    LabelCell oldYieldTargetLC = yieldTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
@@ -2697,6 +2719,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     breakTargetLC = new LabelCell();
     breakLabels = new TryFinallyScopeMap();
+
+    if (yieldTargetLC != null) {
+      yieldTargetLC = new LabelCell();
+    }
 
     continueTargetLC = new LabelCell();
     continueLabels = new TryFinallyScopeMap();
@@ -2725,6 +2751,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         () -> addCloseCallForResource(resourceDeclarationTree, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
+        oldYieldTargetLC,
         oldBreakLabels,
         oldContinueTargetLC,
         oldContinueLabels);
@@ -2823,8 +2850,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     of the finally block, and the copy for a return jumps to its label at the end.
    * @param oldBreakTargetLC the break target label cell of the code that encloses the try
    *     statement. This method assigns it to {@link #breakTargetLC} before it generates any copy of
-   *     the finally block, and the copy for an unlabeled break or a yield jumps to its label at the
-   *     end.
+   *     the finally block, and the copy for an unlabeled break jumps to its label at the end.
+   * @param oldYieldTargetLC the yield target label cell of the code that encloses the try
+   *     statement, or null if the try statement is not within a switch expression. This method
+   *     assigns it to {@link #yieldTargetLC} before it generates any copy of the finally block, and
+   *     the copy for a yield jumps to its label at the end.
    * @param oldBreakLabels the break labels of the code that encloses the try statement. This method
    *     assigns them to {@link #breakLabels} before it generates any copy of the finally block, and
    *     the copy for a labeled break jumps at the end to the label that this map gives for the
@@ -2845,6 +2875,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Runnable finallyBlockCFGGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
+      @Nullable LabelCell oldYieldTargetLC,
       Map<Name, Label> oldBreakLabels,
       LabelCell oldContinueTargetLC,
       Map<Name, Label> oldContinueLabels) {
@@ -2858,6 +2889,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // ends with a jump to the statement's destination outside the try statement.
     LabelCell tryReturnTargetLC = returnTargetLC;
     LabelCell tryBreakTargetLC = breakTargetLC;
+    LabelCell tryYieldTargetLC = yieldTargetLC;
     TryFinallyScopeMap tryBreakLabels = (TryFinallyScopeMap) breakLabels;
     LabelCell tryContinueTargetLC = continueTargetLC;
     TryFinallyScopeMap tryContinueLabels = (TryFinallyScopeMap) continueLabels;
@@ -2867,6 +2899,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // run the finally block again.
     returnTargetLC = oldReturnTargetLC;
     breakTargetLC = oldBreakTargetLC;
+    yieldTargetLC = oldYieldTargetLC;
     breakLabels = oldBreakLabels;
     continueTargetLC = oldContinueTargetLC;
     continueLabels = oldContinueLabels;
@@ -2927,6 +2960,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           tryBreakTargetLC.peekLabel(),
           "break",
           oldBreakTargetLC.accessLabel(),
+          finallyBlockCFGGenerator);
+    }
+
+    if (tryYieldTargetLC != null && tryYieldTargetLC.wasAccessed()) {
+      assert oldYieldTargetLC != null : "no target for yield";
+      addFinallyCopyForJump(
+          markerTree,
+          tryYieldTargetLC.peekLabel(),
+          "yield",
+          oldYieldTargetLC.accessLabel(),
           finallyBlockCFGGenerator);
     }
 
