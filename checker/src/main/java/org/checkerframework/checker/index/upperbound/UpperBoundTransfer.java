@@ -464,25 +464,38 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Returns the given qualifier of the given node, or UNKNOWN if the qualifier might not hold when
-   * the comparison that contains the node completes, because it contains an expression whose value
-   * might change after the node is evaluated (see {@link
-   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of a
-   * node before using it to refine any node, including the node itself: in {@code (i = (a =
-   * b).length - 1) < (a = c).length + 100}, the type {@code @LTLengthOf("a")} of the left operand
-   * is about {@code b}, and it does not hold for {@code i} after {@code a} is reassigned.
+   * Returns the given qualifier of the given node, without each bound that might not hold when the
+   * comparison that contains the node completes, because its sequence or offset contains an
+   * expression whose value might change after the node is evaluated (see {@link
+   * #mayChangeBeforeComparisonCompletes}). Returns UNKNOWN if no bound remains. Call this method on
+   * a qualifier of a node before using it to refine any node, including the node itself: in {@code
+   * (i = (a = b).length - 1) < (a = c).length + 100}, the type {@code @LTLengthOf("a")} of the left
+   * operand is about {@code b}, and it does not hold for {@code i} after {@code a} is reassigned.
+   * If the qualifier also had a bound for a sequence that is not reassigned, that bound would be
+   * retained.
    *
    * @param qualifier a qualifier of {@code node}
    * @param node a node in an operand of a comparison
-   * @return {@code qualifier}, or UNKNOWN if it might not hold when the comparison completes
+   * @return {@code qualifier}, without the bounds that might not hold when the comparison completes
    */
   private UBQualifier qualifierWhenComparisonCompletes(UBQualifier qualifier, Node node) {
-    if (qualifier.isLessThanLengthQualifier()
-        && containsExpressionChangedBeforeComparisonCompletes(
-            atypeFactory.convertUBQualifierToAnnotation(qualifier), node)) {
+    if (!(qualifier instanceof LessThanLengthOf ltl)) {
+      return qualifier;
+    }
+    Predicate<JavaExpression> mayChange = mayChangeBeforeComparisonCompletes(node);
+    if (mayChange == null) {
+      return qualifier;
+    }
+    TreePath path = sourcePath(node);
+    if (path == null) {
       return UpperBoundUnknownQualifier.UNKNOWN;
     }
-    return qualifier;
+    return ltl.removeDependentsOf(
+        s -> {
+          JavaExpression je = UpperBoundVisitor.parseJavaExpressionString(s, atypeFactory, path);
+          // Conservatively assume that an expression that cannot be parsed might change.
+          return je == null || mayChange.test(je);
+        });
   }
 
   /** Implements case 11. */
@@ -519,11 +532,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * #qualifierWhenComparisonCompletes}), and each bound that might not hold when the comparison
    * completes (see {@link #removeBoundsChangedAfter}).
    *
-   * @param left the left operand of the comparison
+   * @param left the left operand of the equality comparison
    * @param leftAnno the upper bound annotation of {@code left}
-   * @param right the right operand of the comparison
+   * @param right the right operand of the equality comparison
    * @param rightAnno the upper bound annotation of {@code right}
-   * @param store the store to refine
+   * @param store the store to refine, in which the operands are equal
    */
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {

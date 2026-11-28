@@ -6,6 +6,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -1562,26 +1563,45 @@ public abstract class CFAbstractTransfer<
     if (!dependentTypesHelper.hasDependentAnnotations()) {
       return false;
     }
-    node = valueSource(node);
-    TreePath path = sourcePath(node);
+    TreePath path = sourcePath(valueSource(node));
     if (path == null) {
       return false;
     }
-    WrittenLocations written = locationsWrittenUntilComparison(node);
-    if (written.isEmpty()) {
+    Predicate<JavaExpression> mayChange = mayChangeBeforeComparisonCompletes(node);
+    if (mayChange == null) {
       return false;
     }
     boolean[] result = {false};
     dependentTypesHelper.convertAnnotationMirror(
         expression -> {
           JavaExpression expr = analysis.atypeFactory.parseJavaExpressionString(expression, path);
-          if (written.mayChange(expr, false)) {
+          if (mayChange.test(expr)) {
             result[0] = true;
           }
           return expr;
         },
         anno);
     return result[0];
+  }
+
+  /**
+   * Returns a test for Java expressions in an annotation of the given node whose values might
+   * change after the node is evaluated and before the comparison that contains the node completes.
+   * Returns null if no variable, field, or array element is written in that time. This is like
+   * {@link #containsExpressionChangedBeforeComparisonCompletes}, but it lets a client discard only
+   * the parts of an annotation that depend on such an expression.
+   *
+   * @param node a node in an operand of a comparison
+   * @return a test for whether the value of an expression might change after {@code node} is
+   *     evaluated and before the comparison completes, or null if no location is written in that
+   *     time
+   */
+  protected @Nullable Predicate<JavaExpression> mayChangeBeforeComparisonCompletes(Node node) {
+    WrittenLocations written = locationsWrittenUntilComparison(valueSource(node));
+    if (written.isEmpty()) {
+      return null;
+    }
+    return expr -> written.mayChange(expr, false);
   }
 
   /**
@@ -1723,10 +1743,12 @@ public abstract class CFAbstractTransfer<
    * field, or an array element, such as {@code x}, {@code o.f}, or {@code a[i]}. {@link #add} adds
    * a write to a given location, and {@link #scan} adds the writes that evaluating a tree might
    * perform: its assignments, compound assignments, increments, decrements, method calls, object
-   * creations, string conversions, and record patterns. A method call, object creation, string
-   * conversion (which calls {@code toString()}), or record pattern (which calls record component
-   * accessors) might write every non-final field and every array element, unless the method or
-   * constructor is side-effect-free; {@link #anyHeapLocation} records that.
+   * creations, string conversions, record patterns, and enhanced {@code for} loops over an {@code
+   * Iterable}. A method call, object creation, string conversion (which calls {@code toString()}),
+   * record pattern (which calls record component accessors), or enhanced {@code for} loop over an
+   * {@code Iterable} (which calls {@code iterator()}) might write every non-final field and every
+   * array element, unless the method or constructor is side-effect-free; {@link #anyHeapLocation}
+   * records that.
    *
    * <p>{@link #scan} does not descend into lambda bodies or class bodies, because they do not
    * execute when the tree is evaluated. The writes of such a body to fields and array elements are
@@ -1816,8 +1838,8 @@ public abstract class CFAbstractTransfer<
     /**
      * Adds the writes that the given tree performs itself, after its subtrees are evaluated: the
      * write of an assignment, compound assignment, increment, or decrement, and the writes of a
-     * method call, object creation, string conversion, or record pattern. Does not add the writes
-     * of the subtrees.
+     * method call, object creation, string conversion, record pattern, or enhanced {@code for} loop
+     * over an {@code Iterable}. Does not add the writes of the subtrees.
      *
      * @param tree a tree
      */
@@ -1846,6 +1868,11 @@ public abstract class CFAbstractTransfer<
         addStringConversions(binaryTree.getLeftOperand(), binaryTree.getRightOperand());
       } else if (TreeUtils.isDeconstructionPatternTree(tree)) {
         addRecordAccessorCalls(tree);
+      } else if (tree instanceof EnhancedForLoopTree enhancedForLoopTree
+          && TreeUtils.typeOf(enhancedForLoopTree.getExpression()).getKind() != TypeKind.ARRAY) {
+        // A loop over an `Iterable` calls `iterator()`, `hasNext()`, and `next()`, whose
+        // implementations are not known statically.  A loop over an array calls no method.
+        anyHeapLocation = true;
       }
     }
 
@@ -2173,7 +2200,10 @@ public abstract class CFAbstractTransfer<
     private @Nullable Long constantIndex(JavaExpression index) {
       if (index instanceof ValueLiteral literal) {
         Object value = literal.getValue();
-        if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+        if (value instanceof Integer
+            || value instanceof Long
+            || value instanceof Short
+            || value instanceof Byte) {
           return ((Number) value).longValue();
         } else if (value instanceof Character c) {
           return (long) c.charValue();

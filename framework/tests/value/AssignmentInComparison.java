@@ -73,6 +73,19 @@ public class AssignmentInComparison {
     }
   }
 
+  static void assignedArrayLength(int n, int[] a) {
+    if ((n = a.length) == 3) {
+      // The comparison refines `a.length`, so it refines `a` too.
+      int @ArrayLen(3) [] b = a;
+    }
+  }
+
+  static void assignedStringLength(int n, String s) {
+    if ((n = s.length()) == 3) {
+      @ArrayLen(3) String t = s;
+    }
+  }
+
   static void annotationArgumentInRhs(int[] a, int[] b) {
     // The annotation argument `{0, 1}` is not an assignment to a variable.
     if ((a = new @IntVal({0, 1}) int[] {0, 1}) == b) {
