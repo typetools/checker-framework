@@ -41,9 +41,9 @@ public class MethodInvocation {
 
   // See https://github.com/typetools/checker-framework/issues/84
   void internedCharacterParametersClient() {
-    // TODO: autoboxing from char to Character // :: error: [argument]
+    // :: error: [argument]
     internedCharacterParameter('\u00E4'); // lowercase a with umlaut
-    // TODO: autoboxing from char to Character // :: error: [argument]
+    // :: error: [argument]
     internedCharacterParameter('a');
     // :: error: [argument]
     internedCharacterParameter(Character.valueOf('a'));

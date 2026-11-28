@@ -7,9 +7,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
@@ -66,7 +69,50 @@ public class MethodInvocationNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
-   * Creates a MethodInvocationNode.
+   * Whether a method invocation is a boxing or unboxing conversion that the CFG builder inserted
+   * for an implicit conversion in the source code.
+   */
+  public enum BoxingConversion {
+    /**
+     * The method invocation is not a boxing or unboxing conversion that the CFG builder inserted.
+     */
+    NONE,
+    /**
+     * The method invocation is a boxing conversion that the CFG builder inserted, such as the call
+     * to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument of such a call
+     * is the value being boxed.
+     */
+    BOXING,
+    /**
+     * The method invocation is an unboxing conversion that the CFG builder inserted, such as the
+     * call to {@code intValue()} in {@code int i = anInteger;}. The receiver of such a call is the
+     * value being unboxed.
+     */
+    UNBOXING
+  }
+
+  /**
+   * The implicit boxing or unboxing conversion that this MethodInvocationNode represents, if any.
+   */
+  protected final BoxingConversion boxingConversion;
+
+  /**
+   * Types that label exceptional edges of this invocation that it follows whenever it throws an
+   * exception, regardless of the type of the exception that it throws. Usually empty.
+   *
+   * <p>If this MethodInvocationNode is a synthetic {@code close()} call on a path on which a
+   * try-with-resources statement suppresses any exception that {@code close()} throws and then
+   * rethrows the primary exception, then these are the types of the primary exception.
+   *
+   * <p>A fact that holds only when the invoked method throws an exception of a particular type,
+   * such as an exceptional postcondition, does not hold on an edge labeled by one of these types.
+   *
+   * <p>Is set by {@link #setAnyExceptionTypes}.
+   */
+  protected Set<TypeMirror> anyExceptionTypes = Collections.emptySet();
+
+  /**
+   * Creates a MethodInvocationNode that is not a boxing or unboxing conversion.
    *
    * @param tree the tree for the method invocation
    * @param target the MethodAccessNode for the method being invoked
@@ -78,11 +124,32 @@ public class MethodInvocationNode extends Node {
       MethodAccessNode target,
       List<Node> arguments,
       TreePath treePath) {
+    this(tree, target, arguments, treePath, BoxingConversion.NONE);
+  }
+
+  /**
+   * Creates a MethodInvocationNode.
+   *
+   * @param tree a tree for a method invocation, or null if the method invocation corresponds to no
+   *     AST tree
+   * @param target the MethodAccessNode for the method being invoked
+   * @param arguments the arguments of the method invocation
+   * @param treePath the path to the method invocation
+   * @param boxingConversion the boxing or unboxing conversion that the method invocation performs,
+   *     if the CFG builder inserted it as one
+   */
+  public MethodInvocationNode(
+      @Nullable MethodInvocationTree tree,
+      MethodAccessNode target,
+      List<Node> arguments,
+      TreePath treePath,
+      BoxingConversion boxingConversion) {
     super(tree != null ? TreeUtils.typeOf(tree) : target.getMethod().getReturnType());
     this.tree = tree;
     this.target = target;
     this.arguments = arguments;
     this.treePath = treePath;
+    this.boxingConversion = boxingConversion;
   }
 
   public MethodInvocationNode(MethodAccessNode target, List<Node> arguments, TreePath treePath) {
@@ -155,6 +222,55 @@ public class MethodInvocationNode extends Node {
    */
   public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
     this.enhancedForLoop = enhancedForLoop;
+  }
+
+  /**
+   * Returns true if this MethodInvocationNode is a boxing conversion that the CFG builder inserted,
+   * such as the call to {@code Integer.valueOf()} in {@code Integer i = anInt;}. The only argument
+   * of such a call is the value being boxed.
+   *
+   * @return true if this is a boxing conversion that the CFG builder inserted
+   */
+  public boolean isBoxing() {
+    return boxingConversion == BoxingConversion.BOXING;
+  }
+
+  /**
+   * Returns true if this MethodInvocationNode is an unboxing conversion that the CFG builder
+   * inserted, such as the call to {@code intValue()} in {@code int i = anInteger;}. The receiver of
+   * such a call is the value being unboxed.
+   *
+   * @return true if this is an unboxing conversion that the CFG builder inserted
+   */
+  public boolean isUnboxing() {
+    return boxingConversion == BoxingConversion.UNBOXING;
+  }
+
+  /**
+   * Returns the types that label exceptional edges of this invocation that it follows whenever it
+   * throws an exception, regardless of the type of the exception that it throws. Usually empty.
+   *
+   * <p>A fact that holds only when the invoked method throws an exception of a particular type,
+   * such as an exceptional postcondition, does not hold on an edge labeled by one of these types.
+   *
+   * @return the types that label exceptional edges that this invocation follows whenever it throws
+   *     an exception
+   * @see #anyExceptionTypes
+   */
+  public Set<TypeMirror> getAnyExceptionTypes() {
+    return anyExceptionTypes;
+  }
+
+  /**
+   * Sets the types that label exceptional edges of this invocation that it follows whenever it
+   * throws an exception, regardless of the type of the exception that it throws.
+   *
+   * @param anyExceptionTypes the types that label exceptional edges that this invocation follows
+   *     whenever it throws an exception
+   * @see #getAnyExceptionTypes()
+   */
+  public void setAnyExceptionTypes(Set<TypeMirror> anyExceptionTypes) {
+    this.anyExceptionTypes = anyExceptionTypes;
   }
 
   @Override
