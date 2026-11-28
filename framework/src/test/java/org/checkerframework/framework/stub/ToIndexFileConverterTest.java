@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import java.io.ByteArrayInputStream;
@@ -525,6 +526,126 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Local;)V");
   }
 
+  /** A type that another package of the stub file declares gets its binary name. */
+  @Test
+  public void testTypeDeclaredInOtherPackageOfStubFile() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Outer;",
+            "class MyClass {",
+            "  void myMethod(Outer.Inner i, q.Outer.Inner j) {}",
+            "}",
+            "package q;",
+            "class Outer {",
+            "  class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer$Inner;Lq/Outer$Inner;)V");
+  }
+
+  /**
+   * A member type that the stub file does not declare, of a type that another compilation unit of
+   * the stub file declares, gets the binary name that it would get if the same compilation unit
+   * declared that type.
+   */
+  @Test
+  public void testUndeclaredMemberOfTypeInOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Outer;",
+            "class MyClass {",
+            "  void myMethod(Outer.Missing m, q.Outer.Missing n, B.Missing o) {}",
+            "}",
+            "package q;",
+            "class Outer {}",
+            "package p;",
+            "class B {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer$Missing;Lq/Outer$Missing;Lp/B$Missing;)V");
+  }
+
+  /**
+   * Searching for a member type in a deep hierarchy of interfaces whose supertypes form diamonds
+   * takes time that is linear, not exponential, in the depth of the hierarchy, even for a name,
+   * such as {@code String}, that no type in the hierarchy declares.
+   */
+  @Test(timeout = 60_000)
+  public void testInheritedMemberTypeInDiamondHierarchy() throws Exception {
+    int depth = 30;
+    List<String> lines = new ArrayList<>();
+    lines.add("package p;");
+    lines.add("class MyClass implements A0 {");
+    lines.add("  void myMethod(MyClass.Member m, MyClass.Missing s) {}");
+    lines.add("}");
+    for (int i = 0; i < depth; i++) {
+      String supertypes = "A" + (i + 1) + ", B" + (i + 1);
+      lines.add("interface A" + i + " extends " + supertypes + " {}");
+      lines.add("interface B" + i + " extends " + supertypes + " {}");
+    }
+    lines.add("interface A" + depth + " { class Member {} }");
+    lines.add("interface B" + depth + " {}");
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "MyClass", "myMethod(Lp/A" + depth + "$Member;Lp/MyClass$Missing;)V");
+  }
+
+  /**
+   * Searching for a member type in a deep hierarchy of interfaces whose supertypes form diamonds,
+   * and whose deepest interfaces extend the first one, takes time that is not exponential in the
+   * depth of the hierarchy, even though every path leads back to a type whose search is in
+   * progress. Such cyclic inheritance is illegal.
+   */
+  @Test(timeout = 60_000)
+  public void testInheritedMemberTypeInCyclicDiamondHierarchy() throws Exception {
+    int depth = 30;
+    List<String> lines = new ArrayList<>();
+    lines.add("package p;");
+    lines.add("class MyClass implements A0 {");
+    lines.add("  void myMethod(MyClass.Missing s) {}");
+    lines.add("}");
+    for (int i = 0; i < depth; i++) {
+      String supertypes = "A" + (i + 1) + ", B" + (i + 1);
+      lines.add("interface A" + i + " extends " + supertypes + " {}");
+      lines.add("interface B" + i + " extends " + supertypes + " {}");
+    }
+    lines.add("interface A" + depth + " extends A0 {}");
+    lines.add("interface B" + depth + " extends A0 {}");
+    String jaif = convert(lines.toArray(new String[0]));
+    assertMethod(jaif, "MyClass", "myMethod(Lp/MyClass$Missing;)V");
+  }
+
+  /**
+   * In package {@code p}, the name {@code q.Outer} does not refer to a type in subpackage {@code
+   * p.q}, even if the stub file declares one.
+   */
+  @Test
+  public void testStubFileSubpackageIsNotInCurrentPackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(q.Outer o) {}",
+            "}",
+            "package p.q;",
+            "class Outer {}",
+            "package q;",
+            "class Outer {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer;)V");
+  }
+
+  /** A type that the stub file declares in {@code java.lang} is implicitly imported. */
+  @Test
+  public void testStubFileJavaLangTypeIsImplicitlyImported() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(StubOnlyType t) {}",
+            "}",
+            "package java.lang;",
+            "public class StubOnlyType {}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/StubOnlyType;)V");
+  }
+
   /**
    * A type that the stub file declares is qualified by the stub file's package, even where it is
    * used before its declaration.
@@ -613,6 +734,50 @@ public class ToIndexFileConverterTest {
             "package mypackage;",
             "class MyClass {",
             "  void myMethod(mypackage.MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /**
+   * A name that is qualified by the stub file's package does not name a type of the stub file if
+   * the rest of the name repeats the package.
+   */
+  @Test
+  public void testPackageQualifiedNameIsNotQualifiedTwice() throws Exception {
+    String jaif =
+        convert(
+            "package p;", "class MyClass {", "  void myMethod(p.p.Foo f) {}", "}", "class Foo {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/p/Foo;)V");
+  }
+
+  /** A single-type import of a type that the stub file declares is resolved. */
+  @Test
+  public void testSingleTypeImportOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import mypackage.MyOtherClass.MyNestedClass;",
+            "class MyClass {",
+            "  void myMethod(MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /** An import-on-demand of types that the stub file declares is resolved. */
+  @Test
+  public void testOnDemandImportOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import mypackage.MyOtherClass.*;",
+            "class MyClass {",
+            "  void myMethod(MyNestedClass c) {}",
             "}",
             "class MyOtherClass {",
             "  class MyNestedClass {}",
@@ -808,6 +973,386 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An import on demand from a type in another package makes available a protected member type that
+   * the type inherits, if the import is in the package that declares the member type. A
+   * package-private member type is not inherited by a subclass in another package.
+   */
+  @Test
+  public void testOnDemandImportOfProtectedInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "import org.checkerframework.framework.stub.inheritanceb.ProtectedSub.*;",
+            "class Use {",
+            "  void m(ProtectedInner x) {}",
+            "  void n(Integer i) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "Use",
+        "m(Lorg/checkerframework/framework/stub/inheritancea/ProtectedBase$ProtectedInner;)V");
+    assertMethod(jaif, "Use", "n(Ljava/lang/Integer;)V");
+
+    // `javax.swing.JComponent` inherits the protected member type `FlipBufferStrategy` from
+    // `java.awt.Component`.
+    jaif =
+        convert(
+            "package java.awt;",
+            "import javax.swing.JComponent.*;",
+            "class Use {",
+            "  void m(FlipBufferStrategy x) {}",
+            "}");
+    assertMethod(jaif, "Use", "m(Ljava/awt/Component$FlipBufferStrategy;)V");
+  }
+
+  /**
+   * An import on demand does not make available an inaccessible member type, so the member type
+   * does not shadow a type in {@code java.lang}.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Integer i) {}",
+            "  void o(Pub x) {}",
+            "}",
+            "package p;",
+            "public class Outer {",
+            "  private static class String {}",
+            "  protected static class Integer {}",
+            "  public static class Pub {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    // A protected member type is not accessible to an import in another package.
+    assertMethod(jaif, "C", "n(Ljava/lang/Integer;)V");
+    assertMethod(jaif, "C", "o(Lp/Outer$Pub;)V");
+
+    // A package-private member type is accessible in its own package, but a private one is not.
+    jaif =
+        convert(
+            "package p;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(String s) {}",
+            "  void n(Integer i) {}",
+            "}",
+            "class Outer {",
+            "  private static class String {}",
+            "  static class Integer {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/String;)V");
+    assertMethod(jaif, "C", "n(Lp/Outer$Integer;)V");
+  }
+
+  /**
+   * An import on demand of a package does not make available a top-level type of another package
+   * that is package-private on the classpath, even if the stub file omits its access modifier, so
+   * the top-level type does not shadow a type that a later import on demand makes available.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "import r.*;",
+            "class C {",
+            "  void m(RegularEnumSet.Extra x) {}",
+            "}",
+            "package java.util;",
+            "class RegularEnumSet {",
+            "  public static class Extra {}",
+            "}",
+            "package r;",
+            "public class RegularEnumSet {",
+            "  public static class Extra {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lr/RegularEnumSet$Extra;)V");
+  }
+
+  /**
+   * A stub file can omit the access modifier of a type. An import on demand in another package
+   * makes available such a type that is not on the classpath.
+   */
+  @Test
+  public void testOnDemandImportOfStubTypeWithoutAccessModifier() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import p.*;",
+            "import p.Outer.*;",
+            "class C {",
+            "  void m(Foo f) {}",
+            "  void n(Inner i) {}",
+            "}",
+            "package p;",
+            "class Foo {}",
+            "class Outer {",
+            "  static class Inner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Foo;)V");
+    assertMethod(jaif, "C", "n(Lp/Outer$Inner;)V");
+  }
+
+  /**
+   * An import on demand of a package does not make available a package-private top-level type of
+   * the package that is on the classpath, so the type does not shadow a type that a later import on
+   * demand makes available. {@code java.util.RegularEnumSet} is package-private.
+   */
+  @Test
+  public void testOnDemandImportOfInaccessibleClasspathTopLevelType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "import p.*;",
+            "class C {",
+            "  void m(RegularEnumSet s) {}",
+            "  void n(List x) {}",
+            "}",
+            "package p;",
+            "public class RegularEnumSet {}");
+    assertMethod(jaif, "C", "m(Lp/RegularEnumSet;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/List;)V");
+  }
+
+  /**
+   * A member type that a type inherits from a supertype in another compilation unit of the stub
+   * file is found.
+   */
+  @Test
+  public void testInheritedMemberTypeFromOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Sub extends p.Base {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Inner;)V");
+  }
+
+  /**
+   * The supertype of a supertype in another compilation unit of the stub file is resolved using
+   * that compilation unit's package, not that of the subtype's compilation unit. Neither {@code
+   * Parent} is imported, and {@code p.Parent} is declared in a different compilation unit than
+   * {@code Base}, so only the package determines which {@code Parent} {@code Base} extends.
+   */
+  @Test
+  public void testSupertypeOfSupertypeUsesItsCompilationUnitsPackage() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Parent {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends p.Base {",
+            "  void m(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base extends Parent {}",
+            "package p;",
+            "public class Parent {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lp/Parent$Inner;)V");
+  }
+
+  /**
+   * The supertype of a supertype in another compilation unit of the stub file is resolved using
+   * that compilation unit's imports.
+   */
+  @Test
+  public void testSupertypeOfSupertypeUsesItsCompilationUnitsImports() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Parent {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends p.Base {",
+            "  void m(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "import r.Parent;",
+            "public class Base extends Parent {}",
+            "package r;",
+            "public class Parent {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "Sub", "m(Lr/Parent$Inner;)V");
+  }
+
+  /**
+   * A package-private member type of a supertype in another package is not inherited, so it does
+   * not hide a member type of a later supertype. A member type of an interface is implicitly
+   * public, so it is inherited from another package. The stub file omits the access modifier of
+   * {@code HashMap.Node}, which is package-private on the classpath.
+   */
+  @Test
+  public void testInaccessibleInheritedMemberTypeOfStubSupertype() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "abstract class C extends java.util.HashMap implements I {",
+            "  void m(C.Node x) {}",
+            "}",
+            "interface I {",
+            "  class Node {}",
+            "}",
+            "class D implements p.J {",
+            "  void m(D.JInner x) {}",
+            "}",
+            "abstract class E extends java.util.HashMap {",
+            "  void m(E.Node x) {}",
+            "}",
+            "package java.util;",
+            "public class HashMap<K, V> {",
+            "  static class Node<K, V> {}",
+            "}",
+            "package p;",
+            "public interface J {",
+            "  class JInner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$Node;)V");
+    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
+    // `E` inherits no member type `Node`, so `Node` is not resolved to `java.util.HashMap.Node`.
+    assertNoMethod(jaif, "E", "m(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * A stub file can omit the access modifier of a member type. A member type that is not on the
+   * classpath and whose stub declaration omits its access modifier is inherited by a subtype in
+   * another package.
+   */
+  @Test
+  public void testStubMemberTypeWithoutAccessModifierIsInherited() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class C extends p.Base {",
+            "  void m(C.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  static class Inner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Base$Inner;)V");
+  }
+
+  /**
+   * A package-private member type that a supertype inherits within its own package is not inherited
+   * by a subtype in another package, so the search continues to a member type, of a later
+   * supertype, that the subtype does inherit. Within the package, the package-private member type
+   * is inherited.
+   */
+  @Test
+  public void testInaccessibleMemberTypeInheritedThroughIntermediateStubSupertype()
+      throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "public interface I {",
+            "  class Node {}",
+            "}",
+            "abstract class C extends java.util.LinkedHashMap {",
+            "  void m(C.Node x) {}",
+            "}",
+            "package java.util;",
+            "public class HashMap<K, V> {",
+            "  static class Node<K, V> {}",
+            "}",
+            "public class LinkedHashMap<K, V> extends HashMap<K, V> implements q.I {}",
+            "abstract class E extends HashMap {}",
+            "abstract class F extends E {",
+            "  void m(F.Node x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$Node;)V");
+    assertMethod(jaif, "F", "m(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * An import on demand of the member types of a class on the classpath makes available the member
+   * types that the class declares and the ones that it inherits.
+   */
+  @Test
+  public void testOnDemandImportOfClasspathTypeMembers() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.AbstractMap.*;",
+            "class C {",
+            "  void m(Entry e) {}",
+            "  void n(SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * Via an import on demand of a package, a qualified name whose first identifier names a top-level
+   * type of the package on the classpath can name a member type that the top-level type inherits.
+   */
+  @Test
+  public void testOnDemandImportOfPackageWithInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "import java.util.*;",
+            "class C {",
+            "  void m(AbstractMap.Entry e) {}",
+            "  void n(AbstractMap.SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
+  /**
+   * A member type that a classpath type declares is inherited even if the stub file declares the
+   * type and omits the member type.
+   */
+  @Test
+  public void testInheritedClasspathMemberTypeOmittedByStub() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "abstract class C extends java.util.AbstractMap {",
+            "  void m(C.SimpleEntry x) {}",
+            "  void n(C.SimpleEntry x) {}",
+            "  void o(C.Entry x) {}",
+            "}",
+            "package java.util;",
+            "public abstract class AbstractMap<K, V> implements Map<K, V> {}");
+    assertMethod(jaif, "C", "m(Ljava/util/AbstractMap$SimpleEntry;)V");
+    assertMethod(jaif, "C", "n(Ljava/util/AbstractMap$SimpleEntry;)V");
+    assertMethod(jaif, "C", "o(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A detached type declaration, which is in no compilation unit, is in the package that the
+   * converter's constructor received.
+   */
+  @Test
+  public void testDetachedDeclarationUsesConstructorPackage() {
+    AScene scene = new AScene();
+    ToIndexFileConverter detachedConverter =
+        new ToIndexFileConverter(
+            StaticJavaParser.parsePackageDeclaration("package p;"), Collections.emptyList(), scene);
+    TypeDeclaration<?> decl =
+        StaticJavaParser.parseTypeDeclaration("class C { class N {} void m(N x) {} }");
+    decl.accept(detachedConverter, scene.classes.getVivify("p.C"));
+    Assert.assertNotNull(scene.classes.get("p.C").methods.get("m(Lp/C$N;)V"));
+  }
+
+  /**
    * A class's member types are not in scope in the class's header, such as in the bounds of its
    * type parameters, but they are in scope in its body.
    */
@@ -855,6 +1400,24 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;Ljava/lang/Object;)V");
     assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Object;)V");
+  }
+
+  /**
+   * A single-type import shadows a type of the same package that another compilation unit of the
+   * stub file declares.
+   */
+  @Test
+  public void testSingleTypeImportShadowsStubFileTypeOfSamePackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class List {}",
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void m(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "m(Ljava/util/List;)V");
   }
 
   /** A single-type import that does not match a name does not prevent resolving the name. */
