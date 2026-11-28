@@ -1420,11 +1420,13 @@ public class ValueTransfer extends CFTransfer {
               ? atypeFactory.UNKNOWNVAL
               : getValueAnnotation(currentValueFromStore));
       // Combine the new annotations based on the results of the comparison with the existing
-      // type.  `internal` might have a different type than `node`, as when `node` is a widening
-      // cast and `internal` is its operand.
+      // type.  `je` might have a different type than `node`, as when `node` is a widening cast
+      // and `je` is its operand.  Use the type of `je` rather than of `internal`:  if `internal`
+      // is an implicit widening conversion, as `i` in `i == 5.0`, then JavaExpression.fromNode
+      // ignores the conversion, so `je` has the type of the conversion's operand.
       AnnotationMirror newAnno =
           qualHierarchy.greatestLowerBoundShallow(
-              convertToTypeOf(anno, internal), je.getType(), currentAnno, je.getType());
+              convertToTypeOf(anno, je), je.getType(), currentAnno, je.getType());
       if (newAnno != null) {
         store.insertValue(je, newAnno);
       }
@@ -1438,19 +1440,19 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Converts a value annotation for a node, such as a widening cast, to an annotation for a node
-   * that has the same value but a different numeric type, such as the operand of the cast. For
-   * example, a {@code @DoubleVal} annotation for {@code (double) i} is converted to an
+   * Converts a value annotation for a node, such as a widening cast, to an annotation for an
+   * expression that has the same value but a different numeric type, such as the operand of the
+   * cast. For example, a {@code @DoubleVal} annotation for {@code (double) i} is converted to an
    * {@code @IntVal} annotation for {@code i}. The result contains only the values that are exactly
    * representable in the type of {@code internal}; it is bottom if there are none. Non-integral
    * values are never truncated.
    *
    * @param anno a value annotation for a node that has the same value as {@code internal}
-   * @param internal the node to which the result applies
+   * @param internal the expression to which the result applies
    * @return an annotation for {@code internal} that represents the values of {@code anno} that
    *     {@code internal} can have
    */
-  private AnnotationMirror convertToTypeOf(AnnotationMirror anno, Node internal) {
+  private AnnotationMirror convertToTypeOf(AnnotationMirror anno, JavaExpression internal) {
     if (!AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
       // Only a @DoubleVal annotation needs conversion.  No value-preserving conversion goes from a
       // floating-point type to an integral type, so if `internal` is floating-point, then so is
