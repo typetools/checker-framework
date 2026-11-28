@@ -222,4 +222,41 @@ public class SwitchSelectorSideEffects {
       state.hashCode();
     }
   }
+
+  @Pure
+  static @Nullable Shape current() {
+    return selector;
+  }
+
+  // A guard might change the result of a method call that is the selector expression, even though
+  // an earlier `case null` refined it and the method call has no receiver or arguments.
+  void impureGuardMethodCallSelectorAfterCaseNull() {
+    switch (current()) {
+      case null -> {}
+      case Circle c when reset() -> {}
+      case Circle c ->
+          // :: error: (dereference.of.nullable)
+          current().toString();
+      case Square s ->
+          // :: error: (dereference.of.nullable)
+          current().toString();
+    }
+  }
+
+  // A record accessor might change a field that is the target of an assignment that is the
+  // selector expression.  It cannot change the local variable on the right-hand side.
+  void impureDeconstructionAssignmentSelector(Shape saved) {
+    switch (selector = saved) {
+      case Square(int side) -> {
+        saved.toString();
+        // :: error: (dereference.of.nullable)
+        selector.toString();
+      }
+      case Circle c -> {
+        saved.toString();
+        // :: error: (dereference.of.nullable)
+        selector.toString();
+      }
+    }
+  }
 }
