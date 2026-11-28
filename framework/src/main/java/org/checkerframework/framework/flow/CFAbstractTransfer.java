@@ -1999,11 +1999,12 @@ public abstract class CFAbstractTransfer<
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
      * element changes only accesses of arrays that might alias the written array (except at a
-     * different constant index), and method calls. A call to {@code String.length()} changes only if its receiver changes, because a {@code
-     * String} is immutable. A string concatenation with an operand whose string conversion calls
-     * {@code toString()} on a possibly mutable object, as in {@code "p" + box}, changes like a
-     * method call. A change to the abstract value of a receiver, index, argument, or operand does
-     * not matter (see {@link #valueMayChange}). If side effects unrefine aliases (see {@link
+     * different constant index), and method calls. A call to {@code String.length()} changes only
+     * if its receiver changes, because a {@code String} is immutable. A string concatenation with
+     * an operand whose string conversion calls {@code toString()} on a possibly mutable object, as
+     * in {@code "p" + box}, changes like a method call. A change to the abstract value of a
+     * receiver, index, argument, or operand does not matter (see {@link #valueMayChange}). If side
+     * effects unrefine aliases (see {@link
      * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
      * element also changes {@code expr} itself (but not its subexpressions, such as a receiver or
      * index) if other code can modify its abstract value (see {@link
