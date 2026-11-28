@@ -20,6 +20,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -983,10 +984,9 @@ public abstract class CFAbstractTransfer<
         // expression that might change before the comparison completes, as `arr` does in `limit
         // == (j = (arr = c).length)` if `limit` is `@LTLengthOf("arr")`, then it might not hold
         // for `secondNode` afterward.
-        for (AnnotationMirror anno : firstValue.getAnnotations()) {
-          if (containsExpressionChangedBeforeComparisonCompletes(anno, firstNode)) {
-            return res;
-          }
+        if (containsExpressionChangedBeforeComparisonCompletes(
+            firstValue.getAnnotations(), firstNode)) {
+          return res;
         }
         S thenStore = res.getThenStore();
         S elseStore = res.getElseStore();
@@ -1692,6 +1692,26 @@ public abstract class CFAbstractTransfer<
    */
   protected boolean containsExpressionChangedBeforeComparisonCompletes(
       AnnotationMirror anno, Node node) {
+    return containsExpressionChangedBeforeComparisonCompletes(Collections.singleton(anno), node);
+  }
+
+  /**
+   * Returns true if any of the given annotations contains a Java expression whose value might
+   * change after the given node is evaluated and before the comparison that contains the node
+   * completes. This is like {@link #containsExpressionChangedBeforeComparisonCompletes(
+   * AnnotationMirror, Node)}, but it computes the locations that might be written only once for
+   * all the annotations.
+   *
+   * @param annos annotations of {@code node}
+   * @param node a node in an operand of a comparison
+   * @return true if any of {@code annos} contains a Java expression whose value might change after
+   *     {@code node} is evaluated and before the comparison completes
+   */
+  protected boolean containsExpressionChangedBeforeComparisonCompletes(
+      Collection<? extends AnnotationMirror> annos, Node node) {
+    if (annos.isEmpty()) {
+      return false;
+    }
     DependentTypesHelper dependentTypesHelper = analysis.atypeFactory.getDependentTypesHelper();
     if (!dependentTypesHelper.hasDependentAnnotations()) {
       return false;
@@ -1705,16 +1725,21 @@ public abstract class CFAbstractTransfer<
       return false;
     }
     boolean[] result = {false};
-    dependentTypesHelper.convertAnnotationMirror(
-        expression -> {
-          JavaExpression expr = analysis.atypeFactory.parseJavaExpressionString(expression, path);
-          if (mayChange.test(expr)) {
-            result[0] = true;
-          }
-          return expr;
-        },
-        anno);
-    return result[0];
+    for (AnnotationMirror anno : annos) {
+      dependentTypesHelper.convertAnnotationMirror(
+          expression -> {
+            JavaExpression expr = analysis.atypeFactory.parseJavaExpressionString(expression, path);
+            if (mayChange.test(expr)) {
+              result[0] = true;
+            }
+            return expr;
+          },
+          anno);
+      if (result[0]) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -2027,6 +2052,7 @@ public abstract class CFAbstractTransfer<
         // A loop over an `Iterable` calls `iterator()`, `hasNext()`, and `next()`, whose
         // implementations are not known statically.  A loop over an array calls no method.
         anyHeapLocation = true;
+        anyHeapLocationByCall = true;
       }
     }
 

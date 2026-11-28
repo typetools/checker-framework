@@ -26,6 +26,20 @@ public class FloatingPointGreaterThanGTEN1 {
     }
   }
 
+  // Likewise, `x != -1` does not imply `x >= 0`.
+  void doubleNotEqualNegativeOne(@GTENegativeOne double d) {
+    if (d != -1) {
+      // :: error: (assignment)
+      @NonNegative double nn = d;
+    }
+  }
+
+  void intNotEqualNegativeOne(@GTENegativeOne int i) {
+    if (i != -1) {
+      @NonNegative int nn = i;
+    }
+  }
+
   void intAssignmentGreaterThan(int i, int input, @GTENegativeOne int limit) {
     if ((i = input) > limit) {
       @NonNegative int nn = i;

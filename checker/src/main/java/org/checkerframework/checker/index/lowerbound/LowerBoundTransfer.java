@@ -215,7 +215,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
         insertValueForNodesWithValueOf(store, otherNode, POS);
       }
     } else if (intLiteral == -1) {
-      if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
+      // For a floating-point value, x != -1 does not imply x >= 0 (e.g., x = -0.5).
+      if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)
+          && !TypesUtils.isFloatingPoint(otherNode.getType())) {
         insertValueForNodesWithValueOf(store, otherNode, NN);
       }
     }

@@ -693,6 +693,20 @@ public class AssignmentInComparison {
     }
   }
 
+  void monotonicFieldBeforeEnhancedFor(Iterable<Object> items, AssignmentInComparison value) {
+    if (mono
+        == switch (items.hashCode()) {
+          default -> {
+            for (Object unused : items) {}
+            yield value;
+          }
+        }) {
+      // The calls to `iterator()`, `hasNext()`, and `next()` cannot set the `@MonotonicNonNull`
+      // field `mono` back to null.
+      mono.toString();
+    }
+  }
+
   void nullableFieldBeforeCall() {
     if (next == sideEffectingCall()) {
       // The call might set `next` to null.
