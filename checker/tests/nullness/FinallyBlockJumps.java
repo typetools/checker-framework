@@ -234,6 +234,70 @@ public class FinallyBlockJumps {
     g = "c";
   }
 
+  // In each of the following tests, neither the try block nor any catch block can complete
+  // normally, so the copy of the finally block for normal completion is unreachable.  The finally
+  // block sets f to g and then sets g to null, so f is non-null if the finally block runs once and
+  // null if it runs twice.
+
+  // The break statement in the copy of the finally block for the return statement leaves the
+  // labeled statement without running the finally block again.
+  @EnsuresNonNull("f")
+  void breakInFinallyAfterReturn(boolean b) {
+    g = "g";
+    label:
+    {
+      try {
+        return;
+      } finally {
+        f = g;
+        g = null;
+        if (b) {
+          break label;
+        }
+      }
+    }
+  }
+
+  // The continue statement in the copy of the finally block for the break statement continues the
+  // loop without running the finally block again.
+  @EnsuresNonNull("f")
+  void continueInFinallyAfterBreak(boolean b, int n) {
+    f = "init";
+    for (int i = 0; i < n; i++) {
+      g = "g";
+      try {
+        break;
+      } finally {
+        f = g;
+        g = null;
+        if (b) {
+          continue;
+        }
+      }
+    }
+  }
+
+  // The break statement in the copy of the finally block for the return statement in the catch
+  // block leaves the labeled statement without running the finally block again.
+  @EnsuresNonNull("f")
+  void breakInFinallyAfterReturnFromCatch(boolean b) {
+    g = "g";
+    label:
+    {
+      try {
+        throw new RuntimeException();
+      } catch (RuntimeException e) {
+        return;
+      } finally {
+        f = g;
+        g = null;
+        if (b) {
+          break label;
+        }
+      }
+    }
+  }
+
   static class SetsFieldOnClose implements AutoCloseable {
     @Override
     @EnsuresNonNull("FinallyBlockJumps.sf")
