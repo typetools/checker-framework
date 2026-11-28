@@ -6,6 +6,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -420,23 +421,32 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     return rfi.newResult;
   }
 
-  /** Refines the type of the left and right node to glb of the left and right annotation. */
+  /**
+   * Refines the type of the left and right node to glb of the left and right annotation.
+   *
+   * <p>Each annotation omits the bounds that might not hold when the comparison completes (see
+   * {@link #removeBoundsChangedAfter}).
+   */
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {
     UBQualifier leftQualifier =
-        UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        removeBoundsChangedAfter(
+            UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            left);
     UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
+        removeBoundsChangedAfter(
+            UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+            right);
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-    List<Node> internalsRight = splitAssignments(right);
+    List<Node> internalsRight = nodesWithValueOf(right);
     for (Node internal : internalsRight) {
       JavaExpression rightJe = JavaExpression.fromNode(internal);
       store.insertValue(rightJe, glbAnno);
     }
 
-    List<Node> internalsLeft = splitAssignments(left);
+    List<Node> internalsLeft = nodesWithValueOf(left);
     for (Node internal : internalsLeft) {
       JavaExpression leftJe = JavaExpression.fromNode(internal);
       store.insertValue(leftJe, glbAnno);
@@ -448,10 +458,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * offset subtracted) and the other node is less than or equal to that sequence length (minus the
    * offset), then refine the other node's type to less than the sequence length (minus the offset).
    * This is case 12.
+   *
+   * <p>Does nothing if the sequence might change after its length is read and before the comparison
+   * completes (including by the subtracted offset), because then the comparison does not relate the
+   * other node to the length of the sequence that the new type refers to. Omits the bounds of the
+   * other node's type that might not hold when the comparison completes (see {@link
+   * #removeBoundsChangedAfter}).
+   *
+   * @param lengthAccess an operand of a comparison
+   * @param otherNode the other operand of the comparison
+   * @param otherNodeAnno the upper bound annotation of {@code otherNode}
+   * @param store the store to refine
    */
   private void refineNeqSequenceLength(
       Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
-
     // If lengthAccess is "receiver.length - c" where c is an integer constant,
     // then lengthOffset is "c".
     int lengthOffset = 0;
@@ -485,9 +505,19 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     }
 
     if (receiver != null && !receiver.containsUnknown()) {
+      // Use the length access itself, not the entire operand: the subtracted constant, as in
+      // `a.length - reset()` where `reset()` has a known value, is evaluated after the length is
+      // read and might change the sequence.
+      Predicate<JavaExpression> mayChange = mayChangeAfterOperand(lengthAccess);
+      if (mayChange != null && mayChange.test(receiver)) {
+        // The comparison used the length of the sequence before it changed.
+        return;
+      }
       UBQualifier otherQualifier =
-          UBQualifier.createUBQualifier(
-              otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker());
+          removeBoundsChangedAfter(
+              UBQualifier.createUBQualifier(
+                  otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker()),
+              otherNode);
       String sequence = receiver.toString();
       // Check if otherNode + c - 1 < receiver.length
       if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -495,12 +525,44 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newQualifier =
             UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
         otherQualifier = otherQualifier.glb(newQualifier);
-        for (Node internal : splitAssignments(otherNode)) {
+        for (Node internal : nodesWithValueOf(otherNode)) {
           JavaExpression leftJe = JavaExpression.fromNode(internal);
           store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
         }
       }
     }
+  }
+
+  /**
+   * Returns the given qualifier of an operand of a comparison, without each bound whose sequence or
+   * offset might change after the operand produces its value and before the comparison completes.
+   * Such a bound described the operand's value when the operand was evaluated, but it might not
+   * hold when the comparison completes. For example, in {@code this.a.length == (i = replaceA())},
+   * the bound {@code @LTEqLengthOf("this.a")} of {@code this.a.length} does not hold after {@code
+   * replaceA()} reassigns {@code this.a}.
+   *
+   * @param qualifier the qualifier of {@code operand}
+   * @param operand an operand of a comparison
+   * @return {@code qualifier}, without the bounds that might not hold when the comparison completes
+   */
+  private UBQualifier removeBoundsChangedAfter(UBQualifier qualifier, Node operand) {
+    if (!(qualifier instanceof LessThanLengthOf ltl)) {
+      return qualifier;
+    }
+    Predicate<JavaExpression> mayChange = mayChangeAfterOperand(operand);
+    if (mayChange == null) {
+      return qualifier;
+    }
+    TreePath path = sourcePath(operand);
+    if (path == null) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    return ltl.removeDependentsOf(
+        s -> {
+          JavaExpression je = UpperBoundVisitor.parseJavaExpressionString(s, atypeFactory, path);
+          // Conservatively assume that an expression that cannot be parsed might change.
+          return je == null || mayChange.test(je);
+        });
   }
 
   /**
