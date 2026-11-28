@@ -104,6 +104,8 @@ public class JavaExpressionParseUtilTest {
     // The type of a shift is the promoted type of its left operand.
     Assert.assertEquals(TypeKind.INT, parse("1 << 2L").getType().getKind());
     Assert.assertEquals(TypeKind.INT, parse("'a' >> 1").getType().getKind());
+    Assert.assertEquals(TypeKind.INT, parse("'a' << 2L").getType().getKind());
+    Assert.assertEquals(TypeKind.INT, parse("1 << 'a'").getType().getKind());
     Assert.assertEquals(TypeKind.LONG, parse("1L >>> 2").getType().getKind());
   }
 }

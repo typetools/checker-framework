@@ -454,6 +454,25 @@ public abstract class UBQualifier {
     }
 
     /**
+     * Returns true if some integer literal is a subtype of this. That is the case if every offset
+     * is an integer: a sufficiently small literal satisfies {@code literal + offset <= -1} for
+     * every offset.
+     *
+     * @return true if some integer literal is a subtype of this
+     * @see #literalIsSubtype
+     */
+    /*package-private*/ boolean someLiteralIsSubtype() {
+      for (Set<OffsetEquation> equations : map.values()) {
+        for (OffsetEquation equation : equations) {
+          if (!equation.isOnlyInt()) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    /**
      * Convert the parallel array representation to the map representation.
      *
      * @param sequences non-empty list of sequences

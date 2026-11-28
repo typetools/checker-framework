@@ -913,8 +913,8 @@ public abstract class CFAbstractTransfer<
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
-   * @param firstValue the abstract value that might be more precise
-   * @param secondValue the abstract value that might be less precise
+   * @param firstValue the abstract value that might be more precise, or null if nothing is known
+   * @param secondValue the abstract value that might be less precise, or null if nothing is known
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
@@ -924,8 +924,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1351,6 +1351,7 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    List<Node> selectorPartsToRefine = selectorPartsToRefine(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -1358,9 +1359,11 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      for (Node selectorPart : selectorPartsToRefine) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, selectorPart, caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1378,6 +1381,51 @@ public abstract class CFAbstractTransfer<
       }
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the given case may refine the switch selector expression, not just the
+   * synthetic variable that holds the value of the selector expression.
+   *
+   * <p>A case tests the value of the selector expression when the switch began. A guard of an
+   * earlier case might have changed the current value of the selector expression since then, for
+   * example by setting a field to null. A guard cannot assign a local variable, so the current
+   * value of a selector expression that is not {@link JavaExpression#isAssignableByOtherCode()
+   * assignable by other code} is the value that the case tests.
+   *
+   * @param n a case node
+   * @return true if the case may refine the selector expression
+   */
+  protected boolean canRefineSelectorExpression(CaseNode n) {
+    return !n.selectorExprMayHaveChanged()
+        || !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
+  }
+
+  /**
+   * Returns the expressions that the given case may refine, other than the synthetic variable that
+   * holds the value of the selector expression.
+   *
+   * <p>If {@link #canRefineSelectorExpression} returns true, the result is the selector expression
+   * itself. Otherwise, the result contains each part of the selector expression (as computed by
+   * {@link #splitAssignments}) that other code cannot assign. For example, for {@code switch (saved
+   * = input)} where {@code saved} is a local variable, a guard cannot change {@code saved}, so a
+   * case may refine it even though a guard ran earlier.
+   *
+   * @param n a case node
+   * @return the expressions that the case may refine
+   */
+  private List<Node> selectorPartsToRefine(CaseNode n) {
+    Node selector = n.getSwitchOperand().getExpression();
+    if (canRefineSelectorExpression(n)) {
+      return Collections.singletonList(selector);
+    }
+    List<Node> result = new ArrayList<>();
+    for (Node part : splitAssignments(selector)) {
+      if (!JavaExpression.fromNode(part).isAssignableByOtherCode()) {
+        result.add(part);
+      }
+    }
+    return result;
   }
 
   // /**

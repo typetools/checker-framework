@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexChecker;
@@ -68,6 +69,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.JavaExpressionAndOffset;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -82,6 +84,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -396,10 +399,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * @return true iff the given node has the passed Lower Bound qualifier according to the LBC
    */
   public boolean hasLowerBoundTypeByClass(Node node, Class<? extends Annotation> classOfType) {
+    Tree tree = node.getTree();
+    if (tree == null) {
+      return false;
+    }
+    LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
     return areSameByClass(
-        getLowerBoundAnnotatedTypeFactory()
-            .getAnnotatedType(node.getTree())
-            .getPrimaryAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
+        lowerBoundATF.getAnnotationInHierarchyNonNull(
+            lowerBoundATF.getAnnotatedType(tree), lowerBoundATF.UNKNOWN),
         classOfType);
   }
 
@@ -503,14 +510,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
         type.replaceAnnotation(
             qualHierarchy.greatestLowerBoundShallow(
-                leftType.getPrimaryAnnotationInHierarchy(UNKNOWN),
+                getAnnotationInHierarchyNonNull(leftType, UNKNOWN),
                 leftType.getUnderlyingType(),
-                rightType.getPrimaryAnnotationInHierarchy(UNKNOWN),
+                getAnnotationInHierarchyNonNull(rightType, UNKNOWN),
                 rightType.getUnderlyingType()));
       }
       if (isRandomNextInt(tree)) {
         AnnotatedTypeMirror argType = getAnnotatedType(tree.getArguments().get(0));
-        AnnotationMirror anno = argType.getPrimaryAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror anno = getAnnotationInHierarchyNonNull(argType, UNKNOWN);
         UBQualifier qualifier = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
         qualifier = qualifier.plusOffset(1);
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
@@ -599,10 +606,113 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
         addAnnotationForBitwiseComplement(
             getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), type);
+      } else if (tree.getKind() == Tree.Kind.POSTFIX_INCREMENT
+          || tree.getKind() == Tree.Kind.POSTFIX_DECREMENT) {
+        // The value of a postfix increment or decrement is the operand's value, so the result has
+        // the operand's type.
+        atypeFactory.replaceAnnotations(atypeFactory.getAnnotatedType(tree.getExpression()), type);
+      } else if (tree.getKind() == Tree.Kind.PREFIX_DECREMENT) {
+        addAnnotationForPrefixDecrement(atypeFactory.getAnnotatedType(tree.getExpression()), type);
       } else {
         type.addAnnotation(UNKNOWN);
       }
       return super.visitUnary(tree, type);
+    }
+
+    /**
+     * Sets the upper-bound type of a prefix decrement expression {@code --x}.
+     *
+     * <p>A decrement cannot make a value violate a bound such as {@code @LTLengthOf}, so in general
+     * the result has the operand's type. However, {@code @UpperBoundLiteral} denotes an exact
+     * value, which a decrement changes. A literal operand type yields the decremented literal,
+     * after the narrowing that the decrement performs on a {@code byte}, {@code short}, or {@code
+     * char}. A polymorphic qualifier, or a type variable that might be instantiated with a literal,
+     * yields {@code @UpperBoundUnknown}; then the assignment check rejects the decrement.
+     *
+     * @param operandType the type of the operand, {@code x}
+     * @param typeDst the type of the prefix decrement expression; it is side-effected
+     */
+    private void addAnnotationForPrefixDecrement(
+        AnnotatedTypeMirror operandType, AnnotatedTypeMirror typeDst) {
+      if (operandType instanceof AnnotatedTypeVariable operandTypeVar) {
+        AnnotationMirror upper = operandTypeVar.getUpperBound().getAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror lower = operandTypeVar.getLowerBound().getAnnotationInHierarchy(UNKNOWN);
+        if (isLiteralOrPoly(upper) || isLiteralOrPoly(lower) || someLiteralIsSubtype(upper)) {
+          typeDst.replaceAnnotation(UNKNOWN);
+        } else {
+          atypeFactory.replaceAnnotations(operandType, typeDst);
+        }
+        return;
+      }
+
+      AnnotationMirror anno = operandType.getAnnotationInHierarchy(UNKNOWN);
+      if (anno == null) {
+        typeDst.replaceAnnotation(UNKNOWN);
+        return;
+      }
+      UBQualifier qual = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
+      if (qual.isPoly()) {
+        typeDst.replaceAnnotation(UNKNOWN);
+      } else if (qual.isLiteral()) {
+        int value = ((UpperBoundLiteralQualifier) qual).getValue();
+        TypeKind operandKind =
+            TypesUtils.unboxedTypeOrSelf(operandType.getUnderlyingType(), types).getKind();
+        // The result of the decrement is narrowed to the type of the operand.
+        switch (operandKind) {
+          case BYTE -> typeDst.replaceAnnotation(createLiteral((byte) (value - 1)));
+          case SHORT -> typeDst.replaceAnnotation(createLiteral((short) (value - 1)));
+          case CHAR -> typeDst.replaceAnnotation(createLiteral((char) (value - 1)));
+          default -> {
+            if (value == Integer.MIN_VALUE) {
+              // The decrement overflows an int, or yields a long that is not an int.
+              typeDst.replaceAnnotation(UNKNOWN);
+            } else {
+              typeDst.replaceAnnotation(createLiteral(value - 1));
+            }
+          }
+        }
+      } else {
+        typeDst.replaceAnnotation(anno);
+      }
+    }
+
+    /**
+     * Returns true if some {@code @UpperBoundLiteral} qualifier is a subtype of the given
+     * annotation, which is the upper bound of a type variable. If so, the type variable might be
+     * instantiated with a literal.
+     *
+     * @param upper an annotation in the upper-bound hierarchy, or null
+     * @return true if some {@code @UpperBoundLiteral} qualifier is a subtype of {@code upper}, or
+     *     if {@code upper} is null
+     */
+    private boolean someLiteralIsSubtype(@Nullable AnnotationMirror upper) {
+      if (upper == null) {
+        return true;
+      }
+      UBQualifier qual = UBQualifier.createUBQualifier(upper, (IndexChecker) checker);
+      if (qual.isUnknown() || qual.isLiteral()) {
+        return true;
+      } else if (qual.isLessThanLengthQualifier()) {
+        return ((LessThanLengthOf) qual).someLiteralIsSubtype();
+      } else {
+        // Bottom or polymorphic.
+        return false;
+      }
+    }
+
+    /**
+     * Returns true if the given annotation is an {@code @UpperBoundLiteral} or a polymorphic
+     * qualifier.
+     *
+     * @param anno an annotation in the upper-bound hierarchy, or null
+     * @return true if {@code anno} is an {@code @UpperBoundLiteral} or a polymorphic qualifier
+     */
+    private boolean isLiteralOrPoly(@Nullable AnnotationMirror anno) {
+      if (anno == null) {
+        return false;
+      }
+      UBQualifier qual = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
+      return qual.isLiteral() || qual.isPoly();
     }
 
     /**
@@ -683,7 +793,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       if (lowerBoundATF.isNonNegative(left)) {
         AnnotationMirror annotation =
-            getAnnotatedType(left).getPrimaryAnnotationInHierarchy(UNKNOWN);
+            getAnnotationInHierarchyNonNull(getAnnotatedType(left), UNKNOWN);
         // For non-negative numbers, right shift is equivalent to division by a power of
         // two.
         // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
@@ -714,13 +824,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotatedTypeMirror leftType = getAnnotatedType(left);
       AnnotationMirror leftResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(left)) {
-        leftResultAnno = leftType.getPrimaryAnnotationInHierarchy(UNKNOWN);
+        leftResultAnno = getAnnotationInHierarchyNonNull(leftType, UNKNOWN);
       }
 
       AnnotatedTypeMirror rightType = getAnnotatedType(right);
       AnnotationMirror rightResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(right)) {
-        rightResultAnno = rightType.getPrimaryAnnotationInHierarchy(UNKNOWN);
+        rightResultAnno = getAnnotationInHierarchyNonNull(rightType, UNKNOWN);
       }
 
       type.addAnnotation(

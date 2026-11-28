@@ -952,8 +952,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
     JavaExpression rightJe = exprTree.getRightOperand().accept(this, null);
     TypeMirror leftType = leftJe.getType();
     TypeMirror rightType = rightJe.getType();
-    TypeMirror leftUnboxedType = unboxedTypeOrSelf(leftType);
-    TypeMirror rightUnboxedType = unboxedTypeOrSelf(rightType);
+    TypeMirror leftUnboxedType = TypesUtils.unboxedTypeOrSelf(leftType, types);
+    TypeMirror rightUnboxedType = TypesUtils.unboxedTypeOrSelf(rightType, types);
     TypeMirror type;
     // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
     if (operator == Tree.Kind.PLUS
@@ -962,10 +962,10 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
     } else if (SHIFT_OPERATORS.contains(operator)
-        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
-        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+        && TypesUtils.isIntegralPrimitive(leftUnboxedType)
+        && TypesUtils.isIntegralPrimitive(rightUnboxedType)) {
       // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
-      // promotion, which converts a byte, short, or char to int.
+      // promotion, which converts a byte, short, or char to int.  Each operand may be a char.
       type =
           types.getPrimitiveType(
               TypeKindUtils.widenedNumericType(leftUnboxedType.getKind(), TypeKind.INT));
@@ -1003,17 +1003,6 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
               String.format("inconsistent types %s %s for %s", leftType, rightType, exprTree)));
     }
     return new BinaryOperation(type, operator, leftJe, rightJe);
-  }
-
-  /**
-   * Returns the primitive type that unboxing conversion converts the given type to, or the given
-   * type itself if it is not a boxed primitive type.
-   *
-   * @param type a type, such as {@code Integer} or {@code int}
-   * @return the unboxed type, such as {@code int} for {@code Integer}, or {@code type} itself
-   */
-  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
-    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
   }
 
   /**
