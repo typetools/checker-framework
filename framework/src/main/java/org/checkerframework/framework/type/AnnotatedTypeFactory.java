@@ -3396,7 +3396,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *       unboxes each {@code Boolean} operand (JLS 15.21.2, 15.22.2, 15.23, 15.24).
    * </ul>
    *
-   * Operands to which no promotion applies are returned unchanged.
+   * A type variable or intersection type with a boxed primitive bound, such as {@code T extends
+   * Character}, is unboxed like that bound. Operands to which no promotion applies are returned
+   * unchanged.
    *
    * @param operator the operator of a binary operation or compound assignment
    * @param left the type of the operation's left argument
@@ -3421,20 +3423,46 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       default -> {}
     }
+    AnnotatedTypeMirror leftUnboxable = unboxableBoundOrSelf(left);
+    AnnotatedTypeMirror rightUnboxable = unboxableBoundOrSelf(right);
     TypeKind promotedKind =
-        TypeKindUtils.widenedNumericType(numericTypeKind(left), numericTypeKind(right));
+        TypeKindUtils.widenedNumericType(
+            numericTypeKind(leftUnboxable), numericTypeKind(rightUnboxable));
     if (!TypeKindUtils.isNumericPrimitive(promotedKind)) {
-      if (TypesUtils.isBooleanType(left.getUnderlyingType())
-          && TypesUtils.isBooleanType(right.getUnderlyingType())) {
+      if (TypesUtils.isBooleanType(leftUnboxable.getUnderlyingType())
+          && TypesUtils.isBooleanType(rightUnboxable.getUnderlyingType())) {
         // A boolean equality (JLS 15.21.2), logical (JLS 15.22.2), or conditional (JLS 15.23,
         // 15.24) operation unboxes each operand.  Reference equality of two boxed operands was
         // handled above.
-        return new BinaryArgTypes(applyUnboxing(left), applyUnboxing(right));
+        return new BinaryArgTypes(applyUnboxing(leftUnboxable), applyUnboxing(rightUnboxable));
       }
       return new BinaryArgTypes(left, right);
     }
     return new BinaryArgTypes(
-        promoteNumeric(left, promotedKind), promoteNumeric(right, promotedKind));
+        promoteNumeric(leftUnboxable, promotedKind), promoteNumeric(rightUnboxable, promotedKind));
+  }
+
+  /**
+   * If the given type is a type variable or intersection type that has a boxed primitive bound,
+   * such as {@code T extends Character}, returns that bound, to which unboxing conversion (JLS
+   * 5.1.8) applies. Otherwise, returns the given type.
+   *
+   * @param type a type
+   * @return the boxed primitive bound of {@code type}, or {@code type} itself
+   */
+  private static AnnotatedTypeMirror unboxableBoundOrSelf(AnnotatedTypeMirror type) {
+    if (type instanceof AnnotatedTypeVariable typeVar) {
+      AnnotatedTypeMirror bound = unboxableBoundOrSelf(typeVar.getUpperBound());
+      return TypesUtils.isBoxedPrimitive(bound.getUnderlyingType()) ? bound : type;
+    } else if (type instanceof AnnotatedIntersectionType intersection) {
+      for (AnnotatedTypeMirror bound : intersection.getBounds()) {
+        AnnotatedTypeMirror unboxableBound = unboxableBoundOrSelf(bound);
+        if (TypesUtils.isBoxedPrimitive(unboxableBound.getUnderlyingType())) {
+          return unboxableBound;
+        }
+      }
+    }
+    return type;
   }
 
   /**
@@ -3459,9 +3487,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public AnnotatedTypeMirror unaryNumericPromotion(AnnotatedTypeMirror type) {
     // Unary numeric promotion is binary numeric promotion with an int operand.
-    TypeKind promotedKind = TypeKindUtils.widenedNumericType(numericTypeKind(type), TypeKind.INT);
+    AnnotatedTypeMirror unboxable = unboxableBoundOrSelf(type);
+    TypeKind promotedKind =
+        TypeKindUtils.widenedNumericType(numericTypeKind(unboxable), TypeKind.INT);
     return TypeKindUtils.isNumericPrimitive(promotedKind)
-        ? promoteNumeric(type, promotedKind)
+        ? promoteNumeric(unboxable, promotedKind)
         : type;
   }
 
