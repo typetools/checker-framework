@@ -792,11 +792,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public void setRoot(CompilationUnitTree newRoot) {
     currentRoot = newRoot;
     visitor.setRoot(currentRoot);
-    if (parentChecker == null) {
-      // Only clear the path cache if this is the main checker.
-      // Use the getter, because the field is null in a checker that has no subcheckers and that
-      // creates no AnnotatedTypeFactory.
-      getTreePathCacher().clear();
+    // Only clear the path cache if this is the main checker.  The field is null, and there is
+    // nothing to clear, in a checker that has no subcheckers and that creates no
+    // AnnotatedTypeFactory.
+    if (parentChecker == null && treePathCacher != null) {
+      treePathCacher.clear();
     }
   }
 
