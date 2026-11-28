@@ -90,8 +90,22 @@ public class Termination {
     @Odd String l3 = l1;
   }
 
-  // The desugared call to close() on the exceptional path terminates execution, so the catch
-  // clause is unreachable.
+  static class SelfClosing extends TerminatingCloseable {
+    // The desugared call to close() terminates execution, because the resource is not null.
+    void t5(@Odd String p1, String p2, boolean b1) {
+      String l1 = p2;
+      if (b1) {
+        l1 = p1;
+      } else {
+        try (TerminatingCloseable c = this) {}
+      }
+      @Odd String l3 = l1;
+    }
+  }
+
+  // The desugared call to close() terminates execution, but on the exceptional path, an exception
+  // that close() throws is suppressed and the primary exception propagates, so the catch clause is
+  // reachable.
   void t6(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
@@ -104,10 +118,11 @@ public class Termination {
       } catch (CheckedException e) {
       }
     }
+    // :: error: [assignment]
     @Odd String l3 = l1;
   }
 
-  // Like t6, but the desugared call to close() returns normally, so the catch clause is reachable.
+  // Like t6, but the desugared call to close() returns normally.
   void t6Returning(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
@@ -143,6 +158,32 @@ public class Termination {
     @Odd String l3 = l1;
   }
 
+  // The desugared call to iterator() on a parameter terminates execution.
+  void t8(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      for (Object o : it) {}
+    }
+    @Odd String l3 = l1;
+  }
+
+  // The desugared call to iterator() can throw an exception that a catch clause handles.
+  void t9(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try {
+        for (Object o : it) {}
+      } catch (Error e) {
+      }
+    }
+    // :: error: [assignment]
+    @Odd String l3 = l1;
+  }
+
   static class TerminatingConstructor {
     @TerminatesExecution
     TerminatingConstructor() {
@@ -151,7 +192,7 @@ public class Termination {
   }
 
   // The constructor invocation terminates execution.
-  void t8(@Odd String p1, String p2, boolean b1) {
+  void t10(@Odd String p1, String p2, boolean b1) {
     String l1 = p2;
     if (b1) {
       l1 = p1;

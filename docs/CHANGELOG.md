@@ -7,6 +7,16 @@
 
 ### User-visible changes
 
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
+
+The CFG now preserves the types of the exceptions that propagate out of a
+`finally` block, so the Resource Leak Checker reports leaks on exceptional
+paths that it formerly missed.  It still ignores the exception types that
+`-AresourceLeakIgnoredExceptions` specifies, which by default include exactly
+`RuntimeException` and exactly `Error`.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
@@ -23,6 +33,13 @@ element's enclosing elements.
 
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
+
+Dataflow analysis gives the result of a boxing or unboxing conversion the
+qualifiers of the converted value, as adapted by the new methods
+`AnnotatedTypeFactory.getBoxedAnnotations()` and
+`AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
+qualifiers at boxing or unboxing should override those methods rather than
+`getBoxedType()` and `getUnboxedType()`.
 
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
@@ -44,6 +61,10 @@ Deprecated methods:
 
 * `TypeKindUtils.isNumeric()` => `isNumericPrimitive()`
 * `TypesUtils.isNumeric()` => `isNumericPrimitive()`
+
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
 ### Closed issues
 
