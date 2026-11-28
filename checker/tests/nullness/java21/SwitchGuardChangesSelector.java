@@ -80,4 +80,18 @@ public class SwitchGuardChangesSelector {
       default -> local.toString();
     }
   }
+
+  // The guard can change `stringField` but not `local`, so a case label refines `local`.
+  void assignmentSelector() {
+    String local;
+    switch (local = stringField) {
+      case String s when clear() -> {}
+      case "b" -> {
+        local.toString();
+        // :: error: [dereference.of.nullable]
+        stringField.toString();
+      }
+      default -> {}
+    }
+  }
 }

@@ -933,8 +933,8 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       // conversion is performed on the other operand to produce a string at run time."
       type = stringTypeMirror;
     } else if (SHIFT_OPERATORS.contains(operator)
-        && TypesUtils.isIntegralNumericPrimitive(leftUnboxedType)
-        && TypesUtils.isIntegralNumericPrimitive(rightUnboxedType)) {
+        && isIntegralOrChar(leftUnboxedType)
+        && isIntegralOrChar(rightUnboxedType)) {
       // JLS 15.19:  the type of a shift is the type of its left operand after unary numeric
       // promotion, which converts a byte, short, or char to int.
       type =
@@ -974,6 +974,18 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
               String.format("inconsistent types %s %s for %s", leftType, rightType, exprTree)));
     }
     return new BinaryOperation(type, operator, leftJe, rightJe);
+  }
+
+  /**
+   * Returns true if the given type is a primitive integral type (JLS 4.2.1), including {@code
+   * char}.
+   *
+   * @param type a type
+   * @return true if the type is one of {@code byte}, {@code short}, {@code int}, {@code long}, or
+   *     {@code char}
+   */
+  private static boolean isIntegralOrChar(TypeMirror type) {
+    return TypesUtils.isIntegralNumericPrimitive(type) || type.getKind() == TypeKind.CHAR;
   }
 
   /**

@@ -1363,6 +1363,16 @@ public abstract class CFAbstractTransfer<
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      } else {
+        // The selector expression as a whole might have changed, but parts of it that are not
+        // assignable by other code have not; for example, `local` in `switch (local = field)`.
+        for (Node selectorPart : splitAssignments(assign.getExpression())) {
+          if (!JavaExpression.fromNode(selectorPart).isAssignableByOtherCode()) {
+            result =
+                strengthenAnnotationOfEqualTo(
+                    result, caseOperand, selectorPart, caseValue, switchValue, false);
+          }
+        }
       }
       // Update value of switch temporary variable
       result =
