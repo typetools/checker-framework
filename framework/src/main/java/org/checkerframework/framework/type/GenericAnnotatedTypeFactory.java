@@ -450,6 +450,11 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     super.setRoot(root);
+    if (checker.hasOption("ajava")) {
+      // The defaults of an element can depend on the @DefaultQualifier annotations in the ajava
+      // file for the current compilation unit, which super.setRoot just replaced.
+      this.defaults.clearDefaultsAtCache();
+    }
     this.scannedClasses.clear();
     this.reachableNodes.clear();
     this.flowResult = null;
