@@ -1,0 +1,6 @@
+BoxingFoundType.java:7: error: [argument] incompatible argument for parameter arg0 of List.add.
+    li.add(i);
+           ^
+  found   : Integer
+  required: @Interned Integer
+1 error
