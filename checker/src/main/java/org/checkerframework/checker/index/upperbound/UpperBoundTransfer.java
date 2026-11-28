@@ -6,6 +6,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -160,7 +161,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // null if right-hand-side is not an array creation expression
     ArrayCreationNode acNode = (expNodeSansCast instanceof ArrayCreationNode acn2) ? acn2 : null;
 
-    if (acNode != null) {
+    // If the right-hand side might change the receiver or index of the target, as in `h.arr = new
+    // int[(h = other).arr.length]`, then after the assignment the target denotes a different array
+    // than the one that was created, so the dimension is not related to its length.
+    if (acNode != null && !rhsMayRelocateTarget(node)) {
       // Right-hand side of assignment is an array creation expression
       List<Node> nodeList = acNode.getDimensions();
       if (nodeList.isEmpty()) {
@@ -231,10 +235,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       if (minValue != null && minValue > 1) {
         typeOfMultiplication = (LessThanLengthOf) typeOfMultiplication.plusOffset(1);
       }
-      UBQualifier qual = getUBQualifier(node, in);
+      UBQualifier qual = qualifierWhenComparisonCompletes(getUBQualifier(node, in), node);
       UBQualifier newQual = qual.glb(typeOfMultiplication);
-      JavaExpression je = JavaExpression.fromNode(node);
-      store.insertValue(je, atypeFactory.convertUBQualifierToAnnotation(newQual));
+      insertValueForNodesWithValueOf(
+          store, node, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
   }
 
@@ -258,12 +262,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       NumericalSubtractionNode node,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    UBQualifier left = getUBQualifier(node.getLeftOperand(), in);
-    UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
+    // `newInfo` mentions the right operand. If later code might change its value, as in
+    // `j - k < (k = a.length)`, then offsetByComparedNode uses only its constant value, if any.
+    UBQualifier left =
+        qualifierWhenComparisonCompletes(
+            getUBQualifier(node.getLeftOperand(), in), node.getLeftOperand());
+    UBQualifier newInfo = offsetByComparedNode(typeOfSubtraction, node.getRightOperand(), '-');
 
     UBQualifier newLeft = left.glb(newInfo);
-    JavaExpression leftJe = JavaExpression.fromNode(node.getLeftOperand());
-    store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(newLeft));
+    insertValueForNodesWithValueOf(
+        store, node.getLeftOperand(), atypeFactory.convertUBQualifierToAnnotation(newLeft));
   }
 
   /**
@@ -284,8 +292,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       Node other,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    UBQualifier operandQual = getUBQualifier(operand, in);
-    UBQualifier newQual = operandQual.glb(typeOfAddition.plusOffset(other, atypeFactory));
+    // The qualifier of `operand` might mention a location that later code changes, as `arr` in
+    // `(i = n) + shrink() <= arr.length` if `shrink()` reassigns `arr`.
+    // The offset qualifier mentions `other`. If later code might change the value of `other`, as
+    // in `j + k < (k = a.length)`, then offsetByComparedNode uses only its constant value, if any.
+    // The lower bound of `other` below is a fact about the value that was added, so it holds
+    // regardless.
+    UBQualifier newQual =
+        qualifierWhenComparisonCompletes(getUBQualifier(operand, in), operand)
+            .glb(offsetByComparedNode(typeOfAddition, other, '+'));
 
     // If the node is NonNegative, add an LTEL to the qual. If Positive, add an LTL.
     if (atypeFactory.hasLowerBoundTypeByClass(other, Positive.class)) {
@@ -293,13 +308,55 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
       newQual = newQual.glb(typeOfAddition);
     }
-    JavaExpression operandJe = JavaExpression.fromNode(operand);
-    store.insertValue(operandJe, atypeFactory.convertUBQualifierToAnnotation(newQual));
+    insertValueForNodesWithValueOf(
+        store, operand, atypeFactory.convertUBQualifierToAnnotation(newQual));
+  }
+
+  /**
+   * Returns {@code qualifier} plus or minus the value of {@code offsetNode}, for a qualifier that
+   * will be inserted into the store after the comparison that contains {@code offsetNode}
+   * completes.
+   *
+   * <p>A symbolic offset such as {@code z} denotes the value of {@code z} at the point where the
+   * store is used, but the fact being recorded is about the value that {@code offsetNode} had when
+   * it was evaluated. If that value might change before the comparison completes, as {@code z} does
+   * in {@code (x = y) + z < (z = a.length)}, or if it is not deterministic, as {@code choose()} is
+   * in {@code (x = y) + choose() < a.length} for a nondeterministic method {@code choose}, then
+   * this method uses only the compile-time constant value of {@code offsetNode}, if there is one,
+   * and otherwise returns UNKNOWN.
+   *
+   * @param qualifier the qualifier to offset
+   * @param offsetNode a node in an operand of a comparison, whose value is the offset
+   * @param op '+' to add the value of {@code offsetNode}, or '-' to subtract it
+   * @return {@code qualifier} plus or minus the value of {@code offsetNode}
+   */
+  private UBQualifier offsetByComparedNode(UBQualifier qualifier, Node offsetNode, char op) {
+    if (keepsValueUntilComparisonCompletes(offsetNode)
+        && JavaExpression.fromNode(offsetNode).isDeterministic(atypeFactory)) {
+      return op == '+'
+          ? qualifier.plusOffset(offsetNode, atypeFactory)
+          : qualifier.minusOffset(offsetNode, atypeFactory);
+    }
+    Tree offsetTree = offsetNode.getTree();
+    if (offsetTree == null || !TreeUtils.isExpressionTree(offsetTree)) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    Long value =
+        ValueCheckerUtils.getExactValue(offsetTree, atypeFactory.getValueAnnotatedTypeFactory());
+    if (value == null || value <= Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    return op == '+'
+        ? qualifier.plusOffset(value.intValue())
+        : qualifier.minusOffset(value.intValue());
   }
 
   /**
    * Case 8: if x &lt; y, and y has a type that is related to the length of an array, then x has the
    * same type, with an offset that is one less.
+   *
+   * <p>Each annotation omits the bounds that might not hold when the comparison completes (see
+   * {@link #removeBoundsChangedAfter}).
    */
   @Override
   protected void refineGT(
@@ -309,13 +366,18 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       AnnotationMirror smallerAnno,
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
+    // `larger` itself might change after it is evaluated, as in `limit > i + (limit = 0)`. That
+    // does not matter: the qualifiers below describe the value that was compared, and they omit
+    // each bound that might not hold when the comparison completes, such as `arr` in `arr.length >
+    // (i = clear())` where `clear()` reassigns `arr`. Each store is only into an expression that
+    // still has the compared value (see insertValueForNodesWithValueOf).
     // larger > smaller
-    UBQualifier largerQual =
-        UBQualifier.createUBQualifier(largerAnno, (UpperBoundChecker) atypeFactory.getChecker());
+    UBQualifier largerQual = qualifierWhenComparisonCompletes(largerAnno, larger);
     // larger + 1 >= smaller
     UBQualifier largerQualPlus1 = largerQual.plusOffset(1);
-    UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(smallerAnno, (UpperBoundChecker) atypeFactory.getChecker());
+    // `smaller` might be the left operand, as in `(i = n) < shrinkAndGetLength()`, so its own
+    // qualifier might not hold when the comparison completes either.
+    UBQualifier rightQualifier = qualifierWhenComparisonCompletes(smallerAnno, smaller);
     UBQualifier refinedRight = rightQualifier.glb(largerQualPlus1);
 
     if (largerQualPlus1.isLessThanLengthQualifier()) {
@@ -324,13 +386,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(larger, smaller, true, in, store);
 
-    JavaExpression rightJe = JavaExpression.fromNode(smaller);
-    store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    insertValueForNodesWithValueOf(
+        store, smaller, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
   }
 
   /**
    * Case 9: if x &le; y, and y has a type that is related to the length of an array, then x has the
    * same type.
+   *
+   * <p>Each annotation omits the bounds that might not hold when the comparison completes (see
+   * {@link #removeBoundsChangedAfter}).
    */
   @Override
   protected void refineGTE(
@@ -340,10 +405,11 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       AnnotationMirror rightAnno,
       CFStore store,
       TransferInput<CFValue, CFStore> in) {
-    UBQualifier leftQualifier =
-        UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
-    UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
+    // As in refineGT, it does not matter whether `left` changes after it is evaluated.
+    UBQualifier leftQualifier = qualifierWhenComparisonCompletes(leftAnno, left);
+    // `right` might be the left operand of the comparison, so its own qualifier might not hold when
+    // the comparison completes either.
+    UBQualifier rightQualifier = qualifierWhenComparisonCompletes(rightAnno, right);
     UBQualifier refinedRight = rightQualifier.glb(leftQualifier);
 
     if (leftQualifier.isLessThanLengthQualifier()) {
@@ -352,8 +418,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(left, right, false, in, store);
 
-    JavaExpression rightJe = JavaExpression.fromNode(right);
-    store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    insertValueForNodesWithValueOf(
+        store, right, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
   }
 
   /**
@@ -378,19 +444,60 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       boolean offsetAddOne,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
+    // The new qualifier mentions `offsetNode`. If later code might change the value of
+    // `offsetNode`, then offsetByComparedNode uses only its constant value, if any.
     if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
 
       Node minuend = subtractionNode.getLeftOperand();
-      UBQualifier minuendQual = getUBQualifier(minuend, in);
+      UBQualifier minuendQual =
+          removeBoundsChangedAfter(
+              qualifierWhenComparisonCompletes(getUBQualifier(minuend, in), minuend), minuend);
       Node subtrahend = subtractionNode.getRightOperand();
-      UBQualifier subtrahendQual = getUBQualifier(subtrahend, in);
+      UBQualifier subtrahendQual =
+          qualifierWhenComparisonCompletes(getUBQualifier(subtrahend, in), subtrahend);
 
       UBQualifier newQual =
           subtrahendQual.glb(
-              minuendQual.plusOffset(offsetNode, atypeFactory).plusOffset(offsetAddOne ? 1 : 0));
-      JavaExpression subtrahendJe = JavaExpression.fromNode(subtrahend);
-      store.insertValue(subtrahendJe, atypeFactory.convertUBQualifierToAnnotation(newQual));
+              offsetByComparedNode(minuendQual, offsetNode, '+').plusOffset(offsetAddOne ? 1 : 0));
+      insertValueForNodesWithValueOf(
+          store, subtrahend, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
+  }
+
+  /**
+   * Returns the given qualifier of the given node, without each (sequence, offset) pair that might
+   * not hold when the comparison that contains the node completes, because the sequence or offset
+   * contains an expression whose value might change after the node is evaluated (see {@link
+   * #mayChangeBeforeComparisonCompletes}). Call this method on a qualifier of a node before using
+   * it to refine any node, including the node itself: in {@code (i = (a = b).length - 1) < (a =
+   * c).length + 100}, the type {@code @LTLengthOf("a")} of the left operand is about {@code b}, and
+   * it does not hold for {@code i} after {@code a} is reassigned. A pair whose expressions do not
+   * change is kept: in {@code limit == (i = keep(k, a = new int[0]))}, if the type of {@code limit}
+   * is {@code @LTLengthOf({"a", "b"})}, then the result is {@code @LTLengthOf("b")}.
+   *
+   * @param qualifier a qualifier of {@code node}
+   * @param node a node in an operand of a comparison
+   * @return {@code qualifier}, without the pairs that might not hold when the comparison completes,
+   *     or UNKNOWN if no pair remains
+   */
+  private UBQualifier qualifierWhenComparisonCompletes(UBQualifier qualifier, Node node) {
+    if (!(qualifier instanceof LessThanLengthOf ltl)) {
+      return qualifier;
+    }
+    Predicate<JavaExpression> mayChange = mayChangeBeforeComparisonCompletes(node);
+    if (mayChange == null) {
+      return qualifier;
+    }
+    TreePath path = sourcePath(node);
+    if (path == null) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    return ltl.removeDependentsOf(
+        s -> {
+          JavaExpression je = UpperBoundVisitor.parseJavaExpressionString(s, atypeFactory, path);
+          // Conservatively assume that an expression that cannot be parsed might change.
+          return je == null || mayChange.test(je);
+        });
   }
 
   /** Implements case 11. */
@@ -420,27 +527,28 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     return rfi.newResult;
   }
 
-  /** Refines the type of the left and right node to glb of the left and right annotation. */
+  /**
+   * Refines the type of the left and right node to glb of the left and right annotation.
+   *
+   * <p>Omits an annotation that might not hold when the comparison completes (see {@link
+   * #qualifierWhenComparisonCompletes}), and each bound that might not hold when the comparison
+   * completes (see {@link #removeBoundsChangedAfter}).
+   *
+   * @param left the left operand of the equality comparison
+   * @param leftAnno the upper bound annotation of {@code left}
+   * @param right the right operand of the equality comparison
+   * @param rightAnno the upper bound annotation of {@code right}
+   * @param store the store to refine, in which the operands are equal
+   */
   private void refineEq(
       Node left, AnnotationMirror leftAnno, Node right, AnnotationMirror rightAnno, CFStore store) {
-    UBQualifier leftQualifier =
-        UBQualifier.createUBQualifier(leftAnno, (UpperBoundChecker) atypeFactory.getChecker());
-    UBQualifier rightQualifier =
-        UBQualifier.createUBQualifier(rightAnno, (UpperBoundChecker) atypeFactory.getChecker());
+    UBQualifier leftQualifier = qualifierWhenComparisonCompletes(leftAnno, left);
+    UBQualifier rightQualifier = qualifierWhenComparisonCompletes(rightAnno, right);
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-    List<Node> internalsRight = splitAssignments(right);
-    for (Node internal : internalsRight) {
-      JavaExpression rightJe = JavaExpression.fromNode(internal);
-      store.insertValue(rightJe, glbAnno);
-    }
-
-    List<Node> internalsLeft = splitAssignments(left);
-    for (Node internal : internalsLeft) {
-      JavaExpression leftJe = JavaExpression.fromNode(internal);
-      store.insertValue(leftJe, glbAnno);
-    }
+    insertValueForNodesWithValueOf(store, right, glbAnno);
+    insertValueForNodesWithValueOf(store, left, glbAnno);
   }
 
   /**
@@ -448,10 +556,20 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * offset subtracted) and the other node is less than or equal to that sequence length (minus the
    * offset), then refine the other node's type to less than the sequence length (minus the offset).
    * This is case 12.
+   *
+   * <p>Does nothing if the sequence might change after its length is read and before the comparison
+   * completes (including by the subtracted offset), because then the comparison does not relate the
+   * other node to the length of the sequence that the new type refers to. Omits the other node's
+   * type, or its bounds, that might not hold when the comparison completes (see {@link
+   * #qualifierWhenComparisonCompletes} and {@link #removeBoundsChangedAfter}).
+   *
+   * @param lengthAccess an operand of a comparison
+   * @param otherNode the other operand of the comparison
+   * @param otherNodeAnno the upper bound annotation of {@code otherNode}
+   * @param store the store to refine
    */
   private void refineNeqSequenceLength(
       Node lengthAccess, Node otherNode, AnnotationMirror otherNodeAnno, CFStore store) {
-
     // If lengthAccess is "receiver.length - c" where c is an integer constant,
     // then lengthOffset is "c".
     int lengthOffset = 0;
@@ -484,10 +602,21 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       }
     }
 
-    if (receiver != null && !receiver.containsUnknown()) {
-      UBQualifier otherQualifier =
-          UBQualifier.createUBQualifier(
-              otherNodeAnno, (UpperBoundChecker) atypeFactory.getChecker());
+    // If the sequence whose length was compared might change before the comparison completes, as
+    // in `a.length != (i = (a = b).length - 1)`, then the comparison says nothing about the length
+    // of the sequence that `receiver` refers to afterward.
+    if (receiver != null
+        && !receiver.containsUnknown()
+        && keepsValueUntilComparisonCompletes(lengthAccess)) {
+      // Use the length access itself, not the entire operand: the subtracted constant, as in
+      // `a.length - reset()` where `reset()` has a known value, is evaluated after the length is
+      // read and might change the sequence.
+      Predicate<JavaExpression> mayChange = mayChangeAfterOperand(lengthAccess);
+      if (mayChange != null && mayChange.test(receiver)) {
+        // The comparison used the length of the sequence before it changed.
+        return;
+      }
+      UBQualifier otherQualifier = qualifierWhenComparisonCompletes(otherNodeAnno, otherNode);
       String sequence = receiver.toString();
       // Check if otherNode + c - 1 < receiver.length
       if (otherQualifier.hasSequenceWithOffset(sequence, lengthOffset - 1)) {
@@ -495,12 +624,61 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newQualifier =
             UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
         otherQualifier = otherQualifier.glb(newQualifier);
-        for (Node internal : splitAssignments(otherNode)) {
-          JavaExpression leftJe = JavaExpression.fromNode(internal);
-          store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
-        }
+        insertValueForNodesWithValueOf(
+            store, otherNode, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
       }
     }
+  }
+
+  /**
+   * Returns the qualifier for the given annotation of an operand of a comparison, or UNKNOWN if it
+   * might not hold when the comparison completes (see {@link
+   * #qualifierWhenComparisonCompletes(UBQualifier, Node)}), without the bounds that might not hold
+   * when the comparison completes (see {@link #removeBoundsChangedAfter}).
+   *
+   * @param anno the upper bound annotation of {@code operand}
+   * @param operand an operand of a comparison
+   * @return the qualifier for {@code anno}, or UNKNOWN, without the bounds that might not hold when
+   *     the comparison completes
+   */
+  private UBQualifier qualifierWhenComparisonCompletes(AnnotationMirror anno, Node operand) {
+    return removeBoundsChangedAfter(
+        qualifierWhenComparisonCompletes(
+            UBQualifier.createUBQualifier(anno, (UpperBoundChecker) atypeFactory.getChecker()),
+            operand),
+        operand);
+  }
+
+  /**
+   * Returns the given qualifier of an operand of a comparison, without each bound whose sequence or
+   * offset might change after the operand produces its value and before the comparison completes.
+   * Such a bound described the operand's value when the operand was evaluated, but it might not
+   * hold when the comparison completes. For example, in {@code this.a.length == (i = replaceA())},
+   * the bound {@code @LTEqLengthOf("this.a")} of {@code this.a.length} does not hold after {@code
+   * replaceA()} reassigns {@code this.a}.
+   *
+   * @param qualifier the qualifier of {@code operand}
+   * @param operand an operand of a comparison
+   * @return {@code qualifier}, without the bounds that might not hold when the comparison completes
+   */
+  private UBQualifier removeBoundsChangedAfter(UBQualifier qualifier, Node operand) {
+    if (!(qualifier instanceof LessThanLengthOf ltl)) {
+      return qualifier;
+    }
+    Predicate<JavaExpression> mayChange = mayChangeAfterOperand(operand);
+    if (mayChange == null) {
+      return qualifier;
+    }
+    TreePath path = sourcePath(operand);
+    if (path == null) {
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
+    return ltl.removeDependentsOf(
+        s -> {
+          JavaExpression je = UpperBoundVisitor.parseJavaExpressionString(s, atypeFactory, path);
+          // Conservatively assume that an expression that cannot be parsed might change.
+          return je == null || mayChange.test(je);
+        });
   }
 
   /**

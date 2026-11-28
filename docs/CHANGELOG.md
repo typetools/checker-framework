@@ -9,6 +9,53 @@
 
 ### Changes for type system implementers
 
+`CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
+assignment node.  Its signature changed from
+`processCommonAssignment(TransferInput, Node lhs, Node rhs, S store, V rhsValue)`
+to
+`processCommonAssignment(TransferInput, AssignmentNode assignment, Node lhs,
+Node rhs, S store, V rhsValue)`.
+A subclass that overrides the old signature must override the new one instead;
+`CFAbstractTransfer` no longer calls the old one.  New method
+`CFAbstractTransfer.rhsMayRelocateTarget()` returns true if evaluating an
+assignment's right-hand side might change the location that its target
+denotes, as in `n.next = (n = o)`.
+
+Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
+result omits each node that a store can hold a value for, or that is a unary or
+binary operation, and that might have a different value by the time the
+enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
+result can be empty.  The result may contain other nodes whose values might
+change, such as `x + (x = 1)`, whose expression contains `Unknown`; a caller
+must not assume that every node in the result is safe to re-evaluate.  A
+value-preserving widening conversion is looked through, so the result contains
+its operand.  `splitAssignments()` is deprecated and final; a subclass
+that overrides it must override `nodesWithValueOf()` instead.
+`insertValueForNodesWithValueOf()` and
+`hasRefinableSide()` (which the default `strengthenAnnotationOfEqualTo()`
+uses) do not call `nodesWithValueOf()`, so they ignore such an override; a
+subclass that needs its override to affect refinements must also override
+`strengthenAnnotationOfEqualTo()` and any other method that calls
+`insertValueForNodesWithValueOf()`, and insert values for the nodes that its
+`nodesWithValueOf()` returns.
+
+To refine an operand of a comparison, an override of
+`CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method
+`CFAbstractTransfer.insertValueForNodesWithValueOf`.
+
+New method `CFAbstractTransfer.mayChangeAfterOperand()` tells whether an
+expression that an operand's type depends on might change before the
+comparison completes.  New method
+`CFAbstractTransfer.mayChangeBeforeComparisonCompletes()` is similar, but it
+also considers the writes after the operand of an assignment or cast is
+evaluated.  New method `CFAbstractTransfer.keepsValueUntilComparisonCompletes()`
+tells whether `nodesWithValueOf()` returns a node itself.
+
+`CFAbstractStore.canAlias()` is now final.  It calls the new method
+`CFAbstractAnalysis.canAlias()`, which calls the new method
+`TypesUtils.canAlias()`.  To change the aliasing judgment, override
+`CFAbstractAnalysis.canAlias()`.
+
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
 
