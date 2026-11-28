@@ -51,6 +51,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -1346,6 +1347,9 @@ public abstract class CFAbstractTransfer<
    * <p>If no comparison encloses the node, the result contains the locations written up to the
    * outermost enclosing expression, or up to an enclosing lambda or switch expression.
    *
+   * <p>If the source tree of the node cannot be found, the result contains every location, because
+   * the writes are unknown.
+   *
    * @param node a node
    * @return the locations that are written after {@code node} is evaluated and before the
    *     comparison that contains it completes
@@ -1354,7 +1358,14 @@ public abstract class CFAbstractTransfer<
     WrittenLocations result = new WrittenLocations();
     TreePath path = sourcePath(node);
     if (path == null) {
+      result.addEveryLocation();
       return result;
+    }
+    UnaryTree postfixTree = postfixTreeOfTemporary(node);
+    if (postfixTree != null) {
+      // The temporary holds the value of the operand before the increment or decrement, which
+      // writes the operand afterward.
+      result.addOwnWrites(postfixTree);
     }
     TreePath parentPath = path.getParentPath();
     while (parentPath != null) {
@@ -1485,7 +1496,9 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns the path to the tree of the given node. If the node has no tree, or if its tree is not
    * in the compilation unit (as for the artificial tree of an unboxing conversion), returns the
-   * result of this method for the first operand of the node for which that result is non-null.
+   * path to the postfix increment or decrement if the node is the temporary variable that holds its
+   * value (see {@link #postfixTreeOfTemporary}), and otherwise the result of this method for the
+   * first operand of the node for which that result is non-null.
    *
    * @param node a node
    * @return the path to the source tree that {@code node} represents, or null if there is none
@@ -1498,10 +1511,52 @@ public abstract class CFAbstractTransfer<
         return path;
       }
     }
+    UnaryTree postfixTree = postfixTreeOfTemporary(node);
+    if (postfixTree != null) {
+      return analysis.atypeFactory.getPath(postfixTree);
+    }
     for (Node operand : node.getOperands()) {
       TreePath path = sourcePath(operand);
       if (path != null) {
         return path;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * If the given node is the artificial temporary variable that the CFG uses for the value of a
+   * postfix increment or decrement such as {@code i++}, returns the postfix tree. Otherwise,
+   * returns null.
+   *
+   * <p>The CFG translates {@code i++} to an assignment {@code tempPostfix = i}, whose tree is the
+   * postfix tree, immediately followed by a use of {@code tempPostfix}, which is the value of the
+   * postfix expression.
+   *
+   * @param node a node
+   * @return the postfix increment or decrement whose value {@code node} holds, or null
+   */
+  @SuppressWarnings("interning:not.interned") // reference equality of CFG nodes
+  private static @Nullable UnaryTree postfixTreeOfTemporary(Node node) {
+    if (!(node instanceof LocalVariableNode local) || node.getInSource()) {
+      return null;
+    }
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    List<Node> blockNodes = block.getNodes();
+    for (int i = 1; i < blockNodes.size(); i++) {
+      if (blockNodes.get(i) == node) {
+        if (blockNodes.get(i - 1) instanceof AssignmentNode assignment
+            && assignment.getTree() instanceof UnaryTree unaryTree
+            && (unaryTree.getKind() == Tree.Kind.POSTFIX_INCREMENT
+                || unaryTree.getKind() == Tree.Kind.POSTFIX_DECREMENT)
+            && assignment.getTarget() instanceof LocalVariableNode target
+            && target.getName().equals(local.getName())) {
+          return unaryTree;
+        }
+        return null;
       }
     }
     return null;
@@ -1568,8 +1623,20 @@ public abstract class CFAbstractTransfer<
      */
     private boolean anyHeapLocation = false;
 
+    /**
+     * True if every local variable might be written, as when the writes are unknown. If true, then
+     * {@link #anyHeapLocation} is also true.
+     */
+    private boolean anyLocal = false;
+
     /** Creates an empty set of locations. */
     WrittenLocations() {}
+
+    /** Adds a write to every location: every local variable, field, and array element. */
+    void addEveryLocation() {
+      anyLocal = true;
+      anyHeapLocation = true;
+    }
 
     /**
      * Returns true if no location might be written.
@@ -1577,7 +1644,11 @@ public abstract class CFAbstractTransfer<
      * @return true if no location might be written
      */
     boolean isEmpty() {
-      return locals.isEmpty() && fields.isEmpty() && arrayElements.isEmpty() && !anyHeapLocation;
+      return locals.isEmpty()
+          && fields.isEmpty()
+          && arrayElements.isEmpty()
+          && !anyHeapLocation
+          && !anyLocal;
     }
 
     /**
@@ -1849,7 +1920,7 @@ public abstract class CFAbstractTransfer<
      */
     boolean valueMayChange(JavaExpression expr, boolean ignoreOwnLocation) {
       if (expr instanceof LocalVariable) {
-        return !ignoreOwnLocation && locals.contains(expr);
+        return !ignoreOwnLocation && (anyLocal || locals.contains(expr));
       } else if (expr instanceof FieldAccess fa) {
         return (!ignoreOwnLocation && mayWriteField(fa)) || valueMayChange(fa.getReceiver(), false);
       } else if (expr instanceof ArrayAccess aa) {

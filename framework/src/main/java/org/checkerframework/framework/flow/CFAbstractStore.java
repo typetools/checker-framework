@@ -1194,7 +1194,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
       // case 1:
       else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
-        if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
+        // A static field is the same location regardless of the receiver.  Do not check whether
+        // the receivers can alias:  two subclasses that inherit the static field, such as `Left`
+        // in `Left.f` and `Right` in `Right.f`, are not related by subtyping.
+        if (fieldAccess.isStatic()
+            || canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
           if (!otherFieldAccess.isFinal()) {
             if (val != null) {
               V newVal = val.leastUpperBound(otherVal);

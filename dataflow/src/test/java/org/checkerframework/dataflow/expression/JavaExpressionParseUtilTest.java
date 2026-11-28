@@ -53,6 +53,25 @@ public class JavaExpressionParseUtilTest {
     parse("1");
   }
 
+  /** A parsed unary operation has the type that unary numeric promotion gives it. */
+  @Test
+  public void unaryOperationPromotedType() {
+    // Unary numeric promotion:  the bitwise complement of a char is an int.
+    JavaExpression complement = parse("~'a'");
+    Assert.assertTrue(complement instanceof UnaryOperation);
+    Assert.assertEquals(TypeKind.INT, complement.getType().getKind());
+
+    // Unary numeric promotion:  the unary plus of a char is an int.
+    JavaExpression plus = parse("+'a'");
+    Assert.assertTrue(plus instanceof UnaryOperation);
+    Assert.assertEquals(TypeKind.INT, plus.getType().getKind());
+
+    // A unary plus that does not change the type is eliminated.
+    JavaExpression plusInt = parse("+1");
+    Assert.assertTrue(plusInt instanceof ValueLiteral);
+    Assert.assertEquals(TypeKind.INT, plusInt.getType().getKind());
+  }
+
   /** The negation of a floating-point literal is folded into a literal. */
   @Test
   public void negateFloatingPointLiteral() {
