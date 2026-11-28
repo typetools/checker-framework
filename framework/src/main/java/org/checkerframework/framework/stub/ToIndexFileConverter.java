@@ -142,13 +142,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param pkgName a package name, such as {@code java.util}, or null for the unnamed package
    * @param singleTypeImports the types that single-type imports import, such as {@code
    *     java.util.List} for {@code import java.util.List;}
-   * @param onDemandImports the packages and types that imports-on-demand import from, such as
+   * @param singleStaticImports the members that single-static-imports import, such as {@code
+   *     java.util.Map.Entry} for {@code import static java.util.Map.Entry;}. Such an import makes
+   *     available every static member with the given name, which might or might not include a
+   *     member type.
+   * @param onDemandImports the packages and types that type-imports-on-demand import from, such as
    *     {@code java.util} for {@code import java.util.*;}
+   * @param staticOnDemandImports the types that static-imports-on-demand import from, such as
+   *     {@code java.util.Map} for {@code import static java.util.Map.*;}. Such an import makes
+   *     available only the static member types of the type.
    */
   private record ImportContext(
       @Nullable @DotSeparatedIdentifiers String pkgName,
       List<String> singleTypeImports,
-      List<String> onDemandImports) {
+      List<String> singleStaticImports,
+      List<String> onDemandImports,
+      List<String> staticOnDemandImports) {
 
     /**
      * Creates the import context of the compilation unit that has the given package declaration and
@@ -163,21 +172,39 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         @Nullable PackageDeclaration pkgDecl, @Nullable List<ImportDeclaration> importDecls) {
       String pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
       if (importDecls == null) {
-        return new ImportContext(pkgName, Collections.emptyList(), Collections.emptyList());
+        return new ImportContext(
+            pkgName,
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList());
       }
       ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> singleStatics = new ArrayList<>();
       ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
+      ArrayList<String> staticOnDemands = new ArrayList<>();
       for (ImportDeclaration decl : importDecls) {
-        // A static import imports members, not types, and a module import is not used in a stub
-        // file.
-        if (!decl.isStatic() && !decl.isModule()) {
-          (decl.isAsterisk() ? onDemands : singles).add(decl.getNameAsString());
+        // A module import is not used in a stub file.
+        if (decl.isModule()) {
+          continue;
+        }
+        if (decl.isAsterisk()) {
+          (decl.isStatic() ? staticOnDemands : onDemands).add(decl.getNameAsString());
+        } else {
+          // A static import can make a static member type available by its simple name.
+          (decl.isStatic() ? singleStatics : singles).add(decl.getNameAsString());
         }
       }
       singles.trimToSize();
+      singleStatics.trimToSize();
       onDemands.trimToSize();
+      staticOnDemands.trimToSize();
       return new ImportContext(
-          pkgName, Collections.unmodifiableList(singles), Collections.unmodifiableList(onDemands));
+          pkgName,
+          Collections.unmodifiableList(singles),
+          Collections.unmodifiableList(singleStatics),
+          Collections.unmodifiableList(onDemands),
+          Collections.unmodifiableList(staticOnDemands));
     }
 
     /**
@@ -1426,6 +1453,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return classBinaryName(qualifiedName, cu);
       }
     }
+    String[] identifiers = className.split("\\.", -1);
+    for (String declName : context.singleStaticImports()) {
+      // A single-static-import shadows the same declarations that a single-type import does.  It
+      // binds `className` only if it imports a static member type, declared or inherited, so
+      // continue if there is none.  For example, an import of a static field does not shadow a
+      // type of the same name.
+      int lastDot = declName.lastIndexOf('.');
+      if (lastDot > 0 && identifiers[0].equals(declName.substring(lastDot + 1))) {
+        String binaryName = staticImportBinaryName(declName.substring(0, lastDot), identifiers, cu);
+        if (binaryName != null) {
+          return binaryName;
+        }
+      }
+    }
     if (cuPkgName != null) {
       // The first identifier of `className` names a type in the current package, not a
       // subpackage, so every later identifier names a member type.  Therefore, search only the
@@ -1444,6 +1485,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     for (String prefix : context.onDemandImports()) {
       String binaryName = onDemandImportBinaryName(prefix, className, cu);
+      if (binaryName != null) {
+        return binaryName;
+      }
+    }
+    for (String owner : context.staticOnDemandImports()) {
+      String binaryName = staticImportBinaryName(owner, identifiers, cu);
       if (binaryName != null) {
         return binaryName;
       }
@@ -1641,6 +1688,115 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the binary name of the type that {@code identifiers} names via a static import from the
+   * type {@code owner}: a single-static-import {@code owner.identifiers[0]} or a
+   * static-import-on-demand {@code owner.*}. A static import makes available only the accessible
+   * static member types, declared or inherited, of {@code owner} (JLS 7.5.3, 7.5.4).
+   *
+   * @param owner the fully qualified name of the type that the static import imports from
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @param cu the stub file's compilation unit in which the import is written, or null not to
+   *     consider the types that the stub file declares
+   * @return the binary name of the type that {@code identifiers} names via the import, or null if
+   *     the import makes available no static member type named {@code identifiers[0]}
+   */
+  @SuppressWarnings("signature") // the declarations of the stub file or classpath determine it
+  private @Nullable @BinaryName String staticImportBinaryName(
+      String owner, String[] identifiers, @Nullable CompilationUnit cu) {
+    String packageName = packageName(cu);
+    Object member = staticMemberType(importedOwnerType(owner, cu), identifiers[0], packageName);
+    if (member == null || !isImportAccessible(member, cu)) {
+      return null;
+    }
+    return memberChainBinaryName(member, identifiers, packageName);
+  }
+
+  /**
+   * Returns the type that a fully qualified name in a static import denotes.
+   *
+   * @param fqName the fully qualified name of a type
+   * @param cu the stub file's compilation unit, or null not to consider the types that the stub
+   *     file declares
+   * @return the type that {@code fqName} denotes: a {@link TypeDeclaration} of the stub file, a
+   *     {@link Class} on the classpath, or null if there is none
+   */
+  @SuppressWarnings("signature") // a binary name is a valid argument to Class.forName
+  private @Nullable Object importedOwnerType(String fqName, @Nullable CompilationUnit cu) {
+    if (cu != null) {
+      String binaryName = declaredInStubFile(cu, fqName);
+      if (binaryName != null) {
+        TypeDeclaration<?> declaration = stubDeclarationOfBinaryName(cu, binaryName);
+        if (declaration != null) {
+          return declaration;
+        }
+        // The name might denote a type that a stub-file type inherits from a class on the
+        // classpath.
+        Class<?> clazz = loadClass(binaryName);
+        if (clazz != null) {
+          return clazz;
+        }
+      }
+    }
+    String binaryName = loadClassBinaryName(fqName);
+    return binaryName == null ? null : loadClass(binaryName);
+  }
+
+  /**
+   * Returns the static member type named {@code identifier} that {@code owner} declares or
+   * inherits.
+   *
+   * @param owner a {@link TypeDeclaration} of the stub file, a {@link Class} on the classpath, or
+   *     null
+   * @param identifier the simple name of a member type
+   * @param packageName the package of the compilation unit in which the static import is written,
+   *     or the empty string for the unnamed package
+   * @return the static member type: a {@link TypeDeclaration} of the stub file, a {@link Class} on
+   *     the classpath, or null if there is none
+   */
+  private @Nullable Object staticMemberType(
+      @Nullable Object owner, String identifier, String packageName) {
+    Object member;
+    if (owner instanceof TypeDeclaration<?> ownerDecl) {
+      member = firstDeclarationAt(ownerDecl, new String[] {identifier}, false, true);
+    } else if (owner instanceof Class<?> ownerClass) {
+      member = memberClass(ownerClass, identifier, packageName, false, new HashSet<>());
+    } else {
+      return null;
+    }
+    return isStaticMemberType(member) ? member : null;
+  }
+
+  /**
+   * Returns true if the given member type is static, explicitly or implicitly. A member interface,
+   * enum, record, or annotation interface is implicitly static, as is every member type of an
+   * interface (JLS 8.5.1, 9.5).
+   *
+   * @param member a member type: a {@link TypeDeclaration} of the stub file, a {@link Class} on the
+   *     classpath, or null
+   * @return true if {@code member} is non-null and static
+   */
+  private static boolean isStaticMemberType(@Nullable Object member) {
+    if (member instanceof TypeDeclaration<?> memberDecl) {
+      if (!(memberDecl instanceof ClassOrInterfaceDeclaration classDecl)
+          || classDecl.isInterface()
+          || classDecl.isStatic()) {
+        return true;
+      }
+      Node parent = memberDecl.getParentNode().orElse(null);
+      return (parent instanceof ClassOrInterfaceDeclaration parentDecl && parentDecl.isInterface())
+          || parent instanceof AnnotationDeclaration;
+    } else if (member instanceof Class<?> memberClass) {
+      Class<?> declaringClass = memberClass.getDeclaringClass();
+      return java.lang.reflect.Modifier.isStatic(memberClass.getModifiers())
+          || memberClass.isInterface()
+          || memberClass.isEnum()
+          || memberClass.isRecord()
+          || (declaringClass != null && declaringClass.isInterface());
+    }
+    return false;
+  }
+
+  /**
    * Returns true if the given top-level or member type is accessible to an import on demand in the
    * given compilation unit, as javac determines it: a public type, or a member type of an interface
    * or annotation interface, is accessible; a private member type is not; a protected or
@@ -1652,8 +1808,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param member a top-level or member type: a {@link TypeDeclaration} of the stub file, a {@link
    *     Class} on the classpath, or null
-   * @param cu a compilation unit of the stub file, in which the import is written, or null for the
-   *     converter's import context
+   * @param cu a compilation unit of the stub file, in which the import is written, or null for a
+   *     name that is not in any compilation unit, which uses the converter's import context
    * @return true if {@code member} is non-null and accessible to an import in {@code cu}
    */
   private boolean isImportAccessible(@Nullable Object member, @Nullable CompilationUnit cu) {
@@ -2676,9 +2832,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Combines a single-type import with a partially qualified name, yielding a fully qualified name.
+   * Combines a single-type import or a single-static-import with a partially qualified name,
+   * yielding a fully qualified name.
    *
-   * @param importName the type that a single-type import imports, such as {@code java.util.Map}
+   * @param importName the type that a single-type import imports, such as {@code java.util.Map}, or
+   *     the member that a single-static-import imports, such as {@code java.util.Map.Entry}
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
@@ -2695,8 +2853,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       //   C.D myvar;
       return importName + className.substring(importEnd.length());
     } else {
-      // A single-type import makes available only the simple name of the type that it imports, so
-      // it cannot supply a prefix for any other name.
+      // A single import makes available only the simple name of the type or member that it
+      // imports, so it cannot supply a prefix for any other name.
       return null;
     }
   }
