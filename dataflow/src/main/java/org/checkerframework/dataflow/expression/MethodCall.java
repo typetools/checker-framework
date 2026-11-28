@@ -190,10 +190,10 @@ public class MethodCall extends JavaExpression {
   @Override
   public String toString() {
     StringBuilder preParen = new StringBuilder();
-    if (receiver instanceof ClassName && ElementUtils.isStatic(method)) {
+    if (receiver instanceof ClassName className && ElementUtils.isStatic(method)) {
       // The receiver of a static method prints as a type name.  The receiver of an instance method
       // that is a ClassName is a class literal, such as `Foo.class`.
-      preParen.append(receiver.getType());
+      preParen.append(className.getTypeString());
     } else {
       preParen.append(receiver.toStringAsPostfixOperand());
     }
