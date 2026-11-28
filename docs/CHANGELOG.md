@@ -7,7 +7,21 @@
 
 ### User-visible changes
 
+A refined type that names a variable is discarded when the variable is
+reassigned.  For example, within the `then` branch of `if (i < a.length)`, the
+type of `i` is refined to `@LTLengthOf("a")`; after `a = c`, the type of `i`
+reverts to its declared type.  This affects every type system with expressions
+in its annotations, such as the Index Checker and `@KeyFor`.  See the manual
+section "Reassigning a variable that a type names".
+
 ### Changes for type system implementers
+
+`CFAbstractTransfer.processCommonAssignment()` removes from the store each value
+whose dependent type annotation might name the assigned variable, via the new
+methods `CFAbstractStore.removeValuesThatMightName()` and
+`DependentTypesHelper.mightName()`.  If the assigned value itself names the
+assigned variable, the variable gets the value that the new method
+`CFAbstractTransfer.valueNotNaming()` returns.
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.

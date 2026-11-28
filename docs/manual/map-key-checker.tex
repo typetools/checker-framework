@@ -227,7 +227,7 @@ because the checker infers it based on usage patterns.  When the Map Key
 Checker encounters a run-time check for map keys, such as
 ``\<if (m.containsKey(k)) ...>'', then the Map Key Checker refines the type of
 \<k> to \<@KeyFor("m")> within the scope of the test (or until \<k> is
-side-effected within that scope).  The Map Key Checker also infers \<@KeyFor>
+side-effected or \<m> is reassigned within that scope).  The Map Key Checker also infers \<@KeyFor>
 annotations based on iteration over a map's
 \sunjavadoc{java.base/java/util/Map.html\#keySet()}{\textrm{key set}} or calls to
 \sunjavadoc{java.base/java/util/Map.html\#put(K,V)}{put}

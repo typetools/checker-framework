@@ -64,6 +64,7 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -90,6 +91,7 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -928,8 +930,12 @@ public abstract class CFAbstractTransfer<
       V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
-      // Only need to insert if the second value is actually different.
-      if (!firstValue.equals(secondValue)) {
+      // Only need to insert if the second value is actually different.  Do not insert a value that
+      // might name a variable that an operand reassigns:  the value might have been computed
+      // before the reassignment, so it would be stale.
+      if (!firstValue.equals(secondValue)
+          && !mightNameAssignedVariable(firstValue, firstNode)
+          && !mightNameAssignedVariable(firstValue, secondNode)) {
         List<Node> secondParts = splitAssignments(secondNode);
         for (Node secondPart : secondParts) {
           JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
@@ -952,6 +958,45 @@ public abstract class CFAbstractTransfer<
       }
     }
     return res;
+  }
+
+  /**
+   * Returns true if a dependent type annotation of {@code value} might name a local variable or
+   * field that {@code node} assigns. {@code node} assigns the target of each assignment that {@link
+   * #splitAssignments} would split: if {@code node} is {@code a = b = c}, then it assigns {@code a}
+   * and {@code b}.
+   *
+   * @param value an abstract value
+   * @param node a node, possibly an assignment node
+   * @return true if a dependent type annotation of {@code value} might name a variable that {@code
+   *     node} assigns
+   */
+  private boolean mightNameAssignedVariable(V value, Node node) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if (!dependentTypesHelper.hasDependentAnnotations()) {
+      return false;
+    }
+    Node current = node;
+    while (true) {
+      // A cast does not change the value, but it can hide a nested assignment.
+      while (current instanceof TypeCastNode cast) {
+        current = cast.getOperand();
+      }
+      if (!(current instanceof AssignmentNode a)) {
+        break;
+      }
+      Node lhs = a.getTarget();
+      JavaExpression target = JavaExpression.fromNode(lhs);
+      if (target instanceof LocalVariable || target instanceof FieldAccess) {
+        Tree lhsTree = lhs.getTree();
+        TreePath path = lhsTree == null ? null : analysis.getTypeFactory().getPath(lhsTree);
+        if (dependentTypesHelper.mightName(value.getAnnotations(), target, path)) {
+          return true;
+        }
+      }
+      current = a.getExpression();
+    }
+    return false;
   }
 
   /**
@@ -1006,14 +1051,15 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
-      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      @Nullable V thenValue = processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
+      @Nullable V elseValue = processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      @Nullable V targetValue = (thenValue == null || elseValue == null) ? null : thenValue;
       return new ConditionalTransferResult<>(
-          finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
+          finishValue(targetValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, lhs, rhs, store, rhsValue);
-      return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+      @Nullable V targetValue = processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      return new RegularTransferResult<>(finishValue(targetValue, store), store);
     }
   }
 
@@ -1057,17 +1103,62 @@ public abstract class CFAbstractTransfer<
   /**
    * Determines the abstract value of the right-hand side and updates the store accordingly.
    *
+   * <p>If the target is a local variable or a field, this also removes from the store each value
+   * whose dependent type annotation might name the target (see {@link
+   * CFAbstractStore#removeValuesThatMightName}). If {@code rhsValue} itself has such an annotation,
+   * the target gets the value that {@link #valueNotNaming} returns: the annotation names the
+   * target's value before the assignment, but after the assignment the same text would name the new
+   * value. A self-assignment to a deterministic target, such as {@code a = a}, does not change the
+   * target's value, so it removes no values.
+   *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
    * @param store the regular input store (from {@code in})
-   * @param rhsValue the value of the right-hand side of the assignment
+   * @param rhsValue the value of the right-hand side of the assignment, or null if it has none
+   * @return the value that the store now holds for the target, or null if it holds none; this is
+   *     also the value of the assignment expression
    */
-  protected void processCommonAssignment(
-      TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
+  protected @Nullable V processCommonAssignment(
+      TransferInput<V, S> in, Node lhs, Node rhs, S store, @Nullable V rhsValue) {
+
+    @Nullable V targetValue = rhsValue;
+    JavaExpression target = JavaExpression.fromNode(lhs);
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if ((target instanceof LocalVariable || target instanceof FieldAccess)
+        && dependentTypesHelper.hasDependentAnnotations()
+        && (!JavaExpression.fromNode(rhs).syntacticEquals(target)
+            || !target.isDeterministic(analysis.getTypeFactory()))) {
+      Tree lhsTree = lhs.getTree();
+      TreePath path = lhsTree == null ? null : analysis.getTypeFactory().getPath(lhsTree);
+      store.removeValuesThatMightName(target, path);
+      if (targetValue != null
+          && dependentTypesHelper.mightName(targetValue.getAnnotations(), target, path)) {
+        targetValue = valueNotNaming(targetValue, target, path);
+      }
+    }
 
     // update information in the store
-    store.updateForAssignment(lhs, rhsValue);
+    store.updateForAssignment(lhs, targetValue);
+    return targetValue;
+  }
+
+  /**
+   * Returns a value that is a supertype of {@code value} and that has no dependent type annotation
+   * that might name {@code variable} (see {@link DependentTypesHelper#mightName}), or null if this
+   * transfer function cannot compute one. For example, a type system whose annotation is a
+   * conjunction of facts, such as {@code @LessThan({"a", "b"})}, can drop each fact that names
+   * {@code variable}. This implementation returns null.
+   *
+   * @param value an abstract value that has a dependent type annotation that might name {@code
+   *     variable}
+   * @param variable a local variable or a field access that is assigned
+   * @param path the location of the assignment, at which to parse the expressions in the
+   *     annotations, or null if it is not known
+   * @return a supertype of {@code value} that does not name {@code variable}, or null
+   */
+  protected @Nullable V valueNotNaming(V value, JavaExpression variable, @Nullable TreePath path) {
+    return null;
   }
 
   @Override

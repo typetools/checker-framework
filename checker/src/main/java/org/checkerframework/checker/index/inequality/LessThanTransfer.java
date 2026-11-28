@@ -1,10 +1,13 @@
 package org.checkerframework.checker.index.inequality;
 
+import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -17,6 +20,7 @@ import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.plumelib.util.CollectionsP;
 
@@ -129,6 +133,37 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       }
     }
     return result;
+  }
+
+  /**
+   * Returns the value with each expression that might name {@code variable} removed from its
+   * {@code @LessThan} annotation. For example, after {@code i = i - 1}, the value of {@code i - 1}
+   * is {@code @LessThan({"end", "i"})}, so the new value of {@code i} is {@code @LessThan("end")}.
+   */
+  @Override
+  protected @Nullable CFValue valueNotNaming(
+      CFValue value, JavaExpression variable, @Nullable TreePath path) {
+    LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
+    AnnotationMirror anno =
+        factory
+            .getQualifierHierarchy()
+            .findAnnotationInHierarchy(value.getAnnotations(), factory.LESS_THAN_UNKNOWN);
+    if (anno == null) {
+      return null;
+    }
+    List<String> expressions = factory.getLessThanExpressions(anno);
+    if (expressions == null) {
+      return null;
+    }
+    DependentTypesHelper dependentTypesHelper = factory.getDependentTypesHelper();
+    List<String> kept = new ArrayList<>(expressions.size());
+    for (String expression : expressions) {
+      if (!dependentTypesHelper.mightName(expression, variable, path)) {
+        kept.add(expression);
+      }
+    }
+    return analysis.createSingleAnnotationValue(
+        factory.createLessThanQualifier(kept), value.getUnderlyingType());
   }
 
   /**
