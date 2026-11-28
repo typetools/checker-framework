@@ -63,10 +63,6 @@ public class JavaCodeStatistics extends SourceChecker {
    */
   int numberOfIndexWarningSuppressions = 0;
 
-  /** The SuppressWarnings.value field/element. */
-  final ExecutableElement suppressWarningsValueElement =
-      TreeUtils.getMethod(SuppressWarnings.class, "value", 0, processingEnv);
-
   /** Creates a JavaCodeStatistics. */
   public JavaCodeStatistics() {
     // This checker never issues any warnings, so don't warn about
@@ -95,10 +91,25 @@ public class JavaCodeStatistics extends SourceChecker {
     return new Visitor(this);
   }
 
+  /** The visitor that counts the constructs whose statistics this checker reports. */
   class Visitor extends SourceVisitor<Void, Void> {
 
+    /**
+     * The SuppressWarnings.value field/element. It is a field of the visitor rather than of the
+     * checker, because a field initializer of the checker runs before the processing environment is
+     * set.
+     */
+    final ExecutableElement suppressWarningsValueElement;
+
+    /**
+     * Creates a Visitor.
+     *
+     * @param l a JavaCodeStatistics checker, whose counters this visitor increments
+     */
     public Visitor(JavaCodeStatistics l) {
       super(l);
+      suppressWarningsValueElement =
+          TreeUtils.getMethod(SuppressWarnings.class, "value", 0, l.getProcessingEnvironment());
     }
 
     @Override
