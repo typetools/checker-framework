@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -122,6 +124,50 @@ public class ContractsFromMethod {
   private <T extends Contract> Set<T> getContractsOfKind(
       ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     Set<T> result = new LinkedHashSet<>();
+    addContractsOfKind(executableElement, kind, clazz, result);
+    return result;
+  }
+
+  /**
+   * Returns the contracts that are written on method or constructor {@code executableElement},
+   * without removing duplicates. Unlike {@link #getContracts}, the result contains a separate
+   * contract for each contract annotation, even if {@link Contract#equals} considers two of them
+   * equal. For example, if two different contract annotations enforce the same qualifier on the
+   * same expression, the result contains two contracts, whose {@link Contract#contractAnnotation}
+   * fields differ. This is useful for issuing a diagnostic at each written contract annotation.
+   *
+   * @param executableElement the method or constructor whose contracts to retrieve
+   * @return the contracts that are written on {@code executableElement}, including duplicates
+   */
+  public List<Contract> getWrittenContracts(ExecutableElement executableElement) {
+    List<Contract> result = new ArrayList<>();
+    addContractsOfKind(
+        executableElement, Contract.Kind.PRECONDITION, Contract.Precondition.class, result);
+    addContractsOfKind(
+        executableElement, Contract.Kind.POSTCONDITION, Contract.Postcondition.class, result);
+    addContractsOfKind(
+        executableElement,
+        Contract.Kind.CONDITIONALPOSTCONDITION,
+        Contract.ConditionalPostcondition.class,
+        result);
+    return result;
+  }
+
+  /**
+   * Adds the contracts (of a particular kind) on method or constructor {@code executableElement} to
+   * {@code result}.
+   *
+   * @param <T> the type of {@link Contract} to add
+   * @param executableElement the method whose contracts to add
+   * @param kind the kind of contracts to retrieve
+   * @param clazz the class to determine the type of the contracts
+   * @param result the collection to which to add the contracts; is side-effected by this method
+   */
+  private <T extends Contract> void addContractsOfKind(
+      ExecutableElement executableElement,
+      Contract.Kind kind,
+      Class<T> clazz,
+      Collection<? super T> result) {
     // Check for a single framework-defined contract annotation.
     // The result is RequiresQualifier, EnsuresQualifier, EnsuresQualifierIf, or null.
     AnnotationMirror frameworkContractAnno =
@@ -169,7 +215,6 @@ public class ContractsFromMethod {
         result.add(contract);
       }
     }
-    return result;
   }
 
   /**
@@ -214,10 +259,11 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}. Might return null.
+   * contractAnno}.
    *
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @return the type annotation specified in {@code contractAnno.qualifier}
+   * @return the type annotation specified in {@code contractAnno.qualifier}, or null if the
+   *     qualifier could not be loaded or is not a supported qualifier of the type system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
@@ -226,11 +272,13 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}, with elements/arguments taken from {@code argumentAnno}. Might return null.
+   * contractAnno}, with elements/arguments taken from {@code argumentAnno}.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @param argumentAnno supplies the elements/fields in the return value
-   * @return the type annotation specified in {@code contractAnno.qualifier}
+   * @param contractAnno a contract meta-annotation, such as {@code @PreconditionAnnotation}
+   * @param argumentAnno a contract annotation that is meta-annotated by {@code contractAnno}; it
+   *     supplies the elements/fields in the return value
+   * @return the type annotation specified in {@code contractAnno.qualifier}, or null if the
+   *     qualifier could not be loaded or is not a supported qualifier of the type system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {

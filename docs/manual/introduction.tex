@@ -670,7 +670,8 @@ Type-checking modes:  enable/disable functionality
 \item \<-AwarnRedundantAnnotations>
   Warn about redundant annotations.
   A warning is issued if an explicitly written annotation
-  is the same as the default annotation for that location.
+  is the same as the default annotation for that location,
+  or if a pre- or post-condition annotation uses the top qualifier.
   This feature does not warn about all redundant annotations, only some.
 \item \<-AsuggestPureMethods>
   Suggest methods that could be marked
