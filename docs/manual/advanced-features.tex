@@ -383,8 +383,9 @@ result, a programmer rarely writes an explicit annotation on any of those
 locations.
 
 Variables defaulted to top include local variables, resource variables in the
-try-with-resources construct, variables in \<for> statements, and \<catch>
-arguments (known as exception parameters in the Java Language Specification).
+try-with-resources construct, variables in \<for> statements, pattern
+variables such as \<s> in \<o instanceof String s>, and \<catch> arguments
+(known as exception parameters in the Java Language Specification).
 
 Exception parameters default to the top type because they might catch an
 exception thrown anywhere in the program.
@@ -1300,6 +1301,9 @@ array contents remain exactly the same.
     var list3 = list1; // type of list3 is ArrayList<@Tainted String>
     list2 = list1; // assignment error
 \end{Verbatim}
+
+For the type of a pattern variable declared with \<var> in a record pattern,
+see Section~\ref{record-patterns}.
 
 % If you add a Javadoc link to this location, also add the qualifier to the
 % list below.
