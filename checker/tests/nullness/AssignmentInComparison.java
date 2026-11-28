@@ -100,8 +100,9 @@ public class AssignmentInComparison {
       n.next.toString();
       // The assignment to `n.next` might change `o.next`, if `n` and `o` alias.
       // :: error: [dereference.of.nullable]
+      Object nextOther = o.next.other;
       // :: error: [dereference.of.nullable]
-      o.next.other.toString();
+      nextOther.toString();
     }
   }
 
@@ -120,8 +121,9 @@ public class AssignmentInComparison {
       // Neither receiver type is a subtype of the other, but a `Box<Integer>` can be both. The
       // assignment to `a.next` might change `b.next`, if `a` and `b` alias.
       // :: error: [dereference.of.nullable]
+      Object nextOther = b.next.other;
       // :: error: [dereference.of.nullable]
-      b.next.other.toString();
+      nextOther.toString();
     }
   }
 
@@ -595,8 +597,9 @@ public class AssignmentInComparison {
     }
   }
 
-  // The string conversion of `value` calls `value.toString()`, which is side-effect-free, so it
-  // cannot reassign `d.current`.
+  // The string conversion of `value` calls `value.toString()`.  The checker assumes that every
+  // `toString()` method, including an override, is side-effect-free.  Under that assumption, the
+  // string conversion does not reassign `d.current`.
   static void plusAssignStringConversionPreservesTarget(Document d, Object value) {
     d.current.text += value;
     d.current.text.length();

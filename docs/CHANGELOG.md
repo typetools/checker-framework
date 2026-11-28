@@ -22,9 +22,14 @@ assignment's right-hand side might change the location that its target
 denotes, as in `n.next = (n = o)`.
 
 Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
-result omits each node that might have a different value by the time the
+result omits each node that a store can hold a value for, or that is a unary or
+binary operation, and that might have a different value by the time the
 enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
-result can be empty.  `splitAssignments()` is deprecated and final; a subclass
+result can be empty.  The result may contain other nodes whose values might
+change, such as `x + (x = 1)`, whose expression contains `Unknown`; a caller
+must not assume that every node in the result is safe to re-evaluate.  A
+value-preserving widening conversion is looked through, so the result contains
+its operand.  `splitAssignments()` is deprecated and final; a subclass
 that overrides it must override `nodesWithValueOf()` instead.
 `insertValueForNodesWithValueOf()` and
 `hasRefinableSide()` (which the default `strengthenAnnotationOfEqualTo()`
@@ -40,7 +45,11 @@ To refine an operand of a comparison, an override of
 
 New method `CFAbstractTransfer.mayChangeAfterOperand()` tells whether an
 expression that an operand's type depends on might change before the
-comparison completes.
+comparison completes.  New method
+`CFAbstractTransfer.mayChangeBeforeComparisonCompletes()` is similar, but it
+also considers the writes after the operand of an assignment or cast is
+evaluated.  New method `CFAbstractTransfer.keepsValueUntilComparisonCompletes()`
+tells whether `nodesWithValueOf()` returns a node itself.
 
 `CFAbstractStore.canAlias()` is now final.  It calls the new method
 `CFAbstractAnalysis.canAlias()`, which calls the new method

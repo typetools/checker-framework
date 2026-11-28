@@ -1067,7 +1067,9 @@ public abstract class CFAbstractTransfer<
    * (s = t)} are the cast, {@code s}, and {@code t}. Otherwise, the only candidate is {@code node}
    * itself. A widening conversion that does not change the value of its operand (see {@link
    * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
-   * {@code (int) s == 5L}, is looked through. There is no candidate if {@code node} is (after
+   * {@code (int) s == 5L}, is looked through: the candidate is its operand, such as {@code (int)
+   * s}. To test whether the result contains {@code node} itself, use {@link
+   * #keepsValueUntilComparisonCompletes}. There is no candidate if {@code node} is (after
    * looking through value-preserving widening conversions) a conversion that might change the value
    * of its operand, such as the binary numeric promotion of {@code i} in {@code i == 16_777_216f}:
    * {@link JavaExpression#fromNode} ignores the conversion, so the expression for the conversion is
@@ -1118,8 +1120,9 @@ public abstract class CFAbstractTransfer<
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return the nodes that have the value of {@code node} when the comparison completes: the sides
    *     of {@code node} if it is an assignment or a value-preserving cast, none if it is a
-   *     conversion that might change the value, and otherwise {@code node} itself, except for those
-   *     that might have a different value by then
+   *     conversion that might change the value, and otherwise {@code node} itself (without any
+   *     value-preserving widening conversions that wrap it), except for those that might have a
+   *     different value by then
    */
   protected List<Node> nodesWithValueOf(Node node) {
     return nodesWithValueOfResult(node).sides();
@@ -1271,11 +1274,7 @@ public abstract class CFAbstractTransfer<
    * @return the result of {@link #nodesWithValueOfResult} for {@code node}
    */
   private NodesWithValueOfResult computeNodesWithValueOf(Node node) {
-    Node unwrapped = node;
-    while (unwrapped instanceof WideningConversionNode widening
-        && isValuePreservingConversion(widening)) {
-      unwrapped = widening.getOperand();
-    }
+    Node unwrapped = withoutValuePreservingWidening(node);
     List<Node> candidates;
     if (unwrapped instanceof AssignmentNode
         || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))) {
@@ -1287,7 +1286,9 @@ public abstract class CFAbstractTransfer<
       // JavaExpression.fromNode ignores the conversion, so no expression has the value of `node`.
       candidates = Collections.emptyList();
     } else {
-      candidates = Collections.singletonList(node);
+      // Return the operand of a value-preserving widening conversion, as in `a.length == 1L`, so
+      // that a client can recognize it, for example as a field access.
+      candidates = Collections.singletonList(unwrapped);
     }
     // Find the written locations only if a candidate might be omitted because of them, because
     // finding them requires the path to the tree of `node`, which can be costly to compute.
@@ -1320,6 +1321,35 @@ public abstract class CFAbstractTransfer<
     }
     return new NodesWithValueOfResult(
         Collections.unmodifiableList(result), Collections.unmodifiableList(fieldsWrittenByCalls));
+  }
+
+  /**
+   * Returns the given node, looking through value-preserving widening conversions (see {@link
+   * #isValuePreservingConversion}). For example, returns {@code a.length} for the binary numeric
+   * promotion of {@code a.length} in {@code a.length == 1L}.
+   *
+   * @param node a node
+   * @return {@code node}, without the value-preserving widening conversions that wrap it
+   */
+  private static Node withoutValuePreservingWidening(Node node) {
+    while (node instanceof WideningConversionNode widening
+        && isValuePreservingConversion(widening)) {
+      node = widening.getOperand();
+    }
+    return node;
+  }
+
+  /**
+   * Returns true if the given node has its own value when the comparison that contains it completes: that is, if {@link #nodesWithValueOf} returns
+   * the node itself, after looking through value-preserving widening conversions. For example,
+   * returns true for {@code k} in {@code j + k < a.length}, but false for {@code k} in {@code j + k
+   * < (k = a.length)}.
+   *
+   * @param node a node in an operand of a comparison
+   * @return true if {@code node} has its own value when the comparison completes
+   */
+  protected boolean keepsValueUntilComparisonCompletes(Node node) {
+    return nodesWithValueOf(node).contains(withoutValuePreservingWidening(node));
   }
 
   /**
@@ -1659,21 +1689,49 @@ public abstract class CFAbstractTransfer<
     if (path == null) {
       return false;
     }
-    WrittenLocations written = locationsWrittenUntilComparison(node);
-    if (written.isEmpty()) {
+    Predicate<JavaExpression> mayChange = mayChangeBeforeComparisonCompletes(node);
+    if (mayChange == null) {
       return false;
     }
     boolean[] result = {false};
     dependentTypesHelper.convertAnnotationMirror(
         expression -> {
           JavaExpression expr = analysis.atypeFactory.parseJavaExpressionString(expression, path);
-          if (written.mayChange(expr, false)) {
+          if (mayChange.test(expr)) {
             result[0] = true;
           }
           return expr;
         },
         anno);
     return result[0];
+  }
+
+  /**
+   * Returns a test for Java expressions whose values might change after the given node is evaluated
+   * and before the comparison that contains the node completes. Returns null if no variable, field,
+   * or array element is written in that time.
+   *
+   * <p>This is like {@link #containsExpressionChangedBeforeComparisonCompletes}, but it lets a
+   * client test each expression in an annotation separately, so that the client can discard only
+   * the parts of the annotation that might no longer hold. For example, in {@code limit == (i =
+   * keep(k, a = new int[0]))}, the bound for {@code b} in the type {@code @LTLengthOf({"a", "b"})}
+   * of {@code limit} still holds after the comparison, but the bound for {@code a} does not.
+   *
+   * <p>If {@code node} is an assignment, cast, or conversion, this method considers the writes
+   * after its operand is evaluated, including the writes by the assignment, as {@link
+   * #containsExpressionChangedBeforeComparisonCompletes} does.
+   *
+   * @param node a node in an operand of a comparison
+   * @return a test for whether the value of an expression might change after {@code node} is
+   *     evaluated and before the comparison completes, or null if no location is written in that
+   *     time
+   */
+  protected @Nullable Predicate<JavaExpression> mayChangeBeforeComparisonCompletes(Node node) {
+    WrittenLocations written = locationsWrittenUntilComparison(valueSource(node));
+    if (written.isEmpty()) {
+      return null;
+    }
+    return expr -> written.mayChange(expr, false);
   }
 
   /**

@@ -331,7 +331,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    * @return {@code qualifier} plus or minus the value of {@code offsetNode}
    */
   private UBQualifier offsetByComparedNode(UBQualifier qualifier, Node offsetNode, char op) {
-    if (nodesWithValueOf(offsetNode).contains(offsetNode)
+    if (keepsValueUntilComparisonCompletes(offsetNode)
         && JavaExpression.fromNode(offsetNode).isDeterministic(atypeFactory)) {
       return op == '+'
           ? qualifier.plusOffset(offsetNode, atypeFactory)
@@ -471,25 +471,39 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Returns the given qualifier of the given node, or UNKNOWN if the qualifier might not hold when
-   * the comparison that contains the node completes, because it contains an expression whose value
-   * might change after the node is evaluated (see {@link
-   * #containsExpressionChangedBeforeComparisonCompletes}). Call this method on a qualifier of a
-   * node before using it to refine any node, including the node itself: in {@code (i = (a =
-   * b).length - 1) < (a = c).length + 100}, the type {@code @LTLengthOf("a")} of the left operand
-   * is about {@code b}, and it does not hold for {@code i} after {@code a} is reassigned.
+   * Returns the given qualifier of the given node, without each (sequence, offset) pair that might
+   * not hold when the comparison that contains the node completes, because the sequence or offset
+   * contains an expression whose value might change after the node is evaluated (see {@link
+   * #mayChangeBeforeComparisonCompletes}). Call this method on a qualifier of a node before using
+   * it to refine any node, including the node itself: in {@code (i = (a = b).length - 1) < (a =
+   * c).length + 100}, the type {@code @LTLengthOf("a")} of the left operand is about {@code b}, and
+   * it does not hold for {@code i} after {@code a} is reassigned. A pair whose expressions do not
+   * change is kept: in {@code limit == (i = keep(k, a = new int[0]))}, if the type of {@code limit}
+   * is {@code @LTLengthOf({"a", "b"})}, then the result is {@code @LTLengthOf("b")}.
    *
    * @param qualifier a qualifier of {@code node}
    * @param node a node in an operand of a comparison
-   * @return {@code qualifier}, or UNKNOWN if it might not hold when the comparison completes
+   * @return {@code qualifier}, without the pairs that might not hold when the comparison completes,
+   *     or UNKNOWN if no pair remains
    */
   private UBQualifier qualifierWhenComparisonCompletes(UBQualifier qualifier, Node node) {
-    if (qualifier.isLessThanLengthQualifier()
-        && containsExpressionChangedBeforeComparisonCompletes(
-            atypeFactory.convertUBQualifierToAnnotation(qualifier), node)) {
+    if (!(qualifier instanceof LessThanLengthOf ltl)) {
+      return qualifier;
+    }
+    Predicate<JavaExpression> mayChange = mayChangeBeforeComparisonCompletes(node);
+    if (mayChange == null) {
+      return qualifier;
+    }
+    TreePath path = sourcePath(node);
+    if (path == null) {
       return UpperBoundUnknownQualifier.UNKNOWN;
     }
-    return qualifier;
+    return ltl.removeDependentsOf(
+        s -> {
+          JavaExpression je = UpperBoundVisitor.parseJavaExpressionString(s, atypeFactory, path);
+          // Conservatively assume that an expression that cannot be parsed might change.
+          return je == null || mayChange.test(je);
+        });
   }
 
   /** Implements case 11. */
@@ -602,7 +616,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // of the sequence that `receiver` refers to afterward.
     if (receiver != null
         && !receiver.containsUnknown()
-        && nodesWithValueOf(lengthAccess).contains(lengthAccess)) {
+        && keepsValueUntilComparisonCompletes(lengthAccess)) {
       Predicate<JavaExpression> mayChange = mayChangeAfterOperand(lengthAccessOperand);
       if (mayChange != null && mayChange.test(receiver)) {
         // The comparison used the length of the sequence before it changed.

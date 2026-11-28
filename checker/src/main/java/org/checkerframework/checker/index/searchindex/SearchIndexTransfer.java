@@ -11,6 +11,7 @@ import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -78,9 +79,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
         // `(copy = index) < (a = new int[0]).length`.
         List<String> unchangedArrays = new ArrayList<>(arrays.size());
         for (String array : arrays) {
-          AnnotationMirror arrayNif =
-              atypeFactory.createNegativeIndexFor(Collections.singletonList(array));
-          if (!containsExpressionChangedBeforeComparisonCompletes(arrayNif, right)) {
+          if (!arrayChangedBeforeComparisonCompletes(array, right)) {
             unchangedArrays.add(array);
           }
         }
@@ -91,10 +90,24 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
         if (unchangedArrays.size() == arrays.size()) {
           insertValueForNodesWithValueOf(store, right, nif);
         } else {
-          replaceValueForComparedNode(store, right, nif, unchangedArrays);
+          replaceValueForComparedNode(store, right, nif);
         }
       }
     }
+  }
+
+  /**
+   * Returns true if the given array might change after the given node is evaluated and before the
+   * comparison that contains the node completes.
+   *
+   * @param array a Java expression string for an array, as in a {@link SearchIndexFor} annotation
+   * @param node a node in an operand of a comparison
+   * @return true if {@code array} might change before the comparison completes
+   */
+  private boolean arrayChangedBeforeComparisonCompletes(String array, Node node) {
+    AnnotationMirror arrayNif =
+        atypeFactory.createNegativeIndexFor(Collections.singletonList(array));
+    return containsExpressionChangedBeforeComparisonCompletes(arrayNif, node);
   }
 
   /**
@@ -113,14 +126,15 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
    * @param node a node in an operand of a comparison
    * @param nif a {@link NegativeIndexFor} annotation that holds for {@code node} when the
    *     comparison completes
-   * @param unchangedArrays the arrays that do not change before the comparison completes; {@code
-   *     nif} names only these
    */
-  private void replaceValueForComparedNode(
-      CFStore store, Node node, AnnotationMirror nif, List<String> unchangedArrays) {
+  private void replaceValueForComparedNode(CFStore store, Node node, AnnotationMirror nif) {
     QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
     for (Node internal : nodesWithValueOf(node)) {
       JavaExpression expr = JavaExpression.fromNode(internal);
+      if (!CFAbstractStore.canInsertJavaExpression(expr)) {
+        // No store holds a value for `expr`, such as a cast.
+        continue;
+      }
       CFValue oldValue = store.getValue(expr);
       AnnotationMirror oldAnno =
           oldValue == null
@@ -129,7 +143,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                   oldValue.getAnnotations(), atypeFactory.UNKNOWN);
       AnnotationMirror newAnno = nif;
       if (oldAnno != null) {
-        AnnotationMirror unchangedOldAnno = withOnlyArrays(oldAnno, unchangedArrays);
+        AnnotationMirror unchangedOldAnno = withoutChangedArrays(oldAnno, node);
         newAnno =
             hierarchy.greatestLowerBoundShallow(
                 unchangedOldAnno, internal.getType(), nif, internal.getType());
@@ -139,14 +153,16 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Returns the given annotation, without the arrays that are not in the given list.
+   * Returns the given annotation, without the arrays that might change after the given node is
+   * evaluated and before the comparison that contains the node completes.
    *
    * @param anno a SearchIndex Checker qualifier
-   * @param arrays the arrays to keep
-   * @return {@code anno} without the arrays that are not in {@code arrays}, or the top qualifier if
-   *     that leaves no arrays in a {@link SearchIndexFor} or {@link NegativeIndexFor}
+   * @param node a node in an operand of a comparison
+   * @return {@code anno} without the arrays that might change before the comparison completes, or
+   *     the top qualifier if that leaves no arrays in a {@link SearchIndexFor} or {@link
+   *     NegativeIndexFor}
    */
-  private AnnotationMirror withOnlyArrays(AnnotationMirror anno, List<String> arrays) {
+  private AnnotationMirror withoutChangedArrays(AnnotationMirror anno, Node node) {
     boolean isNegativeIndexFor = atypeFactory.areSameByClass(anno, NegativeIndexFor.class);
     if (!isNegativeIndexFor && !atypeFactory.areSameByClass(anno, SearchIndexFor.class)) {
       return anno;
@@ -159,7 +175,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
                     ? atypeFactory.negativeIndexForValueElement
                     : atypeFactory.searchIndexForValueElement,
                 String.class));
-    kept.retainAll(arrays);
+    kept.removeIf(array -> arrayChangedBeforeComparisonCompletes(array, node));
     if (kept.isEmpty()) {
       return atypeFactory.UNKNOWN;
     }
