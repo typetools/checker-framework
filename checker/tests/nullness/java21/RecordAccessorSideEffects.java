@@ -126,4 +126,32 @@ public class RecordAccessorSideEffects {
     }
     monotonicSelector.hashCode();
   }
+
+  // A case that is not the last case throws MatchException if an accessor throws an exception.
+  void accessorClearsFieldThenThrowsNotLastCase(Shape2 s) {
+    f = "";
+    try {
+      switch (s) {
+        case Throwing(int x) -> {}
+        default -> {}
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      f.hashCode();
+    }
+  }
+
+  // A case whose record pattern always matches throws MatchException if an accessor throws an
+  // exception.
+  void accessorClearsFieldThenThrowsAlwaysMatches(Throwing t) {
+    f = "";
+    try {
+      switch (t) {
+        case Throwing(int x) -> {}
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      f.hashCode();
+    }
+  }
 }
