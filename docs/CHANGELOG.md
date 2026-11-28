@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+`CaseNode` has two new boolean fields, `labelsUntested` and `sideEffectSinceSelector`.
+
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
 

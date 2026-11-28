@@ -924,8 +924,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -1351,16 +1351,19 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    AssignmentNode assign = n.getSwitchOperand();
+    boolean refineSelectorExpression = selectorExpressionDenotesSwitchValue(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
               finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (refineSelectorExpression) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1377,7 +1380,36 @@ public abstract class CFAbstractTransfer<
                 null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
       }
     }
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (n.labelsUntested()) {
+      // The CFG omits the test of this case's labels, so the facts that hold when one of this
+      // case's labels matches hold after this node.
+      return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
+    }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the switch selector expression (the right-hand side of {@code
+   * n.getSwitchOperand()}) is known to still denote the value that the switch tests, at {@code n}.
+   *
+   * <p>The selector expression might not denote the tested value if code with side effects, such as
+   * a guard, ran after the switch evaluated the selector expression. For example, a guard might
+   * reassign a field that is the selector expression.
+   *
+   * @param n a case node
+   * @return true if the switch selector expression still denotes the value that the switch tests
+   */
+  protected boolean selectorExpressionDenotesSwitchValue(CaseNode n) {
+    if (!n.sideEffectSinceSelector()) {
+      return true;
+    }
+    // Code in a guard cannot assign a local variable that is declared outside the guard.  A method
+    // call is excluded even if its receiver and arguments are unassignable, because the method
+    // might read mutable state (such as a static field) that the intervening code changed.
+    JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    return !selector.isAssignableByOtherCode() && !selector.containsOfClass(MethodCall.class);
   }
 
   // /**
@@ -1423,7 +1455,9 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
-    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    // The binding variable is declared before the CaseNode, and visitCase refines the selector by
+    // the binding variable, not the binding variable by the selector.  Refine it here, so that the
+    // guard and the body see the refinement.
     ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
     if (selector != null) {
       refineCaseLabelBindingVariable(store, n.getTree(), selector);
