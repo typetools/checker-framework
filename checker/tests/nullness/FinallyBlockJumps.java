@@ -9,8 +9,13 @@ public class FinallyBlockJumps {
 
   @Nullable Object f;
 
+  @Nullable Object g;
+
+  @Nullable Object h;
+
+  static @Nullable Object sf;
+
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void returnInFinally(boolean b) {
     try {
       f = "a";
@@ -24,7 +29,6 @@ public class FinallyBlockJumps {
   }
 
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void breakInFinally(boolean b) {
     label:
     {
@@ -41,7 +45,6 @@ public class FinallyBlockJumps {
   }
 
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void returnInFinallyAfterException(boolean b, int divisor) {
     try {
       f = "a";
@@ -56,7 +59,6 @@ public class FinallyBlockJumps {
   }
 
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void unlabeledBreakInFinally(boolean b, int n) {
     f = "init";
     for (int i = 0; i < n; i++) {
@@ -73,7 +75,6 @@ public class FinallyBlockJumps {
   }
 
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void continueInFinally(boolean b, int n) {
     f = "init";
     for (int i = 0; i < n; i++) {
@@ -90,7 +91,6 @@ public class FinallyBlockJumps {
   }
 
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void labeledContinueInFinally(boolean b, int n) {
     f = "init";
     outer:
@@ -112,7 +112,6 @@ public class FinallyBlockJumps {
   // The return statement runs the finally block of the enclosing try statement, which sets f to a
   // non-null value.
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void returnInNestedFinallyEstablishesPostcondition(boolean b) {
     try {
       try {
@@ -131,7 +130,6 @@ public class FinallyBlockJumps {
   // The break statement runs the finally block of the enclosing try statement, which sets f to a
   // non-null value.
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void breakInNestedFinally(boolean b, int n) {
     f = "init";
     for (int i = 0; i < n; i++) {
@@ -153,7 +151,6 @@ public class FinallyBlockJumps {
   // The continue statement runs the finally block of the enclosing try statement, which sets f to
   // a non-null value.
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void continueInNestedFinally(boolean b, int n) {
     f = "init";
     for (int i = 0; i < n; i++) {
@@ -175,7 +172,6 @@ public class FinallyBlockJumps {
   // The labeled break statement runs the finally block of the enclosing try statement, which sets f
   // to a non-null value.
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void labeledBreakInNestedFinally(boolean b, int n) {
     f = "init";
     outer:
@@ -200,7 +196,6 @@ public class FinallyBlockJumps {
   // The labeled continue statement runs the finally block of the enclosing try statement, which
   // sets f to a non-null value.
   @EnsuresNonNull("f")
-  @SuppressWarnings("finally") // a finally block that does not complete normally
   void labeledContinueInNestedFinally(boolean b, int n) {
     f = "init";
     outer:
@@ -219,6 +214,47 @@ public class FinallyBlockJumps {
           f = "d";
         }
       }
+    }
+  }
+
+  // When the return statement executes, g is null.
+  @EnsuresNonNull("g")
+  // :: error: (contracts.postcondition)
+  void returnInFinallyLeavesNull(boolean b) {
+    h = null;
+    try {
+      f = "a";
+    } finally {
+      g = h;
+      h = "x";
+      if (b) {
+        return;
+      }
+    }
+    g = "c";
+  }
+
+  static class SetsFieldOnClose implements AutoCloseable {
+    @Override
+    @EnsuresNonNull("FinallyBlockJumps.sf")
+    public void close() {
+      sf = "closed";
+    }
+  }
+
+  // The return statement runs the close() method of the enclosing try-with-resources statement,
+  // which sets sf to a non-null value.
+  @EnsuresNonNull("FinallyBlockJumps.sf")
+  void returnInFinallyClosesResource(boolean b) {
+    try (SetsFieldOnClose r = new SetsFieldOnClose()) {
+      try {
+        sf = null;
+      } finally {
+        if (b) {
+          return;
+        }
+      }
+      sf = "c";
     }
   }
 }
