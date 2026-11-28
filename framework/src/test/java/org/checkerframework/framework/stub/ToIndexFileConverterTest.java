@@ -1194,36 +1194,58 @@ public class ToIndexFileConverterTest {
   /**
    * A package-private member type of a supertype in another package is not inherited, so it does
    * not hide a member type of a later supertype. A member type of an interface is implicitly
-   * public, so it is inherited from another package.
+   * public, so it is inherited from another package. The stub file omits the access modifier of
+   * {@code HashMap.Node}, which is package-private on the classpath.
    */
   @Test
   public void testInaccessibleInheritedMemberTypeOfStubSupertype() throws Exception {
     String jaif =
         convert(
             "package q;",
-            "class C extends p.Base implements I {",
-            "  void m(C.Inner x) {}",
+            "abstract class C extends java.util.HashMap implements I {",
+            "  void m(C.Node x) {}",
             "}",
             "interface I {",
-            "  class Inner {}",
+            "  class Node {}",
             "}",
             "class D implements p.J {",
             "  void m(D.JInner x) {}",
             "}",
-            "class E extends p.Base {",
-            "  void m(E.Inner x) {}",
+            "abstract class E extends java.util.HashMap {",
+            "  void m(E.Node x) {}",
+            "}",
+            "package java.util;",
+            "public class HashMap<K, V> {",
+            "  static class Node<K, V> {}",
+            "}",
+            "package p;",
+            "public interface J {",
+            "  class JInner {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lq/I$Node;)V");
+    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
+    // `E` inherits no member type `Node`, so `Node` is not resolved to `java.util.HashMap.Node`.
+    assertNoMethod(jaif, "E", "m(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * A stub file can omit the access modifier of a member type. A member type that is not on the
+   * classpath and whose stub declaration omits its access modifier is inherited by a subtype in
+   * another package.
+   */
+  @Test
+  public void testStubMemberTypeWithoutAccessModifierIsInherited() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class C extends p.Base {",
+            "  void m(C.Inner x) {}",
             "}",
             "package p;",
             "public class Base {",
             "  static class Inner {}",
-            "}",
-            "public interface J {",
-            "  class JInner {}",
             "}");
-    assertMethod(jaif, "C", "m(Lq/I$Inner;)V");
-    assertMethod(jaif, "D", "m(Lp/J$JInner;)V");
-    // `E` inherits no member type `Inner`, so `Inner` is not resolved to `p.Base.Inner`.
-    assertNoMethod(jaif, "E", "m(Lp/Base$Inner;)V");
+    assertMethod(jaif, "C", "m(Lp/Base$Inner;)V");
   }
 
   /**
@@ -1239,22 +1261,22 @@ public class ToIndexFileConverterTest {
         convert(
             "package q;",
             "public interface I {",
-            "  class N {}",
+            "  class Node {}",
             "}",
-            "class C extends p.B {",
-            "  void m(C.N x) {}",
+            "abstract class C extends java.util.LinkedHashMap {",
+            "  void m(C.Node x) {}",
             "}",
-            "package p;",
-            "class A {",
-            "  static class N {}",
+            "package java.util;",
+            "public class HashMap<K, V> {",
+            "  static class Node<K, V> {}",
             "}",
-            "public class B extends A implements q.I {}",
-            "class E extends A {}",
-            "class F extends E {",
-            "  void m(F.N x) {}",
+            "public class LinkedHashMap<K, V> extends HashMap<K, V> implements q.I {}",
+            "abstract class E extends HashMap {}",
+            "abstract class F extends E {",
+            "  void m(F.Node x) {}",
             "}");
-    assertMethod(jaif, "C", "m(Lq/I$N;)V");
-    assertMethod(jaif, "F", "m(Lp/A$N;)V");
+    assertMethod(jaif, "C", "m(Lq/I$Node;)V");
+    assertMethod(jaif, "F", "m(Ljava/util/HashMap$Node;)V");
   }
 
   /**

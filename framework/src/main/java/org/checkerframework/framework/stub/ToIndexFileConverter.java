@@ -237,10 +237,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       topLevelTypeCache = new IdentityHashMap<>();
 
   /**
-   * A cache for {@link #classpathClass} and {@link #classpathDeclaredMemberType}. Maps a type
-   * declaration of the stub file to the class on the classpath that has the same binary name, or to
-   * null if there is none. It is an identity map because a JavaParser node's {@code equals} and
-   * {@code hashCode} compare its whole subtree.
+   * A cache for {@link #classpathClass}. Maps a type declaration of the stub file to the class on
+   * the classpath that has the same binary name, or to null if there is none. It is an identity map
+   * because a JavaParser node's {@code equals} and {@code hashCode} compare its whole subtree.
    */
   private final IdentityHashMap<TypeDeclaration<?>, @Nullable Class<?>> classpathClassCache =
       new IdentityHashMap<>();
@@ -1890,15 +1889,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable Class<?> classpathDeclaredMemberType(
       TypeDeclaration<?> declaration, String identifier) {
-    Class<?> clazz;
-    if (classpathClassCache.containsKey(declaration)) {
-      clazz = classpathClassCache.get(declaration);
-    } else {
-      @SuppressWarnings("signature") // the binary name of a class
-      @ClassGetName String binaryName = qualifiedStubBinaryName(declaration);
-      clazz = loadClass(binaryName);
-      classpathClassCache.put(declaration, clazz);
-    }
+    Class<?> clazz = classpathClass(declaration);
     if (clazz == null) {
       return null;
     }
@@ -2062,6 +2053,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * public or protected, it is a member of an interface or annotation interface (and so implicitly
    * public), or every subtype along the path is in its package.
    *
+   * <p>A stub file can omit the access modifier of a member type. Whether such a member type is
+   * inherited is determined by the class on the classpath that has the same binary name, if there
+   * is one. Otherwise, the member type is treated as public.
+   *
    * @param declaringType a type declaration of the stub file
    * @param member a member type that {@code declaringType} declares
    * @param pathPackage the package of every subtype of {@code declaringType} along the inheritance
@@ -2077,6 +2072,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     if (member.isPrivate()) {
       return false;
+    }
+    if (!member.isPublic() && !member.isProtected()) {
+      Class<?> classpathMember = classpathClass(member);
+      if (classpathMember == null) {
+        return true;
+      }
+      Class<?> classpathDeclaringType = classpathMember.getDeclaringClass();
+      if (classpathDeclaringType != null) {
+        return isInheritedMemberType(
+            classpathDeclaringType,
+            classpathMember,
+            classpathDeclaringType.getPackageName().equals(pathPackage),
+            null);
+      }
     }
     return member.isPublic() || member.isProtected() || stubPackage(member).equals(pathPackage);
   }
