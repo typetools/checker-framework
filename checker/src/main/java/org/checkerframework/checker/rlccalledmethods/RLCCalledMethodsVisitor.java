@@ -20,6 +20,7 @@ import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
@@ -173,6 +174,11 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * parameter is @Owning in the overrider, and 2) if an overridden method has an @NotOwning return,
    * then the overrider also has an @NotOwning return.
    *
+   * <p>Neither check applies where the overrider's parameter or return type has no must-call
+   * obligations, because a value of that type has nothing to own. For example, if {@code Source<T>}
+   * declares {@code @NotOwning T get()}, then {@code get()} in a class that implements {@code
+   * Source<String>} need not be annotated.
+   *
    * @param tree overriding method, for error reporting
    * @param overrider element for overriding method
    * @param mcAtf the type factory
@@ -185,7 +191,9 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       // the same length.
       for (int i = 0; i < overridden.getParameters().size(); i++) {
         if (mcAtf.getDeclAnnotation(overridden.getParameters().get(i), Owning.class) != null) {
-          if (mcAtf.getDeclAnnotation(overrider.getParameters().get(i), Owning.class) == null) {
+          if (mcAtf.getDeclAnnotation(overrider.getParameters().get(i), Owning.class) == null
+              && !hasEmptyMustCallType(
+                  mcAtf.getAnnotatedType(overrider).getParameterTypes().get(i), mcAtf)) {
             checker.reportError(
                 tree,
                 "owning.override.param",
@@ -199,7 +207,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       }
       // Check for @NotOwning returns.
       if (mcAtf.getDeclAnnotation(overridden, NotOwning.class) != null
-          && mcAtf.getDeclAnnotation(overrider, NotOwning.class) == null) {
+          && mcAtf.getDeclAnnotation(overrider, NotOwning.class) == null
+          && !hasEmptyMustCallType(mcAtf.getAnnotatedType(overrider).getReturnType(), mcAtf)) {
         checker.reportError(
             tree,
             "owning.override.return",
@@ -209,6 +218,27 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
             ElementUtils.getEnclosingClassName(overridden));
       }
     }
+  }
+
+  /**
+   * Returns true if the given type has an empty must-call type, so a value of that type never
+   * carries a must-call obligation. Returns false if the must-call type is non-empty,
+   * {@code @MustCallUnknown}, or polymorphic.
+   *
+   * <p>Unlike {@link RLCCalledMethodsAnnotatedTypeFactory#hasEmptyMustCallValue(Element)}, which
+   * reads only the primary annotation, this uses the bound of a type variable, so it is true for a
+   * type variable whose bound has no must-call obligations.
+   *
+   * @param type a type
+   * @param mcAtf the type factory
+   * @return true if {@code type} has an empty must-call type
+   */
+  private boolean hasEmptyMustCallType(
+      AnnotatedTypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
+    AnnotationMirror mustCall = type.getAnnotationInHierarchy(mcAtf.TOP);
+    return mustCall != null
+        && mcAtf.areSameByClass(mustCall, MustCall.class)
+        && rlTypeFactory.getMustCallValues(mustCall).isEmpty();
   }
 
   /**

@@ -4,6 +4,8 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
@@ -52,7 +54,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
 
     @Override
     @SideEffectsOnly("this")
-    public V next() {
+    public @NotOwning V next() {
       return itr.next();
     }
 
@@ -88,7 +90,8 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
    * @param old the element to be removed, if {@code behavior} is REPLACE
    * @return true if an element was removed
    */
-  private boolean checkAdd(int behavior, V old) {
+  private boolean checkAdd(
+      @NotOwningCollection LinkedHashKeyedSet<K, V> this, int behavior, V old) {
     return switch (behavior) {
       case REPLACE -> {
         remove(old);
@@ -104,8 +107,16 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     return x == y || (x != null && x.equals(y));
   }
 
+  // The return type is (by default) @Owning.  That is correct when REPLACE removes the returned
+  // element from the set.  It is conservative under IGNORE, when the returned element remains in
+  // the set; @NotOwning would be unsound under REPLACE.  The signature cannot express ownership
+  // that depends on the behavior arguments.
   @Override
-  public V add(V o, int conflictBehavior, int equalBehavior) {
+  public V add(
+      @NotOwningCollection LinkedHashKeyedSet<K, V> this,
+      V o,
+      int conflictBehavior,
+      int equalBehavior) {
     K key = keyer.getKeyFor(o);
     V old = theMap.get(key);
     if (old == null
@@ -123,7 +134,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
 
   @Override
   @SideEffectsOnly("this")
-  public boolean remove(Object o) {
+  public boolean remove(@NotOwningCollection LinkedHashKeyedSet<K, V> this, Object o) {
     return theValues.remove(o);
   }
 
