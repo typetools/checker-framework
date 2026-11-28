@@ -6,6 +6,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -445,12 +446,39 @@ public class NullnessVisitor
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, validate the reference type and scan the expression and the pattern or type.
     Tree patternTree = tree.getPattern();
+    // Check the binding variable, as `super.visitInstanceOf` would.
+    if (patternTree instanceof BindingPatternTree) {
+      checkInstanceofPattern(tree);
+    }
     if (patternTree == null) {
       validateTypeOf(refTypeTree);
     }
     super.scan(tree.getExpression(), p);
     super.scan(patternTree != null ? patternTree : refTypeTree, p);
     return null;
+  }
+
+  @Override
+  protected AnnotatedTypeMirror instanceofPatternMatchedType(AnnotatedTypeMirror expType) {
+    // A type pattern in an instanceof (JLS 15.20.2), or a nested type pattern that is not
+    // unconditional for the type of its record component (JLS 14.30.2), does not match null, so
+    // the nullness qualifier of the value that the pattern is matched against does not restrict
+    // the binding variable.
+    return withNonNull(expType);
+  }
+
+  /**
+   * Returns a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}.
+   *
+   * @param type a type
+   * @return a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}
+   */
+  private AnnotatedTypeMirror withNonNull(AnnotatedTypeMirror type) {
+    // Not `shallowCopy`, which shares the bounds of an intersection type: replacing the primary
+    // annotation of an intersection type also replaces the annotations of its bounds.
+    AnnotatedTypeMirror copy = type.deepCopy();
+    copy.replaceAnnotation(NONNULL);
+    return copy;
   }
 
   /**
