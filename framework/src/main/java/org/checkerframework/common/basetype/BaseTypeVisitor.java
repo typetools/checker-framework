@@ -6,6 +6,7 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BindingPatternTree;
@@ -56,6 +57,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,10 +74,12 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -265,7 +270,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * True if "-AcheckPurityAnnotations" itself was passed on the command line. Unlike {@link
    * #checkPurityAnnotations}, this is not implied by "-AsuggestPureMethods" or "-Ainfer".
    */
-  private final boolean checkPurityAnnotationsOption;
+  final boolean checkPurityAnnotationsOption;
 
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
@@ -1407,6 +1412,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checker.reportError(tree, "purity.impure.sideeffectsonly", st);
             return;
           }
+          // `#n` permits effects on the caller's argument.  The body is checked, and a method
+          // reference is translated (in `OverrideChecker.atFunctionalInterfaceMethod`), as if the
+          // parameter holds that argument throughout the body.  Reassigning the parameter would
+          // make it denote another object, whose modification `#n` does not permit.
+          checkParametersAreEffectivelyFinal(tree, exprJe);
           seOnlyExpressions.add(exprJe);
         } catch (JavaExpressionParseException ex) {
           // This diagnostic is about parsing the expression in order to check the method body
@@ -1664,6 +1674,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.purityAdjective = purityAdjective;
       this.calleeAdjective = calleeAdjective;
     }
+
+    /**
+     * Returns true if the given purity kinds include a purity property that this violation lacks.
+     *
+     * @param kinds the purity kinds of a method
+     * @return true if {@code kinds} includes a purity property that this violation lacks
+     */
+    private boolean isRequiredBy(EnumSet<PurityKind> kinds) {
+      return switch (this) {
+        case DETERMINISTIC -> kinds.contains(PurityKind.DETERMINISTIC);
+        case SIDE_EFFECT_FREE -> kinds.contains(PurityKind.SIDE_EFFECT_FREE);
+        case BOTH ->
+            kinds.contains(PurityKind.DETERMINISTIC) || kinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      };
+    }
   }
 
   /**
@@ -1687,9 +1712,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * makes, because {@link #checkLambdaPurity} and {@link
    * OverrideChecker#checkMethodReferencePurity} check that.
    *
-   * <p>Only a parameter whose declared type is a functional interface is checked. No implementation
-   * of {@code callee} can assume anything about an argument to any other parameter, such as one
-   * whose type is a type variable or a varargs array; see {@link
+   * <p>Only a parameter whose declared type is a functional interface, or a type variable whose
+   * upper bound is one, is checked. No implementation of {@code callee} can assume anything about
+   * an argument to any other parameter, such as one whose type is a type variable with no
+   * functional-interface upper bound or a varargs array; see {@link
    * PurityChecker#functionalParameterPurity}.
    *
    * @param callee the invoked method or constructor
@@ -1950,14 +1976,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 env));
       }
     } else {
-      ExecutableElement argFunction =
-          functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
-      if (argFunction == null) {
+      List<ExecutableElement> argFunctions =
+          PurityChecker.implementationsOf(TreeUtils.typeOf(argument), paramFunction, env);
+      if (argFunctions.isEmpty()) {
         // The argument is the null literal, or its type does not implement the parameter's
         // functional method (which javac has already reported).  There is nothing to check.
         return;
       }
-      argKinds = implementationPurityKinds(argFunction);
+      // The code that the argument runs has the purity of every method that it implements.
+      argKinds = EnumSet.noneOf(PurityKind.class);
+      for (ExecutableElement implemented : argFunctions) {
+        argKinds.addAll(implementationPurityKinds(implemented));
+      }
+      ExecutableElement argFunction = argFunctions.get(0);
       // If the argument is a functional-interface parameter of the enclosing method, the caller
       // of that method was required to check the code that argFunction runs.
       argKinds.addAll(
@@ -1969,6 +2000,250 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       reportFunctionalArgumentError(arg, argKinds, required, param, callee);
     }
   }
+
+  /**
+   * Returns true if the purity annotations of {@code method}, or of code that a call to {@code
+   * method} runs, might hold only if the argument to {@code parameter} has the purity that {@link
+   * PurityChecker#functionalParameterPurity} computes.
+   *
+   * <p>The Purity Checker verifies {@code method}'s body, and the body of every override of {@code
+   * method}, under the assumption that the argument to {@code parameter} has that purity. For
+   * example, in the body of a {@code @SideEffectFree} method, a call {@code f.apply(s)} to a
+   * parameter {@code f} of type {@code Function} is treated as side-effect-free. A use of {@code
+   * parameter} <em>relies on</em> the assumption if it might run the argument's implementation of
+   * {@code parameterFunction}, so that an argument that lacks the purity might make the verified
+   * annotations false. Calling {@code parameterFunction} on the parameter relies on the assumption,
+   * as does passing the parameter to another method, which might call it.
+   *
+   * <p>The result is false only if the call runs {@code method}'s own body, its body is in source
+   * code, and no use of {@code parameter} in that body relies on the assumption: the body uses
+   * {@code parameter} only as an operand of a binary operator such as {@code ==}, as the
+   * destination or the value of an assignment, as the value of a variable initializer or of a
+   * return statement, or as the receiver of a call to a method other than {@code parameterFunction}
+   * and its overrides, such as {@code hashCode}. The call runs {@code method}'s own body if {@code
+   * method} cannot be overridden, or if the call is through a {@code super} method reference such
+   * as {@code super::m}, which is not dispatched dynamically (JLS 15.13.3). Otherwise the result is
+   * true, because the body of an override that the checker does not see might rely on the
+   * assumption.
+   *
+   * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
+   * has the name of {@code parameter}, other than the destination of an assignment, is treated as a
+   * use that relies on the assumption.
+   *
+   * @param method a method or constructor
+   * @param parameter a functional-interface parameter of {@code method}
+   * @param parameterFunction the functional method of {@code parameter}'s type
+   * @param isSuperReference true if the call is through a {@code super} method reference, which
+   *     runs {@code method} itself rather than an override of it
+   * @return true if the purity annotations of {@code method}, or of code that a call to {@code
+   *     method} runs, might hold only if the argument to {@code parameter} has the computed purity
+   */
+  boolean mightRelyOnFunctionalParameter(
+      ExecutableElement method,
+      VariableElement parameter,
+      ExecutableElement parameterFunction,
+      boolean isSuperReference) {
+    if (!isSuperReference && isOverridable(method)) {
+      return true;
+    }
+    if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
+        || methodTree.getBody() == null) {
+      return true;
+    }
+    FunctionalParameterUseScanner scanner =
+        new FunctionalParameterUseScanner(
+            parameter, parameterFunction, atypeFactory.getProcessingEnv());
+    scanner.scan(methodTree.getBody(), null);
+    return scanner.found;
+  }
+
+  /**
+   * Returns true if {@code method} can be overridden.
+   *
+   * @param method a method or constructor
+   * @return true if {@code method} can be overridden
+   */
+  private static boolean isOverridable(ExecutableElement method) {
+    return method.getKind() == ElementKind.METHOD
+        && !ElementUtils.isStatic(method)
+        && !method.getModifiers().contains(Modifier.PRIVATE)
+        && !ElementUtils.isFinal(method)
+        && !ElementUtils.isFinal(method.getEnclosingElement());
+  }
+
+  /**
+   * Returns true if code that a call to {@code method} runs might store a value into an element of
+   * {@code method}'s varargs parameter, or might let other code do so.
+   *
+   * <p>A {@code @SideEffectsOnly} expression such as {@code #1[0].f} is interpreted when the effect
+   * occurs. Under variable-arity invocation, {@code #1[0]} is the caller's argument only if the
+   * element still holds that argument then. If the body executes {@code nodes[0] = SHARED;
+   * nodes[0].f = x;}, the annotation permits both statements, but the second one modifies {@code
+   * SHARED} rather than the argument.
+   *
+   * <p>The result is false only if {@code method} is a variable-arity method, its body is in source
+   * code, the body uses the varargs parameter only to read an element or its length, or as the
+   * expression of an enhanced {@code for} statement, and the call runs that body: either {@code
+   * method} cannot be overridden, or the call is through a {@code super} method reference such as
+   * {@code super::m}, which is not dispatched dynamically (JLS 15.13.3). An override of {@code
+   * method} inherits its annotation but might assign an element.
+   *
+   * <p>The body might not have been attributed yet. In an unattributed body, every identifier that
+   * has the name of the varargs parameter is treated as a use of it.
+   *
+   * @param method a method or constructor
+   * @param isSuperReference true if the call is through a {@code super} method reference, which
+   *     runs {@code method} itself rather than an override of it
+   * @return true if code that a call to {@code method} runs might reassign an element of its
+   *     varargs parameter
+   */
+  boolean varargsElementsMightBeReassigned(ExecutableElement method, boolean isSuperReference) {
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (!method.isVarArgs()
+        || parameters.isEmpty()
+        || (!isSuperReference && isOverridable(method))) {
+      return true;
+    }
+    if (!(atypeFactory.declarationFromElement(method) instanceof MethodTree methodTree)
+        || methodTree.getBody() == null) {
+      return true;
+    }
+    VarargsElementWriteScanner scanner =
+        new VarargsElementWriteScanner(parameters.get(parameters.size() - 1));
+    scanner.scan(methodTree.getBody(), null);
+    return scanner.found;
+  }
+
+  /**
+   * Scans code for a use of a varargs parameter that might store into one of its elements; see
+   * {@link #varargsElementsMightBeReassigned}.
+   */
+  private static class VarargsElementWriteScanner extends TreeScanner<Void, Void> {
+
+    /** The varargs parameter whose uses are sought. */
+    private final VariableElement parameter;
+
+    /** True if a use that might store into an element of {@link #parameter} has been found. */
+    boolean found = false;
+
+    /**
+     * Creates a scanner for uses of {@code parameter}.
+     *
+     * @param parameter a varargs parameter
+     */
+    VarargsElementWriteScanner(VariableElement parameter) {
+      this.parameter = parameter;
+    }
+
+    @Override
+    public Void scan(@Nullable Tree tree, Void p) {
+      return found ? null : super.scan(tree, p);
+    }
+
+    /**
+     * Returns true if {@code tree} is a use of {@link #parameter}, possibly in parentheses. In an
+     * unattributed body, an identifier with the parameter's name is treated as a use.
+     *
+     * @param tree an expression
+     * @return true if {@code tree} is a use of {@link #parameter}
+     */
+    private boolean isParameter(ExpressionTree tree) {
+      if (!(TreeUtils.withoutParens(tree) instanceof IdentifierTree identifier)) {
+        return false;
+      }
+      Element elt = TreeUtils.elementFromTree(identifier);
+      return elt == null
+          ? identifier.getName().contentEquals(parameter.getSimpleName())
+          : parameter.equals(elt);
+    }
+
+    /**
+     * Records a use of {@link #parameter} if {@code assignmentTarget}, the target of an assignment,
+     * is an element of it; otherwise scans {@code assignmentTarget}.
+     *
+     * @param assignmentTarget the target of an assignment, compound assignment, increment, or
+     *     decrement
+     */
+    private void scanTarget(ExpressionTree assignmentTarget) {
+      if (TreeUtils.withoutParens(assignmentTarget) instanceof ArrayAccessTree arrayAccess
+          && isParameter(arrayAccess.getExpression())) {
+        found = true;
+      } else {
+        scan(assignmentTarget, null);
+      }
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      if (isParameter(tree)) {
+        found = true;
+      }
+      return null;
+    }
+
+    @Override
+    public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
+      // Reading an element does not change it.  An assignment to an element is handled by
+      // `scanTarget`.
+      if (!isParameter(tree.getExpression())) {
+        scan(tree.getExpression(), p);
+      }
+      scan(tree.getIndex(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      if (isParameter(tree.getExpression()) && tree.getIdentifier().contentEquals("length")) {
+        return null;
+      }
+      return super.visitMemberSelect(tree, p);
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+      scan(tree.getVariable(), p);
+      if (!isParameter(tree.getExpression())) {
+        scan(tree.getExpression(), p);
+      }
+      scan(tree.getStatement(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, Void p) {
+      scanTarget(tree.getVariable());
+      scan(tree.getExpression(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+      scanTarget(tree.getVariable());
+      scan(tree.getExpression(), p);
+      return null;
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, Void p) {
+      switch (tree.getKind()) {
+        case POSTFIX_INCREMENT, POSTFIX_DECREMENT, PREFIX_INCREMENT, PREFIX_DECREMENT ->
+            scanTarget(tree.getExpression());
+        default -> scan(tree.getExpression(), p);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * A method through which a call can run an implementation, together with the type through which
+   * such a call is made.
+   *
+   * @param declaration a method that a call might invoke
+   * @param receiverType a type of which {@code declaration} is a member, and that every receiver of
+   *     such a call has
+   */
+  record CallableDeclaration(ExecutableElement declaration, DeclaredType receiverType) {}
 
   /**
    * Reports that an argument to a functional-interface parameter lacks the purity that the callee
@@ -2013,59 +2288,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
-   * or null if it has none.
-   *
-   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
-   * argument can also be of a class type, including an anonymous class, that implements the
-   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
-   * functional subinterface can implement {@code paramFunction} with a default method and declare
-   * an unrelated abstract method as its own functional method; the default method is what runs.
-   *
-   * @param type the type of an argument
-   * @param paramFunction the functional method of the parameter's type
-   * @param env the processing environment
-   * @return the method of {@code type} that implements {@code paramFunction}, or null
-   */
-  private @Nullable ExecutableElement functionalMethodOf(
-      TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
-    Elements elements = env.getElementUtils();
-    TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
-    if (functionalType != null) {
-      ExecutableElement function = TypesUtils.findFunction(functionalType, env);
-      if (PurityChecker.isSameOrOverrides(function, paramFunction, env)) {
-        return function;
-      }
-    }
-    if (type.getKind() == TypeKind.TYPEVAR) {
-      type = TypesUtils.upperBound(type);
-    }
-    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
-      // Only a class or interface type declares methods.  The null type, which is the type of
-      // the null literal, has an element whose members cannot be queried.
-      return null;
-    }
-    TypeElement typeElement = TypesUtils.getTypeElement(type);
-    if (typeElement == null) {
-      return null;
-    }
-    // The members of a class that inherits its implementation from a superclass include both
-    // that implementation and the interface's abstract method.  The implementation is what runs.
-    ExecutableElement abstractMatch = null;
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-      if (method.equals(paramFunction) || elements.overrides(method, paramFunction, typeElement)) {
-        if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
-          return method;
-        }
-        if (abstractMatch == null) {
-          abstractMatch = method;
-        }
-      }
-    }
-    return abstractMatch;
-  }
-
-  /**
    * Returns the purity of a method that implements a functional method: its declared purity, plus
    * whatever the command-line assumptions grant it, plus determinism if it is side-effect-free and
    * returns no value.
@@ -2104,6 +2326,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the annotations corresponding to {@code purityKinds}, space-separated
    */
   protected static String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+    return purityKindsToString(purityKinds, "@SideEffectsOnly");
+  }
+
+  /**
+   * Formats purity kinds for a diagnostic message, as {@link #purityKindsToString(EnumSet)} does,
+   * but represents {@link PurityKind#SIDE_EFFECTS_ONLY} by the given text.
+   *
+   * @param purityKinds a set of purity kinds
+   * @param sideEffectsOnly the text that represents {@link PurityKind#SIDE_EFFECTS_ONLY}, such as
+   *     {@code @SideEffectsOnly("this")}
+   * @return the annotations corresponding to {@code purityKinds}, space-separated
+   */
+  static String purityKindsToString(EnumSet<PurityKind> purityKinds, String sideEffectsOnly) {
     if (purityKinds.isEmpty()) {
       return "(no side effect annotation)";
     }
@@ -2111,6 +2346,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (PurityKind purityKind : purityKinds) {
       switch (purityKind) {
         case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+        case SIDE_EFFECTS_ONLY -> result.add(sideEffectsOnly);
         case DETERMINISTIC -> result.add("@Deterministic");
       }
     }
@@ -2118,12 +2354,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Reports errors found during purity checking.
+   * Reports errors found during purity checking of a method body.
+   *
+   * <p>This method calls {@link #reportPurityErrors(PurityResult, EnumSet, Map)}, which is also
+   * called for a lambda body. To customize the reporting of every purity error, override that
+   * method rather than this one.
    *
    * @param result the result of the purity analysis
    * @param expectedKinds the expected purity for the method
    */
   protected void reportPurityErrors(PurityResult result, EnumSet<PurityKind> expectedKinds) {
+    reportPurityErrors(result, expectedKinds, Collections.emptyMap());
+  }
+
+  /**
+   * Reports errors found during purity checking of a method body or a lambda body. Each error
+   * message names the methods in {@code requirements} that require the purity kind that the checked
+   * code lacks.
+   *
+   * @param result the result of the purity analysis
+   * @param expectedKinds the expected purity for the checked code
+   * @param requirements methods whose purity annotations require {@code expectedKinds}, each with
+   *     its purity kinds, or an empty map to name no method; used for diagnostics
+   */
+  protected void reportPurityErrors(
+      PurityResult result,
+      EnumSet<PurityKind> expectedKinds,
+      Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
     assert !result.isPure(expectedKinds);
     EnumSet<PurityKind> violations = EnumSet.copyOf(expectedKinds);
     violations.removeAll(result.getKinds());
@@ -2138,16 +2395,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         violation = PurityViolation.BOTH;
       }
       for (ImpurityReason r : result.getNotBothReasons()) {
-        reportPurityError(violation, r);
+        reportPurityError(violation, r, requirements);
       }
       if (violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
         for (ImpurityReason r : result.getNotSEFreeReasons()) {
-          reportPurityError(PurityViolation.SIDE_EFFECT_FREE, r);
+          reportPurityError(PurityViolation.SIDE_EFFECT_FREE, r, requirements);
         }
       }
       if (violations.contains(PurityKind.DETERMINISTIC)) {
         for (ImpurityReason r : result.getNotDetReasons()) {
-          reportPurityError(PurityViolation.DETERMINISTIC, r);
+          reportPurityError(PurityViolation.DETERMINISTIC, r, requirements);
         }
       }
     }
@@ -2158,8 +2415,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param violation the purity property that the method was required to have, but does not have
    * @param r the result to report
+   * @param requirements methods whose purity annotations require the purity property, each with its
+   *     purity kinds, or an empty map to name no method; used for diagnostics
    */
-  private void reportPurityError(PurityViolation violation, ImpurityReason r) {
+  private void reportPurityError(
+      PurityViolation violation,
+      ImpurityReason r,
+      Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
     String reason = r.msgId();
     Tree tree = r.tree();
     @CompilerMessageKey String msgKey =
@@ -2184,14 +2446,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             violation.calleeAdjective,
             calleeElement.getEnclosingElement(),
             calleeElement.getSimpleName(),
-            violation.purityAdjective
+            violation.purityAdjective,
+            requiredBy(violation, requirements)
           };
     } else {
-      args = new Object[] {violation.purityAdjective};
+      args = new Object[] {violation.purityAdjective, requiredBy(violation, requirements)};
     }
     // The same tree can be checked more than once:  an initializer is checked as part of every
     // constructor that runs it.
     reportErrorOnce(tree, msgKey, args);
+  }
+
+  /**
+   * Returns the text that ends a purity error message, naming the methods in {@code requirements}
+   * that require a purity kind of {@code violation}, as in " (required by SefFunc.doNothing)". A
+   * purity error message's last argument is this text. A message whose key a checker defines (see
+   * {@link #customPurityMessageKey}) can omit it.
+   *
+   * @param violation a purity property that the checked code was required to have, but does not
+   * @param requirements methods whose purity annotations require purity properties, each with its
+   *     purity kinds, or an empty map to name no method
+   * @return the text that names the methods that require a purity kind of {@code violation}, or the
+   *     empty string if there are none
+   */
+  private static String requiredBy(
+      PurityViolation violation, Map<ExecutableElement, EnumSet<PurityKind>> requirements) {
+    StringJoiner methods = new StringJoiner(", ", " (required by ", ")");
+    methods.setEmptyValue("");
+    for (Map.Entry<ExecutableElement, EnumSet<PurityKind>> entry : requirements.entrySet()) {
+      if (violation.isRequiredBy(entry.getValue())) {
+        ExecutableElement method = entry.getKey();
+        methods.add(method.getEnclosingElement().getSimpleName() + "." + method.getSimpleName());
+      }
+    }
+    return methods.toString();
   }
 
   /**
@@ -2203,7 +2491,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param msgKey the message key
    * @param args the arguments of the message
    */
-  private void reportErrorOnce(Tree tree, @CompilerMessageKey String msgKey, Object... args) {
+  void reportErrorOnce(Tree tree, @CompilerMessageKey String msgKey, Object... args) {
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
       checker.reportError(tree, msgKey, args);
@@ -3280,12 +3568,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the functional interface method that the given lambda implements is annotated
-   * {@code @SideEffectFree}, {@code @Deterministic}, or {@code @Pure}, checks the lambda's body
-   * against that annotation.
+   * Checks the lambda's body against the purity annotations ({@code @SideEffectFree},
+   * {@code @Deterministic}, or {@code @Pure}) of each method through which a call can run the
+   * lambda: the functional interface method that the lambda implements, and the other methods that
+   * {@link #methodsThatRun} returns.
    *
-   * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of the functional
-   * interface method from the lambda's body.
+   * <p>Each error message, such as {@code purity.call}, names the methods whose annotations require
+   * the purity kind that the body lacks. Such a method might be a method of a superinterface or of
+   * another bound of an intersection target type, rather than the functional interface method.
+   *
+   * <p>Under {@code -Ainfer}, reports no error, but instead infers the purity of those methods from
+   * the lambda's body.
    *
    * <p>The analogous check for a method reference is {@link
    * OverrideChecker#checkMethodReferencePurity}.
@@ -3295,17 +3588,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkLambdaPurity(
       LambdaExpressionTree tree, AnnotatedExecutableType functionType) {
-    ExecutableElement functionalMethod = functionType.getElement();
-    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
-    // Do not report errors while inferring.  The purity annotations on `functionalMethod` may
-    // have been written by inference, which has not yet taken this lambda into account; the
-    // code below does that.  The annotations are checked when the inference output is
-    // type-checked.
-    boolean needToCheck = checkPurityAnnotations && !infer && !purityKinds.isEmpty();
-    if (!needToCheck && !infer) {
+    if (!checkPurityAnnotations && !infer) {
       // There is no work to do.
       return;
     }
+    List<ExecutableElement> methods = methodsThatRun(tree, functionType.getElement());
+    // The body must be at least as pure as each method through which a call can run it.
+    EnumSet<PurityKind> purityKinds = EnumSet.noneOf(PurityKind.class);
+    // The purity kinds of each method, in the order of `methods`.
+    Map<ExecutableElement, EnumSet<PurityKind>> requirements = new LinkedHashMap<>();
+    for (ExecutableElement method : methods) {
+      EnumSet<PurityKind> kinds = PurityUtils.getPurityKinds(atypeFactory, method);
+      purityKinds.addAll(kinds);
+      requirements.put(method, kinds);
+    }
+    // Do not report errors while inferring.  The purity annotations on `methods` may have been
+    // written by inference, which has not yet taken this lambda into account; the code below does
+    // that.  The annotations are checked when the inference output is type-checked.
+    boolean needToCheck = checkPurityAnnotations && !infer && !purityKinds.isEmpty();
 
     TreePath body = new TreePath(getCurrentPath(), tree.getBody());
     if (needToCheck) {
@@ -3319,7 +3619,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               assumeDeterministic,
               assumePureGetters);
       if (!r.isPure(purityKinds)) {
-        reportPurityErrors(r, purityKinds);
+        reportPurityErrors(r, purityKinds, requirements);
       }
     }
 
@@ -3327,42 +3627,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       EnumSet<PurityKind> lambdaKinds =
           purityForInference(
                   Collections.singletonList(body), TreePathUtil.enclosingMethod(getCurrentPath()))
-              .getKinds()
-              .clone();
-      inferFunctionalMethodPurity(functionalMethod, lambdaKinds, tree);
+              .getKinds();
+      inferFunctionalMethodPurity(methods, lambdaKinds, tree);
     }
   }
 
   /**
-   * Records in whole-program inference the purity of the given functional interface method, and of
-   * each method that it overrides, as constrained by a lambda or a method reference that implements
-   * it. Whole-program inference lubs the recorded purity with the purity that it already has for
-   * each method. The lambda or method reference constrains the functional method's purity just as
-   * an overriding method does; see the treatment of overridden methods in {@link
-   * #checkPurityAnnotations}.
+   * Records in whole-program inference the purity of each of the given methods, as constrained by
+   * the given lambda or method reference, which a call through any of the methods can run.
+   * Whole-program inference lubs the recorded purity with the purity that it already has for each
+   * method. The lambda or method reference constrains each method's purity just as an overriding
+   * method does; see the treatment of overridden methods in {@link #checkPurityAnnotations}.
    *
-   * @param functionalMethod a functional interface method
-   * @param implementationKinds the purity kinds of a lambda or a method reference that implements
-   *     {@code functionalMethod}; this method modifies it
-   * @param tree the lambda or method reference; used for diagnostics
+   * @param methods the methods through which a call can run {@code tree}, as {@link
+   *     #methodsThatRun} returns them
+   * @param implementationKinds the purity kinds of {@code tree}
+   * @param tree a lambda or a method reference; used for diagnostics
    */
   private void inferFunctionalMethodPurity(
-      ExecutableElement functionalMethod, EnumSet<PurityKind> implementationKinds, Tree tree) {
-    if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
-      implementationKinds.remove(PurityKind.DETERMINISTIC);
-    }
+      List<ExecutableElement> methods, EnumSet<PurityKind> implementationKinds, Tree tree) {
     WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
     if (wpi == null) {
       throw new BugInCF("No WPI while inferring purity of " + tree);
     }
-    // Do not infer a kind that would newly constrain the arguments at call sites.
-    implementationKinds = kindsSafeToInfer(functionalMethod, implementationKinds);
-    inferPurityAnno(implementationKinds, wpi, functionalMethod);
-    for (ExecutableElement overriddenElt :
-        ElementUtils.getOverriddenMethods(functionalMethod, types)) {
-      // A call to the overridden method may pass an argument that a call to `functionalMethod`
-      // may not, so the kinds that are safe to infer depend on the method.
-      inferPurityAnno(kindsSafeToInfer(overriddenElt, implementationKinds), wpi, overriddenElt);
+    for (ExecutableElement method : methods) {
+      EnumSet<PurityKind> kinds = EnumSet.copyOf(implementationKinds);
+      if (method.getReturnType().getKind() == TypeKind.VOID) {
+        kinds.remove(PurityKind.DETERMINISTIC);
+      }
+      // Do not infer a kind that would newly constrain the arguments at call sites.  The methods
+      // have different parameters, so the kinds that are safe to infer depend on the method.
+      inferPurityAnno(kindsSafeToInfer(method, kinds), wpi, method);
     }
   }
 
@@ -3376,10 +3671,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Records in whole-program inference the purity of the functional interface method that the given
-   * method reference implements, as constrained by the purity annotations of the referenced method.
-   * This is the analogue, for a method reference, of the inference that {@link #checkLambdaPurity}
-   * performs for a lambda.
+   * Records in whole-program inference the purity of each method through which a call can run the
+   * given method reference (see {@link #methodsThatRun}), as constrained by the purity annotations
+   * of the referenced method. This is the analogue, for a method reference, of the inference that
+   * {@link #checkLambdaPurity} performs for a lambda.
    *
    * <p>This method does not depend on {@link #checkMethodReferenceAsOverride}, which skips some
    * method references. Inference must account for every method reference, or else it could infer
@@ -3393,7 +3688,187 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ExecutableElement referencedMethod = TreeUtils.elementFromUse(tree);
     // Like `purityForInference`, ignore the -Aassume* command-line options.
     inferFunctionalMethodPurity(
-        functionalMethod, PurityUtils.getPurityKinds(atypeFactory, referencedMethod), tree);
+        methodsThatRun(tree, functionalMethod),
+        PurityUtils.getPurityKinds(atypeFactory, referencedMethod),
+        tree);
+  }
+
+  /**
+   * Returns the methods through which a call can run the given lambda or method reference: the
+   * functional interface method that it implements, and every other method of the functional
+   * interface or of its supertypes that is override-equivalent to that method in the functional
+   * interface (JLS 8.4.2). The latter include each method that the functional interface method
+   * overrides, and each abstract method that the functional interface inherits from another
+   * superinterface, as {@code A.run} and {@code B.run} in {@code interface C extends A, B}.
+   *
+   * <p>If the target of the lambda or method reference is an intersection type, as in {@code (A &
+   * B) C::m} or as for an argument whose parameter type is {@code T} where {@code <T extends A &
+   * B>}, the result also includes each method of the other bounds and of their supertypes that is
+   * override-equivalent to the functional interface method. The object that the lambda or method
+   * reference evaluates to has every bound's type, so a call through any of those methods can run
+   * it.
+   *
+   * <p>The result contains no method of {@code Object}. A public method of {@code Object} is never
+   * a functional interface method (JLS 9.8), and code outside {@code java.lang} cannot call a
+   * protected method of {@code Object}, such as {@code clone}, on the object that a lambda or a
+   * method reference evaluates to.
+   *
+   * @param tree a lambda or a method reference
+   * @param functionalMethod the functional interface method that {@code tree} implements
+   * @return the methods through which a call can run {@code tree}, starting with {@code
+   *     functionalMethod}
+   * @see #callableDeclarationsThatRun
+   */
+  List<ExecutableElement> methodsThatRun(Tree tree, ExecutableElement functionalMethod) {
+    return callableDeclarationsThatRun(tree, functionalMethod).stream()
+        .map(CallableDeclaration::declaration)
+        .toList();
+  }
+
+  /**
+   * Returns the methods that {@link #methodsThatRun} returns, each together with the type through
+   * which a call to it can run the given lambda or method reference: the type that declares or
+   * inherits the functional interface method, or, for a method of another bound of an intersection
+   * cast, that bound.
+   *
+   * @param tree a lambda or a method reference
+   * @param functionalMethod the functional interface method that {@code tree} implements
+   * @return the methods through which a call can run {@code tree}, starting with {@code
+   *     functionalMethod}, each with the type through which such a call is made
+   */
+  List<CallableDeclaration> callableDeclarationsThatRun(
+      Tree tree, ExecutableElement functionalMethod) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    List<DeclaredType> targetBounds = intersectionTargetBounds(tree);
+    TypeElement owner = (TypeElement) functionalMethod.getEnclosingElement();
+    TypeMirror erasedOwner = types.erasure(owner.asType());
+    // The type that the functional method is a member of, through which a call runs `tree`.  For an
+    // intersection target, its type arguments are those of one of its ground bounds.  Like each
+    // bound of an intersection target, it has no wildcard type argument (JLS 9.9), so that the
+    // types of its methods' parameters contain no wildcard either.
+    DeclaredType targetType = null;
+    for (DeclaredType bound : targetBounds) {
+      if (types.isSubtype(types.erasure(bound), erasedOwner)) {
+        targetType = bound;
+        break;
+      }
+    }
+    if (targetType == null) {
+      TypeMirror treeType = TreeUtils.typeOf(tree);
+      targetType =
+          treeType instanceof DeclaredType declaredTreeType
+                  && types.isSubtype(types.erasure(declaredTreeType), erasedOwner)
+              ? TypesUtils.nonWildcardParameterization(declaredTreeType, env)
+              : (DeclaredType) owner.asType();
+    }
+
+    List<CallableDeclaration> result = new ArrayList<>();
+    result.add(new CallableDeclaration(functionalMethod, targetType));
+    TypeElement functionalInterface = (TypeElement) targetType.asElement();
+    // Use the functional interface's declared type, whose type arguments are its own type
+    // variables, so that a wildcard in the type of `tree` does not matter.
+    DeclaredType interfaceType = (DeclaredType) functionalInterface.asType();
+    ExecutableType functionalMethodType =
+        (ExecutableType) types.asMemberOf(interfaceType, functionalMethod);
+    Set<TypeElement> visited = new HashSet<>();
+    for (TypeElement supertype : ElementUtils.getAllSupertypes(functionalInterface, env)) {
+      visited.add(supertype);
+      if (TypesUtils.isObject(supertype.asType())) {
+        continue;
+      }
+      for (ExecutableElement method : ElementFilter.methodsIn(supertype.getEnclosedElements())) {
+        if (!method.equals(functionalMethod)
+            && isOverrideEquivalent(
+                method, interfaceType, functionalMethod, functionalMethodType)) {
+          result.add(new CallableDeclaration(method, targetType));
+        }
+      }
+    }
+
+    if (!targetBounds.isEmpty()) {
+      // The bounds' type arguments are the ones that javac grounded, so compare against the
+      // functional method as a member of the target type, whose type arguments are also grounded
+      // by javac.  The target type is one of `targetBounds`, because one of the bounds declares or
+      // inherits the functional method.
+      ExecutableType targetMethodType =
+          (ExecutableType) types.asMemberOf(targetType, functionalMethod);
+      for (DeclaredType bound : targetBounds) {
+        for (TypeElement supertype :
+            ElementUtils.getAllSupertypes((TypeElement) bound.asElement(), env)) {
+          if (!visited.add(supertype) || TypesUtils.isObject(supertype.asType())) {
+            continue;
+          }
+          for (ExecutableElement method :
+              ElementFilter.methodsIn(supertype.getEnclosedElements())) {
+            if (isOverrideEquivalent(method, bound, functionalMethod, targetMethodType)) {
+              result.add(new CallableDeclaration(method, bound));
+            }
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if {@code method}, as a member of {@code type}, is an instance method that is
+   * override-equivalent to {@code functionalMethod}, whose type is {@code functionalMethodType}
+   * (JLS 8.4.2).
+   *
+   * @param method a method of {@code type} or of one of its supertypes
+   * @param type a type
+   * @param functionalMethod a functional interface method
+   * @param functionalMethodType the type of {@code functionalMethod}, as a member of a subtype or a
+   *     supertype of {@code type}
+   * @return true if {@code method} is override-equivalent to {@code functionalMethod}
+   */
+  private boolean isOverrideEquivalent(
+      ExecutableElement method,
+      DeclaredType type,
+      ExecutableElement functionalMethod,
+      ExecutableType functionalMethodType) {
+    if (!method.getSimpleName().contentEquals(functionalMethod.getSimpleName())
+        || method.getModifiers().contains(Modifier.STATIC)
+        || method.getModifiers().contains(Modifier.PRIVATE)) {
+      return false;
+    }
+    ExecutableType methodType = (ExecutableType) types.asMemberOf(type, method);
+    return types.isSubsignature(functionalMethodType, methodType)
+        || types.isSubsignature(methodType, functionalMethodType);
+  }
+
+  /**
+   * If the target of the given lambda or method reference is an intersection type, returns the
+   * bounds of that type that are class or interface types. Otherwise, returns an empty list.
+   *
+   * <p>The target is an intersection type if the lambda or method reference is cast to one, or if
+   * it is an argument whose inferred target is one, as for a parameter of type {@code T} where
+   * {@code <T extends A & B>}.
+   *
+   * <p>The bounds are those of javac's type for the lambda or method reference, which are ground
+   * (JLS 9.9, 15.27.3): javac has replaced each wildcard-parameterized bound of the written type,
+   * such as {@code Open<? super Callback>}, by a parameterization without wildcards, such as {@code
+   * Open<Callback>}. These are the bounds that javac uses when it determines which methods the
+   * lambda or method reference implements. For robustness, this method also replaces any remaining
+   * wildcard-parameterized bound by its non-wildcard parameterization.
+   *
+   * @param tree a lambda or a method reference
+   * @return the ground bounds of the intersection type that is the target of {@code tree}, or an
+   *     empty list
+   */
+  List<DeclaredType> intersectionTargetBounds(Tree tree) {
+    if (!(TreeUtils.typeOf(tree) instanceof IntersectionType intersection)) {
+      return Collections.emptyList();
+    }
+    List<DeclaredType> result = new ArrayList<>();
+    for (TypeMirror bound : intersection.getBounds()) {
+      if (bound.getKind() == TypeKind.DECLARED) {
+        result.add(
+            TypesUtils.nonWildcardParameterization(
+                (DeclaredType) bound, atypeFactory.getProcessingEnv()));
+      }
+    }
+    return result;
   }
 
   /**
@@ -5155,6 +5630,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // If the functional interface return type is void, the overriding return type doesn't
       // matter.
       functionTypeReturnType = invocationReturnType;
+    }
+
+    if (functionalInterface.getKind() == TypeKind.INTERSECTION) {
+      // The target is an inferred intersection type, as for an argument whose parameter type is
+      // `T` where `<T extends A & B>`.  As for an intersection cast, use the bound that declares or
+      // inherits the functional method.
+      TypeMirror erasedFnOwner =
+          types.erasure(functionType.getElement().getEnclosingElement().asType());
+      for (AnnotatedTypeMirror bound :
+          ((AnnotatedIntersectionType) functionalInterface).getBounds()) {
+        if (types.isSubtype(types.erasure(bound.getUnderlyingType()), erasedFnOwner)) {
+          functionalInterface = bound;
+          break;
+        }
+      }
     }
 
     if (functionalInterface.getKind() == TypeKind.DECLARED) {

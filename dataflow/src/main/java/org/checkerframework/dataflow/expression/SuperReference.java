@@ -59,6 +59,16 @@ public class SuperReference extends JavaExpression {
     return this.syntacticEquals(other);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>{@code super} denotes the same object as {@code this}, so it is contained in either.
+   */
+  @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    return other instanceof SuperReference || other instanceof ThisReference;
+  }
+
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     return false;

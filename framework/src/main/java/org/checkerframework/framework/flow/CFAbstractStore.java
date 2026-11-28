@@ -327,7 +327,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return false;
     }
     if (sideEffectsOnlyExpressions != null) {
-      return sideEffectsOnlyExpressions.stream().anyMatch(seOnly -> mayChangeValue(expr, seOnly));
+      // The side-effected expressions use `this` rather than `super` (see
+      // `CFAbstractAnalysis.getSideEffectsOnlyExpressions`), but a stored expression such as
+      // `super.f` might use `super`.  Rewriting `super.m()` as `this.m()` is imprecise but sound:
+      // it can only make more stored expressions match.
+      JavaExpression exprWithThis = JavaExpression.superToThis(expr);
+      return sideEffectsOnlyExpressions.stream()
+          .anyMatch(seOnly -> mayChangeValue(exprWithThis, seOnly));
     }
     return true;
   }

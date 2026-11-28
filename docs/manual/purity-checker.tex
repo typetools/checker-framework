@@ -116,11 +116,29 @@ inherits from methods that it overrides
 (Section \ref{purity-override}).  If the functional interface method has no
 purity annotation --- for example, because it is declared in an unannotated
 library and no stub file annotates it --- then neither a lambda's body nor
-a method reference is checked against it.
+a method reference is checked against it.  If a functional interface
+inherits its functional method from several superinterfaces, as
+\<interface C extends A, B> inherits \<run> from both \<A> and \<B>, then
+a call through any of those methods can run a lambda or a method reference
+of type \<C>.  Therefore, the lambda's body must be at least as pure as
+each of those methods, and the referenced method must be annotated at least
+as pure as each of them.  Likewise, if a lambda or a method reference is
+cast to an intersection type, as in \<(A \& B) Util::m>, then a call through
+a method of any bound can run it.
 
-The errors shown in this section are reported only when purity annotations
-are checked:  by the Purity Checker, or by another checker when you pass
-\<-AcheckPurityAnnotations>.  With \<-Ainfer>, the body of a lambda is not
+The errors shown in this section, and in
+Section~\ref{purity-functional-interface-parameters}, are reported only when
+purity annotations are checked:  by the Purity Checker, or by another checker
+when you pass \<-AcheckPurityAnnotations> or \<-AsuggestPureMethods>.  For
+example, \<-AsuggestPureMethods> alone suffices to report a
+\<purity.methodref.functional.parameter> error.
+\iffalse
+By contrast, comparing the expressions of
+\refqualclass{dataflow/qual}{SideEffectsOnly} annotations, such as those of a
+method reference and of the functional interface method, requires
+\<-AcheckPurityAnnotations> itself; \<-AsuggestPureMethods> does not do it.
+\fi
+With \<-Ainfer>, the body of a lambda is not
 checked; instead, it is used to infer the purity of the functional interface
 method.  With \<-Ainfer>, the purity annotations of the method that a method
 reference refers to are also used to infer the purity of the functional
@@ -181,19 +199,28 @@ method of the parameter's type other than its functional method, such as
 A call can reach the method through any method that it overrides, and such a
 call checks its arguments only against the overridden method's promise.  So
 the method can assume only the purity that it and every method it overrides
-promise for that parameter.  An overridden method that makes no promise, or
-whose parameter at that position is not a functional interface (for example,
-its type is a type variable), guarantees nothing, and the assumption does not
-apply.
+promise for that parameter.  An overridden method that makes no promise
+guarantees nothing, and the assumption does not apply.  If the overridden
+method's parameter at that position is not a functional interface (for
+example, its type is a type variable whose upper bound is not a functional
+interface), then it guarantees only what the purity annotations on its
+parameter type's implementation of the functional method promise:  for
+example, nothing if its type is a type variable with no bound, and
+side-effect-freedom if its type is a class whose implementation of the
+functional method is \<@SideEffectFree>.
 
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  The requirement is the same for every
 functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
-type is a functional interface is checked:  the method can assume nothing about an
-argument to a parameter whose type is a type variable, nor about the elements
-of a varargs array.  How the argument is checked depends on its form.
+type is a functional interface, or a type variable whose upper bound is one,
+is checked.  For a parameter whose type is a type variable with no
+functional-interface upper bound, and for the elements of a varargs array, the
+method's purity annotation adds no guarantee about the argument; a call to such
+an argument has only the purity that its type provides, such as that of a bound
+whose implementation of the method is \<@SideEffectFree>.  How the argument is
+checked depends on its form.
 Parentheses around the argument are ignored, and so is a cast of a lambda, a
 method reference, a conditional expression, or a switch expression, because
 such a cast does not change the code that the argument denotes.
@@ -237,6 +264,71 @@ deterministic:
 
 \begin{Verbatim}
   Objects.requireNonNull(x, () -> String.format("bad %s", y));  // error: [purity.call]
+\end{Verbatim}
+
+A method reference does not override the functional method that it
+implements, but a call through that functional method can run the referenced
+method, and so can a call through any other method of the functional
+interface or of its supertypes that has the same signature, such as a method
+that the functional method overrides.  For example, if \<interface C extends
+A, B> inherits \<run> from both \<A> and \<B>, then a call through either
+\<A.run> or \<B.run> can run a method reference of type \<C>.  Each
+such call checks its arguments only against the method that it invokes.  So a
+method reference is an error (\<purity.methodref.functional.parameter>) if
+the referenced method assumes a purity of a functional-interface argument that
+one of those methods does not promise.  A purity that a command-line option
+such as \<-AassumeSideEffectFree> grants to every call is not required.  There
+is no error if the referenced method cannot be overridden (for example, it is
+static, private, or final), its body is available in source code, and the body
+evidently does not rely on the assumption:  each direct use of the parameter
+in the body stores it, overwrites it, returns it, compares it with \<==> or
+\<!=>, concatenates it to a string, or calls a method other than the
+functional method on it.  If the referenced method is available only as a
+class file, the checker cannot inspect its body, so it assumes that the body
+relies on the assumption.  If javac has not yet type-checked the body (as
+when the referenced method is in a top-level class that appears later in the
+same source file), the checker conservatively treats every identifier with
+the parameter's name, other than the destination of an assignment, as a use
+that relies on the assumption.
+
+If a method reference is cast to an intersection type, as in
+\<(A \& B) Util::call>, then a call through the methods of every bound and of
+their supertypes that have the same signature can run it, so the same rule
+applies to each of those methods.
+
+\begin{Verbatim}
+  class Util {
+    @SideEffectFree
+    static int call(Function<String, Integer> f, String s) {
+      return f.apply(s);  // permitted: apply is treated as side-effect-free
+    }
+
+    @SideEffectFree
+    static int ignore(Function<String, Integer> f, String s) {
+      return 0;
+    }
+  }
+
+  @FunctionalInterface
+  interface Caller {
+    int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface PureCaller {
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface StrongCaller extends Caller {
+    @Override
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  PureCaller c1 = Util::call;    // OK: PureCaller.run requires a side-effect-free f
+  Caller c2 = Util::call;        // error: c2.run(s -> count++, "hi") would have a side effect
+  StrongCaller c3 = Util::call;  // error: a call through Caller.run can run Util.call
+  Caller c4 = Util::ignore;      // OK: Util.ignore is static and never calls f.apply
 \end{Verbatim}
 
 The assumption affects purity checking, and the dataflow analysis of a lambda

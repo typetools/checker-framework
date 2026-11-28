@@ -25,6 +25,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -307,9 +309,19 @@ public abstract class CFAbstractAnalysis<
           // methodInvocationNode, checker)`, which obtains the invoked method from
           // `methodInvocationNode.getTree()`; that tree is null for a call that corresponds to no
           // AST tree, such as the `Iterator.next()` that an enhanced for loop is desugared to.
-          JavaExpression exprJe =
-              parseSideEffectsOnlyExpression(seOnlyExpr, declaringMethod)
-                  .atMethodInvocation(methodInvocationNode);
+          // Viewpoint adaptation replaces the callee's `this` but not its `super`, so first
+          // rewrite a field access such as `super.f` in terms of `this`.
+          JavaExpression atDeclaration =
+              JavaExpression.superToThisExceptCallReceivers(
+                  parseSideEffectsOnlyExpression(seOnlyExpr, declaringMethod));
+          JavaExpression exprJe;
+          if (atDeclaration.containsOfClass(SuperReference.class)) {
+            // The expression contains a call such as `super.m()`, which invokes the callee's
+            // superclass's `m` directly.  No expression at the call site denotes its result.
+            exprJe = new Unknown(atDeclaration.getType());
+          } else {
+            exprJe = atDeclaration.atMethodInvocation(methodInvocationNode);
+          }
 
           if (exprJe.containsUnknown()) {
             unrepresentable = new SideEffectsOnlyExpression(declaringMethod, seOnlyExpr, exprJe);
@@ -317,7 +329,9 @@ public abstract class CFAbstractAnalysis<
             // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields
             // `super`.
             // The caller refers to that same object as `this`, so rewrite it that way; otherwise
-            // the refinements of `this` and of its fields would not be discarded.
+            // the refinements of `this` and of its fields would not be discarded.  Every call on
+            // it dispatches virtually, just as a call on the callee's `this` does, so rewriting it
+            // as `this` is correct even for a method call.
             exprJe = JavaExpression.superToThis(exprJe);
             seOnlyExpressions.add(exprJe);
             representable = new SideEffectsOnlyExpression(declaringMethod, seOnlyExpr, exprJe);
