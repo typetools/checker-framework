@@ -28,12 +28,12 @@ import org.plumelib.util.ArrayMap;
 
   /**
    * A label for each type of exception that reaches this frame (as defined in the documentation of
-   * {@link TryFinallyFrame}). No two keys are the same type according to {@link Types#isSameType},
-   * even if {@link TypeMirror#equals} would distinguish them.
+   * {@link TryFinallyFrame}). No two keys are the same type according to {@link Types#isSameType}.
+   * {@link TypeMirror#equals} is not a reliable test, because two {@code TypeMirror} objects that
+   * represent the same type can be unequal; therefore, look up a type by comparing it to each key
+   * with {@link Types#isSameType}, not with {@link Map#get}.
    *
-   * <p>The keys are in a deterministic order: the order in which the CFG builder first creates a
-   * node that throws the type to this frame. Any deterministic order would do; it makes the CFG,
-   * such as the order of the copies of the finally block, the same on every run.
+   * <p>The keys are in a deterministic order, so the CFG is the same on every run.
    *
    * <p>The map contains few entries, usually only a handful, so it is an {@link ArrayMap}. The
    * types that reach a frame are {@code java.lang.RuntimeException} and {@code java.lang.Error},
@@ -49,7 +49,7 @@ import org.plumelib.util.ArrayMap;
   /**
    * Constructs a TryFinallyFrame.
    *
-   * @param types a {@link Types}, used to give each type of exception a single label
+   * @param types a type utility object
    */
   public TryFinallyFrame(Types types) {
     this.types = types;
@@ -67,7 +67,7 @@ import org.plumelib.util.ArrayMap;
   }
 
   /**
-   * Returns the label for the given type of exception, creating it if the type has none.
+   * Returns the label for the given type of exception, creating a new label if the type has none.
    *
    * @param thrown a type of exception that reaches this frame
    * @return the label for {@code thrown}
@@ -84,12 +84,9 @@ import org.plumelib.util.ArrayMap;
   }
 
   /**
-   * Returns a label for each type of exception that reaches this frame (as defined in the
-   * documentation of {@link TryFinallyFrame}).
+   * Returns a map from label for each type of exception that reaches this frame to its label.
    *
-   * @return a map from each type of exception that reaches this frame, such as {@code
-   *     java.io.IOException}, to its label, in a deterministic order (see {@link
-   *     #exceptionLabels}); empty if no exception reaches this frame
+   * @return a map from each type of exception that reaches this frame to its label
    */
   public Map<TypeMirror, Label> getExceptionLabels() {
     return Collections.unmodifiableMap(exceptionLabels);
