@@ -44,4 +44,24 @@ public class Exceptions {
       throw e;
     }
   }
+
+  // `throw null` throws a NullPointerException.
+  void throwNullInTryCatch() {
+    try {
+      // :: error: [throwing.nullable]
+      throw null;
+    } catch (NullPointerException e) {
+    }
+  }
+
+  void throwNullInTryFinallyInTryCatch() {
+    try {
+      try {
+        // :: error: [throwing.nullable]
+        throw null;
+      } finally {
+      }
+    } catch (IllegalStateException e) {
+    }
+  }
 }
