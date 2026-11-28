@@ -62,6 +62,10 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = CLASS_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/Nullable",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -73,6 +77,11 @@ public class Classes {
         boundIndex = 0),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = CLASS_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 0),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 0),
@@ -105,6 +114,10 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = CLASS_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -116,6 +129,11 @@ public class Classes {
         boundIndex = 0),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = CLASS_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 0),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 0),
@@ -148,6 +166,10 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = CLASS_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -159,6 +181,11 @@ public class Classes {
         boundIndex = 1),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = CLASS_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 1),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 1),
@@ -191,6 +218,10 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = CLASS_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/Nullable",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -206,6 +237,11 @@ public class Classes {
         paramIndex = 0,
         boundIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = CLASS_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = CLASS_TYPE_PARAMETER,
         paramIndex = 1),
@@ -215,6 +251,10 @@ public class Classes {
         paramIndex = 1),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = CLASS_TYPE_PARAMETER,
+        paramIndex = 1),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
         type = CLASS_TYPE_PARAMETER,
         paramIndex = 1),
     @TADescription(
@@ -229,6 +269,11 @@ public class Classes {
         boundIndex = 1),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = CLASS_TYPE_PARAMETER_BOUND,
+        paramIndex = 1,
+        boundIndex = 1),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 1,
         boundIndex = 1),

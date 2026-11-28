@@ -33,6 +33,10 @@ public class Methods {
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
         type = METHOD_FORMAL_PARAMETER,
         paramIndex = 0),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = METHOD_FORMAL_PARAMETER,
+        paramIndex = 0),
   })
   public String paramDefault1() {
     return "void pm1(Object o) {}";
@@ -47,6 +51,9 @@ public class Methods {
         type = METHOD_RETURN),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = METHOD_RETURN),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = METHOD_RETURN),
   })
   public String retDefault1() {
@@ -64,6 +71,10 @@ public class Methods {
         typeIndex = 0),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = THROWS,
+        typeIndex = 0),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = THROWS,
         typeIndex = 0),
   })
@@ -85,6 +96,10 @@ public class Methods {
         type = THROWS,
         typeIndex = 0), // from KeyFor
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
+        type = THROWS,
+        typeIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = THROWS,
         typeIndex = 1),
@@ -94,6 +109,10 @@ public class Methods {
         typeIndex = 1),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = THROWS,
+        typeIndex = 1),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = THROWS,
         typeIndex = 1),
   })
@@ -110,6 +129,9 @@ public class Methods {
         type = METHOD_RECEIVER),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = METHOD_RECEIVER),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = METHOD_RECEIVER),
   })
   public String recvDefault1() {
@@ -130,6 +152,10 @@ public class Methods {
         type = METHOD_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = METHOD_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/Nullable",
         type = METHOD_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -141,6 +167,11 @@ public class Methods {
         boundIndex = 0),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = METHOD_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 0),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = METHOD_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 0),
@@ -163,6 +194,10 @@ public class Methods {
         type = METHOD_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = METHOD_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = METHOD_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -174,6 +209,11 @@ public class Methods {
         boundIndex = 0),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = METHOD_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 0),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = METHOD_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 0),
@@ -196,6 +236,10 @@ public class Methods {
         type = METHOD_TYPE_PARAMETER,
         paramIndex = 0),
     @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/PathShapeBottom",
+        type = METHOD_TYPE_PARAMETER,
+        paramIndex = 0),
+    @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/NonNull",
         type = METHOD_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
@@ -207,6 +251,11 @@ public class Methods {
         boundIndex = 1),
     @TADescription(
         annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+        type = METHOD_TYPE_PARAMETER_BOUND,
+        paramIndex = 0,
+        boundIndex = 1),
+    @TADescription(
+        annotation = "org/checkerframework/checker/nullness/qual/UnknownPathShape",
         type = METHOD_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 1),
