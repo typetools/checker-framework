@@ -137,6 +137,7 @@ import org.checkerframework.dataflow.cfg.node.LongLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode.BoxingConversion;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
@@ -881,7 +882,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(valueOfCall);
       Node boxed =
           new MethodInvocationNode(
-              valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
+              valueOfCall,
+              valueOfAccess,
+              Collections.singletonList(node),
+              getCurrentPath(),
+              BoxingConversion.BOXING);
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
@@ -914,7 +919,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(primValueCall);
       Node unboxed =
           new MethodInvocationNode(
-              primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
+              primValueCall,
+              primValueAccess,
+              Collections.emptyList(),
+              getCurrentPath(),
+              BoxingConversion.UNBOXING);
       unboxed.setInSource(false);
 
       // Add Throwable to account for unchecked exceptions
@@ -1900,12 +1909,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setInSource(false);
       extendWithMethodInvocationNode(nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
-      // If the return type of next() is a boxed primitive type and the loop variable is a
-      // primitive, the assignment unboxes the result of next().  Save the iterable expression in
-      // the unboxing conversion, too.
-      setLoopOfBoxingConversion(assignNode.getExpression(), nextCallNode, tree);
+      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
       assert statement != null;
       scan(statement, p);
@@ -1998,11 +2002,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
-      AssignmentNode arrayAccessAssignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // If the loop variable's type and the array's component type differ by a boxing or
-      // unboxing conversion, treat that conversion as an iterator.
-      setLoopOfBoxingConversion(arrayAccessAssignNode.getExpression(), arrayAccessNode, tree);
+      translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
 
       assert statement != null;
       scan(statement, p);
@@ -2068,31 +2068,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             variableElement.getEnclosingElement(),
             iteratorCall);
     return iteratorVariable;
-  }
-
-  /**
-   * Records the given enhanced for loop, and its iterable expression, in the boxing or unboxing
-   * conversion of the loop's element within the expression that is assigned to the loop variable.
-   * Does nothing if that expression contains no such conversion. For example, if {@code array} is
-   * an {@code Integer[]}, then in {@code for (long x : array)}, the expression that is assigned to
-   * {@code x} widens the unboxing conversion of the array access.
-   *
-   * @param assignedExpression the expression assigned to the loop's variable
-   * @param element the loop's element, before any conversion: a call to {@code next()} or an array
-   *     access
-   * @param loop an enhanced for loop
-   */
-  @SuppressWarnings("interning:not.interned") // identity comparison of nodes
-  private static void setLoopOfBoxingConversion(
-      Node assignedExpression, Node element, EnhancedForLoopTree loop) {
-    Node unwidened =
-        assignedExpression instanceof WideningConversionNode widening
-            ? widening.getOperand()
-            : assignedExpression;
-    if (unwidened != element && unwidened instanceof MethodInvocationNode conversion) {
-      conversion.setIterableExpression(loop.getExpression());
-      conversion.setEnhancedForLoop(loop);
-    }
   }
 
   /**
@@ -2510,7 +2485,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = scan(resultExpression, null);
+      // Convert the result to the type of the switch expression, as by boxing `1` in
+      // `Object o = switch (x) { default -> 1; };`.
+      Node resultExprNode =
+          assignConvert(scan(resultExpression, null), switchExprVarUseNode.getType());
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
       handleArtificialTree(assign);
