@@ -1,5 +1,6 @@
 package org.checkerframework.checker.index.inequality;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -18,6 +19,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
 
 /**
@@ -48,8 +50,18 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       TransferInput<CFValue, CFStore> in) {
     // left > right so right < left
     // Refine right to @LessThan("left")
+    if (isFloatingPointComparison(left, right)) {
+      return;
+    }
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
+    // If evaluating `right` might change the value of `left`, as in `i > (i = 0)`, then the
+    // comparison says nothing about the current value of `left`.
+    // If `left` is a conversion that changes its value, as in `bound > f` where the `int` `bound`
+    // is rounded to a `float`, then the comparison says nothing about the value of `leftJe`.
+    if (leftJe != null
+        && !leftJe.isAssignableByOtherCode()
+        && !mayBeChangedByLaterOperand(left)
+        && !isValueChangingConversion(left)) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -60,11 +72,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // right is already bottom, nothing to refine.
         return;
       }
+      lessThanExpressions = lessThanExpressionsWhenComparisonCompletes(lessThanExpressions, right);
       String leftString = leftJe.toString();
       if (!lessThanExpressions.contains(leftString)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
-        JavaExpression rightJe = JavaExpression.fromNode(right);
-        store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+        AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
+        insertValueForComparedNode(store, right, refinedRightAnno);
       }
     }
   }
@@ -83,8 +96,18 @@ public class LessThanTransfer extends IndexAbstractTransfer {
 
     // left > right so right is less than left
     // Refine right to @LessThan("left")
+    if (isFloatingPointComparison(left, right)) {
+      return;
+    }
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
+    // If evaluating `right` might change the value of `left`, as in `i >= (i = 0)`, then the
+    // comparison says nothing about the current value of `left`.
+    // If `left` is a conversion that changes its value, as in `bound >= f` where the `int` `bound`
+    // is rounded to a `float`, then the comparison says nothing about the value of `leftJe`.
+    if (leftJe != null
+        && !leftJe.isAssignableByOtherCode()
+        && !mayBeChangedByLaterOperand(left)
+        && !isValueChangingConversion(left)) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -95,11 +118,12 @@ public class LessThanTransfer extends IndexAbstractTransfer {
         // right is already bottom, nothing to refine.
         return;
       }
+      lessThanExpressions = lessThanExpressionsWhenComparisonCompletes(lessThanExpressions, right);
       String leftIncremented = incrementedExpression(leftJe);
       if (!lessThanExpressions.contains(leftIncremented)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
-        JavaExpression rightJe = JavaExpression.fromNode(right);
-        store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+        AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
+        insertValueForComparedNode(store, right, refinedRightAnno);
       }
     }
   }
@@ -132,6 +156,32 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   }
 
   /**
+   * Returns the given expressions that {@code node} is less than, except those whose value might
+   * change after the value of {@code node} is computed and before the comparison that contains
+   * {@code node} completes. For example, if {@code x} is {@code @LessThan("bound")}, then the
+   * result for {@code (bound = x)} omits {@code "bound"}, because after the assignment {@code x}
+   * equals {@code bound}.
+   *
+   * @param expressions the expressions that {@code node} is less than
+   * @param node a node in an operand of a comparison
+   * @return the expressions in {@code expressions} that {@code node} is still less than when the
+   *     comparison completes
+   */
+  private List<String> lessThanExpressionsWhenComparisonCompletes(
+      List<String> expressions, Node node) {
+    LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
+    List<String> result = new ArrayList<>(expressions.size());
+    for (String expression : expressions) {
+      AnnotationMirror anno =
+          factory.createLessThanQualifier(Collections.singletonList(expression));
+      if (!containsExpressionChangedBeforeComparisonCompletes(anno, node)) {
+        result.add(expression);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Returns the expressions that {@code node} is less than.
    *
    * @param node a CFG node
@@ -147,6 +197,22 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     } else {
       return Collections.emptyList();
     }
+  }
+
+  /**
+   * Returns true if the comparison of the given operands is performed in floating point. Such a
+   * comparison does not imply an integral bound. Converting an integral value to {@code float} or
+   * {@code double} might round it, as in {@code limit >= (f = i)} where {@code limit} is 16777216,
+   * {@code i} is 16777217, and {@code f} is a {@code float}. Furthermore, a comparison with NaN is
+   * false, so the negation of a comparison does not imply the opposite comparison.
+   *
+   * @param left the left operand of a comparison
+   * @param right the right operand of the comparison
+   * @return true if the comparison of {@code left} and {@code right} is performed in floating point
+   */
+  private static boolean isFloatingPointComparison(Node left, Node right) {
+    return TypesUtils.isFloatingPoint(left.getType())
+        || TypesUtils.isFloatingPoint(right.getType());
   }
 
   /**

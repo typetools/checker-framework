@@ -86,6 +86,10 @@ public class SameLenTransfer extends CFTransfer {
 
     Node exprNode = node.getExpression();
     Node recNode = node.getTarget();
+    // If true, then after the assignment the target denotes a different location than the one that
+    // was assigned, as in `n.values = id(n = other, a)`.  The base transfer function has removed
+    // the target from the store, and the combined @SameLen annotation must not mention it.
+    boolean rhsMayRelocateTarget = rhsMayRelocateTarget(node);
 
     // Handle b = new T[a.length]
     if (exprNode instanceof ArrayCreationNode acNode) {
@@ -111,7 +115,12 @@ public class SameLenTransfer extends CFTransfer {
 
           AnnotationMirror combinedSameLen =
               atypeFactory.createCombinedSameLen(
-                  Arrays.asList(targetRec, otherRec), Arrays.asList(UNKNOWN, lengthNodeAnnotation));
+                  Arrays.asList(targetRec, otherRec),
+                  Arrays.asList(
+                      UNKNOWN, lengthNodeAnnotation == null ? UNKNOWN : lengthNodeAnnotation));
+          if (rhsMayRelocateTarget) {
+            combinedSameLen = removeFromSameLen(combinedSameLen, targetRec);
+          }
 
           propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
           return result;
@@ -137,11 +146,34 @@ public class SameLenTransfer extends CFTransfer {
       AnnotationMirror combinedSameLen =
           atypeFactory.createCombinedSameLen(
               Arrays.asList(targetRec, exprRec), Arrays.asList(UNKNOWN, rightAnnoOrUnknown));
+      if (rhsMayRelocateTarget) {
+        combinedSameLen = removeFromSameLen(combinedSameLen, targetRec);
+      }
 
       propagateCombinedSameLen(combinedSameLen, node, result.getRegularStore());
     }
 
     return result;
+  }
+
+  /**
+   * Returns a copy of the given {@code @SameLen} annotation that does not contain the given
+   * expression.
+   *
+   * @param sameLenAnno a {@code @SameLen} annotation
+   * @param expr an expression to remove from {@code sameLenAnno}
+   * @return a copy of {@code sameLenAnno} that does not contain {@code expr}
+   */
+  private AnnotationMirror removeFromSameLen(AnnotationMirror sameLenAnno, JavaExpression expr) {
+    List<String> values =
+        new ArrayList<>(
+            AnnotationUtils.getElementValueArray(
+                sameLenAnno, atypeFactory.sameLenValueElement, String.class));
+    if (!values.remove(expr.toString())) {
+      return sameLenAnno;
+    }
+    // Removing an element preserves the alphabetical order that createSameLen requires.
+    return atypeFactory.createSameLen(values);
   }
 
   /**
@@ -192,18 +224,55 @@ public class SameLenTransfer extends CFTransfer {
   private void refineEq(Node left, Node right, CFStore store) {
     List<JavaExpression> exprs = new ArrayList<>(2);
     List<AnnotationMirror> annos = new ArrayList<>(2);
-    for (Node internal : splitAssignments(left)) {
+    for (Node internal : nodesWithValueOf(left)) {
       exprs.add(JavaExpression.fromNode(internal));
-      annos.add(getAnno(internal));
+      annos.add(annoWhenComparisonCompletes(internal));
     }
-    for (Node internal : splitAssignments(right)) {
+    for (Node internal : nodesWithValueOf(right)) {
       exprs.add(JavaExpression.fromNode(internal));
-      annos.add(getAnno(internal));
+      annos.add(annoWhenComparisonCompletes(internal));
     }
 
     AnnotationMirror combinedSameLen = atypeFactory.createCombinedSameLen(exprs, annos);
 
     propagateCombinedSameLen(combinedSameLen, left, store);
+  }
+
+  /**
+   * Returns {@code n}'s annotation from the SameLen hierarchy (see {@link #getAnno}), without the
+   * expressions whose values might change after {@code n} is evaluated and before the comparison
+   * that contains {@code n} completes (see {@link
+   * #containsExpressionChangedBeforeComparisonCompletes}).
+   *
+   * <p>The annotation of {@code n} relates {@code n} to the values that the expressions in the
+   * annotation had when {@code n} was evaluated. For example, in {@code b.length == (a =
+   * c).length}, where {@code b} has type {@code @SameLen("a")}, the result for {@code b} does not
+   * contain {@code a}, because after the comparison {@code a} refers to a different sequence. The
+   * writes that are considered include those of an assignment whose right-hand side is {@code n},
+   * as in {@code (a = b).length == c.length} where {@code b} has type {@code @SameLen("a")}.
+   *
+   * @param n a node in an operand of a comparison
+   * @return {@code n}'s annotation from the SameLen hierarchy, without the expressions that might
+   *     change before the comparison completes
+   */
+  private AnnotationMirror annoWhenComparisonCompletes(Node n) {
+    AnnotationMirror anno = getAnno(n);
+    if (anno == null
+        || !atypeFactory.areSameByClass(anno, SameLen.class)
+        || !containsExpressionChangedBeforeComparisonCompletes(anno, n)) {
+      return anno;
+    }
+    List<String> unchanged = new ArrayList<>();
+    List<String> values =
+        AnnotationUtils.getElementValueArray(anno, atypeFactory.sameLenValueElement, String.class);
+    for (String value : values) {
+      if (!containsExpressionChangedBeforeComparisonCompletes(
+          atypeFactory.createSameLen(Collections.singletonList(value)), n)) {
+        unchanged.add(value);
+      }
+    }
+    // Removing elements preserves the alphabetical order that createSameLen requires.
+    return unchanged.isEmpty() ? UNKNOWN : atypeFactory.createSameLen(unchanged);
   }
 
   /**
