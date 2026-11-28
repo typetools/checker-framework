@@ -140,18 +140,19 @@ public final class ContainsInferenceVariable {
     @Override
     public Boolean visitTypeVariable(TypeVariable t, Void aVoid) {
       if (visitedTypes.contains(t)) {
-        // t has visited before. If it contained an inference variable,
-        // then true would have been returned, so it must not contain an inference variable.
+        // t has been visited before.  If it contains an inference variable, then that earlier
+        // visit returned true and added the variable to foundVariables.
         return false;
       }
       visitedTypes.add(t);
       if (isTypeVariableOfInterest(t)) {
         return true;
       }
-      if (visit(t.getLowerBound())) {
-        return true;
-      }
-      return visit(t.getUpperBound());
+      // Do not short-circuit, so that every type variable of interest is added to
+      // foundVariables.
+      boolean foundInLowerBound = visit(t.getLowerBound());
+      boolean foundInUpperBound = visit(t.getUpperBound());
+      return foundInLowerBound || foundInUpperBound;
     }
 
     @Override
@@ -161,10 +162,11 @@ public final class ContainsInferenceVariable {
       }
       visitedTypes.add(t);
 
-      if (visit(t.getSuperBound())) {
-        return true;
-      }
-      return visit(t.getExtendsBound());
+      // Do not short-circuit, so that every type variable of interest is added to
+      // foundVariables.
+      boolean foundInSuperBound = visit(t.getSuperBound());
+      boolean foundInExtendsBound = visit(t.getExtendsBound());
+      return foundInSuperBound || foundInExtendsBound;
     }
 
     @Override
@@ -184,22 +186,28 @@ public final class ContainsInferenceVariable {
 
     @Override
     public Boolean visitUnion(UnionType t, Void aVoid) {
+      // Do not short-circuit, so that every type variable of interest is added to
+      // foundVariables.
+      boolean found = false;
       for (TypeMirror altern : t.getAlternatives()) {
         if (visit(altern)) {
-          return true;
+          found = true;
         }
       }
-      return false;
+      return found;
     }
 
     @Override
     public Boolean visitIntersection(IntersectionType t, Void aVoid) {
+      // Do not short-circuit, so that every type variable of interest is added to
+      // foundVariables.
+      boolean found = false;
       for (TypeMirror bound : t.getBounds()) {
         if (visit(bound)) {
-          return true;
+          found = true;
         }
       }
-      return false;
+      return found;
     }
   }
 }

@@ -24,6 +24,9 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+New method `TypeVariableSubstitutor.substituteCopyingSomeTypeArguments()`
+copies the type arguments of only some type variables.
+
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
 opposite order.  It returns true for any compile-time constant of type `byte`,
