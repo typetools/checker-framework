@@ -1351,7 +1351,7 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
-    boolean refineSelectorExpr = canRefineSelectorExpression(n);
+    boolean canRefineSelectorExpression = canRefineSelectorExpression(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -1359,8 +1359,7 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      // A null value means that nothing is known, so there is nothing to refine with.
-      if (refineSelectorExpr && caseValue != null && switchValue != null) {
+      if (canRefineSelectorExpression) {
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
