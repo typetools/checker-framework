@@ -7,6 +7,17 @@
 
 ### User-visible changes
 
+The Interning Checker no longer treats a boxed primitive as `@Interned`, except
+for a boxed `boolean` or `byte`.  For example, it reports
+`@Interned Integer x = anInt;`.
+
+The Resource Leak Checker no longer ignores an exception that propagates out
+of a `finally` block, so it reports leaks that it formerly missed.  It also
+reports a false positive for a `finally` block that closes a resource only if
+a boolean variable records that the `try` block did not complete, as in
+`finally { if (!success) { c.close(); } }`, because it does not track the
+value of the boolean variable.
+
 ### Changes for type system implementers
 
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
@@ -24,6 +35,20 @@ element's enclosing elements.
 New method `GenericAnnotatedTypeFactory.getInput()` returns the transfer input
 of a block.
 
+Dataflow analysis gives the result of a boxing or unboxing conversion the
+qualifiers of the converted value, as adapted by the new methods
+`AnnotatedTypeFactory.getBoxedAnnotations()` and
+`AnnotatedTypeFactory.getUnboxedAnnotations()`.  A type system that adapts
+qualifiers at boxing or unboxing should override those methods rather than
+`getBoxedType()` and `getUnboxedType()`.
+
+New method `CaseNode.selectorExprMayHaveChanged()` returns true if a guard of an
+earlier case, or a record component accessor invoked by matching a record
+pattern, might have changed the value of the switch selector expression.
+If so, `CFAbstractTransfer.visitCase()` does not refine a selector expression
+that other code can assign, such as a non-final field.  New method
+`CFAbstractTransfer.canRefineSelectorExpression()` implements this test.
+
 Replaced `CFGTranslationPhaseOne.conversionRequiresNarrowing(varType, node)`
 by `isNarrowableConstantConversion(node, varType)`, whose parameters are in the
 opposite order.  It returns true for any compile-time constant of type `byte`,
@@ -33,6 +58,10 @@ only for a literal.  New method
 constant to `byte`, `short`, `char`, `Byte`, `Short`, or `Character`, as
 assignment conversion does.  New method `TreeUtils.isCompileTimeConstant()`
 returns true if a tree is a constant expression.
+
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
 `BaseTypeVisitor.OverrideChecker` is now a top-level class,
 `org.checkerframework.common.basetype.OverrideChecker`.  Its constructor takes a

@@ -58,6 +58,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
@@ -83,6 +84,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierUpperBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -913,8 +915,8 @@ public abstract class CFAbstractTransfer<
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
-   * @param firstValue the abstract value that might be more precise
-   * @param secondValue the abstract value that might be less precise
+   * @param firstValue the abstract value that might be more precise, or null if nothing is known
+   * @param secondValue the abstract value that might be less precise, or null if nothing is known
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
@@ -924,8 +926,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
@@ -958,9 +960,10 @@ public abstract class CFAbstractTransfer<
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
    * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
    * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
-   * lhs and rhs do).
+   * lhs and rhs do). A null check is replaced by its operand, to which splitAssignments is applied
+   * recursively.
    *
-   * @param node possibly an assignment node
+   * @param node possibly an assignment node or a null check
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
    *     contains just the node itself if it is not an assignment
    */
@@ -971,6 +974,8 @@ public abstract class CFAbstractTransfer<
       result.add(a.getTarget());
       result.addAll(splitAssignments(a.getExpression()));
       return result;
+    } else if (node instanceof NullChkNode nullChk) {
+      return splitAssignments(nullChk.getOperand());
     } else {
       return Collections.singletonList(node);
     }
@@ -1115,6 +1120,21 @@ public abstract class CFAbstractTransfer<
     // look up the call's value in the store (if possible)
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
+    if (n.isUnboxing()) {
+      // For an unboxing call such as `x.intValue()`, `factoryValue` (the type that the type
+      // factory computes for the call) comes from the declared return type of `intValue()`, which
+      // lacks the qualifiers of `x`.  So also use the qualifiers of `x`, the value being unboxed.
+      // Where the two are incomparable, the qualifier of `x` wins, because the declared return
+      // type, such as `@FenumUnqualified int`, says nothing about `x`.
+      V operandValue = in.getValueOfSubNode(n.getTarget().getReceiver());
+      resValue = moreSpecificValue(getUnboxedValue(n.getType(), operandValue), resValue);
+    } else if (n.isBoxing()) {
+      // For a boxing call such as `Integer.valueOf(x)`, `factoryValue` comes from the declared
+      // return type of `valueOf()`, which lacks the qualifiers of `x`.  So also use the qualifiers
+      // of `x`, the value being boxed.  Where the two are incomparable, the qualifier of `x` wins.
+      V operandValue = in.getValueOfSubNode(n.getArgument(0));
+      resValue = moreSpecificValue(getBoxedValue(n.getType(), operandValue), resValue);
+    }
 
     store.updateForMethodCall(n, resValue);
 
@@ -1351,6 +1371,7 @@ public abstract class CFAbstractTransfer<
     // precise.
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
+    boolean canRefineSelectorExpression = canRefineSelectorExpression(n);
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
@@ -1358,9 +1379,11 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (canRefineSelectorExpression) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1378,6 +1401,24 @@ public abstract class CFAbstractTransfer<
       }
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if the given case may refine the switch selector expression, not just the
+   * synthetic variable that holds the value of the selector expression.
+   *
+   * <p>A case tests the value of the selector expression when the switch began. A guard of an
+   * earlier case might have changed the current value of the selector expression since then, for
+   * example by setting a field to null. A guard cannot assign a local variable, so the current
+   * value of a selector expression that is not {@link JavaExpression#isAssignableByOtherCode()
+   * assignable by other code} is the value that the case tests.
+   *
+   * @param n a case node
+   * @return true if the case may refine the selector expression
+   */
+  protected boolean canRefineSelectorExpression(CaseNode n) {
+    return !n.selectorExprMayHaveChanged()
+        || !JavaExpression.fromNode(n.getSwitchOperand().getExpression()).isAssignableByOtherCode();
   }
 
   // /**
@@ -1401,15 +1442,15 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned.
+   * incomparable, then {@code value1} is returned. If either is null, the other is returned.
    *
-   * @param value1 an abstract value
-   * @param value2 another abstract value
+   * @param value1 an abstract value, or null
+   * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
-   *     value1}
+   *     value1}; null if both parameters are null
    */
   @Pure
-  public V moreSpecificValue(V value1, V value2) {
+  public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
     if (value1 == null) {
       return value2;
     }
@@ -1531,6 +1572,56 @@ public abstract class CFAbstractTransfer<
     return analysis.createAbstractValue(widenedAnnos, type);
   }
 
+  /**
+   * Returns an abstract value with the given primitive {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for unboxing by {@link AnnotatedTypeFactory#getUnboxedAnnotations} and
+   * limited to the qualifier upper bound of {@code type} (see {@link
+   * QualifierUpperBounds#limitToBound}). For example, the Lock Checker unboxes a
+   * {@code @GuardedBy("lock")} value to a {@code @GuardedBy({}) int}, because an {@code int} is a
+   * copy that no lock guards. This is only called at an unboxing conversion.
+   *
+   * @param type the primitive type to unbox to
+   * @param annotatedValue a value to unbox
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for unboxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy, as a value whose type is a type variable can
+   */
+  @SideEffectFree
+  protected @Nullable V getUnboxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet unboxedAnnos =
+        analysis.atypeFactory.getUnboxedAnnotations(
+            annotatedValue.getAnnotations(), type.getKind());
+    return analysis.createAbstractValue(
+        analysis.atypeFactory.getQualifierUpperBounds().limitToBound(type, unboxedAnnos), type);
+  }
+
+  /**
+   * Returns an abstract value with the given boxed {@code type} and the annotations from {@code
+   * annotatedValue}, adapted for boxing by {@link AnnotatedTypeFactory#getBoxedAnnotations} and
+   * limited to the qualifier upper bound of {@code type} (see {@link
+   * QualifierUpperBounds#limitToBound}). This is only called at a boxing conversion.
+   *
+   * @param type the boxed primitive type to box to, such as {@code Integer}
+   * @param annotatedValue a value to box
+   * @return an abstract value with the given {@code type} and the annotations from {@code
+   *     annotatedValue}, adapted for boxing; returns null if {@code annotatedValue} is null or
+   *     lacks an annotation in some hierarchy
+   */
+  @SideEffectFree
+  protected @Nullable V getBoxedValue(TypeMirror type, @Nullable V annotatedValue) {
+    if (annotatedValue == null) {
+      return null;
+    }
+    AnnotationMirrorSet boxedAnnos =
+        analysis.atypeFactory.getBoxedAnnotations(
+            annotatedValue.getAnnotations(), analysis.getTypes().unboxedType(type).getKind());
+    return analysis.createAbstractValue(
+        analysis.atypeFactory.getQualifierUpperBounds().limitToBound(type, boxedAnnos), type);
+  }
+
   @Override
   public TransferResult<V, S> visitNarrowingConversion(
       NarrowingConversionNode n, TransferInput<V, S> p) {
@@ -1547,6 +1638,12 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  @Override
+  public TransferResult<V, S> visitNullChk(NullChkNode n, TransferInput<V, S> p) {
+    // A null check evaluates to its operand.
+    return createTransferResult(p.getValueOfSubNode(n.getOperand()), p);
   }
 
   @Override

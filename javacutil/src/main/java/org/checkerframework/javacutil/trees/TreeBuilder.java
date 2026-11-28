@@ -12,6 +12,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
@@ -398,6 +399,19 @@ public class TreeBuilder {
   }
 
   /**
+   * Builds an AST Tree for a null check of an expression. The null check throws
+   * NullPointerException if the expression is null, and otherwise evaluates to the expression.
+   *
+   * @param expr the expression to check
+   * @return a Tree representing "&lt;*nullchk*&gt;expr"
+   */
+  public UnaryTree buildNullCheck(ExpressionTree expr) {
+    JCTree.JCUnary nullCheck = maker.Unary(JCTree.Tag.NULLCHK, (JCTree.JCExpression) expr);
+    nullCheck.setType((Type) TreeUtils.typeOf(expr));
+    return nullCheck;
+  }
+
+  /**
    * Builds an AST Tree to dereference an array.
    *
    * @param array the array to dereference
@@ -471,11 +485,12 @@ public class TreeBuilder {
    * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float, where
    * * is the corresponding primitive type (i.e. shortValue or floatValue).
    *
-   * @param expr an expression whose type is a boxed type
+   * @param expr an expression whose type is a boxed type, or a type variable or wildcard whose
+   *     upper bound is a boxed type
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
-    TypeMirror boxedType = TreeUtils.typeOf(expr);
+    TypeMirror boxedType = TypesUtils.upperBound(TreeUtils.typeOf(expr));
     TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
 
     assert TypesUtils.isBoxedPrimitive(boxedType);
