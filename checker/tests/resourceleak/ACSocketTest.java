@@ -360,10 +360,13 @@ public class ACSocketTest {
     ServerSocket socket;
 
     if (b) {
+      // :: error: required.method.not.called
       socket = new ServerSocket();
     } else if (c) {
+      // :: error: required.method.not.called
       socket = new ServerSocket();
     } else {
+      // :: error: required.method.not.called
       socket = new ServerSocket();
     }
 
