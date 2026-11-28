@@ -297,11 +297,17 @@ public class VariableBounds {
       // before storing it.  Storing the boxed type keeps the bound consistent with the
       // instantiation, so that recomputing the instantiation from the bounds, as restore() does,
       // yields a reference type.
-      ProperType boxedType = ((ProperType) otherType).boxType();
-      boundType = boxedType;
-      setInstantiationFromEqualBound(boxedType);
+      boundType = ((ProperType) otherType).boxType();
     }
     if (getBoundsOfKind(kind).add(boundType)) {
+      if (kind == BoundKind.EQUAL && boundType.isProper()) {
+        // Set the instantiation only from a bound that the set accepts.  The set rejects a bound
+        // that equals a stored one, even if the two differ in the annotations of their enclosing
+        // types (see ProperType#equals).  Setting the instantiation from a rejected bound would
+        // make it differ from what setInstantiationFromEqualBounds computes from the stored bounds,
+        // as restore() does.
+        setInstantiationFromEqualBound((ProperType) boundType);
+      }
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
       if (!boundType.ignoreAnnotations) {
         Set<AbstractQualifier> aQuals = boundType.getQualifiers();
