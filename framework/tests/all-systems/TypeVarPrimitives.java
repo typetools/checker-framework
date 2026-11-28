@@ -83,6 +83,29 @@ public class TypeVarPrimitives {
     return x;
   }
 
+  @SuppressWarnings({
+    "lowerbound:unary.increment", // https://github.com/typetools/checker-framework/issues/8375
+    "upperbound:unary.increment" // https://github.com/typetools/checker-framework/issues/8375
+  })
+  <T extends Short> T preIncrement(T t) {
+    ++t;
+    return t;
+  }
+
+  <T extends Short> T postDecrement(T t) {
+    t--;
+    return t;
+  }
+
+  <T extends Integer> int postIncrementValue(T t) {
+    return t++;
+  }
+
+  <T extends Character & Comparable<Character>> T incrementIntersection(T t) {
+    t++;
+    return t;
+  }
+
   <T extends Integer> int shift(T t) {
     return t >> 1;
   }

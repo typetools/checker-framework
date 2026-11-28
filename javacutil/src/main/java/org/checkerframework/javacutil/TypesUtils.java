@@ -1824,8 +1824,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the type is byte, short, char, Byte, Short, or Character. All other narrowings
-   * require a cast. See JLS 5.1.3.
+   * Returns true if the type is byte, short, or char, or a type that unboxing conversion converts
+   * to one of them, such as Short or {@code T extends Short} (see {@link
+   * #boxedPrimitiveForUnboxing}). All other narrowings require a cast. See JLS 5.1.3.
    *
    * @param type a type
    * @param types the type utilities
