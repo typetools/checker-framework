@@ -1019,14 +1019,16 @@ public class InferenceFactory {
 
     QualifierHierarchy qh = typeFactory.getQualifierHierarchy();
     Iterator<ProperType> iter = properTypes.iterator();
-    ProperType first = iter.next();
+    // Each input is brought up to date before it is used, so that a result that keeps an input's
+    // origin (see #withOriginOfEither) is also up to date; see #upToDate.
+    ProperType first = upToDate(iter.next());
     TypeMirror lubTM = first.getJavaType();
     // The least upper bound so far, as a type, so that its ignored positions can be found; see
     // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ProperType lubSoFar = first;
     boolean ignoreAnnotations = first.ignoreAnnotations;
     while (iter.hasNext()) {
-      ProperType properType = iter.next();
+      ProperType properType = upToDate(iter.next());
       lubTM = lub(context.env, lubTM, properType.getJavaType());
       ReplacedTypes combined =
           IgnoredAnnotations.replaceIgnoredForLubOrGlb(
@@ -1095,6 +1097,36 @@ public class InferenceFactory {
   }
 
   /**
+   * Returns {@code type} brought up to date with the current instantiations: if it has an origin
+   * (see {@link ProperType#getOrigin}), the result of {@link AbstractType#applyInstantiations} on
+   * it, and otherwise {@code type} itself.
+   *
+   * <p>{@link IgnoredAnnotations#replaceIgnoredForLubOrGlb} computes the annotated types that a
+   * least upper bound or greatest lower bound combines from the up-to-date inputs. A result that
+   * keeps the origin of an input that is out of date would be made from those annotated types but
+   * would record that it is out of date, so reading a part of it would recompute that part from its
+   * origin and lose the combined annotations.
+   *
+   * @param type an input to a least upper bound or greatest lower bound computation
+   * @return {@code type} brought up to date
+   */
+  private static AbstractType upToDate(AbstractType type) {
+    return type.getOrigin() != null ? type.applyInstantiations() : type;
+  }
+
+  /**
+   * Returns {@code type} brought up to date with the current instantiations; see {@link
+   * #upToDate(AbstractType)}.
+   *
+   * @param type an input to a least upper bound computation
+   * @return {@code type} brought up to date
+   */
+  private static ProperType upToDate(ProperType type) {
+    // ProperType#applyInstantiations always returns a proper type.
+    return (ProperType) upToDate((AbstractType) type);
+  }
+
+  /**
    * Returns a copy of {@code a} or of {@code b} whose annotated type is {@code atm} and that keeps
    * the origin of the input it copies; see {@link #withOriginOf}. Returns null if neither can be
    * copied.
@@ -1135,6 +1167,9 @@ public class InferenceFactory {
           && differsOnlyInPrimaryAnnotations((ProperType) b, atm)) {
         return fromB;
       }
+      // If neither input has the annotations of the result, then the origin of `a` does not
+      // reproduce them.  The result still has them, and its parts do too as long as no
+      // instantiation changes (see ProperType#withAnnotationsOf).
       return fromA;
     }
     return fromA != null ? fromA : fromB;
@@ -1153,7 +1188,8 @@ public class InferenceFactory {
     AnnotatedTypeMirror samePrimaryAnnotations = properType.getAnnotatedType().deepCopy();
     IgnoredAnnotations.copyPrimaryAnnotations(
         atm, samePrimaryAnnotations, typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(samePrimaryAnnotations, atm);
+    // Compare the enclosing types too, which the type hierarchy does not.
+    return context.areMutualSubtypesIncludingEnclosingTypes(samePrimaryAnnotations, atm);
   }
 
   /**
@@ -1237,7 +1273,10 @@ public class InferenceFactory {
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy());
-    return context.areMutualSubtypes(compared.type1(), compared.type2());
+    // Compare the enclosing types too, which the type hierarchy does not.  Otherwise, an origin
+    // could be kept that, when instantiations are applied again, would replace the annotations of
+    // an enclosing type of the result by those of `properType`.
+    return context.areMutualSubtypesIncludingEnclosingTypes(compared.type1(), compared.type2());
   }
 
   /**
@@ -1268,6 +1307,9 @@ public class InferenceFactory {
    * @return the greatest lower bound of {@code a} and {@code b}
    */
   public AbstractType glb(AbstractType a, AbstractType b) {
+    // As in `lub`, use the up-to-date inputs throughout; see #upToDate.
+    a = upToDate(a);
+    b = upToDate(b);
     Type aJavaType = (Type) a.getJavaType();
     Type bJavaType = (Type) b.getJavaType();
     TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);
@@ -1275,9 +1317,18 @@ public class InferenceFactory {
     // The annotations of an ignored position put no constraint on the result, so they are replaced
     // by those at the corresponding position of the other type; see
     // IgnoredAnnotations#replaceIgnoredForLubOrGlb.  Nothing is replaced if `a` and `b` are of
-    // different classes, such as `ArrayList<T>` and `List<T>`.  That is fine:
-    // AnnotatedTypes#annotatedGLB takes all but the primary annotations from just one of them, so
-    // the annotations of the other cannot conflict with an ignored position.
+    // different classes, such as `ArrayList<T>` and `List<T>`.  AnnotatedTypes#annotatedGLB takes
+    // all but the primary annotations from just one of them, so the annotations of the other cannot
+    // conflict with an ignored position, and the result keeps that position ignored (see
+    // IgnoredAnnotations#ignoredPositionsStayIgnored).
+    //
+    // TODO: The annotations of the other type are lost, though.  For example, the greatest lower
+    // bound of `Child<A>` and `Parent<@Nullable String>`, where `Child<T> extends Parent<T>` and
+    // the
+    // instantiation of A ignores annotations, should have `@Nullable String` as its type argument,
+    // but it has the instantiation's.  Fixing this requires matching the positions of the two types
+    // in their common supertype (`Parent`) and mapping each back to the corresponding position of
+    // `Child`, through the type parameters of `Child`.
     ReplacedTypes combined =
         IgnoredAnnotations.replaceIgnoredForLubOrGlb(
             a, b, glb, typeFactory.getQualifierHierarchy(), context.modelTypes);
@@ -1548,12 +1599,19 @@ public class InferenceFactory {
     for (int i = 0; i < typeArgs.size(); i++) {
       map.put(variables.get(i).getJavaType(), typeArgs.get(i).getAnnotatedType());
     }
+    // Each use of a variable in `instantiated` is replaced by its own copy of the instantiation,
+    // with the use's primary annotations, if any, replacing the instantiation's (see
+    // TypeVariableSubstitutor#substituteTypeVariable).  Copying also keeps the substitution from
+    // mutating the instantiation.  A use of a variable in `variables` is replaced by the fresh type
+    // variable itself, without copying, which keeps the identity links between fresh type variables
+    // whose bounds refer to one another.
+    List<TypeVariable> copiedTypeVars = new ArrayList<>(instantiated.size());
     for (Variable variable : instantiated) {
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null
           : "@AssumeAssertion(nullness): every variable in `instantiated` has an instantiation";
-      // A copy, because the substitution below does not copy and can mutate what it substitutes.
-      map.put(variable.getJavaType(), instantiation.getAnnotatedType().deepCopy());
+      map.put(variable.getJavaType(), instantiation.getAnnotatedType());
+      copiedTypeVars.add(variable.getJavaType());
     }
 
     // TODO: If the instantiation of a variable contains that same variable, then substitution does
@@ -1567,16 +1625,16 @@ public class InferenceFactory {
       if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
         AnnotatedTypeMirror upperBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getUpperBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getUpperBound());
         AnnotatedTypeMirror lowerBound =
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                map, capTypeVar.getLowerBound());
+            typeVarSubstitutor.substituteCopyingSomeTypeArguments(
+                map, copiedTypeVars, capTypeVar.getLowerBound());
         capTypeVar.setUpperBound(upperBound);
         capTypeVar.setLowerBound(lowerBound);
         subs = capTypeVar;
       } else {
-        subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
+        subs = typeVarSubstitutor.substituteCopyingSomeTypeArguments(map, copiedTypeVars, type);
       }
       subsTypeArgs.add(new ProperType(subs, context));
     }

@@ -714,6 +714,85 @@ public class ToIndexFileConverterTest {
         "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
   }
 
+  /**
+   * A private member type is not inherited, but it hides the member types of the same name in the
+   * supertypes of the type that declares it.
+   */
+  @Test
+  public void testPrivateMemberTypeHidesInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class A { public static class N {} }",
+            "class B extends A { private static class N {} }",
+            "interface I { class N {} }",
+            "class C extends B implements I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lp/I$N;)V");
+
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.Middle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+
+    // A private member type hides even in the class that declares it.
+    jaif =
+        convert(
+            "package p;",
+            "class C implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N.Q.M n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N$Q$M;)V");
+
+    // A package-private member type in another package is not inherited, but it hides too.
+    jaif =
+        convert(
+            "package p;",
+            "class C extends org.checkerframework.framework.stub.hiding.PackagePrivateMiddle",
+            "    implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/I$N;)V");
+  }
+
+  /** A name can go through a private member type to the member types that it inherits. */
+  @Test
+  public void testMemberTypeOfPrivateMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class C implements org.checkerframework.framework.stub.hiding.I {}",
+            "class Use { void m(C.N.P.N n) {} }");
+    assertMethod(jaif, "Use", "m(Lorg/checkerframework/framework/stub/hiding/Base$N;)V");
+  }
+
+  /**
+   * A {@code $} in the name of a stub-declared supertype can be part of an identifier, rather than
+   * a separator between a member type and its enclosing type.
+   */
+  @Test
+  public void testInheritedMemberTypeOfPackageQualifiedSupertypeWithDollarInName()
+      throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Sub extends p.Base$Generated {}",
+            "class DeepSub extends p.Base$Generated.Deep {}",
+            "public class Base$Generated {",
+            "  public static class Inner {}",
+            "  public static class Deep {",
+            "    public static class DeepInner {}",
+            "  }",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(DeepSub.DeepInner x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Generated$Inner;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Base$Generated$Deep$DeepInner;)V");
+  }
+
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicInheritance() throws Exception {

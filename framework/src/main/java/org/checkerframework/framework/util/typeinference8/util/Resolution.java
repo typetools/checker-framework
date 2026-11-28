@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -82,19 +81,23 @@ public final class Resolution {
 
     // Any variable on which `originalAs` depends may have an instantiation that ignores
     // annotations: one resolved below, or one that incorporation already gave an instantiation.
-    List<Variable> withDependencies = new ArrayList<>(dependencies.get(originalAs));
+    // So resolveIgnoredAnnotations is applied to all of them.
 
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return resolveIgnoredAnnotations(withDependencies, boundSet, context);
+      return resolveIgnoredAnnotations(
+          withOriginDependencies(originalAs, dependencies), boundSet, context);
     }
 
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return resolveIgnoredAnnotations(withDependencies, boundSet, context);
+    // The origin dependencies are computed after resolution, which can give a variable an
+    // instantiation that has an origin.
+    return resolveIgnoredAnnotations(
+        withOriginDependencies(originalAs, dependencies), boundSet, context);
   }
 
   /**
@@ -119,14 +122,16 @@ public final class Resolution {
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
     // Resolving `a` can also resolve the variables on which it depends, and give any of them an
     // instantiation that ignores annotations.
-    return resolveIgnoredAnnotations(new ArrayList<>(dependencies.get(a)), boundSet, context);
+    return resolveIgnoredAnnotations(
+        withOriginDependencies(Collections.singletonList(a), dependencies), boundSet, context);
   }
 
   /**
-   * Returns {@code vars} and the variables on which they depend, if a variable of {@code boundSet}
-   * has an instantiation that ignores annotations (see {@link AbstractType#ignoreAnnotations});
-   * otherwise, returns {@code vars}. Computing the dependencies has the side effect described in
-   * {@link BoundSet#getDependencies(Collection)}.
+   * Returns {@code vars} and the variables on which they depend (see {@link
+   * #withOriginDependencies}), if a variable of {@code boundSet} has an instantiation that ignores
+   * annotations (see {@link AbstractType#ignoreAnnotations}); otherwise, returns {@code vars}.
+   * Computing the dependencies has the side effect described in {@link
+   * BoundSet#getDependencies(Collection)}.
    *
    * @param vars variables of {@code boundSet}
    * @param boundSet a bound set
@@ -138,10 +143,41 @@ public final class Resolution {
     for (Variable var : boundSet.getInstantiatedVariables()) {
       ProperType instantiation = var.getInstantiation();
       if (instantiation != null && instantiation.ignoreAnnotations) {
-        return new ArrayList<>(boundSet.getDependencies().get(vars));
+        return withOriginDependencies(vars, boundSet.getDependencies());
       }
     }
     return vars;
+  }
+
+  /**
+   * Returns {@code vars} and the variables on which they depend, for the purpose of {@link
+   * #resolveIgnoredAnnotations}. That includes the variables in {@code dependencies}, and also the
+   * variables that the origins of their bounds and instantiations contain (see {@link
+   * VariableBounds#getVariablesContainedInBoundOrigins}), transitively. A bound that is a proper
+   * type has no inference variables, so {@code dependencies} omits the variables of its origin; but
+   * their instantiations determine the annotations at its ignored positions, so they must be
+   * repaired too. The origin dependencies are not added to {@code dependencies}, which resolution
+   * of the Java types uses.
+   *
+   * @param vars variables
+   * @param dependencies the dependencies between variables
+   * @return {@code vars} and the variables on which they depend, including through origins
+   */
+  private static List<Variable> withOriginDependencies(
+      List<Variable> vars, Dependencies dependencies) {
+    LinkedHashSet<Variable> result = new LinkedHashSet<>(dependencies.get(vars));
+    Queue<Variable> worklist = new ArrayDeque<>(result);
+    while (!worklist.isEmpty()) {
+      Variable var = worklist.remove();
+      for (Variable originVar : var.getBounds().getVariablesContainedInBoundOrigins()) {
+        for (Variable dependency : dependencies.get(originVar)) {
+          if (result.add(dependency)) {
+            worklist.add(dependency);
+          }
+        }
+      }
+    }
+    return new ArrayList<>(result);
   }
 
   /**
@@ -191,10 +227,12 @@ public final class Resolution {
           continue;
         }
       }
-      // `addBound` can change the instantiation even if it returns false.
-      ProperType previousInstantiation = var.getInstantiation();
+      // `addBound` can change the instantiation even if it returns false.  Detect a change by the
+      // same criterion that the setter uses: ProperType#equals ignores the annotations of
+      // enclosing types, but the setter installs a type that differs only in them.
+      int previousChanges = var.getBounds().getInstantiationChanges();
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
-      added |= !Objects.equals(previousInstantiation, var.getInstantiation());
+      added |= previousChanges != var.getBounds().getInstantiationChanges();
     }
     if (added) {
       boundSet.reachFixedPoint();
@@ -581,6 +619,17 @@ public final class Resolution {
         // ignored: if they cover every hierarchy, then the result does not ignore annotations, and
         // its annotations are checked against `variable`'s other bounds.  In hierarchies that they
         // do not cover, the ignored annotations remain.
+        //
+        // TODO: A type that ignores annotations may still have an explicit primary annotation in
+        // some hierarchy: UseOfVariable#applyInstantiations copies a use's explicit annotation in
+        // one hierarchy into an instantiation that ignores annotations, and the result ignores
+        // annotations in every hierarchy.  If such a type is an EQUAL bound of `variable` (see
+        // VariableBounds#findLowerBoundsForAnnotations), then a qualifier lower bound in the
+        // hierarchy of that explicit annotation replaces it here rather than being lubbed with it.
+        // Fixing this requires AbstractType#ignoreAnnotations to record the hierarchies in which
+        // primary annotations are ignored (see the TODO in
+        // ProperType#withPrimaryAnnotationsReplaced), so that annotations are replaced only in
+        // those hierarchies and lubbed in the others.
         return lubProperType.withPrimaryAnnotationsReplaced(lubAnnos, false);
       }
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
