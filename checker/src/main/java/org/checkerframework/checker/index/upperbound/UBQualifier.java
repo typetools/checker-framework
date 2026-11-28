@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -1216,6 +1217,38 @@ public abstract class UBQualifier {
 
     public Iterable<? extends String> getSequences() {
       return map.keySet();
+    }
+
+    /**
+     * Returns a copy of this qualifier without each (sequence, offset) pair for which {@code
+     * mayChange} is true of the sequence or of a term of the offset. Returns UNKNOWN if no pair
+     * remains.
+     *
+     * @param mayChange a predicate on Java expression strings: true if the expression might no
+     *     longer have the value that this qualifier refers to
+     * @return a copy of this qualifier without the pairs that depend on an expression for which
+     *     {@code mayChange} is true
+     */
+    public UBQualifier removeDependentsOf(Predicate<String> mayChange) {
+      Map<String, Set<OffsetEquation>> newMap = new HashMap<>(map.size());
+      for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+        if (mayChange.test(entry.getKey())) {
+          continue;
+        }
+        Set<OffsetEquation> offsets = new HashSet<>(entry.getValue().size());
+        for (OffsetEquation eq : entry.getValue()) {
+          if (!eq.anyTermMatches(mayChange)) {
+            offsets.add(eq);
+          }
+        }
+        if (!offsets.isEmpty()) {
+          newMap.put(entry.getKey(), offsets);
+        }
+      }
+      if (newMap.isEmpty()) {
+        return UpperBoundUnknownQualifier.UNKNOWN;
+      }
+      return new LessThanLengthOf(newMap);
     }
 
     /**

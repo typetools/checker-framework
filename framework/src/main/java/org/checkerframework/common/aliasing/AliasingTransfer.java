@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -85,9 +86,14 @@ public class AliasingTransfer extends CFTransfer {
    */
   @Override
   protected void processCommonAssignment(
-      TransferInput<CFValue, CFStore> in, Node lhs, Node rhs, CFStore store, CFValue rhsValue) {
+      TransferInput<CFValue, CFStore> in,
+      AssignmentNode assignment,
+      Node lhs,
+      Node rhs,
+      CFStore store,
+      @Nullable CFValue rhsValue) {
     if (isFreshUnique(rhs)) {
-      super.processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      super.processCommonAssignment(in, assignment, lhs, rhs, store, rhsValue);
       return;
     }
     store.updateForAssignment(lhs, null);

@@ -9,6 +9,24 @@
 
 ### Changes for type system implementers
 
+`CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
+assignment node.  New method `CFAbstractTransfer.rhsMayRelocateTarget()`
+returns true if evaluating an assignment's right-hand side might change the
+location that its target denotes, as in `n.next = (n = o)`.
+
+Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
+result omits each node that might have a different value by the time the
+enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
+result can be empty.  A subclass that overrides `splitAssignments()` must
+override `nodesWithValueOf()` instead.  New method
+`CFAbstractTransfer.mayChangeAfterOperand()` tells whether an expression that an
+operand's type depends on might change before the comparison completes.
+
+`CFAbstractStore.canAlias()` is now final.  It calls the new method
+`CFAbstractAnalysis.canAlias()`, which calls the new method
+`TypesUtils.canAlias()`.  To change the aliasing judgment, override
+`CFAbstractAnalysis.canAlias()`.
+
 `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
 takes an additional first argument, the operator.
 
