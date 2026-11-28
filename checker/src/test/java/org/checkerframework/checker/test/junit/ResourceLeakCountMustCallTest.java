@@ -84,6 +84,25 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
+   * A {@code CreatesMustCallFor} invocation whose target is a target of the enclosing method's
+   * {@code CreatesMustCallFor} annotation is not counted, because the enclosing method's caller
+   * counts it.
+   */
+  @Test
+  public void resetOfEnclosingTargetIsNotCounted() {
+    assertCounts("ResetEnclosingTarget.java", true, 1, 1);
+  }
+
+  /**
+   * A wrapper is counted if the object that it wraps is not counted on some path, regardless of the
+   * order in which the analysis processes the paths.
+   */
+  @Test
+  public void wrapperAfterResetOnOneBranchIsCounted() {
+    assertCounts("WrapAfterResetOnOneBranch.java", false, 2, 0);
+  }
+
+  /**
    * A leaked resource whose type is a type variable is counted as found but not as verified, using
    * the erasure of the type variable for both counts.
    */

@@ -57,7 +57,8 @@ public class ResourceLeakChecker extends AggregateChecker {
    *   <li>an invocation whose result has a must-call obligation,
    *   <li>an owning or must-call-alias formal parameter, or
    *   <li>the target of an invocation of a {@code CreatesMustCallFor} method, if the target is a
-   *       non-owning local variable or formal parameter that already has a tracked obligation.
+   *       non-owning local variable or formal parameter that already has a tracked obligation and
+   *       is not a target of the enclosing method's {@code CreatesMustCallFor} annotation.
    * </ul>
    *
    * <p>Such an obligation is <em>found</em>; the first number that the checker emits is the number
@@ -71,8 +72,10 @@ public class ResourceLeakChecker extends AggregateChecker {
    *
    * <p>A wrapper, such as {@code new BufferedInputStream(in)}, shares the obligation of the object
    * that it wraps. The wrapper is counted only if the obligation of the wrapped object is not
-   * counted. An invocation of a {@code CreatesMustCallFor} method whose target is an owning field,
-   * an owning formal parameter, or {@code this} creates no counted obligation. An obligation that
+   * counted on some path to the wrapper. An invocation of a {@code CreatesMustCallFor} method whose
+   * target is an owning field, an owning formal parameter, {@code this}, or a target of the
+   * enclosing method's {@code CreatesMustCallFor} annotation creates no counted obligation. An
+   * obligation that
    * the checker fails to verify is not counted as verified, even if the checker does not report the
    * failure (for example, because a warning is suppressed).
    *

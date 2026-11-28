@@ -247,8 +247,9 @@ public class MustCallConsistencyAnalyzer {
     public final ImmutableSet<MethodExitKind> whenToEnforce;
 
     /**
-     * The keys under which -AcountMustCall counted this Obligation as found. Empty if the
-     * Obligation is not counted. See {@link ResourceLeakChecker#countFoundObligation}. Derived
+     * The keys under which -AcountMustCall counted this Obligation as found, on the paths that
+     * reach this analysis state. Contains {@link CountMarker#UNCOUNTED} if the Obligation is not
+     * counted on some such path. See {@link ResourceLeakChecker#countFoundObligation}. Derived
      * Obligations retain these keys, and equivalent analysis states combine their keys.
      *
      * <p>The keys are used only for statistics and are not part of {@link #equals} or {@link
@@ -263,7 +264,7 @@ public class MustCallConsistencyAnalyzer {
      * @param whenToEnforce when this Obligation should be enforced
      */
     public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
-      this(resourceAliases, whenToEnforce, ImmutableSet.of());
+      this(resourceAliases, whenToEnforce, NOT_COUNTED);
     }
 
     /**
@@ -881,9 +882,14 @@ public class MustCallConsistencyAnalyzer {
             // means that a new resource might have been created.  The @CreatesMustCallFor
             // method is responsible for the resource that the replaced Obligation tracked.  If
             // the invocation throws an exception, then the replaced resource is still
-            // outstanding, so toAdd retains the replaced Obligation's keys.
+            // outstanding, so toAdd retains the replaced Obligation's keys.  If the expression
+            // is a target of the enclosing method's @CreatesMustCallFor annotation, then the
+            // enclosing method's caller counts the new resource, so toAdd also retains the
+            // replaced Obligation's keys.
             ImmutableSet<Object> countKeys =
                 exceptionType == null
+                        && checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)
+                        && !isEnclosingCreatesMustCallForTarget(expression, invocationPath)
                     ? countFoundObligation(
                         new CreatesMustCallForKey(invocation, expression), expression.getType())
                     : obligation.countKeys;
@@ -900,6 +906,22 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
+    // This satisfies case 3 if the result is true.
+    return isEnclosingCreatesMustCallForTarget(expression, invocationPath);
+  }
+
+  /**
+   * Returns true if the given expression is a target of the {@code @CreatesMustCallFor} annotation
+   * of the method that encloses the given invocation.
+   *
+   * @param expression an element of an invoked method's @CreatesMustCallFor annotation
+   * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
+   *     annotation {@code expression} came
+   * @return true iff {@code expression} is a target of the enclosing method's
+   *     {@code @CreatesMustCallFor} annotation
+   */
+  private boolean isEnclosingCreatesMustCallForTarget(
+      JavaExpression expression, TreePath invocationPath) {
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
     // annotations, but that should be rare.
     MethodTree callerMethodTree = TreePathUtil.enclosingMethod(invocationPath);
@@ -926,7 +948,6 @@ public class MustCallConsistencyAnalyzer {
       }
 
       if (areSame(expression, callerTarget)) {
-        // This satisfies case 3.
         return true;
       }
     }
@@ -996,7 +1017,7 @@ public class MustCallConsistencyAnalyzer {
       ImmutableSet<Object> countKeys =
           cmAtf.declaredTypeHasMustCall(tree)
               ? countFoundObligation(tmpVar.getElement(), node.getType())
-              : ImmutableSet.of();
+              : NOT_COUNTED;
       obligations.add(
           new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL, countKeys));
     } else {
@@ -1022,11 +1043,24 @@ public class MustCallConsistencyAnalyzer {
                     .append(tmpVarAsResourceAlias)
                     .toSet();
             // A wrapper, such as a JDK stream that wraps a stream of a user-defined class, is
-            // counted if the Obligation of the object that it wraps is not counted.  A method
-            // that returns its receiver creates no object, so it is never counted.
+            // counted if the Obligation of the object that it wraps is not counted on some path.
+            // A method that returns its receiver creates no object, so it is never counted.
             ImmutableSet<Object> countKeys = obligationContainingMustCallAlias.countKeys;
-            if (countKeys.isEmpty() && !returnsThis && cmAtf.declaredTypeHasMustCall(tree)) {
-              countKeys = countFoundObligation(tmpVar.getElement(), node.getType());
+            if (countKeys.contains(CountMarker.UNCOUNTED)
+                && !returnsThis
+                && cmAtf.declaredTypeHasMustCall(tree)) {
+              ImmutableSet<Object> wrapperKeys =
+                  countFoundObligation(tmpVar.getElement(), node.getType());
+              if (!wrapperKeys.contains(CountMarker.UNCOUNTED)) {
+                // On the paths where the wrapped Obligation is not counted, the wrapper is.
+                ImmutableSet.Builder<Object> newKeys = ImmutableSet.builder();
+                for (Object key : countKeys) {
+                  if (!key.equals(CountMarker.UNCOUNTED)) {
+                    newKeys.add(key);
+                  }
+                }
+                countKeys = newKeys.addAll(wrapperKeys).build();
+              }
             }
             obligations.remove(obligationContainingMustCallAlias);
             obligations.add(
@@ -2439,7 +2473,7 @@ public class MustCallConsistencyAnalyzer {
           ImmutableSet<Object> countKeys =
               declaredTypeHasMustCall
                   ? countFoundObligation(paramElement, paramElement.asType())
-                  : ImmutableSet.of();
+                  : NOT_COUNTED;
           result.add(
               new Obligation(
                   ImmutableSet.of(
@@ -2604,6 +2638,20 @@ public class MustCallConsistencyAnalyzer {
    */
   private record CreatesMustCallForKey(Tree invocation, JavaExpression target) {}
 
+  /** A marker that can appear in {@link Obligation#countKeys}. */
+  private enum CountMarker {
+    /**
+     * Indicates that -AcountMustCall does not count the Obligation on some path. Unlike an empty
+     * set of keys, this marker survives when analysis states combine their count keys, so the
+     * result does not depend on the order in which the analysis processes states. It is never
+     * recorded as a found obligation, so recording it as a failure has no effect.
+     */
+    UNCOUNTED
+  }
+
+  /** The count keys of an Obligation that -AcountMustCall does not count. */
+  private static final ImmutableSet<Object> NOT_COUNTED = ImmutableSet.of(CountMarker.UNCOUNTED);
+
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
    * the methods in {@code mustCallValues}?
@@ -2623,7 +2671,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Return a set containing the given key if -AcountMustCall recorded it, or an empty set
+   * Return a set containing the given key if -AcountMustCall recorded it, or {@link #NOT_COUNTED}
    * otherwise. See {@link ResourceLeakChecker#countFoundObligation}.
    *
    * @param key an object that identifies a must-call obligation
@@ -2632,7 +2680,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private ImmutableSet<Object> countFoundObligation(Object key, TypeMirror type) {
     Object countKey = checker.countFoundObligation(key, type);
-    return countKey == null ? ImmutableSet.of() : ImmutableSet.of(countKey);
+    return countKey == null ? NOT_COUNTED : ImmutableSet.of(countKey);
   }
 
   /**
