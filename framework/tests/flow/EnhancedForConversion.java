@@ -3,7 +3,7 @@ import java.util.List;
 import org.checkerframework.framework.testchecker.util.*;
 
 // The loop variable gets the element type of the iterable expression, even when assignment
-// conversion unboxes or widens the element.
+// conversion unboxes, boxes, or widens the element.
 public class EnhancedForConversion {
   @Odd Integer[] field;
 
@@ -74,6 +74,21 @@ public class EnhancedForConversion {
   void widenArray(@Odd int[] array) {
     for (long x : array) {
       @Odd long y = x;
+    }
+  }
+
+  void boxArray(@Odd int[] array) {
+    for (Integer x : array) {
+      @Odd Integer y = x;
+    }
+  }
+
+  void boxArrayToSupertype(@Odd int[] array) {
+    for (Number x : array) {
+      @Odd Number y = x;
+    }
+    for (Object x : array) {
+      @Odd Object y = x;
     }
   }
 

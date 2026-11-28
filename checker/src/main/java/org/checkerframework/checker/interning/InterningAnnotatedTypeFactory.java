@@ -1,14 +1,23 @@
 package org.checkerframework.checker.interning;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -23,6 +32,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -35,6 +45,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An {@link AnnotatedTypeFactory} that accounts for the properties of the Interned type system.
@@ -211,8 +222,72 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.typeOf(tree.getType()).getKind().isPrimitive()) {
         type.replaceAnnotation(INTERNED);
+      } else if (!(tree.getType() instanceof AnnotatedTypeTree)) {
+        // A cast such as `(Integer) 5` boxes a constant to a cached, interned object.
+        TypeKind exprKind = TreeUtils.typeOf(tree.getExpression()).getKind();
+        if (exprKind.isPrimitive() && isCachedWhenBoxed(tree.getExpression(), exprKind)) {
+          type.replaceAnnotation(INTERNED);
+        }
       }
       return super.visitTypeCast(tree, type);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+      // The PropagationTreeAnnotator gives the component type of `new Integer[] {5}`
+      // @UnknownInterned, because it does not know that the boxed initializer is a cached
+      // constant.  Use @Interned if every initializer is interned after any boxing.
+      List<? extends ExpressionTree> inits = tree.getInitializers();
+      AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
+      TypeMirror componentTM = componentType.getUnderlyingType();
+      if (inits != null
+          && !inits.isEmpty()
+          && !componentTM.getKind().isPrimitive()
+          && !(tree.getType() instanceof AnnotatedTypeTree)
+          && componentType.hasPrimaryAnnotation(TOP)
+          && inits.stream().allMatch(init -> isInternedArrayInitializer(init, componentTM))) {
+        componentType.replaceAnnotation(INTERNED);
+      }
+      return super.visitNewArray(tree, type);
+    }
+
+    /**
+     * Returns true if {@code init}, an initializer of an array whose component type is the
+     * reference type {@code componentTM}, is interned after any boxing conversion.
+     *
+     * @param init an array initializer
+     * @param componentTM the component type of the array, which is a reference type
+     * @return true if {@code init} is interned after any boxing conversion
+     */
+    private boolean isInternedArrayInitializer(ExpressionTree init, TypeMirror componentTM) {
+      TypeKind initKind = TreeUtils.typeOf(init).getKind();
+      if (initKind.isPrimitive()) {
+        // A constant initializer might be narrowed before it is boxed, as in `new Byte[] {1}`.
+        TypeKind boxedKind =
+            TypesUtils.isBoxedPrimitive(componentTM)
+                ? types.unboxedType(componentTM).getKind()
+                : initKind;
+        return boxedKind == TypeKind.BOOLEAN
+            || boxedKind == TypeKind.BYTE
+            || isCachedWhenBoxed(init, boxedKind);
+      }
+      AnnotationMirror anno =
+          atypeFactory.getAnnotatedType(init).getAnnotationInHierarchy(INTERNED);
+      return anno != null && qualHierarchy.isSubtypeShallow(anno, INTERNED, componentTM);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      // A call such as `Integer.valueOf(5)` returns a cached, interned object.  Because javac
+      // implements a boxing conversion by such a call, this also handles the boxing conversions
+      // that the CFG makes explicit.
+      ExecutableElement method = TreeUtils.elementFromUse(tree);
+      if (isPrimitiveValueOf(method)
+          && isCachedWhenBoxed(
+              tree.getArguments().get(0), types.unboxedType(method.getReturnType()).getKind())) {
+        type.replaceAnnotation(INTERNED);
+      }
+      return super.visitMethodInvocation(tree, type);
     }
 
     @Override
@@ -253,15 +328,102 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Unboxes the type and replaces any interning type annotations with @Interned, since all
-   * primitives can safely use ==. See case 4 in the class comments.
+   * Returns a copy of {@code annos} in which @Interned replaces the interning type annotation, if
+   * any, because all primitives can safely use ==. See case 4 in the class comments.
    *
    * <p>{@inheritDoc}
    */
   @Override
-  public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {
-    AnnotatedPrimitiveType primitive = super.getUnboxedType(type);
-    primitive.replaceAnnotation(INTERNED);
-    return primitive;
+  public AnnotationMirrorSet getUnboxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    return replaceInterningAnnotation(annos, INTERNED);
+  }
+
+  /**
+   * Returns a copy of {@code annos} in which @UnknownInterned replaces the interning type
+   * annotation, if any, because a boxed value need not be interned, even though every primitive is.
+   * For example, {@code Integer.valueOf(1000) == Integer.valueOf(1000)} can be false. The
+   * exceptions are {@code boolean} and {@code byte}: {@code Boolean.valueOf()} and {@code
+   * Byte.valueOf()} return a cached object for every value, so a boxed {@code boolean} or {@code
+   * byte} is @Interned.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  public AnnotationMirrorSet getBoxedAnnotations(
+      AnnotationMirrorSet annos, TypeKind primitiveKind) {
+    boolean everyValueCached = primitiveKind == TypeKind.BOOLEAN || primitiveKind == TypeKind.BYTE;
+    return replaceInterningAnnotation(annos, everyValueCached ? INTERNED : TOP);
+  }
+
+  /**
+   * Returns true if {@code method} is the {@code valueOf} method of a boxed primitive whose formal
+   * parameter is a primitive, such as {@code Integer.valueOf(int)}. Returns false for {@code
+   * Integer.valueOf(String)}, and for a method declared outside the boxed primitive class.
+   *
+   * @param method a method
+   * @return true if {@code method} is the {@code valueOf} method of a boxed primitive whose formal
+   *     parameter is a primitive
+   */
+  private static boolean isPrimitiveValueOf(ExecutableElement method) {
+    return method.getSimpleName().contentEquals("valueOf")
+        && method.getModifiers().contains(Modifier.STATIC)
+        && method.getParameters().size() == 1
+        && method.getParameters().get(0).asType().getKind().isPrimitive()
+        && TypesUtils.isBoxedPrimitive(method.getReturnType())
+        // Exclude a user-defined method such as `static Integer valueOf(int x)`.
+        && TypesUtils.isDeclaredOfName(
+            method.getReturnType(),
+            ((TypeElement) method.getEnclosingElement()).getQualifiedName());
+  }
+
+  /**
+   * Returns true if {@code tree} is a constant expression (JLS 15.29) whose every boxing conversion
+   * to the boxed primitive of {@code boxedKind} yields the same object (JLS 5.1.7). That is the
+   * case if the constant is {@code true}, {@code false}, a {@code byte}, a {@code char} from {@code
+   * '\u0000'} to {@code '\u007f'}, or a {@code short}, {@code int}, or {@code long} from -128 to
+   * 127. For example, returns true for {@code 5} and {@code int}, because every boxing of {@code 5}
+   * to {@code Integer} yields the same object, and returns false for {@code 1000} and {@code int}.
+   *
+   * @param tree an expression of primitive type
+   * @param boxedKind the primitive type whose boxed primitive {@code tree} is converted to, such as
+   *     {@code int} for {@code Integer}; it differs from the type of {@code tree} when a constant
+   *     is narrowed before it is boxed, as in {@code Byte b = 1;}
+   * @return true if {@code tree} is a constant expression whose every boxing conversion to the
+   *     boxed primitive of {@code boxedKind} yields the same object
+   */
+  public boolean isCachedWhenBoxed(ExpressionTree tree, TypeKind boxedKind) {
+    Type type = (Type) TreeUtils.typeOf(tree);
+    // javac represents a constant of type boolean, byte, char, short, or int as an Integer.
+    if (type == null || !(type.constValue() instanceof Number value)) {
+      return false;
+    }
+    long longValue = value.longValue();
+    return switch (boxedKind) {
+      case BOOLEAN, BYTE -> true;
+      case CHAR -> 0 <= longValue && longValue <= 0x7f;
+      case SHORT, INT, LONG -> -128 <= longValue && longValue <= 127;
+      default -> false;
+    };
+  }
+
+  /**
+   * Returns a copy of {@code annos} in which {@code interningAnno} replaces the annotation of the
+   * interning hierarchy, if any.
+   *
+   * @param annos a set of annotations
+   * @param interningAnno an annotation of the interning hierarchy
+   * @return a copy of {@code annos} that contains {@code interningAnno} in place of the annotation
+   *     of the interning hierarchy
+   */
+  private AnnotationMirrorSet replaceInterningAnnotation(
+      AnnotationMirrorSet annos, AnnotationMirror interningAnno) {
+    AnnotationMirrorSet result = new AnnotationMirrorSet(annos);
+    AnnotationMirror old = qualHierarchy.findAnnotationInSameHierarchy(annos, interningAnno);
+    if (old != null) {
+      result.remove(old);
+    }
+    result.add(interningAnno);
+    return result;
   }
 }
