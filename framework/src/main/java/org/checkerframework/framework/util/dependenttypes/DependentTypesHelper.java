@@ -16,6 +16,7 @@ import com.sun.tools.javac.tree.JCTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -35,10 +37,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -1339,4 +1343,229 @@ public class DependentTypesHelper {
           },
           Boolean::logicalOr,
           false);
+
+  //
+  // Methods about reassignment of a variable that a dependent type annotation names
+  //
+
+  /**
+   * Returns true if a Java expression in {@code anno} might name {@code variable}, which is a local
+   * variable (including a formal parameter) or a field. Returns false if {@code anno} is not a
+   * dependent type annotation.
+   *
+   * <p>This method is conservative: it can return true for an expression that does not name {@code
+   * variable}, but it returns false only if no expression in {@code anno} names {@code variable}.
+   * It examines the text of the standardized expressions (see {@link #atVariableDeclaration}), in
+   * which a field is always written with a receiver, as in "this.f" or "MyClass.f", and a local
+   * variable is written without one, as in "a" or "a.length". A local variable might be named by an
+   * expression that contains its name without a preceding period. A field {@code f} might be named
+   * by an expression that contains ".f" for any receiver, because that receiver might be an alias
+   * of the receiver of {@code variable}. An expression that could not be parsed (see {@link
+   * DependentTypesError}) names nothing; the checker reports it separately.
+   *
+   * <p>If {@code path} is non-null, an expression whose text might name a field is parsed at {@code
+   * path}, and it names the field only if it contains an access of the same field. For example, if
+   * {@code variable} is {@code this.length}, then "a.length" does not name it if {@code a} is an
+   * array, because an array's {@code length} is a different field. An expression that cannot be
+   * parsed at {@code path} might name {@code variable}.
+   *
+   * @param anno an annotation
+   * @param variable a local variable, such as {@code a}, or a field access, such as {@code this.f}
+   * @param path the location at which to parse the expressions in {@code anno}, or null to examine
+   *     only their text
+   * @return true if a Java expression in {@code anno} might name {@code variable}
+   */
+  public boolean mightName(
+      AnnotationMirror anno, JavaExpression variable, @Nullable TreePath path) {
+    if (!isExpressionAnno(anno)) {
+      return false;
+    }
+    for (ExecutableElement element : getListOfExpressionElements(anno)) {
+      for (String expression :
+          AnnotationUtils.getElementValueArray(
+              anno, element, String.class, Collections.emptyList())) {
+        if (!DependentTypesError.isExpressionError(expression)
+            && mightName(expression, variable, path)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if a Java expression in one of {@code annos} might name {@code variable}. See
+   * {@link #mightName(AnnotationMirror, JavaExpression, TreePath)}.
+   *
+   * @param annos annotations, such as those of an abstract value
+   * @param variable a local variable, such as {@code a}, or a field access, such as {@code this.f}
+   * @param path the location at which to parse the expressions in {@code annos}, or null to examine
+   *     only their text
+   * @return true if a Java expression in one of {@code annos} might name {@code variable}
+   */
+  public boolean mightName(
+      Collection<? extends AnnotationMirror> annos,
+      JavaExpression variable,
+      @Nullable TreePath path) {
+    for (AnnotationMirror anno : annos) {
+      if (mightName(anno, variable, path)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code expression} might name {@code variable}. See {@link
+   * #mightName(AnnotationMirror, JavaExpression, TreePath)}.
+   *
+   * @param expression a standardized Java expression, such as "a.length" or "this.f"
+   * @param variable a local variable, such as {@code a}, or a field access, such as {@code this.f}
+   * @param path the location at which to parse {@code expression}, or null to examine only its text
+   * @return true if {@code expression} might name {@code variable}
+   */
+  public boolean mightName(String expression, JavaExpression variable, @Nullable TreePath path) {
+    Pattern namePattern = namePattern(variable);
+    return namePattern != null
+        && namePattern.matcher(expression).find()
+        && (path == null
+            || !(variable instanceof FieldAccess fieldAccess)
+            || mightAccessField(expression, fieldAccess.getField(), path));
+  }
+
+  /**
+   * Returns true if {@code expression}, parsed at {@code path}, contains an access of {@code field}
+   * with any receiver. Returns true if {@code expression} cannot be parsed at {@code path}.
+   *
+   * @param expression a standardized Java expression, such as "a.length" or "this.f"
+   * @param field a field
+   * @param path the location at which to parse {@code expression}
+   * @return true if {@code expression} might contain an access of {@code field}
+   */
+  private boolean mightAccessField(String expression, VariableElement field, TreePath path) {
+    JavaExpression javaExpr;
+    try {
+      javaExpr = StringToJavaExpression.atPath(expression, path, factory.getChecker());
+    } catch (JavaExpressionParseException e) {
+      return true;
+    }
+    boolean[] result = {false};
+    new JavaExpressionScanner<Void>() {
+      @Override
+      protected Void visitFieldAccess(FieldAccess fieldAccessExpr, Void p) {
+        if (fieldAccessExpr.getField().equals(field)) {
+          result[0] = true;
+        }
+        return super.visitFieldAccess(fieldAccessExpr, p);
+      }
+    }.scan(javaExpr, null);
+    return result[0];
+  }
+
+  /**
+   * Returns true if a Java expression in a dependent type annotation anywhere in {@code atm} (not
+   * just in its primary annotations) might name {@code variable}. See {@link
+   * #mightName(AnnotationMirror, JavaExpression, TreePath)}.
+   *
+   * @param atm an annotated type
+   * @param variable a local variable, such as {@code a}, or a field access, such as {@code this.f}
+   * @param path the location at which to parse the expressions in {@code atm}, or null to examine
+   *     only their text
+   * @return true if a Java expression in a dependent type annotation in {@code atm} might name
+   *     {@code variable}
+   */
+  public boolean mightName(
+      AnnotatedTypeMirror atm, JavaExpression variable, @Nullable TreePath path) {
+    if (!hasDependentType(atm)) {
+      return false;
+    }
+    AnnotatedTypeScanner<Boolean, Void> scanner =
+        new SimpleAnnotatedTypeScanner<>(
+            (type, __) -> {
+              for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
+                if (mightName(anno, variable, path)) {
+                  return true;
+                }
+              }
+              return false;
+            },
+            Boolean::logicalOr,
+            false);
+    return scanner.visit(atm);
+  }
+
+  /**
+   * Returns a regular expression that matches text that might name {@code variable} in a
+   * standardized Java expression. See {@link #mightName(AnnotationMirror, JavaExpression,
+   * TreePath)}.
+   *
+   * @param variable a local variable or a field access
+   * @return a regular expression that matches text that might name {@code variable}, or null if
+   *     {@code variable} is neither a local variable nor a field access
+   */
+  private @Nullable Pattern namePattern(JavaExpression variable) {
+    if (variable instanceof LocalVariable localVariable) {
+      // Not preceded by a period (a field or a qualified name), and not followed by "(" (a
+      // method call).
+      String name = localVariable.getElement().getSimpleName().toString();
+      return localVariableNamePatterns.computeIfAbsent(
+          name, n -> Pattern.compile("(?<![\\w$.])" + Pattern.quote(n) + "(?![\\w$(])"));
+    } else if (variable instanceof FieldAccess fieldAccess) {
+      String name = fieldAccess.getField().getSimpleName().toString();
+      return fieldNamePatterns.computeIfAbsent(
+          name, n -> Pattern.compile("\\." + Pattern.quote(n) + "(?![\\w$(])"));
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Maps a local variable's name to a regular expression that matches text that might name it. See
+   * {@link #namePattern}.
+   */
+  private final Map<String, Pattern> localVariableNamePatterns = new HashMap<>();
+
+  /**
+   * Maps a field's name to a regular expression that matches text that might name it. See {@link
+   * #namePattern}.
+   */
+  private final Map<String, Pattern> fieldNamePatterns = new HashMap<>();
+
+  /**
+   * Returns a copy of {@code atm} in which each Java expression in a dependent type annotation has
+   * each occurrence of {@code from} replaced by {@code to}. Each expression is parsed at {@code
+   * path}. For example, if {@code atm} is {@code @LTLengthOf("a") int}, {@code from} is {@code a},
+   * and {@code to} is {@code c}, then the result is {@code @LTLengthOf("c") int}.
+   *
+   * <p>An expression that cannot be parsed at {@code path} is replaced by an error string (see
+   * {@link DependentTypesError}), which contains the original text of the expression.
+   *
+   * @param atm an annotated type whose dependent type annotations are standardized
+   * @param from the expression to replace
+   * @param to the expression with which to replace {@code from}
+   * @param path the location at which to parse the expressions in {@code atm}
+   * @return a copy of {@code atm} in which {@code from} is replaced by {@code to}
+   */
+  public AnnotatedTypeMirror substitute(
+      AnnotatedTypeMirror atm, JavaExpression from, JavaExpression to, TreePath path) {
+    AnnotatedTypeMirror result = atm.deepCopy();
+    if (!hasDependentType(result)) {
+      return result;
+    }
+    JavaExpressionConverter replacer =
+        new JavaExpressionConverter() {
+          @Override
+          public JavaExpression convert(JavaExpression javaExpr) {
+            if (javaExpr.syntacticEquals(from)) {
+              return to;
+            }
+            return super.convert(javaExpr);
+          }
+        };
+    convertAnnotatedTypeMirror(
+        stringExpr ->
+            replacer.convert(StringToJavaExpression.atPath(stringExpr, path, factory.getChecker())),
+        result);
+    return result;
+  }
 }

@@ -40,8 +40,10 @@ public class BasicSubsequence {
 
   void test7(@IndexFor("this") @LessThan("y") int x1, @IndexOrHigh("this") int y1, int[] a) {
     x = x1;
+    // `x1` is less than the old value of `y`, which is unrelated to `y1`.
+    // :: error: [reassignment.invalidates.type]
     y = y1;
-    // :: warning: [which.subsequence]
+    // :: error: [from.gt.to] :: warning: [which.subsequence]
     b = a;
   }
 }
