@@ -422,14 +422,47 @@ public class ValueTransfer extends CFTransfer {
       List<Long> values = atypeFactory.getIntValues(val);
       range = ValueCheckerUtils.getRangeFromValues(values);
     } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
-      List<Double> values = atypeFactory.getDoubleValues(val);
-      range = ValueCheckerUtils.getRangeFromValues(values);
+      range = getRangeFromDoubleValues(atypeFactory.getDoubleValues(val));
     } else if (AnnotationUtils.areSameByName(val, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       return Range.NOTHING;
     } else {
       range = Range.EVERYTHING;
     }
     return NumberUtils.castRange(node.getType(), range);
+  }
+
+  /**
+   * Returns the smallest range of integers that contains every value in the given list, or {@link
+   * Range#EVERYTHING} if the list contains NaN. For example, the range for the list {@code [-0.5,
+   * 2.0]} is {@code [-1, 2]}.
+   *
+   * <p>No range of integers contains NaN, and a range that omitted NaN would make refinements
+   * unsound: if {@code d} is NaN, then {@code i != d} is true even if {@code i} equals every other
+   * value of {@code d}.
+   *
+   * <p>No range of integers contains a value that lies beyond a bound of {@code long}, such as an
+   * infinity or 1e19, either. The result represents such a value by that bound, such as {@link
+   * Long#MAX_VALUE} for 1e19.
+   *
+   * @param values a list of floating-point values
+   * @return the smallest range of integers that contains every value in {@code values}, where each
+   *     value beyond a bound of {@code long} is represented by that bound; or {@link
+   *     Range#EVERYTHING} if {@code values} contains NaN
+   */
+  private static Range getRangeFromDoubleValues(List<Double> values) {
+    if (values.isEmpty()) {
+      return Range.NOTHING;
+    }
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    for (double value : values) {
+      if (Double.isNaN(value)) {
+        return Range.EVERYTHING;
+      }
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    }
+    return Range.create((long) Math.floor(min), (long) Math.ceil(max));
   }
 
   /**
@@ -1275,6 +1308,12 @@ public class ValueTransfer extends CFTransfer {
     Range leftRange = getIntRangeFromAnnotation(leftNode, leftAnno);
     Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
 
+    if (mightExceedLongRange(leftNode, leftRange) || mightExceedLongRange(rightNode, rightRange)) {
+      // Refining the other operand would be unsound.  For example, `l < Double.POSITIVE_INFINITY`
+      // is true even if `l` is Long.MAX_VALUE.
+      return null;
+    }
+
     // Special case for loop conditions:  If inequality against a constant, then widen to the entire
     // range permitted by the constant.  The fixed-point loop is likely to get to that value
     // eventually, and this is both more efficient and more precise than leaving it to the usual
@@ -1358,14 +1397,30 @@ public class ValueTransfer extends CFTransfer {
       AnnotationMirror thenLeftAnno = atypeFactory.createIntRangeAnnotation(thenLeftRange);
       thenStore.replaceValue(leftJe, thenLeftAnno);
     } else {
-      createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+      createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode, leftAnno);
     }
-    createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
+    createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode, rightAnno);
+    createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode, leftAnno);
+    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode, rightAnno);
 
     // TODO: Refine the type of the comparison.
     return null;
+  }
+
+  /**
+   * Returns true if {@code node} has a floating-point type and {@code range} contains {@link
+   * Long#MIN_VALUE} or {@link Long#MAX_VALUE}. Such a node might have a value that no range of
+   * integers contains, such as an infinity or 1e19, because {@link #getIntRangeFromAnnotation(Node,
+   * AnnotationMirror)} represents a value that lies beyond a bound of {@code long} by that bound.
+   *
+   * @param node a node
+   * @param range the range of {@code node}'s value
+   * @return true if {@code node} has a floating-point type and {@code range} contains {@link
+   *     Long#MIN_VALUE} or {@link Long#MAX_VALUE}
+   */
+  private static boolean mightExceedLongRange(Node node, Range range) {
+    return (range.contains(Long.MIN_VALUE) || range.contains(Long.MAX_VALUE))
+        && TypesUtils.isFloatingPoint(JavaExpression.fromNode(node).getType());
   }
 
   /**
@@ -1386,11 +1441,25 @@ public class ValueTransfer extends CFTransfer {
    * Takes a range and creates the appropriate annotation from it, then combines that annotation
    * with the existing annotation on the node. The resulting annotation is inserted into the store.
    *
+   * <p>Does nothing if the node's value has a floating-point type and {@code nodeAnno} is not
+   * {@code @IntRange} or {@code @IntVal}, because a range of integers does not contain a
+   * floating-point value that lies between two integers, such as 99.5. A floating-point value whose
+   * annotation is {@code @IntRange} or {@code @IntVal} is an integer, so it is refined. The operand
+   * of a widening conversion, such as an int that is compared to a double, is refined too.
+   *
    * @param store the store
    * @param range the range to create an annotation for
-   * @param node the node whose existing annotation to refine
+   * @param node a node whose existing annotation to refine
+   * @param nodeAnno the Constant Value Checker annotation of {@code node}'s value before the
+   *     refinement
    */
-  private void createAnnotationFromRangeAndAddToStore(CFStore store, Range range, Node node) {
+  private void createAnnotationFromRangeAndAddToStore(
+      CFStore store, Range range, Node node, AnnotationMirror nodeAnno) {
+    if (TypesUtils.isFloatingPoint(JavaExpression.fromNode(node).getType())
+        && !atypeFactory.isIntRange(nodeAnno)
+        && !AnnotationUtils.areSameByName(nodeAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)) {
+      return;
+    }
     AnnotationMirror anno = atypeFactory.createIntRangeAnnotation(range);
     addAnnotationToStore(store, anno, node);
   }
